@@ -1,0 +1,35 @@
+{
+  "name": "regex-fa",
+  "version": "0.1.0",
+  "description": "A library for finite automata in the context of JavaScript regular expressions",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "build": "npx tsc"
+  },
+  "keywords": [
+    "dfa",
+    "nfa",
+    "regex",
+    "regexp",
+    "regular",
+    "expression"
+  ],
+  "author": "Michael Schmidt",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.7.5",
+    "@typescript-eslint/eslint-plugin": "1.10.2",
+    "@typescript-eslint/parser": "1.10.2",
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
+  },
+  "dependencies": {
+    "regexpp": "^2.0.1"
+  }
+}
