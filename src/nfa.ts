@@ -1,9 +1,10 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { iterToArray, BFS, DFS } from "./util";
+import { DFS } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { faToString } from "./fa-util";
 import { rangesToString } from "./char-util";
+
 
 interface Node {
 	readonly list: NodeList;
@@ -57,8 +58,6 @@ class EdgeList {
 
 }
 
-
-
 class NodeList implements Iterable<Node> {
 
 	// variables for checks and debugging
@@ -67,7 +66,7 @@ class NodeList implements Iterable<Node> {
 	private static _counter: number = 0;
 
 	readonly initial: Node;
-	readonly final: ReadonlySet<Node>
+	readonly final: Set<Node>;
 
 	constructor() {
 		this.id = NodeList._counter++;
@@ -96,12 +95,23 @@ class NodeList implements Iterable<Node> {
 		to.in.add(from, characters);
 	}
 
-	makeFinal(node: Node): void {
-		if (node.list !== this) {
-			throw new Error("Use the node list associated with the node to make it final.");
+	unlinkNodes(from: Node, to: Node): CharSet {
+		if (from.list !== to.list) {
+			throw new Error("You can't link nodes from different node lists.");
+		}
+		if (from.list !== this) {
+			throw new Error("Use the node list associated with the nodes to link them.");
 		}
 
-		(this.final as Set<Node>).add(node);
+		const chars = from.out.map.get(to);
+		if (!chars) {
+			throw new Error("Can't unlink nodes which aren't linked.");
+		}
+
+		from.out.map.delete(to);
+		to.in.map.delete(from);
+
+		return chars.characters;
 	}
 
 	removeUnreachable(): void {
@@ -154,13 +164,10 @@ class NodeList implements Iterable<Node> {
 
 }
 
-type EndNodes = readonly [Node, ...Node[]];
-
-
-const EMPTY_CONCATENATION: Simple<Concatenation> = {
-	type: "Concatenation",
-	elements: []
-};
+interface SubNFA {
+	readonly initial: Node;
+	readonly final: Set<Node>;
+}
 
 
 export class NFA implements FiniteAutomaton {
@@ -215,8 +222,8 @@ export class NFA implements FiniteAutomaton {
 
 
 	static intersect(left: NFA, right: NFA): NFA {
-		const thisMap = NFA.createIndexMap(left.nodes);
-		const otherMap = NFA.createIndexMap(right.nodes);
+		const thisMap = createIndexMap(left.nodes);
+		const otherMap = createIndexMap(right.nodes);
 
 		const newNodes = new NodeList();
 		const newNodesIndexer = new Map<number, Node>();
@@ -236,7 +243,7 @@ export class NFA implements FiniteAutomaton {
 			for (const otherFinal of right.nodes.final) {
 				const thisIndex = thisMap.get(thisFinal)!;
 				const otherIndex = otherMap.get(otherFinal)!;
-				newNodes.makeFinal(getNewNode(thisIndex, otherIndex));
+				newNodes.final.add(getNewNode(thisIndex, otherIndex));
 			}
 		}
 
@@ -269,58 +276,9 @@ export class NFA implements FiniteAutomaton {
 	 * @param nfa
 	 */
 	union(nfa: NFA): NFA {
-		const unionNodeList = this.nodes;
-
-		const nodes = nfa.nodes;
-
-		const translationMap = new Map<Node, Node>();
-		const translate = (n: Node): Node => {
-			if (n === nodes.initial)
-				return unionNodeList.initial;
-
-			let translation = translationMap.get(n);
-			if (!translation) {
-				translationMap.set(n, translation = unionNodeList.createNode());
-			}
-			return translation;
-		};
-
-		DFS(nodes.initial, node => {
-			const trans = translate(node);
-
-			if (nodes.final.has(node)) {
-				unionNodeList.makeFinal(trans);
-			}
-
-			for (const { characters, to } of node.out) {
-				unionNodeList.linkNodes(trans, translate(to), characters);
-			}
-
-			return node.out.nodes();
-		});
-
+		baseUnion(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 		return this;
 	}
-
-	/**
-	 * Returns whether this and the given NFA match the same language.
-	 *
-	 * @param other
-	 */
-	equals(other: NFA): boolean {
-		throw new Error('Not implemented');
-	}
-
-	private static createIndexMap(nodes: NodeList): Map<Node, number> {
-		const map = new Map<Node, number>();
-		let i = 0;
-		for (const node of nodes) {
-			map.set(node, i++);
-		}
-		return map;
-	}
-
-
 
 
 	static fromRegex(concat: Simple<Concatenation>): NFA;
@@ -328,13 +286,13 @@ export class NFA implements FiniteAutomaton {
 	static fromRegex(alternatives: readonly Simple<Concatenation>[]): NFA;
 	static fromRegex(value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[]): NFA {
 		if (Array.isArray(value)) {
-			return new NFA(createNodeList(value as readonly Simple<Concatenation>[]));
+			return new NFA(createNodeList2(value as readonly Simple<Concatenation>[]));
 		} else {
 			const node = value as Simple<Expression> | Simple<Concatenation>;
 			if (node.type === "Concatenation") {
-				return new NFA(createNodeList([node]));
+				return new NFA(createNodeList2([node]));
 			} else {
-				return new NFA(createNodeList(node.alternatives));
+				return new NFA(createNodeList2(node.alternatives));
 			}
 		}
 	}
@@ -352,160 +310,75 @@ function createIndexMap(nodes: NodeList): Map<Node, number> {
 }
 
 
-function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList {
+
+function createNodeList2(expression: readonly Simple<Concatenation>[]): NodeList {
 	const nodeList = new NodeList();
-
-	for (const node of handleAlternation(expression, [nodeList.initial])) {
-		nodeList.makeFinal(node);
-	}
-
+	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
 
-	/**
-	 * A stable iterable it an iterable collection of nodes which can be iterated multiple times
-	 * without the items or their order changing.
-	 */
-	type StableIterable = readonly Node[] | ReadonlySet<Node>;
 
-	function handleAlternation(alternatives: readonly Simple<Concatenation>[], start: StableIterable, end?: EndNodes): StableIterable {
-		const nodes = new Set<Node>();
-		end = end || [nodeList.createNode()];
-		for (const concat of alternatives) {
-			for (const node of handleConcatenation(concat, start, end)) {
-				nodes.add(node);
-			}
+	// All sub NFAs guarantee that the initial node has no incoming edges.
+
+	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubNFA {
+		if (alternatives.length === 0) {
+			return { initial: nodeList.createNode(), final: new Set<Node>() };
 		}
-		// `nodes` contains all `end` nodes.
-		// `nodes` will also contain all `start` nodes if one of the alternatives matches the empty string.
-		return nodes;
+
+		const base = handleConcatenation(alternatives[0]);
+		for (let i = 1, l = alternatives.length; i < l; i++) {
+			baseUnion(nodeList, base, handleConcatenation(alternatives[i]));
+		}
+
+		return base;
 	}
 
-	function handleConcatenation(concat: Simple<Concatenation>, start: StableIterable, end?: EndNodes): StableIterable {
-		const elements = concat.elements;
-		const max = elements.length - 1;
+	function handleConcatenation(concatenation: Simple<Concatenation>): SubNFA {
+		const elements = concatenation.elements;
 
-		if (max === -1) return start;
+		const base: SubNFA = { initial: nodeList.createNode(), final: new Set<Node>() };
+		base.final.add(base.initial);
 
-		for (let i = 0; i < max; i++) {
-			start = handleElement(elements[i], start);
+		for (let i = 0, l = elements.length; i < l; i++) {
+			baseConcat(nodeList, base, handleElement(elements[i]));
 		}
-		return handleElement(elements[max], start, end);
+
+		return base;
 	}
 
-	function handleQuantifier(quant: Simple<Quantifier>, start: StableIterable, end?: EndNodes): StableIterable {
-		function concatWithoutEnd(times: number, alternatives: readonly Simple<Concatenation>[]): void {
-			for (; times > 0; times--) {
-				start = handleAlternation(alternatives, start);
-			}
+	function handleCharacters(chars: CharSet): SubNFA {
+		if (chars.isEmpty) {
+			return { initial: nodeList.createNode(), final: new Set<Node>() };
 		}
 
-		// About the notation used in the comments:
-		// Regular expressions will be use the standard JS RegExp literal notation.
-		// For finite automata a simple graph notation is used where states are uppercase letters or digits and
-		// transition are denotes by arrows ( -()-> ) which contains the accepted characters of the transition in
-		// round braces. The states S and E refer to the given start node(s) and the suggested or created end node(s)
-		// respectively. All states in square brackets will be returned by this function.
-		// Reflexive transition will be denoted by the ⮌ symbol, e.g. S ⮌(a).
+		const s0 = nodeList.createNode();
+		const s1 = nodeList.createNode();
+		nodeList.linkNodes(s0, s1, chars);
 
-		// (e.g. /a{0}/)
-		if (quant.max === 0) throw new RangeError(`max of a quantity cannot be zero.`);
-
-		if (quant.min === quant.max) {
-			// simple concatenation (e.g. /a{4}/)
-			// /a{4}/ is implemented as: S -(a)-> 1 -(a)-> 2 -(a)-> 3 -(a)-> [E]
-
-			concatWithoutEnd(quant.max - 1, quant.alternatives);
-			return handleAlternation(quant.alternatives, start, end);
-
-		} else if (quant.max < Infinity) {
-			// finite quantifier (e.g. /a{4,6}/ or /a?/)
-			// /a{1,3}/ == /a(a|)(a|)/ is implemented as: S -(a)-> [1] -(a)-> [2] -(a)-> [E]
-			// /a?/ == /(a|)/ is implemented as: [S] -(a)-> [E]
-
-			concatWithoutEnd(quant.min, quant.alternatives);
-
-			const modifiedAlternatives = [EMPTY_CONCATENATION, ...quant.alternatives];
-			concatWithoutEnd(quant.max - quant.min - 1, modifiedAlternatives);
-			return handleAlternation(modifiedAlternatives, start, end);
-
-		} else {
-			// Kleene star (e.g. /a{4,}/ or /a+/ or /a*/)
-
-			concatWithoutEnd(quant.min - 1, quant.alternatives);
-
-			// /a+/ is implemented as: S -(a)-> [E] ⮌(a)
-			// /a*/ is implemented as: [S] -(a)-> [E] ⮌(a)
-			// They are implemented like this, so that the there exists no circle which includes the start nodes.
-			// This is useful because that means that the initial nodes will never have incoming edges which makes
-			// the union of two NFAs trivial to implement.
-
-			const startNodes = new Set<Node>(start);
-			const resultNodes = new Set<Node>(quant.min === 0 ? startNodes : []);
-
-			if (end) {
-				// Suggested end nodes might contain nodes which are part of a circle which is a problem. Let's say the
-				// start and end nodes (which are shared between operations to reduce the number of nodes) were used to
-				// create /a+/, meaning that the transition of S and E will be as follows: S -(a)-> [E] ⮌(a). If we
-				// use E again for the union with /b+/, the resulting transition will look like this:
-				// S -(a|b)-> [E] ⮌(a|b)
-				// But this is /(a|b)+/ and not /a+|b+/! Because, as described above, the start nodes are not circular,
-				// we only have to worry about the end nodes being part of a circle. To resolve this, we remove the
-				// circular end nodes.
-				const nonCircular = end.filter(e => !isCircular(e));
-
-				// This might have removed all nodes, so add a new one in that case.
-				if (nonCircular.length === 0) {
-					nonCircular.push(nodeList.createNode());
-				}
-
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				end = nonCircular as any as EndNodes;
-			} else {
-				end = [nodeList.createNode()];
-			}
-
-			let startAndEndNodes = iterToArray(handleAlternation(quant.alternatives, startNodes, end));
-			startAndEndNodes = startAndEndNodes.filter(s => {
-				resultNodes.add(s);
-				// we have to filter out the original start nodes which will be included if
-				// quant.alternatives matched the empty string
-				return !startNodes.has(s);
-			});
-
-			for (const node of handleAlternation(quant.alternatives, startAndEndNodes, startAndEndNodes as EndNodes)) {
-				resultNodes.add(node);
-			}
-
-			return resultNodes;
-		}
+		return { initial: s0, final: new Set<Node>([s1]) };
 	}
 
-	function handleCharacters(characters: CharSet, start: StableIterable, end?: EndNodes): StableIterable {
-		if (characters.isEmpty) return [];
-
-		end = end || [nodeList.createNode()];
-		for (const node of start) {
-			for (const endNode of end) {
-				nodeList.linkNodes(node, endNode, characters);
-			}
-		}
-		return end;
+	function handleQuantifier(quant: Simple<Quantifier>): SubNFA {
+		const base = handleAlternation(quant.alternatives);
+		baseQuantify(nodeList, base, quant.min, quant.max);
+		return base;
 	}
 
-	function handleElement(element: Simple<Element>, start: StableIterable, end?: EndNodes): StableIterable {
+	function handleElement(element: Simple<Element>): SubNFA {
 		switch (element.type) {
 			case "Alternation":
-				return handleAlternation(element.alternatives, start, end);
+				return handleAlternation(element.alternatives);
 			case "CharacterClass":
-				return handleCharacters(element.characters, start, end);
+				return handleCharacters(element.characters);
 			case "Quantifier":
-				return handleQuantifier(element, start, end);
+				return handleQuantifier(element);
 
 			default:
 				throw new TypeError(`Unsupported element "${element.type}".`);
 		}
 	}
+
 }
+
 
 /**
  * Returns whether there exists a path from the given node to itself.
@@ -513,24 +386,300 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
  * @param node
  */
 function isCircular(node: Node): boolean {
-	const visited = new Set<Node>();
-
-	function check(n: Node): boolean {
-		if (visited.has(n)) {
-			return false;
+	return DFS(node, n => {
+		if (n === node) {
+			return true;
 		}
-		visited.add(n);
-
-		for (const out of n.out.nodes()) {
-			if (out === node) {
-				return true;
-			} else {
-				return check(out);
-			}
-		}
-		return false;
-	}
-
-	return check(node);
+		return n.out.nodes();
+	});
 }
 
+/**
+ * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
+ *
+ * @param nodeList
+ * @param toCopy
+ */
+function localCopy(nodeList: NodeList, toCopy: SubNFA): SubNFA {
+	const initial = nodeList.createNode();
+	const final = new Set<Node>();
+
+	const translationMap = new Map<Node, Node>();
+	translationMap.set(toCopy.initial, initial);
+	const translate = (n: Node): Node => {
+		let translation = translationMap.get(n);
+		if (!translation) {
+			translationMap.set(n, translation = nodeList.createNode());
+		}
+		return translation;
+	};
+
+	DFS(toCopy.initial, node => {
+		const trans = translate(node);
+
+		if (toCopy.final.has(node)) {
+			final.add(trans);
+		}
+
+		for (const { characters, to } of node.out) {
+			nodeList.linkNodes(trans, translate(to), characters);
+		}
+
+		return node.out.nodes();
+	});
+
+	return { initial, final };
+}
+
+/**
+ * Alters `base` to to be the same as the given replacement.
+ *
+ * `replacement` will be altered as well and cannot be used again after this operation.
+ *
+ * @param nodeList
+ * @param base
+ * @param replacement
+ */
+function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA): void {
+	base.final.clear();
+	base.initial.out.map.clear();
+
+	// transfer finals
+	replacement.final.forEach(f => {
+		base.final.add(f === replacement.initial ? base.initial : f);
+	});
+
+	// transfer nodes
+	for (const { to, characters } of [...replacement.initial.out]) {
+		nodeList.linkNodes(base.initial, to, characters);
+		nodeList.unlinkNodes(replacement.initial, to);
+	}
+}
+
+/**
+ * Alters `base` to end with the `after` expression.
+ *
+ * `after` will be altered as well and cannot be used again after this operation.
+ *
+ * @param nodeList The node list of both `base` and `after`.
+ * @param base
+ * @param after
+ */
+function baseConcat(nodeList: NodeList, base: SubNFA, after: SubNFA): void {
+	// replace after initial with base finals
+	const initialEdges = [...after.initial.out];
+	for (const baseFinal of base.final) {
+		for (const { to, characters } of initialEdges) {
+			nodeList.linkNodes(baseFinal, to, characters);
+		}
+	}
+	// unlink after initial
+	for (const { to } of initialEdges) {
+		nodeList.unlinkNodes(after.initial, to);
+	}
+
+	// If the initial of after isn't final, we have to clear the base finals
+	if (!after.final.has(after.initial)) {
+		base.final.clear();
+	}
+	// transfer finals
+	after.final.forEach(n => {
+		if (n !== after.initial) {
+			base.final.add(n);
+		}
+	});
+}
+
+/**
+ * Alters `base` to be the union of itself and the given alternative.
+ *
+ * `alternative` will be altered as well and cannot be used again after this operation.
+ *
+ * @param nodeList The node list of both `base` and `alternative`.
+ * @param base
+ * @param alternative
+ */
+function baseUnion(nodeList: NodeList, base: SubNFA, alternative: SubNFA): void {
+	// add finals
+	alternative.final.forEach(n => {
+		base.final.add(n === alternative.initial ? base.initial : n);
+	});
+
+	// transfer nodes to base
+	for (const { to, characters } of [...alternative.initial.out]) {
+		nodeList.linkNodes(base.initial, to, characters);
+		nodeList.unlinkNodes(alternative.initial, to);
+	}
+
+	// A optional optimization to reduce the number of nodes.
+	baseOptimizationReuseFinalStates(nodeList, base);
+}
+
+function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubNFA): void {
+	const reusable: Node[] = [];
+	base.final.forEach(f => {
+		if (f !== base.initial && f.out.size === 0) {
+			reusable.push(f);
+		}
+	});
+
+	if (reusable.length > 1) {
+		const masterFinal: Node = reusable.pop()!;
+		for (let i = 0, l = reusable.length; i < l; i++) {
+			const toRemove = reusable[i];
+			base.final.delete(toRemove);
+			for (const { to, characters } of [...toRemove.in]) {
+				nodeList.linkNodes(to, masterFinal, characters);
+				nodeList.unlinkNodes(to, toRemove);
+			}
+		}
+	}
+}
+
+/**
+ * Alters `base` to be repeated a certain number of times.
+ *
+ * @param nodeList
+ * @param base
+ * @param times
+ */
+function baseRepeat(nodeList: NodeList, base: SubNFA, times: number): void {
+	if (times === 0) {
+		// trivial
+		base.initial.out.map.clear();
+		base.final.clear();
+		base.final.add(base.initial);
+		return;
+	}
+	if (times === 1) {
+		// trivial
+		return;
+	}
+	if (base.final.size === 1 && base.final.has(base.initial)) {
+		// base can only match the empty string
+		return;
+	}
+	if (base.final.size === 0) {
+		// base can't match any word
+		return;
+	}
+
+	if (!base.final.has(base.initial)) {
+		const copy = localCopy(nodeList, base);
+		for (let i = times; i > 2; i--) {
+			// use a copy of the original copy for concatenation
+			// do this `times - 2` times
+			baseConcat(nodeList, base, localCopy(nodeList, copy));
+		}
+		// use the original copy
+		baseConcat(nodeList, base, copy);
+
+	} else {
+		// We could use the above approach here as well but this would generate O(n^2) unnecessary transitions.
+		// To get rid of these unnecessary transitions, we remove the initial states from the set of final states
+		// and manually store the final states of each concatenation.
+
+		const realFinal = new Set<Node>(base.final);
+		base.final.delete(base.initial);
+
+		const copy = localCopy(nodeList, base);
+
+		for (let i = times; i > 2; i--) {
+			// use a copy of the original copy for concatenation
+			// do this `times - 2` times
+			baseConcat(nodeList, base, localCopy(nodeList, copy));
+			base.final.forEach(f => realFinal.add(f));
+		}
+		// use the original copy
+		baseConcat(nodeList, base, copy);
+		base.final.forEach(f => realFinal.add(f));
+
+		// transfer the final states
+		base.final.clear();
+		realFinal.forEach(f => base.final.add(f));
+
+		// NOTE: For this to be correct, it is assumed, that
+		//  1) concatenation doesn't replace the initial state of base
+		//  2) the final states of base aren't removed (they just have to be reachable from the initial state)
+	}
+}
+
+/**
+ * Alters `base` to be equal to `/(<base>)+/`.
+ *
+ * @param nodeList
+ * @param base
+ */
+function basePlus(nodeList: NodeList, base: SubNFA): void {
+	// The basic idea here is that we copy all edges from the initial state state to every final state. This means that
+	// all final states will then behave like the initial state.
+	for (const f of base.final) {
+		if (f !== base.initial) {
+			for (const { to, characters } of base.initial.out) {
+				nodeList.linkNodes(f, to, characters);
+			}
+		}
+	}
+}
+
+function baseQuantify(nodeList: NodeList, base: SubNFA, min: number, max: number): void {
+	if (max === 0) {
+		// this is a special case, so handle it before everything else
+		// e.g. /a{0}/
+		base.initial.out.map.clear();
+		base.final.clear();
+		base.final.add(base.initial);
+		return;
+	}
+
+	if (base.final.has(base.initial)) {
+		// if the initial state is also final, then `min` is effectively 0
+		// e.g. /(a|)+/ == /(a|)*/
+		min = 0;
+	} else if (min === 0) {
+		// if `min` is 0, then the initial state has to be final
+		base.final.add(base.initial);
+	}
+
+	if (max === 1) {
+		// since min can either be 0 (in which case the initial state has be handled above)
+		// or 1 (in which case it's trivial).
+		// e.g. /a{1}/
+		return;
+	}
+
+	if (min === max) {
+		// e.g. /a{4}/
+		baseRepeat(nodeList, base, min);
+	} else if (max < Infinity) {
+		// e.g. /a{2,4}/
+		// The basic idea here is that /a{m,n}/ == /a{m}(a|){n-m}/
+
+		// make a copy of base and include the empty string
+		const copy = localCopy(nodeList, base);
+		copy.final.add(copy.initial);
+
+		baseRepeat(nodeList, copy, max - min);
+		baseRepeat(nodeList, base, min);
+		baseConcat(nodeList, base, copy);
+	} else {
+		if (min > 1) {
+			// e.g. /a{4,}/
+			// The basic idea here is that /a{4,}/ == /a{3}a+/
+
+			// the plus part (has to be done first because base will be modified by repeat)
+			const copy = localCopy(nodeList, base);
+			basePlus(nodeList, copy);
+
+			// repeat
+			baseRepeat(nodeList, base, min - 1);
+
+			baseConcat(nodeList, base, copy);
+		} else {
+			// e.g. /a*/, /a+/
+			// If `min` is 0 then the initial state will already be final because of the code above.
+			// We can use the plus operator for star as well because /(<RE>)*/ == /(<RE>)+|/
+			basePlus(nodeList, base);
+		}
+	}
+}

@@ -199,19 +199,42 @@ export function* BFS<S, T>(rootElement: S,
 	}
 }
 
-export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void {
+
+/**
+ * Performs a depth first search on the given root element.
+ *
+ * __Note:__ You can return `true` in the `next` function to abort the search immediately.
+ *
+ * @param rootElement
+ * @param next
+ * @returns Whether the search was aborted.
+ */
+export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S> | true): boolean {
 	const visited = new Set<S>();
 
-	function inner(element: S): void {
+	/**
+	 *
+	 * @param element
+	 * @returns Whether the search should be aborted.
+	 */
+	function inner(element: S): boolean {
 		if (visited.has(element)) {
-			return;
+			return false;
 		}
 		visited.add(element);
 
-		for (const e of iterToArray(next(element))) {
-			inner(e);
+		const nextResult = next(element);
+		if (nextResult === true) {
+			return true;
 		}
+
+		for (const e of iterToArray(nextResult)) {
+			if (inner(e)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	inner(rootElement);
+	return inner(rootElement);
 }
