@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { parse } from "../src/js/js-regex";
 
 
-describe('NFA construction', function () {
+describe('NFA', function () {
 
 	describe('fromRegex', function () {
 
@@ -115,6 +115,11 @@ describe('NFA construction', function () {
 					[6] -> none`
 			},
 			{
+				literal: /(){100,1000}/,
+				expected: `
+					[0] -> none`
+			},
+			{
 				literal: /a+|/,
 				expected: `
 					[0] -> [1] : 61
@@ -198,6 +203,40 @@ describe('NFA construction', function () {
 
 					[2] -> [1] : 61
 					    -> [2] : 62`
+			},
+			{
+				literal: /[^\s\S]/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /ab[^\s\S]ba/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /(a|[^\s\S]|b[^\s\S]b|[^\s\S])a/,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> [2] : 61
+
+					[2] -> none`
+			},
+			{
+				literal: /[^\s\S]+/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /[^\s\S]*/,
+				expected: `
+					[0] -> none`
+			},
+			{
+				literal: /[^\s\S]?/,
+				expected: `
+					[0] -> none`
 			},
 		]);
 

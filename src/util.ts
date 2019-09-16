@@ -215,7 +215,7 @@ export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S> | true)
 	/**
 	 *
 	 * @param element
-	 * @returns Whether the search should be aborted.
+	 * @returns Whether the search was be aborted.
 	 */
 	function inner(element: S): boolean {
 		if (visited.has(element)) {

@@ -220,54 +220,58 @@ export class NFA implements FiniteAutomaton {
 		);
 	}
 
-
 	static intersect(left: NFA, right: NFA): NFA {
-		const thisMap = createIndexMap(left.nodes);
-		const otherMap = createIndexMap(right.nodes);
+		// TODO: Fix me
 
-		const newNodes = new NodeList();
-		const newNodesIndexer = new Map<number, Node>();
-		newNodesIndexer.set(0, newNodes.initial);
-		const getNewNode = (thisIndex: number, otherIndex: number): Node => {
-			const index = thisIndex * otherMap.size + otherIndex;
-			let node = newNodesIndexer.get(index);
+		const nodeList = new NodeList();
+
+		// node pair translation
+		const thisIndexMap = createIndexMap(left.nodes);
+		const otherIndexMap = createIndexMap(right.nodes);
+		const translationCache = new Map<number, Node>();
+		translationCache.set(0, nodeList.initial);
+		function translate(thisNode: Node, otherNode: Node): Node {
+			const thisIndex = thisIndexMap.get(thisNode);
+			const otherIndex = otherIndexMap.get(otherNode);
+
+			if (thisIndex === undefined || otherIndex === undefined) {
+				// this shouldn't happen
+				throw new Error("All node should be indexed.");
+			}
+
+			const index = thisIndex * otherIndexMap.size + otherIndex;
+			let node = translationCache.get(index);
 			if (node === undefined) {
-				node = newNodes.createNode();
-				newNodesIndexer.set(index, node);
+				translationCache.set(index, node = nodeList.createNode());
 			}
 			return node;
-		};
+		}
 
 		// add finals
 		for (const thisFinal of left.nodes.final) {
 			for (const otherFinal of right.nodes.final) {
-				const thisIndex = thisMap.get(thisFinal)!;
-				const otherIndex = otherMap.get(otherFinal)!;
-				newNodes.final.add(getNewNode(thisIndex, otherIndex));
+				nodeList.final.add(translate(thisFinal, otherFinal));
 			}
 		}
 
 		// add edges
 		for (const thisNode of left.nodes.final) {
 			for (const otherNode of right.nodes.final) {
-				const thisIndex = thisMap.get(thisNode)!;
-				const otherIndex = otherMap.get(otherNode)!;
-				const from = getNewNode(thisIndex, otherIndex);
+				const from = translate(thisNode, otherNode);
 				for (const thisEdge of thisNode.out) {
 					for (const otherEdge of otherNode.out) {
 						const characters = thisEdge.characters.intersect(otherEdge.characters);
 						if (!characters.isEmpty) {
-							const thisToIndex = thisMap.get(thisEdge.to)!;
-							const otherToIndex = otherMap.get(otherEdge.to)!;
-							const to = getNewNode(thisToIndex, otherToIndex);
-							newNodes.linkNodes(from, to, characters);
+							nodeList.linkNodes(from, translate(thisEdge.to, otherEdge.to), characters);
 						}
 					}
 				}
 			}
 		}
 
-		return new NFA(newNodes);
+		nodeList.removeUnreachable();
+
+		return new NFA(nodeList);
 	}
 
 	/**
@@ -339,6 +343,11 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		base.final.add(base.initial);
 
 		for (let i = 0, l = elements.length; i < l; i++) {
+			if (base.final.size === 0) {
+				// Since base is the empty language, concatenation has no effect, so let's stop early
+				break;
+			}
+
 			baseConcat(nodeList, base, handleElement(elements[i]));
 		}
 
@@ -451,6 +460,16 @@ function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA):
  * @param after
  */
 function baseConcat(nodeList: NodeList, base: SubNFA, after: SubNFA): void {
+	if (base.final.size === 0) {
+		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
+		return;
+	}
+	if (after.final.size === 0) {
+		// concat(base, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
+		baseMakeEmpty(nodeList, base);
+		return;
+	}
+
 	// replace after initial with base finals
 	const initialEdges = [...after.initial.out];
 	for (const baseFinal of base.final) {
