@@ -286,13 +286,13 @@ export class NFA implements FiniteAutomaton {
 	static fromRegex(alternatives: readonly Simple<Concatenation>[]): NFA;
 	static fromRegex(value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[]): NFA {
 		if (Array.isArray(value)) {
-			return new NFA(createNodeList2(value as readonly Simple<Concatenation>[]));
+			return new NFA(createNodeList(value as readonly Simple<Concatenation>[]));
 		} else {
 			const node = value as Simple<Expression> | Simple<Concatenation>;
 			if (node.type === "Concatenation") {
-				return new NFA(createNodeList2([node]));
+				return new NFA(createNodeList([node]));
 			} else {
-				return new NFA(createNodeList2(node.alternatives));
+				return new NFA(createNodeList(node.alternatives));
 			}
 		}
 	}
@@ -311,7 +311,7 @@ function createIndexMap(nodes: NodeList): Map<Node, number> {
 
 
 
-function createNodeList2(expression: readonly Simple<Concatenation>[]): NodeList {
+function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList {
 	const nodeList = new NodeList();
 	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
@@ -381,20 +381,6 @@ function createNodeList2(expression: readonly Simple<Concatenation>[]): NodeList
 
 
 /**
- * Returns whether there exists a path from the given node to itself.
- *
- * @param node
- */
-function isCircular(node: Node): boolean {
-	return DFS(node, n => {
-		if (n === node) {
-			return true;
-		}
-		return n.out.nodes();
-	});
-}
-
-/**
  * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
  *
  * @param nodeList
@@ -441,8 +427,7 @@ function localCopy(nodeList: NodeList, toCopy: SubNFA): SubNFA {
  * @param replacement
  */
 function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA): void {
-	base.final.clear();
-	base.initial.out.map.clear();
+	baseMakeEmpty(nodeList, base);
 
 	// transfer finals
 	replacement.final.forEach(f => {
@@ -546,8 +531,7 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubNFA): voi
 function baseRepeat(nodeList: NodeList, base: SubNFA, times: number): void {
 	if (times === 0) {
 		// trivial
-		base.initial.out.map.clear();
-		base.final.clear();
+		baseMakeEmpty(nodeList, base);
 		base.final.add(base.initial);
 		return;
 	}
@@ -626,8 +610,7 @@ function baseQuantify(nodeList: NodeList, base: SubNFA, min: number, max: number
 	if (max === 0) {
 		// this is a special case, so handle it before everything else
 		// e.g. /a{0}/
-		base.initial.out.map.clear();
-		base.final.clear();
+		baseMakeEmpty(nodeList, base);
 		base.final.add(base.initial);
 		return;
 	}
@@ -682,4 +665,17 @@ function baseQuantify(nodeList: NodeList, base: SubNFA, min: number, max: number
 			basePlus(nodeList, base);
 		}
 	}
+}
+
+/**
+ * Alters `base` to accept no words.
+ *
+ * @param nodeList
+ * @param base
+ */
+function baseMakeEmpty(nodeList: NodeList, base: SubNFA): void {
+	for (const out of [...base.initial.out.nodes()]) {
+		nodeList.unlinkNodes(base.initial, out);
+	}
+	base.final.clear();
 }
