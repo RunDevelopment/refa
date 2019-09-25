@@ -186,10 +186,19 @@ class NodeList {
 
 }
 
-interface SubNFA {
+interface SubList {
 	readonly initial: Node;
 	readonly final: Set<Node>;
 }
+
+/*
+ * Note regarding the normalization of node lists and sub lists:
+ *
+ * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
+ * This simple property makes the implementation of all NFA operations efficient and almost trivial.
+ *
+ * ALL of the below operations assume that every given (sub) node list is normalized.
+ */
 
 
 export class NFA implements FiniteAutomaton {
@@ -333,9 +342,9 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 	return nodeList;
 
 
-	// All sub NFAs guarantee that the initial node has no incoming edges.
+	// All sub lists guarantee that the initial node has no incoming edges.
 
-	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubNFA {
+	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
 		if (alternatives.length === 0) {
 			return { initial: nodeList.createNode(), final: new Set<Node>() };
 		}
@@ -348,10 +357,10 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		return base;
 	}
 
-	function handleConcatenation(concatenation: Simple<Concatenation>): SubNFA {
+	function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
 		const elements = concatenation.elements;
 
-		const base: SubNFA = { initial: nodeList.createNode(), final: new Set<Node>() };
+		const base: SubList = { initial: nodeList.createNode(), final: new Set<Node>() };
 		base.final.add(base.initial);
 
 		for (let i = 0, l = elements.length; i < l; i++) {
@@ -366,13 +375,13 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		return base;
 	}
 
-	function handleQuantifier(quant: Simple<Quantifier>): SubNFA {
+	function handleQuantifier(quant: Simple<Quantifier>): SubList {
 		const base = handleAlternation(quant.alternatives);
 		baseQuantify(nodeList, base, quant.min, quant.max);
 		return base;
 	}
 
-	function handleElement(element: Simple<Element>, base: SubNFA): void {
+	function handleElement(element: Simple<Element>, base: SubList): void {
 		switch (element.type) {
 			case "Alternation":
 				baseConcat(nodeList, base, handleAlternation(element.alternatives));
@@ -412,7 +421,7 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
  * @param nodeList
  * @param toCopy
  */
-function localCopy(nodeList: NodeList, toCopy: SubNFA): SubNFA {
+function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 	const initial = nodeList.createNode();
 	const final = new Set<Node>();
 
@@ -452,7 +461,7 @@ function localCopy(nodeList: NodeList, toCopy: SubNFA): SubNFA {
  * @param base
  * @param replacement
  */
-function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA): void {
+function baseReplaceWith(nodeList: NodeList, base: SubList, replacement: SubList): void {
 	baseMakeEmpty(nodeList, base);
 
 	// transfer finals
@@ -476,7 +485,7 @@ function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA):
  * @param base
  * @param after
  */
-function baseConcat(nodeList: NodeList, base: SubNFA, after: SubNFA): void {
+function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
 	if (base.final.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
 		return;
@@ -520,7 +529,7 @@ function baseConcat(nodeList: NodeList, base: SubNFA, after: SubNFA): void {
  * @param base
  * @param alternative
  */
-function baseUnion(nodeList: NodeList, base: SubNFA, alternative: SubNFA): void {
+function baseUnion(nodeList: NodeList, base: SubList, alternative: SubList): void {
 	// add finals
 	alternative.final.forEach(n => {
 		base.final.add(n === alternative.initial ? base.initial : n);
@@ -536,7 +545,7 @@ function baseUnion(nodeList: NodeList, base: SubNFA, alternative: SubNFA): void 
 	baseOptimizationReuseFinalStates(nodeList, base);
 }
 
-function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubNFA): void {
+function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): void {
 	const reusable: Node[] = [];
 	base.final.forEach(f => {
 		if (f !== base.initial && f.out.size === 0) {
@@ -564,7 +573,7 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubNFA): voi
  * @param base
  * @param times
  */
-function baseRepeat(nodeList: NodeList, base: SubNFA, times: number): void {
+function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 	if (times === 0) {
 		// trivial
 		baseMakeEmpty(nodeList, base);
@@ -630,7 +639,7 @@ function baseRepeat(nodeList: NodeList, base: SubNFA, times: number): void {
  * @param nodeList
  * @param base
  */
-function basePlus(nodeList: NodeList, base: SubNFA): void {
+function basePlus(nodeList: NodeList, base: SubList): void {
 	// The basic idea here is that we copy all edges from the initial state state to every final state. This means that
 	// all final states will then behave like the initial state.
 	for (const f of base.final) {
@@ -642,7 +651,7 @@ function basePlus(nodeList: NodeList, base: SubNFA): void {
 	}
 }
 
-function baseQuantify(nodeList: NodeList, base: SubNFA, min: number, max: number): void {
+function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: number): void {
 	if (max === 0) {
 		// this is a special case, so handle it before everything else
 		// e.g. /a{0}/
@@ -709,7 +718,7 @@ function baseQuantify(nodeList: NodeList, base: SubNFA, min: number, max: number
  * @param nodeList
  * @param base
  */
-function baseMakeEmpty(nodeList: NodeList, base: SubNFA): void {
+function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 	for (const out of [...base.initial.out.nodes()]) {
 		nodeList.unlinkNodes(base.initial, out);
 	}
