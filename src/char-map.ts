@@ -21,7 +21,7 @@ function checkChar(char: number): void {
 }
 
 
-export class CharMap<T> {
+export class CharMap<T> implements Iterable<[CharRange, T]> {
 
 	private tree: AVLTree<T> = new AVLTree<T>();
 
@@ -143,17 +143,17 @@ export class CharMap<T> {
 
 		rec(this.tree.root);
 	}
-	*keys(): Iterable<CharRange> {
+	*keys(): IterableIterator<CharRange> {
 		for (const [key,] of this.entries()) {
 			yield key;
 		}
 	}
-	*values(): Iterable<T> {
+	*values(): IterableIterator<T> {
 		for (const [, value] of this.entries()) {
 			yield value;
 		}
 	}
-	*entries(): Iterable<[CharRange, T]> {
+	*entries(): IterableIterator<[CharRange, T]> {
 		const stack: { leftDone: boolean; node: Node<T> }[] = [];
 
 		if (this.tree.root) {
@@ -174,6 +174,9 @@ export class CharMap<T> {
 				stack.push({ leftDone: false, node: node.left });
 			}
 		}
+	}
+	[Symbol.iterator](): IterableIterator<[CharRange, T]> {
+		return this.entries();
 	}
 
 }
