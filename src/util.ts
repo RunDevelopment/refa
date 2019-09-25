@@ -238,3 +238,19 @@ export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S> | true)
 
 	return inner(rootElement);
 }
+
+
+export function createIndexMap<T>(items: Iterable<T>): Map<T, number> {
+	const map = new Map<T, number>();
+	let i = 0;
+	for (const node of items) {
+		map.set(node, i++);
+	}
+	return map;
+}
+
+export function assertNever(value: never, message?: string): never {
+	const error = new Error(message);
+	(error as any).data = value;
+	throw error;
+}

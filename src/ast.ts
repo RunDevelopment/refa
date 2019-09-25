@@ -1,5 +1,6 @@
 import { CharSet } from "./char-set";
 import { rangesToString } from "./char-util";
+import { assertNever } from "./util";
 
 
 export interface SourceLocation {
@@ -105,8 +106,11 @@ export function desimplify(simple: Simple<Node>, parent: Parent | Concatenation 
 					node.parent = parent;
 					break;
 
+				case "Concatenation":
+					throw new Error(`A concatenation cannot be parent of a concatenation.`);
+
 				default:
-					throw new Error(`A(n) ${parent.type} cannot be parent of a concatenation.`);
+					throw assertNever(parent);
 			}
 
 			node.elements.forEach(e => desimplify(e, node, source));
@@ -138,6 +142,9 @@ export function desimplify(simple: Simple<Node>, parent: Parent | Concatenation 
 
 			node.alternatives.forEach(c => desimplify(c, node, source));
 			break;
+
+		default:
+			throw assertNever(node);
 	}
 
 	return node;
@@ -201,7 +208,7 @@ function toPatternElement(element: Simple<Element>): string {
 				return content + quant;
 			}
 		default:
-			throw new Error(`Invalid element "${element}"`);
+			throw assertNever(element, 'Invalid element');
 	}
 }
 function toPatternAlternatives(expressions: readonly Simple<Concatenation>[]): string {

@@ -215,7 +215,7 @@ describe('NFA', function () {
 					(0) -> none`
 			},
 			{
-				literal: /(a|[^\s\S]|b[^\s\S]b|[^\s\S])a/,
+				literal: /([^\s\S]|a|[^\s\S]|b[^\s\S]b|[^\s\S])a/,
 				expected: `
 					(0) -> (1) : 61
 
@@ -355,6 +355,48 @@ describe('NFA', function () {
 					const nfa = NFA.fromRegex(parse(literal).pattern);
 					const nfaOther = NFA.fromRegex(parse(other).pattern);
 					assert.strictEqual(nfa.union(nfaOther).toString(), removeIndentation(expected));
+				});
+			}
+		}
+
+	});
+
+	describe('intersect', function () {
+
+		test([
+			{
+				literal: /a/,
+				other: /b/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /a*/,
+				other: /a/,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> none`
+			},
+			//{
+			//	literal: /b*(ab+)*a/,
+			//	other: /a*(ba+)*/,
+			//	expected: /b?(ab)*a/
+			//},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			other: Literal;
+			expected: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, other, expected } of cases) {
+				it(`${literalToString(literal)} ∩ ${literalToString(other)}`, function () {
+					const nfa = NFA.fromRegex(parse(literal).pattern);
+					const nfaOther = NFA.fromRegex(parse(other).pattern);
+					assert.strictEqual(NFA.intersect(nfa, nfaOther).toString(), removeIndentation(expected));
 				});
 			}
 		}

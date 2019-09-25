@@ -1,6 +1,6 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { DFS } from "./util";
+import { DFS, assertNever, createIndexMap } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { faToString } from "./fa-util";
 import { rangesToString } from "./char-util";
@@ -12,44 +12,25 @@ interface Node {
 	readonly in: EdgeList;
 }
 
-interface Edge {
-	readonly characters: CharSet;
-	readonly to: Node;
-}
-
 class EdgeList {
 
-	readonly map: Map<Node, Edge> = new Map<Node, Edge>();
+	readonly map: Map<Node, CharSet> = new Map<Node, CharSet>();
 
 	get size(): number {
 		return this.map.size;
 	}
 
 	add(to: Node, characters: CharSet): void {
-		const edge = this.map.get(to);
-		if (edge === undefined) {
-			this.map.set(to, { to, characters });
+		const current = this.map.get(to);
+		if (current === undefined) {
+			this.map.set(to, characters);
 		} else {
-			this.map.set(to, { to, characters: edge.characters.union(characters) });
+			this.map.set(to, current.union(characters));
 		}
 	}
 
-	forEach(callbackFn: (value: Edge, key: Node, map: Map<Node, Edge>) => void): void {
-		return this.map.forEach(callbackFn);
-	}
-
-	filterMut(filterFn: (value: Edge, key: Node, map: Map<Node, Edge>) => boolean): void {
-		const del: Node[] = [];
-		this.forEach((value, key, map) => {
-			if (filterFn(value, key, map)) {
-				del.push(key);
-			}
-		});
-		del.forEach(node => this.map.delete(node));
-	}
-
-	[Symbol.iterator](): Iterator<Edge> {
-		return this.map.values()[Symbol.iterator]();
+	[Symbol.iterator](): IterableIterator<[Node, CharSet]> {
+		return this.map.entries();
 	}
 
 	nodes(): Iterable<Node> {
@@ -58,7 +39,7 @@ class EdgeList {
 
 }
 
-class NodeList implements Iterable<Node> {
+class NodeList {
 
 	// variables for checks and debugging
 	private readonly id: number;
@@ -95,7 +76,7 @@ class NodeList implements Iterable<Node> {
 		to.in.add(from, characters);
 	}
 
-	unlinkNodes(from: Node, to: Node): CharSet {
+	unlinkNodes(from: Node, to: Node): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
 		}
@@ -103,48 +84,89 @@ class NodeList implements Iterable<Node> {
 			throw new Error("Use the node list associated with the nodes to link them.");
 		}
 
-		const chars = from.out.map.get(to);
-		if (!chars) {
+		if (!from.out.map.has(to)) {
 			throw new Error("Can't unlink nodes which aren't linked.");
 		}
 
 		from.out.map.delete(to);
 		to.in.map.delete(from);
-
-		return chars.characters;
 	}
 
 	removeUnreachable(): void {
-		if (this.final.size === 0) {
+		const makeEmpty = (): void => {
+			this.final.clear();
 			this.initial.in.map.clear();
 			this.initial.out.map.clear();
+		}
+
+		if (this.final.size === 0) {
+			makeEmpty();
 			return;
 		}
 
-		// mark all nodes which be reached from final nodes
-		const marked = new Set<Node>();
-		let toCheck: ReadonlySet<Node> = this.final;
-		while (toCheck.size > 0) {
-			const newToCheck = new Set<Node>();
-			for (const node of toCheck) {
-				marked.add(node);
-				newToCheck.delete(node);
-				for (const edge of node.in) {
-					if (!marked.has(edge.to)) {
-						newToCheck.add(edge.to);
-					}
-				}
+		const removeNode = (node: Node): void => {
+			if (node === this.initial) {
+				throw new Error("Cannot remove the initial state.");
 			}
-			toCheck = newToCheck;
+
+			this.final.delete(node);
+			for (const outgoing of node.out.nodes()) {
+				this.unlinkNodes(node, outgoing);
+			}
+			for (const incoming of node.in.nodes()) {
+				this.unlinkNodes(incoming, node);
+			}
+		};
+
+		// 1) Get all nodes
+		const allNodes = new Set<Node>(this.final);
+		DFS(this.initial, node => {
+			allNodes.add(node);
+			return [...node.in.nodes(), ...node.out.nodes()];
+		});
+
+		// 2) Get all nodes reachable from the initial state
+		const reachableFromInitial = new Set<Node>();
+		DFS(this.initial, node => {
+			reachableFromInitial.add(node);
+			return node.out.nodes();
+		});
+
+		// 3) Remove all final nodes which aren't reachable from the initial node
+		allNodes.forEach(node => {
+			if (!reachableFromInitial.has(node)) {
+				removeNode(node);
+			}
+		});
+
+		// 4) We may not have any final states left
+		if (this.final.size === 0) {
+			makeEmpty();
+			return;
 		}
 
-		// remove all unmarked nodes
-		for (const node of marked) {
-			node.out.filterMut(e => marked.has(e.to))
+		// 5) Get all nodes which can reach a final state
+		const canReachFinal = new Set<Node>();
+		for (const final of this.final) {
+			DFS(final, node => {
+				if (canReachFinal.has(node)) {
+					return [];
+				}
+				canReachFinal.add(node);
+
+				return node.in.nodes();
+			});
 		}
+
+		// 6) Remove all nodes which can't reach a final node
+		reachableFromInitial.forEach(node => {
+			if (!canReachFinal.has(node)) {
+				removeNode(node);
+			}
+		});
 	}
 
-	*[Symbol.iterator](): Iterator<Node> {
+	*[Symbol.iterator](): IterableIterator<Node> {
 		const visited = new Set<Node>();
 		let toVisit = [this.initial];
 		while (toVisit.length > 0) {
@@ -199,9 +221,9 @@ export class NFA implements FiniteAutomaton {
 
 			const cp = characters[index];
 
-			for (const outEdge of node.out) {
-				if (outEdge.characters.has(cp)) {
-					if (match(index + 1, outEdge.to)) {
+			for (const [to, chars] of node.out) {
+				if (chars.has(cp)) {
+					if (match(index + 1, to)) {
 						return true;
 					}
 				}
@@ -215,14 +237,12 @@ export class NFA implements FiniteAutomaton {
 	toString(): string {
 		return faToString(
 			this.nodes.initial,
-			n => [...n.out].map(e => [e.to, rangesToString(e.characters.ranges)]),
+			n => [...n.out].map(([to, characters]) => [to, rangesToString(characters.ranges)]),
 			n => this.nodes.final.has(n)
 		);
 	}
 
 	static intersect(left: NFA, right: NFA): NFA {
-		// TODO: Fix me
-
 		const nodeList = new NodeList();
 
 		// node pair translation
@@ -255,21 +275,24 @@ export class NFA implements FiniteAutomaton {
 		}
 
 		// add edges
-		for (const thisNode of left.nodes.final) {
-			for (const otherNode of right.nodes.final) {
+		for (const thisNode of left.nodes) {
+			for (const otherNode of right.nodes) {
 				const from = translate(thisNode, otherNode);
-				for (const thisEdge of thisNode.out) {
-					for (const otherEdge of otherNode.out) {
-						const characters = thisEdge.characters.intersect(otherEdge.characters);
-						if (!characters.isEmpty) {
-							nodeList.linkNodes(from, translate(thisEdge.to, otherEdge.to), characters);
+				for (const [thisTo, thisTransition] of thisNode.out) {
+					for (const [otherTo, otherTransition] of otherNode.out) {
+						const transition = thisTransition.intersect(otherTransition);
+						if (!transition.isEmpty) {
+							nodeList.linkNodes(from, translate(thisTo, otherTo), transition);
 						}
 					}
 				}
 			}
 		}
 
+		// since the node list has O(n * m) many nodes, we'll try to get rid of as many as possible
 		nodeList.removeUnreachable();
+
+		baseOptimizationReuseFinalStates(nodeList, nodeList);
 
 		return new NFA(nodeList);
 	}
@@ -302,17 +325,6 @@ export class NFA implements FiniteAutomaton {
 	}
 
 }
-
-
-function createIndexMap(nodes: NodeList): Map<Node, number> {
-	const map = new Map<Node, number>();
-	let i = 0;
-	for (const node of nodes) {
-		map.set(node, i++);
-	}
-	return map;
-}
-
 
 
 function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList {
@@ -376,13 +388,15 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		switch (element.type) {
 			case "Alternation":
 				return handleAlternation(element.alternatives);
+			case "Assertion":
+				throw new Error('Assertions are not supported yet.');
 			case "CharacterClass":
 				return handleCharacters(element.characters);
 			case "Quantifier":
 				return handleQuantifier(element);
 
 			default:
-				throw new TypeError(`Unsupported element "${element.type}".`);
+				throw assertNever(element);
 		}
 	}
 
@@ -416,7 +430,7 @@ function localCopy(nodeList: NodeList, toCopy: SubNFA): SubNFA {
 			final.add(trans);
 		}
 
-		for (const { characters, to } of node.out) {
+		for (const [to, characters] of node.out) {
 			nodeList.linkNodes(trans, translate(to), characters);
 		}
 
@@ -444,7 +458,7 @@ function baseReplaceWith(nodeList: NodeList, base: SubNFA, replacement: SubNFA):
 	});
 
 	// transfer nodes
-	for (const { to, characters } of [...replacement.initial.out]) {
+	for (const [to, characters] of [...replacement.initial.out]) {
 		nodeList.linkNodes(base.initial, to, characters);
 		nodeList.unlinkNodes(replacement.initial, to);
 	}
@@ -473,12 +487,12 @@ function baseConcat(nodeList: NodeList, base: SubNFA, after: SubNFA): void {
 	// replace after initial with base finals
 	const initialEdges = [...after.initial.out];
 	for (const baseFinal of base.final) {
-		for (const { to, characters } of initialEdges) {
+		for (const [to, characters] of initialEdges) {
 			nodeList.linkNodes(baseFinal, to, characters);
 		}
 	}
 	// unlink after initial
-	for (const { to } of initialEdges) {
+	for (const [to] of initialEdges) {
 		nodeList.unlinkNodes(after.initial, to);
 	}
 
@@ -510,7 +524,7 @@ function baseUnion(nodeList: NodeList, base: SubNFA, alternative: SubNFA): void 
 	});
 
 	// transfer nodes to base
-	for (const { to, characters } of [...alternative.initial.out]) {
+	for (const [to, characters] of [...alternative.initial.out]) {
 		nodeList.linkNodes(base.initial, to, characters);
 		nodeList.unlinkNodes(alternative.initial, to);
 	}
@@ -532,7 +546,7 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubNFA): voi
 		for (let i = 0, l = reusable.length; i < l; i++) {
 			const toRemove = reusable[i];
 			base.final.delete(toRemove);
-			for (const { to, characters } of [...toRemove.in]) {
+			for (const [to, characters] of [...toRemove.in]) {
 				nodeList.linkNodes(to, masterFinal, characters);
 				nodeList.unlinkNodes(to, toRemove);
 			}
@@ -618,7 +632,7 @@ function basePlus(nodeList: NodeList, base: SubNFA): void {
 	// all final states will then behave like the initial state.
 	for (const f of base.final) {
 		if (f !== base.initial) {
-			for (const { to, characters } of base.initial.out) {
+			for (const [to, characters] of base.initial.out) {
 				nodeList.linkNodes(f, to, characters);
 			}
 		}

@@ -3,6 +3,7 @@ import { CASE_VARIATIONS } from "../char-util";
 import { Element, Assertion, Simple, Alternation, Expression, Concatenation, Parent, SourceLocation, Quantifier, CharacterClass, desimplify } from "../ast";
 import { RegExpParser } from "regexpp";
 import * as Ast from "regexpp/ast";
+import { assertNever } from "../util";
 
 
 export interface Flags {
@@ -144,7 +145,7 @@ export function createCharSet(
 				}
 
 				default:
-					throw new Error(`Invalid predefined character set type '${(char as any).kind}'`);
+					throw assertNever(char, 'Invalid predefined character set type');
 			}
 		} else {
 			ranges.push(char);
@@ -230,7 +231,7 @@ function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly
 		}
 
 		default:
-			throw new Error(`Unknown assertion type '${(assertion as any).kind}'`);
+			throw assertNever(assertion, 'Unknown assertion type');
 	}
 }
 
@@ -309,7 +310,7 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags): 
 							break;
 						}
 					default:
-						throw new Error(`Unsupported element: ${element}`)
+						throw assertNever(element, 'Unsupported element');
 				}
 				break;
 			}
@@ -352,7 +353,7 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags): 
 							case "CharacterSet":
 								return e;
 							default:
-								throw new Error(`Unsupported element: ${e}`);
+								throw assertNever(e, 'Unsupported element');
 						}
 					}), flags);
 
@@ -403,8 +404,10 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags): 
 
 				break;
 			}
+		case "Backreference":
+			throw new Error('Backreferences are not supported.');
 		default:
-			throw new Error(`Unsupported element '${element.type}'`);
+			throw assertNever(element, 'Unsupported element');
 	}
 }
 
