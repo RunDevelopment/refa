@@ -18,7 +18,7 @@ const DIGIT: CharRange = { min: 0x30, max: 0x39 }; // 0-9
 const SPACE: CharRange[] = [
 	{ min: 0x09, max: 0x0d }, // \t \n \v \f \r
 	{ min: 0x20, max: 0x20 }, // space
-	{ min: 0xa0, max: 0xa0 }, // nbsp
+	{ min: 0xa0, max: 0xa0 }, // non-breaking space
 	{ min: 0x1680, max: 0x1680 },
 	{ min: 0x2000, max: 0x200a },
 	{ min: 0x2028, max: 0x2029 },

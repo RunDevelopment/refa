@@ -360,22 +360,10 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 				break;
 			}
 
-			baseConcat(nodeList, base, handleElement(elements[i]));
+			handleElement(elements[i], base);
 		}
 
 		return base;
-	}
-
-	function handleCharacters(chars: CharSet): SubNFA {
-		if (chars.isEmpty) {
-			return { initial: nodeList.createNode(), final: new Set<Node>() };
-		}
-
-		const s0 = nodeList.createNode();
-		const s1 = nodeList.createNode();
-		nodeList.linkNodes(s0, s1, chars);
-
-		return { initial: s0, final: new Set<Node>([s1]) };
 	}
 
 	function handleQuantifier(quant: Simple<Quantifier>): SubNFA {
@@ -384,16 +372,31 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		return base;
 	}
 
-	function handleElement(element: Simple<Element>): SubNFA {
+	function handleElement(element: Simple<Element>, base: SubNFA): void {
 		switch (element.type) {
 			case "Alternation":
-				return handleAlternation(element.alternatives);
+				baseConcat(nodeList, base, handleAlternation(element.alternatives));
+				break;
 			case "Assertion":
 				throw new Error('Assertions are not supported yet.');
 			case "CharacterClass":
-				return handleCharacters(element.characters);
+				{
+					const chars = element.characters;
+					if (chars.isEmpty) {
+						// the whole concatenation can't go anywhere
+						baseMakeEmpty(nodeList, base);
+					} else {
+						// we know that base.final isn't empty, so just link all former finals to a new final node
+						const s = nodeList.createNode();
+						base.final.forEach(f => nodeList.linkNodes(f, s, chars));
+						base.final.clear();
+						base.final.add(s);
+					}
+				}
+				break;
 			case "Quantifier":
-				return handleQuantifier(element);
+				baseConcat(nodeList, base, handleQuantifier(element));
+				break;
 
 			default:
 				throw assertNever(element);
