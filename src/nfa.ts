@@ -341,8 +341,43 @@ export class NFA implements FiniteAutomaton {
 	 * @param nfa
 	 */
 	union(nfa: NFA): NFA {
+		if (nfa === this) {
+			return this;
+		}
+
 		checkOptionsCompatibility(this.options, nfa.options);
 		baseUnion(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
+		return this;
+	}
+
+	/**
+	 * Modifies this NFA to accept the concatenation of this NFA and the given NFA.
+	 *
+	 * @param nfa
+	 */
+	concat(nfa: NFA): NFA {
+		if (this === nfa) {
+			return this.quantify(2, 2);
+		}
+		checkOptionsCompatibility(this.options, nfa.options);
+		baseConcat(this.nodes, this.nodes, nfa.nodes);
+		return this;
+	}
+
+	/**
+	 * Modifies this NFA to accept at least `min` and at most `max` concatenations of itself.
+	 *
+	 * Both `min` and `max` both have to be non-negative integers with `min <= max`.
+	 * `max` is also allowed to be `Infinity`.
+	 *
+	 * @param min
+	 * @param max
+	 */
+	quantify(min: number, max: number): NFA {
+		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
+			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
+		}
+		baseQuantify(this.nodes, this.nodes, min, max);
 		return this;
 	}
 
@@ -365,6 +400,12 @@ export class NFA implements FiniteAutomaton {
 		return new NFA(nodeList, options);
 	}
 
+	/**
+	 * Creates a new NFA which matches all and only the given words.
+	 *
+	 * @param words
+	 * @param options
+	 */
 	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<NFAOptions>): NFA {
 		const nodeList = new NodeList();
 
