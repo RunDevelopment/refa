@@ -248,8 +248,81 @@ describe('NFA', function () {
 		function test(cases: TestCase[]): void {
 			for (const { literal, expected } of cases) {
 				it(literalToString(literal), function () {
-					const expr = parse(literal).pattern;
-					assert.strictEqual(NFA.fromRegex(expr).toString(), removeIndentation(expected));
+					assert.strictEqual(literalToNFA(literal).toString(), removeIndentation(expected));
+				});
+			}
+		}
+
+	});
+
+	describe('fromWords', function () {
+
+		test([
+			{
+				words: [],
+				expected: `
+					(0) -> none`
+			},
+			{
+				words: []
+			},
+			{
+				words: "",
+				expected: `
+					[0] -> none`
+			},
+			{
+				words: ""
+			},
+			{
+				words: "foo bar foo bar baz food",
+				expected: `
+					(0) -> (1) : 66
+					    -> (2) : 62
+
+					(1) -> (3) : 6f
+
+					(2) -> (4) : 61
+
+					(3) -> [5] : 6f
+
+					(4) -> [6] : 72, 7a
+
+					[5] -> [6] : 64
+
+					[6] -> none`
+			},
+			{
+				words: "foo bar foo bar baz food"
+			},
+			{
+				// the space at the beginning will include the empty word
+				words: " a b c d e f g"
+			},
+			{
+				// the space at the beginning will include the empty word
+				words: "a b ab ba aa bb aaa aab aba abb baa bab bba bbb"
+			},
+		]);
+
+		interface TestCase {
+			words: Iterable<string> | string;
+			expected?: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { words, expected } of cases) {
+				const persistentWords = typeof words === "string" ? words.split(/\s+/g) : [...words];
+				const title = persistentWords.map(w => JSON.stringify(w)).join(", ");
+				const chars = persistentWords.map(w => [...w].map(c => c.charCodeAt(0)));
+				const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+				it(title, function () {
+					if (expected === undefined) {
+						const unique = [...new Set<string>(persistentWords)];
+						assert.sameMembers(getWords(nfa), unique);
+					} else {
+						assert.strictEqual(nfa.toString(), removeIndentation(expected));
+					}
 				});
 			}
 		}
@@ -352,8 +425,8 @@ describe('NFA', function () {
 		function test(cases: TestCase[]): void {
 			for (const { literal, other, expected } of cases) {
 				it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
-					const nfa = NFA.fromRegex(parse(literal).pattern);
-					const nfaOther = NFA.fromRegex(parse(other).pattern);
+					const nfa = literalToNFA(literal);
+					const nfaOther = literalToNFA(other);
 					assert.strictEqual(nfa.union(nfaOther).toString(), removeIndentation(expected));
 				});
 			}
@@ -394,8 +467,9 @@ describe('NFA', function () {
 		function test(cases: TestCase[]): void {
 			for (const { literal, other, expected } of cases) {
 				it(`${literalToString(literal)} ∩ ${literalToString(other)}`, function () {
-					const nfa = NFA.fromRegex(parse(literal).pattern);
-					const nfaOther = NFA.fromRegex(parse(other).pattern);
+
+					const nfa = literalToNFA(literal);
+					const nfaOther = literalToNFA(other);
 					assert.strictEqual(NFA.intersect(nfa, nfaOther).toString(), removeIndentation(expected));
 				});
 			}
@@ -409,6 +483,11 @@ describe('NFA', function () {
 interface Literal {
 	source: string;
 	flags: string;
+}
+
+function literalToNFA(literal: Literal): NFA {
+	const parsed = parse(literal);
+	return NFA.fromRegex(parsed.pattern, { maxCharacter: parsed.flags.unicode ? 0x10FFFF : 0xFFFF });
 }
 
 function literalToString(literal: Literal): string {
@@ -433,4 +512,12 @@ function removeIndentation(expected: string): string {
 	}
 
 	return lines.join("\n");
+}
+
+function getWords(nfa: NFA): string[] {
+	const words = new Set<string>();
+	for (const word of nfa.words()) {
+		words.add(word.map(i => String.fromCodePoint(i)).join(""));
+	}
+	return [...words];
 }

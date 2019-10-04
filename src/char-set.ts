@@ -1,6 +1,6 @@
 export interface CharRange {
-	min: number;
-	max: number;
+	readonly min: number;
+	readonly max: number;
 }
 
 const emptyCache = new Map<number, CharSet>();

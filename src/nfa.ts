@@ -2,7 +2,7 @@ import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { DFS, assertNever, createIndexMap } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
-import { faToString } from "./fa-util";
+import { faToString, faIterateWordSets, wordSetsToWords } from "./fa-util";
 import { rangesToString } from "./char-util";
 
 
@@ -201,23 +201,34 @@ interface SubList {
  */
 
 
+export interface NFAOptions {
+	/**
+	 * The maximum numerical value any character can have.
+	 *
+	 * This will be the maximum of all underlying {@link CharSet | CharSet}s.
+	 */
+	maxCharacter: number;
+}
+
 export class NFA implements FiniteAutomaton {
 
 	nodes: NodeList;
+	readonly options: Readonly<NFAOptions>;
 
-	private constructor(nodes: NodeList) {
+	private constructor(nodes: NodeList, options: Readonly<NFAOptions>) {
 		this.nodes = nodes;
+		this.options = options;
 	}
 
 	get isEmpty(): boolean {
-		return this.nodes.final.size > 0;
+		return this.nodes.final.size === 0;
 	}
 
 	/**
 	 * Create a copy of this NFA.
 	 */
 	copy(): NFA {
-		return new NFA(new NodeList()).union(this);
+		return new NFA(new NodeList(), this.options).union(this);
 	}
 
 	test(word: Iterable<number>): boolean {
@@ -243,6 +254,22 @@ export class NFA implements FiniteAutomaton {
 		return match(0, nodes.initial);
 	}
 
+	wordSets(): Iterable<CharSet[]> {
+		if (this.isEmpty) {
+			return [];
+		}
+
+		return faIterateWordSets(
+			this.nodes.initial,
+			n => n.out,
+			f => this.nodes.final.has(f)
+		);
+	}
+
+	words(): Iterable<number[]> {
+		return wordSetsToWords(this.wordSets());
+	}
+
 	toString(): string {
 		return faToString(
 			this.nodes.initial,
@@ -252,6 +279,8 @@ export class NFA implements FiniteAutomaton {
 	}
 
 	static intersect(left: NFA, right: NFA): NFA {
+		checkOptionsCompatibility(left.options, right.options);
+
 		const nodeList = new NodeList();
 
 		// node pair translation
@@ -303,7 +332,7 @@ export class NFA implements FiniteAutomaton {
 
 		baseOptimizationReuseFinalStates(nodeList, nodeList);
 
-		return new NFA(nodeList);
+		return new NFA(nodeList, left.options);
 	}
 
 	/**
@@ -312,31 +341,72 @@ export class NFA implements FiniteAutomaton {
 	 * @param nfa
 	 */
 	union(nfa: NFA): NFA {
+		checkOptionsCompatibility(this.options, nfa.options);
 		baseUnion(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 		return this;
 	}
 
 
-	static fromRegex(concat: Simple<Concatenation>): NFA;
-	static fromRegex(expression: Simple<Expression>): NFA;
-	static fromRegex(alternatives: readonly Simple<Concatenation>[]): NFA;
-	static fromRegex(value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[]): NFA {
+	static fromRegex(concat: Simple<Concatenation>, options: Readonly<NFAOptions>): NFA;
+	static fromRegex(expression: Simple<Expression>, options: Readonly<NFAOptions>): NFA;
+	static fromRegex(alternatives: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA;
+	static fromRegex(value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA {
+		let nodeList: NodeList;
 		if (Array.isArray(value)) {
-			return new NFA(createNodeList(value as readonly Simple<Concatenation>[]));
+			nodeList = createNodeList(value as readonly Simple<Concatenation>[], options);
 		} else {
 			const node = value as Simple<Expression> | Simple<Concatenation>;
 			if (node.type === "Concatenation") {
-				return new NFA(createNodeList([node]));
+				nodeList = createNodeList([node], options);
 			} else {
-				return new NFA(createNodeList(node.alternatives));
+				nodeList = createNodeList(node.alternatives, options);
 			}
 		}
+		return new NFA(nodeList, options);
+	}
+
+	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<NFAOptions>): NFA {
+		const nodeList = new NodeList();
+
+		function getNext(node: Node, char: number): Node {
+			if (char > options.maxCharacter) {
+				throw new Error(`All characters have to be <= options.maxCharacter (${options.maxCharacter}).`);
+			}
+			if (!Number.isInteger(char)) {
+				throw new Error(`All characters have to be integers, ${char} is not.`);
+			}
+
+			for (const [to, chars] of node.out) {
+				if (chars.has(char)) {
+					return to;
+				}
+			}
+
+			const newNode = nodeList.createNode();
+			const charSet = CharSet.empty(options.maxCharacter).union([{ min: char, max: char }]);
+			nodeList.linkNodes(node, newNode, charSet);
+
+			return newNode;
+		}
+
+		// build a prefix trie
+		for (const word of words) {
+			let node = nodeList.initial;
+			for (const charCode of word) {
+				node = getNext(node, charCode);
+			}
+			nodeList.final.add(node);
+		}
+
+		baseOptimizationReuseFinalStates(nodeList, nodeList);
+
+		return new NFA(nodeList, options);
 	}
 
 }
 
 
-function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList {
+function createNodeList(expression: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NodeList {
 	const nodeList = new NodeList();
 	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
@@ -391,6 +461,10 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 			case "CharacterClass":
 				{
 					const chars = element.characters;
+					if (chars.maximum !== options.maxCharacter) {
+						throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
+					}
+
 					if (chars.isEmpty) {
 						// the whole concatenation can't go anywhere
 						baseMakeEmpty(nodeList, base);
@@ -412,6 +486,12 @@ function createNodeList(expression: readonly Simple<Concatenation>[]): NodeList 
 		}
 	}
 
+}
+
+function checkOptionsCompatibility(thisOptions: Readonly<NFAOptions>, otherOptions: Readonly<NFAOptions>): void {
+	if (thisOptions.maxCharacter !== otherOptions.maxCharacter) {
+		throw new RangeError("Both NFAs have to have the same max character.");
+	}
 }
 
 
