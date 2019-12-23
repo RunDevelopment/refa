@@ -94,6 +94,8 @@ export class CharSet {
 
 
 	private static *negateRanges(ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
+		// runs in O(ranges.length)
+
 		if (ranges.length === 0) {
 			yield { min: 0, max: maximum };
 		} else {
@@ -110,6 +112,8 @@ export class CharSet {
 		}
 	}
 
+	private toRanges(value: CharSet): readonly CharRange[];
+	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange>;
 	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange> {
 		if (value instanceof CharSet) {
 			if (value.maximum !== this.maximum) {
@@ -121,7 +125,7 @@ export class CharSet {
 		}
 	}
 
-	private checkRange(range: CharRange): CharRange {
+	private checkRange(range: Readonly<CharRange>): CharRange {
 		if (range.min < 0 || range.min > range.max || range.max > this.maximum)
 			throw new RangeError(`min=${range.min} has to be >= 0 and <= max.`);
 		if (range.max > this.maximum)
@@ -132,11 +136,13 @@ export class CharSet {
 	/**
 	 * Given an array of character ranges, it will remove any duplicates and join overlapping and adjacent ranges.
 	 *
-	 * While the array itself will be modified, the range objects will not.
+	 * While the array itself will be modified, the range objects in the array will not.
 	 *
 	 * @param ranges
 	 */
-	private static optimizeRanges(ranges: CharRange[]): void {
+	private static optimizeRanges(ranges: Readonly<CharRange>[]): void {
+		// runs in O(n * log(n)), n = ranges.length
+
 		ranges.sort((a, b) => a.min - b.min);
 
 		let deleteCount = 0;
@@ -158,7 +164,6 @@ export class CharSet {
 
 		ranges.splice(ranges.length - deleteCount, deleteCount);
 	}
-
 
 
 	equals(other: CharSet): boolean {
@@ -212,6 +217,8 @@ export class CharSet {
 		return this.hasEvery({ min: character, max: character });
 	}
 	hasEvery(range: CharRange): boolean {
+		// runs in O(log(this.ranges.length))
+
 		const ranges = this.ranges;
 		const l = ranges.length;
 		const { min, max } = range;
@@ -249,6 +256,8 @@ export class CharSet {
 		return false;
 	}
 	hasSome(range: CharRange): boolean {
+		// runs in O(log(this.ranges.length))
+
 		const ranges = this.ranges;
 		const l = ranges.length;
 		const { min, max } = range;
@@ -278,6 +287,72 @@ export class CharSet {
 				if (mMin <= max)
 					return true;
 				high = m;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether this set contains every character of the given set.
+	 *
+	 * Returns `true` if the given set is a subset of this set, `false` otherwise.
+	 * @param other The character set to compare to.
+	 */
+	hasEveryOf(other: CharSet): boolean {
+		// runs in O(this.ranges.length + other.ranges.length)
+
+		const thisRanges = this.ranges;
+		const otherRanges = this.toRanges(other);
+
+		let i = 0, j = 0;
+		let thisItem = thisRanges[i], otherItem = otherRanges[j];
+
+		// try to disprove that other this the smaller set
+		// we search for any character in other which is not in this
+
+		while (thisItem && otherItem) {
+			if (thisItem.min <= otherItem.min && thisItem.max >= otherItem.max) {
+				// if thisItem fully contains otherItem
+				otherItem = otherRanges[++j];
+			} else if (thisItem.max < otherItem.min) {
+				// [thisItem] ... [otherItem]
+				thisItem = thisRanges[++i];
+			} else {
+				// thisItem and otherItem partially overlap
+				// or thisItem is after otherItem
+				return false;
+			}
+		}
+
+		// otherItem is still defined that there are some chars in other which are not in this
+		return !otherItem;
+	}
+	/**
+	 * Returns whether this set contains some characters of the given set.
+	 *
+	 * Returns `false` if the given set and this set are disjoint, `true` otherwise.
+	 * @param other The character set to compare to.
+	 */
+	hasSomeOf(other: CharSet): boolean {
+		// runs in O(this.ranges.length + other.ranges.length)
+
+		const thisRanges = this.ranges;
+		const otherRanges = this.toRanges(other);
+
+		let i = 0, j = 0;
+		let thisItem = thisRanges[i], otherItem = otherRanges[j];
+
+		while (thisItem && otherItem) {
+			if (otherItem.max < thisItem.min) {
+				// [otherItem] ... [thisItem]
+				otherItem = otherRanges[++j];
+			} else if (thisItem.max < otherItem.min) {
+				// [thisItem] ... [otherItem]
+				thisItem = thisRanges[++i];
+			} else {
+				// thisItem and otherItem have at least one character in common
+				return true;
 			}
 		}
 
