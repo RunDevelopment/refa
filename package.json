@@ -18,16 +18,16 @@
   "author": "Michael Schmidt",
   "license": "MIT",
   "devDependencies": {
-    "@types/chai": "^4.1.7",
+    "@types/chai": "^4.2.11",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.7.5",
+    "@types/node": "^12.12.30",
     "@typescript-eslint/eslint-plugin": "1.10.2",
     "@typescript-eslint/parser": "1.10.2",
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
-    "mocha": "^6.1.4",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.2"
+    "mocha": "^7.1.1",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "regexpp": "^2.0.1"
