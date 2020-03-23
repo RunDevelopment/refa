@@ -36,7 +36,7 @@ export function faToString<T>(states: T | T[], getOutTransitions: (state: T) => 
 		const cachedGetOutTransitions = (state: T): [T, string][] => {
 			let out = outCache.get(state);
 			if (out === undefined) {
-				out = [...getOutTransitions(state)];
+				out = [...getOutTransitions(state)].sort(([, a], [, b]) => a.localeCompare(b));
 				outCache.set(state, out);
 			}
 			return out;
@@ -206,3 +206,4 @@ function* nestedIteration<T>(arrays: T[][]): IterableIterator<T[]> {
 		yield res;
 	} while (hasNext());
 }
+

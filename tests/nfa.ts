@@ -1,6 +1,7 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { parse } from "../src/js/js-regex";
+import { stringToCodePoints } from "../src/util";
 
 
 describe('NFA', function () {
@@ -277,20 +278,20 @@ describe('NFA', function () {
 			{
 				words: "foo bar foo bar baz food",
 				expected: `
-					(0) -> (1) : 66
-					    -> (2) : 62
+					(0) -> (1) : 62
+					    -> (2) : 66
 
-					(1) -> (3) : 6f
+					(1) -> (3) : 61
 
-					(2) -> (4) : 61
+					(2) -> (4) : 6f
 
-					(3) -> [5] : 6f
+					(3) -> [5] : 72, 7a
 
-					(4) -> [6] : 72, 7a
+					(4) -> [6] : 6f
 
-					[5] -> [6] : 64
+					[5] -> none
 
-					[6] -> none`
+					[6] -> [5] : 64`
 			},
 			{
 				words: "foo bar foo bar baz food"
@@ -314,7 +315,7 @@ describe('NFA', function () {
 			for (const { words, expected } of cases) {
 				const persistentWords = typeof words === "string" ? words.split(/\s+/g) : [...words];
 				const title = persistentWords.map(w => JSON.stringify(w)).join(", ");
-				const chars = persistentWords.map(w => [...w].map(c => c.charCodeAt(0)));
+				const chars = persistentWords.map(w => stringToCodePoints(w));
 				const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
 				it(title, function () {
 					if (expected === undefined) {
@@ -345,8 +346,8 @@ describe('NFA', function () {
 				other: /aa|bb/,
 				expected: `
 					(0) -> (1) : 61
-					    -> (2) : 62
-					    -> (3) : 61
+					    -> (2) : 61
+					    -> (3) : 62
 					    -> (4) : 62
 
 					(1) -> [5] : 62
@@ -401,18 +402,18 @@ describe('NFA', function () {
 				literal: /a|b|c{2}/,
 				other: /a{2}|b{2}|c/,
 				expected: `
-					(0) -> (1) : 63
-					    -> (2) : 61
+					(0) -> (1) : 61
+					    -> [2] : 61..63
 					    -> (3) : 62
-					    -> [4] : 61..63
+					    -> (4) : 63
 
-					(1) -> [4] : 63
+					(1) -> [2] : 61
 
-					(2) -> [4] : 61
+					[2] -> none
 
-					(3) -> [4] : 62
+					(3) -> [2] : 62
 
-					[4] -> none`
+					(4) -> [2] : 63`
 			},
 		]);
 
@@ -427,7 +428,9 @@ describe('NFA', function () {
 				it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
 					const nfa = literalToNFA(literal);
 					const nfaOther = literalToNFA(other);
-					assert.strictEqual(nfa.union(nfaOther).toString(), removeIndentation(expected));
+					nfa.union(nfaOther);
+					const actual = nfa.toString();
+					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
 				});
 			}
 		}
@@ -451,11 +454,27 @@ describe('NFA', function () {
 
 					[1] -> none`
 			},
-			//{
-			//	literal: /b*(ab+)*a/,
-			//	other: /a*(ba+)*/,
-			//	expected: /b?(ab)*a/
-			//},
+			{
+				literal: /b*(ab+)*a/,
+				other: /a*(ba+)*/,
+				// expected == /b?(ab)*a/
+				expected: `
+					(0) -> (1) : 61
+					    -> [2] : 61
+					    -> (3) : 62
+
+					(1) -> (4) : 62
+
+					[2] -> none
+
+					(3) -> [2] : 61
+					    -> (5) : 61
+
+					(4) -> [2] : 61
+					    -> (5) : 61
+
+					(5) -> (4) : 62`
+			},
 		]);
 
 		interface TestCase {
@@ -470,7 +489,8 @@ describe('NFA', function () {
 
 					const nfa = literalToNFA(literal);
 					const nfaOther = literalToNFA(other);
-					assert.strictEqual(NFA.intersect(nfa, nfaOther).toString(), removeIndentation(expected));
+					const actual = NFA.intersect(nfa, nfaOther).toString();
+					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
 				});
 			}
 		}

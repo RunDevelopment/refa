@@ -74,6 +74,18 @@ export type Simple<T> =
 	T extends (infer U)[] ? SimpleArray<T> :
 	T;
 
+type MutSimpleArray<T> = { [K in keyof T]: MutSimple<T[K]>; };
+type MutSimpleNode<T extends NodeBase> = { [K in keyof MutSimpleNodePick<T>]: MutSimple<MutSimpleNodePick<T>[K]>; };
+type MutSimpleNodePick<T extends NodeBase> = Pick<T, Exclude<keyof T, "parent" | "source">>;
+
+/**
+ * A view on AST nodes such that `parent` and `source` properties are hidden.
+ */
+export type MutSimple<T> =
+	T extends NodeBase ? MutSimpleNode<T> :
+	T extends (infer U)[] ? MutSimpleArray<T> :
+	T;
+
 /**
  * Sets the source location and parent for every expression in the whole expression subtree.
  *

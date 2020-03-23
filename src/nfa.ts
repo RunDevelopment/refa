@@ -1,42 +1,18 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { DFS, assertNever, createIndexMap } from "./util";
+import { DFS, assertNever, createIndexMap, createCachedTranslator } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { faToString, faIterateWordSets, wordSetsToWords } from "./fa-util";
-import { rangesToString } from "./char-util";
+import { rangesToString, invertCharMap } from "./char-util";
+import { DFA, DFANode } from "./dfa";
+import { faToRegex } from "./to-regex";
 
 
-interface Node {
+export interface NFANode {
+	readonly id: number;
 	readonly list: NodeList;
-	readonly out: EdgeList;
-	readonly in: EdgeList;
-}
-
-class EdgeList {
-
-	readonly map: Map<Node, CharSet> = new Map<Node, CharSet>();
-
-	get size(): number {
-		return this.map.size;
-	}
-
-	add(to: Node, characters: CharSet): void {
-		const current = this.map.get(to);
-		if (current === undefined) {
-			this.map.set(to, characters);
-		} else {
-			this.map.set(to, current.union(characters));
-		}
-	}
-
-	[Symbol.iterator](): IterableIterator<[Node, CharSet]> {
-		return this.map.entries();
-	}
-
-	nodes(): Iterable<Node> {
-		return this.map.keys();
-	}
-
+	readonly out: Map<NFANode, CharSet>;
+	readonly in: Map<NFANode, CharSet>;
 }
 
 class NodeList {
@@ -46,8 +22,8 @@ class NodeList {
 	private _nodeCounter: number = 0;
 	private static _counter: number = 0;
 
-	readonly initial: Node;
-	readonly final: Set<Node>;
+	readonly initial: NFANode;
+	readonly final: Set<NFANode>;
 
 	constructor() {
 		this.id = NodeList._counter++;
@@ -55,16 +31,16 @@ class NodeList {
 		this.initial = this.createNode();
 	}
 
-	createNode(): Node {
-		const node: Node & { id: number } = {
-			id: this._nodeCounter++, // for debugging
+	createNode(): NFANode {
+		const node: NFANode = {
+			id: this._nodeCounter++,
 			list: this,
-			out: new EdgeList(), in: new EdgeList()
+			out: new Map(), in: new Map()
 		};
 		return node;
 	}
 
-	linkNodes(from: Node, to: Node, characters: CharSet): void {
+	linkNodes(from: NFANode, to: NFANode, characters: CharSet): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
 		}
@@ -72,11 +48,19 @@ class NodeList {
 			throw new Error("Use the node list associated with the nodes to link them.");
 		}
 
-		from.out.add(to, characters);
-		to.in.add(from, characters);
+		function add(map: Map<NFANode, CharSet>, to: NFANode, characters: CharSet): void {
+			const current = map.get(to);
+			if (current === undefined) {
+				map.set(to, characters);
+			} else {
+				map.set(to, current.union(characters));
+			}
+		}
+		add(from.out, to, characters);
+		add(to.in, from, characters);
 	}
 
-	unlinkNodes(from: Node, to: Node): void {
+	unlinkNodes(from: NFANode, to: NFANode): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
 		}
@@ -84,19 +68,19 @@ class NodeList {
 			throw new Error("Use the node list associated with the nodes to link them.");
 		}
 
-		if (!from.out.map.has(to)) {
+		if (!from.out.has(to)) {
 			throw new Error("Can't unlink nodes which aren't linked.");
 		}
 
-		from.out.map.delete(to);
-		to.in.map.delete(from);
+		from.out.delete(to);
+		to.in.delete(from);
 	}
 
 	removeUnreachable(): void {
 		const makeEmpty = (): void => {
 			this.final.clear();
-			this.initial.in.map.clear();
-			this.initial.out.map.clear();
+			this.initial.in.clear();
+			this.initial.out.clear();
 		}
 
 		if (this.final.size === 0) {
@@ -104,32 +88,32 @@ class NodeList {
 			return;
 		}
 
-		const removeNode = (node: Node): void => {
+		const removeNode = (node: NFANode): void => {
 			if (node === this.initial) {
 				throw new Error("Cannot remove the initial state.");
 			}
 
 			this.final.delete(node);
-			for (const outgoing of node.out.nodes()) {
+			for (const outgoing of node.out.keys()) {
 				this.unlinkNodes(node, outgoing);
 			}
-			for (const incoming of node.in.nodes()) {
+			for (const incoming of node.in.keys()) {
 				this.unlinkNodes(incoming, node);
 			}
 		};
 
 		// 1) Get all nodes
-		const allNodes = new Set<Node>(this.final);
+		const allNodes = new Set<NFANode>(this.final);
 		DFS(this.initial, node => {
 			allNodes.add(node);
-			return [...node.in.nodes(), ...node.out.nodes()];
+			return [...node.in.keys(), ...node.out.keys()];
 		});
 
 		// 2) Get all nodes reachable from the initial state
-		const reachableFromInitial = new Set<Node>();
+		const reachableFromInitial = new Set<NFANode>();
 		DFS(this.initial, node => {
 			reachableFromInitial.add(node);
-			return node.out.nodes();
+			return node.out.keys();
 		});
 
 		// 3) Remove all final nodes which aren't reachable from the initial node
@@ -146,7 +130,7 @@ class NodeList {
 		}
 
 		// 5) Get all nodes which can reach a final state
-		const canReachFinal = new Set<Node>();
+		const canReachFinal = new Set<NFANode>();
 		for (const final of this.final) {
 			DFS(final, node => {
 				if (canReachFinal.has(node)) {
@@ -154,7 +138,7 @@ class NodeList {
 				}
 				canReachFinal.add(node);
 
-				return node.in.nodes();
+				return node.in.keys();
 			});
 		}
 
@@ -166,16 +150,16 @@ class NodeList {
 		});
 	}
 
-	*[Symbol.iterator](): IterableIterator<Node> {
-		const visited = new Set<Node>();
+	*[Symbol.iterator](): IterableIterator<NFANode> {
+		const visited = new Set<NFANode>();
 		let toVisit = [this.initial];
 		while (toVisit.length > 0) {
-			const newVisit: Node[] = [];
+			const newVisit: NFANode[] = [];
 			for (const node of toVisit) {
 				if (!visited.has(node)) {
 					visited.add(node);
 					yield node;
-					for (const outNode of node.out.nodes()) {
+					for (const outNode of node.out.keys()) {
 						newVisit.push(outNode);
 					}
 				}
@@ -187,8 +171,8 @@ class NodeList {
 }
 
 interface SubList {
-	readonly initial: Node;
-	readonly final: Set<Node>;
+	readonly initial: NFANode;
+	readonly final: Set<NFANode>;
 }
 
 /*
@@ -212,7 +196,7 @@ export interface NFAOptions {
 
 export class NFA implements FiniteAutomaton {
 
-	nodes: NodeList;
+	readonly nodes: NodeList;
 	readonly options: Readonly<NFAOptions>;
 
 	private constructor(nodes: NodeList, options: Readonly<NFAOptions>) {
@@ -228,14 +212,16 @@ export class NFA implements FiniteAutomaton {
 	 * Create a copy of this NFA.
 	 */
 	copy(): NFA {
-		return new NFA(new NodeList(), this.options).union(this);
+		const copy = new NFA(new NodeList(), this.options);
+		copy.union(this);
+		return copy;
 	}
 
 	test(word: Iterable<number>): boolean {
 		const nodes = this.nodes;
 		const characters = [...word];
 
-		function match(index: number, node: Node): boolean {
+		function match(index: number, node: NFANode): boolean {
 			if (index >= characters.length)
 				return nodes.final.has(node);
 
@@ -278,6 +264,14 @@ export class NFA implements FiniteAutomaton {
 		);
 	}
 
+	toRegex(): Simple<Expression> {
+		return faToRegex(
+			this.nodes.initial,
+			n => n.out,
+			n => this.nodes.final.has(n)
+		);
+	}
+
 	static intersect(left: NFA, right: NFA): NFA {
 		checkOptionsCompatibility(left.options, right.options);
 
@@ -286,9 +280,9 @@ export class NFA implements FiniteAutomaton {
 		// node pair translation
 		const thisIndexMap = createIndexMap(left.nodes);
 		const otherIndexMap = createIndexMap(right.nodes);
-		const translationCache = new Map<number, Node>();
+		const translationCache = new Map<number, NFANode>();
 		translationCache.set(0, nodeList.initial);
-		function translate(thisNode: Node, otherNode: Node): Node {
+		function translate(thisNode: NFANode, otherNode: NFANode): NFANode {
 			const thisIndex = thisIndexMap.get(thisNode);
 			const otherIndex = otherIndexMap.get(otherNode);
 
@@ -340,14 +334,13 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	union(nfa: NFA): NFA {
+	union(nfa: NFA): void {
 		if (nfa === this) {
-			return this;
+			return;
 		}
 
 		checkOptionsCompatibility(this.options, nfa.options);
 		baseUnion(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
-		return this;
 	}
 
 	/**
@@ -355,13 +348,13 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	concat(nfa: NFA): NFA {
+	concat(nfa: NFA): void {
 		if (this === nfa) {
-			return this.quantify(2, 2);
+			this.quantify(2, 2);
+			return;
 		}
 		checkOptionsCompatibility(this.options, nfa.options);
 		baseConcat(this.nodes, this.nodes, nfa.nodes);
-		return this;
 	}
 
 	/**
@@ -373,12 +366,11 @@ export class NFA implements FiniteAutomaton {
 	 * @param min
 	 * @param max
 	 */
-	quantify(min: number, max: number): NFA {
+	quantify(min: number, max: number): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
 		}
 		baseQuantify(this.nodes, this.nodes, min, max);
-		return this;
 	}
 
 
@@ -409,7 +401,7 @@ export class NFA implements FiniteAutomaton {
 	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<NFAOptions>): NFA {
 		const nodeList = new NodeList();
 
-		function getNext(node: Node, char: number): Node {
+		function getNext(node: NFANode, char: number): NFANode {
 			if (char > options.maxCharacter) {
 				throw new Error(`All characters have to be <= options.maxCharacter (${options.maxCharacter}).`);
 			}
@@ -444,7 +436,30 @@ export class NFA implements FiniteAutomaton {
 		return new NFA(nodeList, options);
 	}
 
+	static fromDFA(dfa: DFA): NFA {
+		const options: NFAOptions = {
+			maxCharacter: dfa.options.maxCharacter
+		};
+		const nodeList = new NodeList();
+
+		const translate = createCachedTranslator<DFANode, NFANode>(() => nodeList.createNode());
+		translate.cache.set(dfa.nodes.initial, nodeList.initial);
+
+		DFS(dfa.nodes.initial, dfaNode => {
+			const transNode = translate(dfaNode);
+			const byNode = invertCharMap(dfaNode.out, options.maxCharacter);
+			byNode.forEach((charSet, outDfaNode) => {
+				nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
+			});
+
+			return byNode.keys();
+		});
+
+		return new NFA(nodeList, options);
+	}
+
 }
+
 
 
 function createNodeList(expression: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NodeList {
@@ -457,7 +472,7 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 
 	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
 		if (alternatives.length === 0) {
-			return { initial: nodeList.createNode(), final: new Set<Node>() };
+			return { initial: nodeList.createNode(), final: new Set<NFANode>() };
 		}
 
 		const base = handleConcatenation(alternatives[0]);
@@ -471,7 +486,7 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 	function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
 		const elements = concatenation.elements;
 
-		const base: SubList = { initial: nodeList.createNode(), final: new Set<Node>() };
+		const base: SubList = { initial: nodeList.createNode(), final: new Set<NFANode>() };
 		base.final.add(base.initial);
 
 		for (let i = 0, l = elements.length; i < l; i++) {
@@ -544,17 +559,10 @@ function checkOptionsCompatibility(thisOptions: Readonly<NFAOptions>, otherOptio
  */
 function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 	const initial = nodeList.createNode();
-	const final = new Set<Node>();
+	const final = new Set<NFANode>();
 
-	const translationMap = new Map<Node, Node>();
-	translationMap.set(toCopy.initial, initial);
-	const translate = (n: Node): Node => {
-		let translation = translationMap.get(n);
-		if (!translation) {
-			translationMap.set(n, translation = nodeList.createNode());
-		}
-		return translation;
-	};
+	const translate = createCachedTranslator<NFANode, NFANode>(() => nodeList.createNode());
+	translate.cache.set(toCopy.initial, initial);
 
 	DFS(toCopy.initial, node => {
 		const trans = translate(node);
@@ -567,7 +575,7 @@ function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 			nodeList.linkNodes(trans, translate(to), characters);
 		}
 
-		return node.out.nodes();
+		return node.out.keys();
 	});
 
 	return { initial, final };
@@ -667,7 +675,7 @@ function baseUnion(nodeList: NodeList, base: SubList, alternative: SubList): voi
 }
 
 function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): void {
-	const reusable: Node[] = [];
+	const reusable: NFANode[] = [];
 	base.final.forEach(f => {
 		if (f !== base.initial && f.out.size === 0) {
 			reusable.push(f);
@@ -675,7 +683,7 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): vo
 	});
 
 	if (reusable.length > 1) {
-		const masterFinal: Node = reusable.pop()!;
+		const masterFinal: NFANode = reusable.pop()!;
 		for (let i = 0, l = reusable.length; i < l; i++) {
 			const toRemove = reusable[i];
 			base.final.delete(toRemove);
@@ -729,7 +737,7 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 		// To get rid of these unnecessary transitions, we remove the initial states from the set of final states
 		// and manually store the final states of each concatenation.
 
-		const realFinal = new Set<Node>(base.final);
+		const realFinal = new Set<NFANode>(base.final);
 		base.final.delete(base.initial);
 
 		const copy = localCopy(nodeList, base);
@@ -840,7 +848,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
  * @param base
  */
 function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
-	for (const out of [...base.initial.out.nodes()]) {
+	for (const out of [...base.initial.out.keys()]) {
 		nodeList.unlinkNodes(base.initial, out);
 	}
 	base.final.clear();

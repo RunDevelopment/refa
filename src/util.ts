@@ -1,3 +1,16 @@
+export function createCachedTranslator<S, T>(translate: (value: S) => T): { (value: S): T; cache: Map<S, T> } {
+	function cachedFunc(value: S): T {
+		let cached = cachedFunc.cache.get(value);
+		if (cached === undefined) {
+			cachedFunc.cache.set(value, cached = translate(value));
+		}
+		return cached;
+	}
+	cachedFunc.cache = new Map<S, T>();
+
+	return cachedFunc;
+}
+
 
 /**
  * This is functionally equivalent to `Array.prototype.filter` but it mutates the given array.
@@ -5,11 +18,11 @@
  * @param array
  * @param filter
  */
-export function filterMut<T>(array: T[], filter: (arg: T) => boolean): void {
+export function filterMut<T>(array: T[], filter: (arg: T, prev: T | undefined) => boolean): void {
 	let deleteCount = 0;
 	for (let i = 0; i < array.length; i++) {
 		const element = array[i];
-		if (filter(element)) {
+		if (filter(element, array[i - deleteCount - 1])) {
 			array[i - deleteCount] = element;
 		} else {
 			deleteCount++;
@@ -62,6 +75,19 @@ export function codesToString(codes: Iterable<number>): string {
 	return s;
 }
 
+
+export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | undefined {
+	let min: T |undefined = undefined;
+	let minCost = Infinity;
+	for (const value of iter) {
+		const valueCost = cost(value);
+		if (valueCost < minCost) {
+			min = value;
+			minCost = valueCost;
+		}
+	}
+	return min;
+}
 
 export function iterToArray<T>(iter: Iterable<T>): readonly T[] {
 	return Array.isArray(iter) ? iter : [...iter];
