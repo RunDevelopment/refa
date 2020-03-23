@@ -1,7 +1,7 @@
 {
-  "name": "regex-fa",
-  "version": "0.1.0",
-  "description": "A library for finite automata in the context of JavaScript regular expressions",
+  "name": "refa",
+  "version": "0.0.0",
+  "description": "A library for finite automata and regular expressions in the context of JS RegExp",
   "main": "index.js",
   "scripts": {
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
