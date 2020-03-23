@@ -4,7 +4,7 @@ import { CharRange } from "./char-set";
 function checkRange(range: CharRange): void {
 	const { min, max } = range;
 
-	if (min >= max) {
+	if (min > max) {
 		throw new RangeError(`min has to be less or equal to max. (min=${min}, max=${max})`);
 	}
 	if (!Number.isInteger(min) || min < 0) {
@@ -35,7 +35,7 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 	 * @param char
 	 */
 	has(char: number): boolean {
-		checkChar(char);
+		if (!Number.isFinite(char)) return false;
 		return this.tree.nodeOf(char) !== null;
 	}
 
@@ -90,7 +90,7 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 	 * @param char
 	 */
 	get(char: number): T | undefined {
-		checkChar(char);
+		if (!Number.isFinite(char)) return undefined; // char is NaN, Inf, or -Inf
 		const node = this.tree.nodeOf(char);
 		return node ? node.value : undefined;
 	}
@@ -116,6 +116,7 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 	}
 
 	delete(char: number): boolean {
+		if (!Number.isFinite(char)) return false;
 		return this.tree.deleteCharacter(char);
 	}
 
@@ -131,7 +132,21 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 		this.tree.deleteRange(range);
 	}
 
+	mapRange(range: CharRange, mapFn: (value: T | undefined, chars: CharRange, map: CharMap<T>) => T | undefined): void {
+		this.tree.mapWithGaps(range, (r, v) => {
+			return mapFn(v, r, this);
+		});
+	}
 
+
+	/**
+	 * Invokes the given callback for every item of the character map.
+	 *
+	 * This method is implemented more efficiently than other iterator based methods, so chose `forEach` where every
+	 * possible.
+	 *
+	 * @param callback
+	 */
 	forEach(callback: (value: T, chars: CharRange, map: CharMap<T>) => void): void {
 		const rec = (node: Node<T> | null): void => {
 			if (node) {
@@ -153,25 +168,39 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 			yield value;
 		}
 	}
-	*entries(): IterableIterator<[CharRange, T]> {
-		const stack: { leftDone: boolean; node: Node<T> }[] = [];
+	*entries(range?: CharRange): IterableIterator<[CharRange, T]> {
+		if (range) {
+			let current = this.tree.leftmostNodeInRange(range);
+			const end = this.tree.rightmostNodeInRange(range);
+			while (current) {
+				yield [current.key, current.value];
 
-		if (this.tree.root) {
-			stack.push({ leftDone: false, node: this.tree.root });
-		}
-
-		while (stack.length > 0) {
-			const { leftDone, node } = stack.pop()!;
-
-			if (leftDone || node.left === null) {
-				const { key, value, right } = node;
-				yield [key, value];
-				if (right !== null) {
-					stack.push({ leftDone: false, node: right });
+				if (current === end) {
+					break;
+				} else {
+					current = rightNeighbor(current);
 				}
-			} else /* if (!leftDone && node.left !== null) */ {
-				stack.push({ leftDone: true, node });
-				stack.push({ leftDone: false, node: node.left });
+			}
+		} else {
+			const stack: { leftDone: boolean; node: Node<T> }[] = [];
+
+			if (this.tree.root) {
+				stack.push({ leftDone: false, node: this.tree.root });
+			}
+
+			while (stack.length > 0) {
+				const { leftDone, node } = stack.pop()!;
+
+				if (leftDone || node.left === null) {
+					const { key, value, right } = node;
+					yield [key, value];
+					if (right !== null) {
+						stack.push({ leftDone: false, node: right });
+					}
+				} else /* if (!leftDone && node.left !== null) */ {
+					stack.push({ leftDone: true, node });
+					stack.push({ leftDone: false, node: node.left });
+				}
 			}
 		}
 	}
@@ -182,6 +211,24 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 }
 
 
+interface Node<T> {
+	key: CharRange;
+	value: T;
+
+	balance: number;
+	height: number;
+	parent: Node<T> | null;
+	left: Node<T> | null;
+	right: Node<T> | null;
+}
+
+/**
+ * Returns the right neighbor of the given node or `null` if the given node is the rightmost node in its tree.
+ *
+ * This takes _O(log n)_ time (n = total number of nodes in the tree).
+ *
+ * @param node
+ */
 function rightNeighbor<T>(node: Node<T>): Node<T> | null {
 	if (node.right) {
 		// get the leftmost of the right sub-tree
@@ -192,6 +239,30 @@ function rightNeighbor<T>(node: Node<T>): Node<T> | null {
 			if (parent.left == node) {
 				return parent;
 			} else /* if (parent.right == node) */ {
+				node = parent;
+				parent = parent.parent;
+			}
+		}
+		return null;
+	}
+}
+/**
+ * Returns the left neighbor of the given node or `null` if the given node is the leftmost node in its tree.
+ *
+ * This takes _O(log n)_ time (n = total number of nodes in the tree).
+ *
+ * @param node
+ */
+function leftNeighbor<T>(node: Node<T>): Node<T> | null {
+	if (node.left) {
+		// get the rightmost of the left sub-tree
+		return rightmostNode(node.left);
+	} else {
+		let parent = node.parent;
+		while (parent) {
+			if (parent.right == node) {
+				return parent;
+			} else /* if (parent.left == node) */ {
 				node = parent;
 				parent = parent.parent;
 			}
@@ -213,16 +284,69 @@ function rightmostNode<T>(root: Node<T>): Node<T> {
 	return root;
 }
 
+/**
+ * Returns the leftmost node in the subtree created be the given node which contains at least one character of the
+ * given range.
+ *
+ * This takes _O(log n)_ time (n = total number of nodes in the subtree).
+ *
+ * @param node
+ * @param range
+ */
+function leftmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null {
+	if (node === null) return null;
 
-interface Node<T> {
-	key: CharRange;
-	value: T;
+	const { min, max } = range;
 
-	balance: number;
-	height: number;
-	parent: Node<T> | null;
-	left: Node<T> | null;
-	right: Node<T> | null;
+	if (node.key.min <= min && min <= node.key.max) {
+		// this node contains range.min
+		return node; // nodes cover disjoint intervals
+	} else if (node.key.max < min) {
+		// [node.key] ... [range]
+		return leftmostNodeInRange(node.right, range);
+	} else if (max < node.key.min) {
+		// [range] ... [node.key]
+		return leftmostNodeInRange(node.left, range);
+	} else {
+		// the node and the given range at least partially overlap but there could be better nodes left to this node
+		const moreLeft = leftmostNodeInRange(node.left, range);
+		if (moreLeft) {
+			return moreLeft;
+		}
+		return node;
+	}
+}
+/**
+ * Returns the rightmost node in the subtree created be the given node which contains at least one character of the
+ * given range.
+ *
+ * This takes _O(log n)_ time (n = total number of nodes in the subtree).
+ *
+ * @param node
+ * @param range
+ */
+function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null {
+	if (node === null) return null;
+
+	const { min, max } = range;
+
+	if (node.key.min <= max && max <= node.key.max) {
+		// this node contains range.max
+		return node; // nodes cover disjoint intervals
+	} else if (node.key.max < min) {
+		// [node.key] ... [range]
+		return rightmostNodeInRange(node.right, range);
+	} else if (max < node.key.min) {
+		// [range] ... [node.key]
+		return rightmostNodeInRange(node.left, range);
+	} else {
+		// the node and the given range at least partially overlap but there could be better nodes right to this node
+		const moreRight = rightmostNodeInRange(node.right, range);
+		if (moreRight) {
+			return moreRight;
+		}
+		return node;
+	}
 }
 
 
@@ -346,6 +470,23 @@ class AVLTree<T> {
 		return null;
 	}
 
+	/**
+	 * Returns the leftmost node which shares at least one character with the given range.
+	 *
+	 * @param range
+	 */
+	leftmostNodeInRange(range: CharRange): Node<T> | null {
+		return leftmostNodeInRange(this.root, range);
+	}
+	/**
+	 * Returns the rightmost node which shares at least one character with the given range.
+	 *
+	 * @param range
+	 */
+	rightmostNodeInRange(range: CharRange): Node<T> | null {
+		return rightmostNodeInRange(this.root, range);
+	}
+
 
 	insert(key: CharRange, value: T): void {
 		if (this.root == null) {
@@ -361,28 +502,27 @@ class AVLTree<T> {
 		let parent: Node<T> = this.root;
 
 		while (true) {
-			const { min, max } = parent.key;
-			if (max < kMin) {
-				// [min max] [kMin kMax]
-				if (parent.left) {
-					parent = parent.left;
-				} else {
-					parent.left = {
-						key, value, parent,
-						balance: 0, height: 1,
-						left: null, right: null
-					};
-					this.rebalance(parent);
-					break;
-				}
-			} else if (kMax < min) {
-				// [kMin kMax] [min max]
+			if (parent.key.max < kMin) {
+				// [parent] [key]
 				if (parent.right) {
 					parent = parent.right;
 				} else {
 					parent.right = {
 						key, value, parent,
-						balance: 0, height: 1,
+						balance: 0, height: parent.height + 1,
+						left: null, right: null
+					};
+					this.rebalance(parent);
+					break;
+				}
+			} else if (kMax < parent.key.min) {
+				// [key] [parent]
+				if (parent.left) {
+					parent = parent.left;
+				} else {
+					parent.left = {
+						key, value, parent,
+						balance: 0, height: parent.height + 1,
 						left: null, right: null
 					};
 					this.rebalance(parent);
@@ -425,15 +565,15 @@ class AVLTree<T> {
 
 				if (max != char) {
 					// [min char max]
-					node.key.max = char - 1;
+					node.key = { min: node.key.min, max: char - 1 };
 					this.insert({ min: char + 1, max: max }, node.value);
 				} else {
 					// [min char/max]
-					node.key.max--;
+					node.key = { min: node.key.min, max: node.key.max - 1 };
 				}
-			} if (max != char) {
+			} else if (max != char) {
 				// [min/char max]
-				node.key.min++;
+				node.key = { min: node.key.min - 1, max: node.key.max };
 			} else {
 				// min == max == char
 				this.deleteNode(node);
@@ -456,7 +596,7 @@ class AVLTree<T> {
 				if (max > rMax) {
 					// [[min/rMin rMax] max]
 					// we set min to remove the range without removing the node
-					leftEdge.key.min = rMax + 1;
+					leftEdge.key = { min: rMax + 1, max: leftEdge.key.max };
 					return;
 				} else {
 					// The left node has to be removed
@@ -470,7 +610,7 @@ class AVLTree<T> {
 				// [min [rMin ...
 
 				// the current leftEdge node will be set to the outside part...
-				leftEdge.key.max = rMin - 1;
+				leftEdge.key = { min: leftEdge.key.min, max: rMin - 1 };
 
 				// ..and for the rest:
 				if (max > rMax) {
@@ -503,7 +643,7 @@ class AVLTree<T> {
 
 			if (max > rMax) {
 				// [rMin <min rMax] max>
-				rightEdge.key.min = rMax + 1;
+				rightEdge.key = { min: rMax + 1, max: rightEdge.key.max };
 			} else /* if (max == rMax) */ {
 				// [rMin [min rMax/max]]
 				this.deleteNode(rightEdge);
@@ -521,6 +661,112 @@ class AVLTree<T> {
 				break;
 			}
 		}
+	}
+
+	mapWithGaps(range: CharRange, mapFn: (range: CharRange, value: T | undefined) => T | undefined): void {
+		/**
+		 * This function only makes modifications to the tree after the given map function has been called for every
+		 * node and gap.
+		 */
+
+		const del: number[] = [];
+		const mod: [number, T][] = [];
+		const ins: [CharRange, T][] = [];
+
+		function simpleGap(r: CharRange): void {
+			if (r.min < range.min || r.max > range.max) {
+				throw new RangeError("The range of the given gap is not within the mapping range.");
+			}
+
+			const mapRes = mapFn(r, undefined);
+			if (mapRes !== undefined) {
+				ins.push([r, mapRes]);
+			}
+		}
+		function simpleNode(node: Node<T>): void {
+			if (node.key.min < range.min || node.key.max > range.max) {
+				throw new RangeError("The range of the given node is not within the mapping range.");
+			}
+
+			const mapRes = mapFn(node.key, node.value);
+			if (mapRes === undefined) {
+				del.push(node.key.min);
+			} else if (mapRes !== node.value) {
+				mod.push([node.key.min, mapRes]);
+			}
+		}
+
+		const leftmost = this.leftmostNodeInRange(range);
+
+		if (leftmost === null) {
+			// the trivial case of the entire given range is empty
+			const mapRes = mapFn(range, undefined);
+			if (mapRes !== undefined) this.insert(range, mapRes);
+
+			return;
+		}
+		if (leftmost.key.min <= range.min && range.max <= leftmost.key.max) {
+			// [leftmost.min ... [range] ... leftmost.max]
+			const mapRes = mapFn(range, leftmost.value);
+			const oldRange = leftmost.key;
+			const oldValue = leftmost.value;
+
+			if (mapRes === oldValue) return; // nothing changed
+
+			// left of range
+			if (oldRange.min < range.min) leftmost.key = { min: oldRange.min, max: range.min - 1 };
+			else this.deleteNode(leftmost);
+			// range
+			if (mapRes !== undefined) this.insert(range, mapRes);
+			// right of range
+			if (range.max < oldRange.max) this.insert({ min: range.max + 1, max: oldRange.max }, oldValue);
+
+			return;
+		}
+
+		const rightmost = this.rightmostNodeInRange(range);
+
+
+		if (range.min < leftmost.key.min) {
+			// there is a gap between the leftmost node and the start of the given range
+			simpleGap({ min: range.min, max: leftmost.key.min - 1 });
+		} else if (leftmost.key.min < range.min) {
+			// the leftmost node has to be split
+			ins.push([{ min: leftmost.key.min, max: range.min - 1 }, leftmost.value]);
+			leftmost.key = { min: range.min, max: leftmost.key.max };
+		}
+
+		let currentNode: Node<T> = leftmost;
+		while (currentNode !== rightmost) {
+			// the node itself
+			simpleNode(currentNode);
+
+			const nextNode = rightNeighbor(currentNode)!;
+			// the gap between the current node and the next node
+			if (currentNode.key.max + 1 < nextNode.key.min) {
+				simpleGap({ min: currentNode.key.max + 1, max: nextNode.key.min - 1 });
+			}
+
+			currentNode = nextNode;
+		}
+
+		if (rightmost.key.max < range.max) {
+			// there's a gap after the rightmost node
+			simpleNode(rightmost);
+			simpleGap({ min: rightmost.key.max + 1, max: range.max });
+		} else if (rightmost.key.max > range.max) {
+			// the rightmost node goes beyond the given range
+			ins.push([{ min: range.max + 1, max: rightmost.key.max }, rightmost.value]);
+			rightmost.key = { min: rightmost.key.min, max: range.max };
+			simpleNode(rightmost);
+		} else {
+			// the rightmost node ends perfectly with the given range
+			simpleNode(rightmost);
+		}
+
+		del.forEach(n => this.deleteNode(this.nodeOf(n)!));
+		mod.forEach(([char, v]) => this.nodeOf(char)!.value = v);
+		ins.forEach(([range, v]) => this.insert(range, v));
 	}
 
 	private rebalance(n: Node<T>): void {
