@@ -1,7 +1,8 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
-import { parse } from "../src/js/js-regex";
 import { stringToCodePoints } from "../src/util";
+import { literalToString, Literal, literalToNFA, removeIndentation } from "./helper/fa";
+import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
 
 
 describe('NFA', function () {
@@ -171,6 +172,11 @@ describe('NFA', function () {
 					[0] -> none`
 			},
 			{
+				literal: /([^\s\S])*/,
+				expected: `
+					[0] -> none`
+			},
+			{
 				literal: /a*|b*/,
 				expected: `
 					[0] -> [1] : 61
@@ -238,6 +244,22 @@ describe('NFA', function () {
 				literal: /[^\s\S]?/,
 				expected: `
 					[0] -> none`
+			},
+			{
+				literal: /a+|aaab/,
+				expected: `
+					(0) -> [1] : 61
+					    -> (2) : 61
+
+					[1] -> [1] : 61
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : 61
+
+					(4) -> [5] : 62
+
+					[5] -> none`
 			},
 		]);
 
@@ -497,42 +519,57 @@ describe('NFA', function () {
 
 	});
 
-});
+	describe('isEmpty', function () {
 
+		it('constructed from 0 words', function () {
+			// empty language
+			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFF }).isEmpty);
+			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFFFF }).isEmpty);
 
-interface Literal {
-	source: string;
-	flags: string;
-}
+			// language containing the empty word
+			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xFF }).isEmpty);
+			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xFFFF }).isEmpty);
+		});
 
-function literalToNFA(literal: Literal): NFA {
-	const parsed = parse(literal);
-	return NFA.fromRegex(parsed.pattern, { maxCharacter: parsed.flags.unicode ? 0x10FFFF : 0xFFFF });
-}
-
-function literalToString(literal: Literal): string {
-	return `/${literal.source}/${literal.flags}`;
-}
-
-function removeIndentation(expected: string): string {
-	// remove trailing spaces and initial line breaks
-	expected = expected.replace(/^[\r\n]+|\s+$/g, "");
-
-	const lines = expected.split(/\r\n?|\n/g);
-	const indentation = /^[ \t]*/.exec(lines[0])![0];
-
-	if (indentation) {
-		for (let i = 0; i < lines.length; i++) {
-			let line = lines[i];
-			if (line.startsWith(indentation)) {
-				line = line.substr(indentation.length);
+		describe('true', function () {
+			for (const literal of EMPTY_LITERALS) {
+				it(`${literalToString(literal)}`, function () {
+					assert.isTrue(literalToNFA(literal).isEmpty);
+				});
 			}
-			lines[i] = line;
-		}
-	}
+		});
 
-	return lines.join("\n");
-}
+		describe('false', function () {
+			for (const literal of NON_EMPTY_LITERALS) {
+				it(`${literalToString(literal)}`, function () {
+					assert.isFalse(literalToNFA(literal).isEmpty);
+				});
+			}
+		});
+
+	});
+
+	describe('isFinite', function () {
+
+		describe('true', function () {
+			for (const literal of FINITE_LITERALS) {
+				it(`${literalToString(literal)}`, function () {
+					assert.isTrue(literalToNFA(literal).isFinite);
+				});
+			}
+		});
+
+		describe('false', function () {
+			for (const literal of NON_FINITE_LITERALS) {
+				it(`${literalToString(literal)}`, function () {
+					assert.isFalse(literalToNFA(literal).isFinite);
+				});
+			}
+		});
+
+	});
+
+});
 
 function getWords(nfa: NFA): string[] {
 	const words = new Set<string>();

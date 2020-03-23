@@ -6,6 +6,11 @@ export interface FiniteAutomaton {
 	isEmpty: boolean;
 
 	/**
+	 * Returns whether the formal language accepted by this FA contains finitely many words.
+	 */
+	isFinite: boolean;
+
+	/**
 	 * Returns whether this FA accepts the given word.
 	 *
 	 * @param word The characters of the word to test.
@@ -16,5 +21,4 @@ export interface FiniteAutomaton {
 	 * Returns a string representation of this FA.
 	 */
 	toString(): string;
-
 }

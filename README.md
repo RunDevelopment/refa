@@ -28,6 +28,7 @@ __At this point in time, the library is still in development and partially incom
   * Print internal representation in a human-readable form
   * Test whether a word is accepted
   * Test whether the language if the FA is the empty set
+  * Test whether the language if the FA is a finite set
 
 - DFA specific operations
 

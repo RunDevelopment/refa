@@ -3,7 +3,7 @@ import { FiniteAutomaton } from "./finite-automaton";
 import { CharMap } from "./char-map";
 import { CharRange, CharSet, Ranges } from "./char-set";
 import { rangesToString } from "./char-util";
-import { faToString, faIterateWordSets, wordSetsToWords } from "./fa-util";
+import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
 import { NFA, NFANode } from "./nfa";
 import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
@@ -107,6 +107,16 @@ export class DFA implements FiniteAutomaton {
 
 	get isEmpty(): boolean {
 		return this.nodes.final.size === 0;
+	}
+
+	get isFinite(): boolean {
+		//console.log(this.toString());
+
+		return faIsFinite(
+			this.nodes.initial,
+			n => n.out.values(),
+			n => this.nodes.final.has(n)
+		);
 	}
 
 	test(word: Iterable<number>): boolean {

@@ -2,7 +2,7 @@ import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { DFS, assertNever, createIndexMap, createCachedTranslator } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
-import { faToString, faIterateWordSets, wordSetsToWords } from "./fa-util";
+import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
 import { rangesToString, invertCharMap } from "./char-util";
 import { DFA, DFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
@@ -206,6 +206,14 @@ export class NFA implements FiniteAutomaton {
 
 	get isEmpty(): boolean {
 		return this.nodes.final.size === 0;
+	}
+
+	get isFinite(): boolean {
+		return this.isEmpty || faIsFinite(
+			this.nodes.initial,
+			n => n.out.keys(),
+			n => this.nodes.final.has(n)
+		);
 	}
 
 	/**

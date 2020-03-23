@@ -93,6 +93,122 @@ export function faToString<T>(states: T | T[], getOutTransitions: (state: T) => 
 }
 
 
+/**
+ * Returns whether the given FA matches a formal language with only finitely many words.
+ *
+ * @param initialState The initial state of the FA.
+ * @param getOutTransitions A function which returns all the nodes of all out-going transitions.
+ * @param final Determines whether a given state is final.
+ */
+export function faIsFinite<T>(initialState: T, getOutTransitions: (state: T) => Iterable<T>,
+	final: (state: T) => boolean): boolean {
+	/**
+	 * The goal is to find a cycle from which we can reach any final state. If we can find such a cycle, we can pump as
+	 * many words as we like making the language infinite.
+	 *
+	 * To find such a cycle, we will list all nodes reachable from the initial state AND any final state. Like this, we
+	 * only have to find nodes which are part of a cycle. To do this, we will iteratively remove nodes which cannot be
+	 * part of a cycle. All nodes dot not have at least one outgoing transition where its state is still in the list
+	 * will be removed.
+	 */
+
+	const reachFinal = new Map<T, boolean>();
+	const reachFinalStack = new Set<T>();
+	function canReachFinal(state: T): boolean {
+		let value = reachFinal.get(state);
+		if (value === undefined) {
+			if (final(state)) {
+				// the state is a final state
+				value = true;
+			} else {
+				// set the value temporarily to false
+				value = false;
+
+				reachFinalStack.add(state);
+				for (const out of getOutTransitions(state)) {
+					if (!reachFinalStack.has(out) && canReachFinal(out)) {
+						value = true;
+						break;
+					}
+				}
+				reachFinalStack.delete(state);
+			}
+			reachFinal.set(state, value);
+		}
+		return value;
+	}
+
+	const nodes = new Set<T>();
+	const processedNodes = new Set<T>();
+	function fillNodeList(state: T): void {
+		if (processedNodes.has(state))
+			return;
+		processedNodes.add(state);
+
+		if (!canReachFinal(state))
+			return;
+
+		for (const out of getOutTransitions(state)) {
+			fillNodeList(out);
+		}
+
+		nodes.add(state);
+	}
+	fillNodeList(initialState);
+
+	const inTrans = createInTransitionMap(nodes, getOutTransitions);
+
+	// the set of all states which have to be checked
+	let toCheck: ReadonlySet<T> = new Set<T>(nodes);
+	while (toCheck.size > 0) {
+		const nextToCheck = new Set<T>();
+
+		for (const state of toCheck) {
+			if (!nodes.has(state))
+				continue; // already removed
+
+			let hasOut = false;
+			for (const out of getOutTransitions(state)) {
+				if (nodes.has(out)) {
+					hasOut = true;
+					break;
+				}
+			}
+
+			if (!hasOut) {
+				nodes.delete(state);
+				// add all in transitions to the set of states to check next round
+				inTrans.get(state)!.forEach(s => nextToCheck.add(s));
+			}
+		}
+
+		toCheck = nextToCheck;
+	}
+
+	// if no nodes are left, the FA does not contain cycles
+	return nodes.size === 0;
+}
+
+function createInTransitionMap<T>(states: Set<T>, getOutTransitions: (state: T) => Iterable<T>): Map<T, Set<T>> {
+	const inTransitions = new Map<T, Set<T>>();
+
+	for (const s of states) {
+		inTransitions.set(s, new Set<T>());
+	}
+
+	for (const s of states) {
+		for (const out of getOutTransitions(s)) {
+			const value = inTransitions.get(out);
+			if (value !== undefined) {
+				value.add(s);
+			}
+		}
+	}
+
+	return inTransitions;
+}
+
+
 export function* faIterateWordSets<T>(initialState: T, getOutTransitions: (state: T) => Iterable<[T, CharSet]>,
 	final: (state: T) => boolean): Iterable<CharSet[]> {
 
