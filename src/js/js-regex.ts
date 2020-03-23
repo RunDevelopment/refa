@@ -4,6 +4,7 @@ import { Element, Assertion, Simple, Alternation, Expression, Concatenation, Par
 import { RegExpParser } from "regexpp";
 import * as Ast from "regexpp/ast";
 import { assertNever } from "../util";
+import { DIGIT, LINE_TERMINATOR, SPACE, WORD } from "./js-util";
 
 
 export interface Flags {
@@ -14,50 +15,24 @@ export interface Flags {
 }
 
 
-const DIGIT: CharRange = { min: 0x30, max: 0x39 }; // 0-9
-const SPACE: CharRange[] = [
-	{ min: 0x09, max: 0x0d }, // \t \n \v \f \r
-	{ min: 0x20, max: 0x20 }, // space
-	{ min: 0xa0, max: 0xa0 }, // non-breaking space
-	{ min: 0x1680, max: 0x1680 },
-	{ min: 0x2000, max: 0x200a },
-	{ min: 0x2028, max: 0x2029 },
-	{ min: 0x202f, max: 0x202f },
-	{ min: 0x205f, max: 0x205f },
-	{ min: 0x3000, max: 0x3000 },
-	{ min: 0xfeff, max: 0xfeff },
-];
-const WORD: CharRange[] = [
-	{ min: 0x30, max: 0x39 }, // 0-9
-	{ min: 0x41, max: 0x5A }, // A-Z
-	{ min: 0x5f, max: 0x5f }, // _
-	{ min: 0x61, max: 0x7A }, // a-z
-];
-const LINE_TERMINATOR: CharRange[] = [
-	{ min: 0x0a, max: 0x0a }, // \n
-	{ min: 0x0d, max: 0x0d }, // \r
-	{ min: 0x2028, max: 0x2029 },
-];
-
-
-type PredefinedCharacterSet = AnyCharacterSet | DigitCharacterSet | PropertyCharacterSet | SpaceCharacterSet | WordCharacterSet;
-interface AnyCharacterSet {
+export type PredefinedCharacterSet = AnyCharacterSet | DigitCharacterSet | PropertyCharacterSet | SpaceCharacterSet | WordCharacterSet;
+export interface AnyCharacterSet {
 	kind: "any";
 }
-interface DigitCharacterSet {
+export interface DigitCharacterSet {
 	kind: "digit";
 	negate: boolean;
 }
-interface PropertyCharacterSet {
+export interface PropertyCharacterSet {
 	kind: "property";
 	key: string;
 	negate: boolean;
 }
-interface SpaceCharacterSet {
+export interface SpaceCharacterSet {
 	kind: "space";
 	negate: boolean;
 }
-interface WordCharacterSet {
+export interface WordCharacterSet {
 	kind: "word";
 	negate: boolean;
 }
@@ -69,7 +44,7 @@ interface WordCharacterSet {
  * @param flags The flags of the pattern.
  */
 export function createCharSet(
-	chars: Iterable<number | Readonly<CharRange> | Readonly<PredefinedCharacterSet>>,
+	chars: Iterable<number | CharRange | Readonly<PredefinedCharacterSet>>,
 	flags: Readonly<Flags>
 ): CharSet {
 	const { unicode, ignoreCase, dotAll } = flags;
