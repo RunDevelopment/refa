@@ -654,7 +654,7 @@ function optimize(expr: MutSimple<Expression>): void {
 			for (let i = 1; i < elements.length; i++) {
 				const element = elements[i];
 				if (element.type === "Quantifier") {
-
+					// TODO: Implement
 				}
 			}
 		}

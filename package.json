@@ -2,8 +2,10 @@
   "name": "refa",
   "version": "0.0.0",
   "description": "A library for finite automata and regular expressions in the context of JS RegExp",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "check": "npx eslint src/**/*.ts tests/**/*.ts && npx tsc --noEmit && cd tests && npx tsc --noEmit",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "npx tsc"
   },
