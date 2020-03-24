@@ -18,8 +18,9 @@ __At this point in time, the library is still in development and partially incom
 
 - Conversions
 
-  * RE to NFA
+  * RE to NFA (_lookarounds are not implemented yet_)
   * NFA to DFA
+  * DFA to NFA (_not implemented yet_)
   * NFA to RE and DFA to RE
 
 - DFA and NFA operations
@@ -35,7 +36,7 @@ __At this point in time, the library is still in development and partially incom
   * Intersection with other DFA (_not implemented yet_)
   * DFA Minification (_requires testing and further optimization_)
   * Complement (_not implemented yet_)
-  * Equality (structurally)
+  * Structural equality
 
 - NFA specific operations
 
@@ -45,7 +46,7 @@ __At this point in time, the library is still in development and partially incom
 
 - Javascript RegExp
 
-  * RegExp to RE and RE to RegExp
+  * RegExp to RE and RE to RegExp (_Unicode properties are not implemented yet_)
 
 ### Limitations
 
