@@ -1,14 +1,19 @@
-export function createCachedTranslator<S, T>(translate: (value: S) => T): { (value: S): T; cache: Map<S, T> } {
-	function cachedFunc(value: S): T {
-		let cached = cachedFunc.cache.get(value);
+export interface CachedFunc<S, T> {
+	(value: S): T;
+	readonly cache: Map<S, T>;
+}
+
+export function cachedFunc<S, T>(func: (value: S) => T): CachedFunc<S, T> {
+	function wrapper(value: S): T {
+		let cached = wrapper.cache.get(value);
 		if (cached === undefined) {
-			cachedFunc.cache.set(value, cached = translate(value));
+			wrapper.cache.set(value, cached = func(value));
 		}
 		return cached;
 	}
-	cachedFunc.cache = new Map<S, T>();
+	wrapper.cache = new Map<S, T>();
 
-	return cachedFunc;
+	return wrapper;
 }
 
 
@@ -116,15 +121,15 @@ export function intersectSet<T>(s1: Iterable<T>, s2: Set<T>): Set<T> {
 }
 
 
-interface BFSNode<T> {
-	parent: BFSNode<T> | undefined;
-	element: T;
-}
-
-export function* BFS<S, T>(rootElement: S,
+export function* BFSIterate<S, T>(rootElement: S,
 	next: (element: S) => Iterable<T>,
 	hit: (element: S) => boolean,
 	select: (item: T) => S): Iterable<T[]> {
+
+	interface BFSNode<T> {
+		parent: BFSNode<T> | undefined;
+		element: T;
+	}
 
 	const visited = new Set<S>();
 	let toVisit: BFSNode<T>[] = iterToArray(next(rootElement)).map(x => ({ parent: undefined, element: x }));
@@ -164,43 +169,136 @@ export function* BFS<S, T>(rootElement: S,
 }
 
 
+const searchResult = Symbol();
+export interface SearchResult<T> {
+	[searchResult]: T;
+}
+export function createSearchResult<T>(value: T): SearchResult<T> {
+	return { [searchResult]: value };
+}
+
+function isSearchResult<T>(result: any): result is SearchResult<T> {
+	return searchResult in result;
+}
+
 /**
  * Performs a depth first search on the given root element.
  *
- * __Note:__ You can return `true` in the `next` function to abort the search immediately.
- *
  * @param rootElement
  * @param next
- * @returns Whether the search was aborted.
  */
-export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S> | true): boolean {
+export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
+export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
+export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
+export function DFS<S, T>(
+	rootElement: S,
+	next: (element: S) => Iterable<S> | SearchResult<T>,
+	defaultValue?: T): T | undefined {
+
+	// It's important that this is implemented iteratively.
+	// A recursive implementation might cause a stack overflow.
+
 	const visited = new Set<S>();
 
-	/**
-	 *
-	 * @param element
-	 * @returns Whether the search was be aborted.
-	 */
-	function inner(element: S): boolean {
-		if (visited.has(element)) {
-			return false;
-		}
-		visited.add(element);
-
-		const nextResult = next(element);
-		if (nextResult === true) {
-			return true;
-		}
-
-		for (const e of iterToArray(nextResult)) {
-			if (inner(e)) {
-				return true;
-			}
-		}
-		return false;
+	interface StackFrame {
+		element: S;
+		nextElements?: readonly S[];
+		nextIndex: number;
 	}
 
-	return inner(rootElement);
+	const stack: StackFrame[] = [{
+		element: rootElement,
+		nextIndex: -1
+	}];
+
+	while (stack.length > 0) {
+		const top = stack[stack.length - 1];
+
+		if (top.nextIndex === -1) {
+			// first time seeing this stack frame
+			visited.add(top.element);
+
+			const nextResult = next(top.element);
+			if (isSearchResult(nextResult)) {
+				return nextResult[searchResult];
+			}
+
+			top.nextElements = iterToArray(nextResult);
+		}
+
+		const nextElements = top.nextElements;
+
+		if (!nextElements) {
+			throw new Error("This should not happen.");
+		}
+
+		// start with the first element
+		top.nextIndex++;
+
+		if (top.nextIndex >= nextElements.length) {
+			stack.pop();
+			continue;
+		}
+
+		// add a new stack frame for the next element
+		const nextElement = nextElements[top.nextIndex];
+		if (visited.has(nextElement)) {
+			// already processed the element
+			continue;
+		}
+
+		stack.push({
+			element: nextElement,
+			nextIndex: -1
+		});
+	}
+
+	// nothing found
+	return defaultValue;
+}
+
+export function BFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
+export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
+export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
+export function BFS<S, T>(
+	rootElement: S,
+	next: (element: S) => Iterable<S> | SearchResult<T>,
+	defaultValue?: T): T | undefined {
+
+	// It's important that this is implemented iteratively.
+	// A recursive implementation might cause a stack overflow.
+
+	const visited = new Set<S>();
+	let toCheck: readonly S[] = [rootElement];
+
+	while (toCheck.length > 0) {
+		const newToCheck: S[] = [];
+
+		for (let i = 0, l = toCheck.length; i < l; i++) {
+			const element = toCheck[i];
+
+			if (visited.has(element)) {
+				// already processed that element
+				continue;
+			}
+			visited.add(element);
+
+			const nextResult = next(element);
+			if (isSearchResult(nextResult)) {
+				return nextResult[searchResult];
+			}
+
+			for (const nextElement of nextResult) {
+				if (!visited.has(nextElement)) {
+					newToCheck.push(nextElement);
+				}
+			}
+		}
+
+		toCheck = newToCheck;
+	}
+
+	return defaultValue;
 }
 
 

@@ -1,6 +1,6 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { DFS, assertNever, createIndexMap, createCachedTranslator } from "./util";
+import { DFS, assertNever, createIndexMap, cachedFunc } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
 import { rangesToString, invertCharMap } from "./char-util";
@@ -288,8 +288,9 @@ export class NFA implements FiniteAutomaton {
 		// node pair translation
 		const thisIndexMap = createIndexMap(left.nodes);
 		const otherIndexMap = createIndexMap(right.nodes);
-		const translationCache = new Map<number, NFANode>();
-		translationCache.set(0, nodeList.initial);
+		const indexTranslator = cachedFunc<number, NFANode>(() => nodeList.createNode());
+		indexTranslator.cache.set(0, nodeList.initial);
+
 		function translate(thisNode: NFANode, otherNode: NFANode): NFANode {
 			const thisIndex = thisIndexMap.get(thisNode);
 			const otherIndex = otherIndexMap.get(otherNode);
@@ -299,12 +300,7 @@ export class NFA implements FiniteAutomaton {
 				throw new Error("All node should be indexed.");
 			}
 
-			const index = thisIndex * otherIndexMap.size + otherIndex;
-			let node = translationCache.get(index);
-			if (node === undefined) {
-				translationCache.set(index, node = nodeList.createNode());
-			}
-			return node;
+			return indexTranslator(thisIndex * otherIndexMap.size + otherIndex);
 		}
 
 		// add finals
@@ -450,7 +446,7 @@ export class NFA implements FiniteAutomaton {
 		};
 		const nodeList = new NodeList();
 
-		const translate = createCachedTranslator<DFANode, NFANode>(() => nodeList.createNode());
+		const translate = cachedFunc<DFANode, NFANode>(() => nodeList.createNode());
 		translate.cache.set(dfa.nodes.initial, nodeList.initial);
 
 		DFS(dfa.nodes.initial, dfaNode => {
@@ -569,7 +565,7 @@ function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 	const initial = nodeList.createNode();
 	const final = new Set<NFANode>();
 
-	const translate = createCachedTranslator<NFANode, NFANode>(() => nodeList.createNode());
+	const translate = cachedFunc<NFANode, NFANode>(() => nodeList.createNode());
 	translate.cache.set(toCopy.initial, initial);
 
 	DFS(toCopy.initial, node => {

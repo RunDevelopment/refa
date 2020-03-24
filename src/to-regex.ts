@@ -1,6 +1,6 @@
 import { Simple, MutSimple, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element, Node, Assertion } from "./ast";
 import { CharSet } from "./char-set";
-import { createCachedTranslator, DFS, firstOf, minOf, assertNever } from "./util";
+import { cachedFunc, DFS, firstOf, minOf, assertNever } from "./util";
 
 
 type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
@@ -56,10 +56,10 @@ function createNodeList<T>(initial: T, getOutTransitions: (value: T) => Iterable
 		elements: []
 	});
 
-	const translate = createCachedTranslator<T, RegexFANode>(() => nodeList.createNode());
+	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
 	translate.cache.set(initial, tempInitial);
 
-	DFS<T>(initial, n => {
+	DFS(initial, n => {
 		// set final
 		if (final(n)) {
 			nodeList.final.add(translate(n));

@@ -1,4 +1,6 @@
 import { CharSet } from "./char-set";
+import { BFS, cachedFunc } from "./util";
+
 
 /**
  * Returns a human readable string representation of the given FA. The FA has to have exactly one initial state.
@@ -22,55 +24,29 @@ import { CharSet } from "./char-set";
  * @param final Determines whether a given state is final.
  */
 export function faToString<T>(initialState: T, getOutTransitions: (state: T) => Iterable<[T, string]>,
-	final: (state: T) => boolean): string;
-export function faToString<T>(states: T[], getOutTransitions: (state: T) => Iterable<[T, string]>,
-	final: (state: T) => boolean): string;
-export function faToString<T>(states: T | T[], getOutTransitions: (state: T) => Iterable<[T, string]>,
 	final: (state: T) => boolean): string {
 
-	if (!Array.isArray(states)) {
-		const initial: T = states;
-		states = [];
+	const states: T[] = [];
+	const cachedGetOut = cachedFunc<T, [T, string][]>(state => {
+		return [...getOutTransitions(state)].sort(([, a], [, b]) => a.localeCompare(b));
+	});
 
-		const outCache = new Map<T, [T, string][]>();
-		const cachedGetOutTransitions = (state: T): [T, string][] => {
-			let out = outCache.get(state);
-			if (out === undefined) {
-				out = [...getOutTransitions(state)].sort(([, a], [, b]) => a.localeCompare(b));
-				outCache.set(state, out);
-			}
-			return out;
-		};
+	// BFS to get all states
+	BFS(initialState, state => {
+		states.push(state);
+		return cachedGetOut(state).map(([s]) => s);
+	});
 
-		// BFS to get all states
-		const visited: Set<T> = new Set();
-		let toVisit: T[] = [initial];
-		while (toVisit.length > 0) {
-			const newToVisit: T[] = [];
-			for (let i = 0, l = toVisit.length; i < l; i++) {
-				const state = toVisit[i];
-				if (!visited.has(state)) {
-					visited.add(state);
-					states.push(state);
-
-					newToVisit.push(...cachedGetOutTransitions(state).map(([s]) => s));
-				}
-			}
-			toVisit = newToVisit;
-		}
-
-		getOutTransitions = cachedGetOutTransitions;
-	}
+	getOutTransitions = cachedGetOut;
 
 	if (states.length === 0) {
 		return "Empty."
 	}
 
 	const index = new Map<T, number>(states.map((s, i) => [s, i]));
-	const finals = new Set<T>(states.filter(s => final(s)));
 
 	const labelOf = (state: T): string => {
-		if (finals.has(state)) {
+		if (final(state)) {
 			return `[${index.get(state)}]`;
 		} else {
 			return `(${index.get(state)})`;

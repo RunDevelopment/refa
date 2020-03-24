@@ -1,4 +1,4 @@
-import { withoutSet, firstOf, intersectSet, DFS, createCachedTranslator, filterMut } from "./util";
+import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { CharMap } from "./char-map";
 import { CharRange, CharSet, Ranges } from "./char-set";
@@ -379,27 +379,15 @@ export class DFA implements FiniteAutomaton {
 			}
 		}
 
-		let newStates = [nodeList.initial];
-		const processStates = new Set<DFANode>();
-		while (newStates.length > 0) {
-			const currentStates = newStates;
-			newStates = [];
-
-			for (const state of currentStates) {
-				if (processStates.has(state)) continue;
-				processStates.add(state);
-
-				for (const char of alphabet) {
-					const out = getOutNode(state, char);
-					if (out) {
-						nodeList.linkNodes(state, out, char);
-						if (!processStates.has(out)) {
-							newStates.push(out);
-						}
-					}
+		BFS(nodeList.initial, function* (state) {
+			for (const char of alphabet) {
+				const out = getOutNode(state, char);
+				if (out) {
+					nodeList.linkNodes(state, out, char);
+					yield out;
 				}
 			}
-		}
+		});
 
 		return new DFA(nodeList, {
 			maxCharacter: nfa.options.maxCharacter
@@ -514,7 +502,7 @@ function findEquivalenceClasses(nodeList: NodeList): Set<Set<DFANode>> {
 	const allNodes = new Set<DFANode>();
 	const allRanges: CharRange[] = [];
 	/** A map from a char code to all nodes which have an incoming transition with that char code. */
-	const getInTransitions = createCachedTranslator<DFANode, CharMap<DFANode[]>>(() => new CharMap());
+	const getInTransitions = cachedFunc<DFANode, CharMap<DFANode[]>>(() => new CharMap());
 
 	DFS(nodeList.initial, node => {
 		node.out.forEach((to, range) => {
