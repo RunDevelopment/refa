@@ -19,8 +19,7 @@ __At this point in time, the library is still in development and partially incom
 - Conversions
 
   * RE to NFA (_lookarounds are not implemented yet_)
-  * NFA to DFA
-  * DFA to NFA (_not implemented yet_)
+  * NFA to DFA and DFA to NFA
   * NFA to RE and DFA to RE
 
 - DFA and NFA operations
@@ -34,7 +33,7 @@ __At this point in time, the library is still in development and partially incom
 - DFA specific operations
 
   * Intersection with other DFA (_not implemented yet_)
-  * DFA Minification (_requires testing and further optimization_)
+  * DFA minification (_requires testing and further optimization_)
   * Complement (_not implemented yet_)
   * Structural equality
 
