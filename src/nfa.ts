@@ -4,7 +4,7 @@ import { DFS, assertNever, createIndexMap, createCachedTranslator } from "./util
 import { FiniteAutomaton } from "./finite-automaton";
 import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
 import { rangesToString, invertCharMap } from "./char-util";
-import { DFA, DFANode } from "./dfa";
+import type { DFA, DFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
 
 

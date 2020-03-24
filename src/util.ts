@@ -77,7 +77,7 @@ export function codesToString(codes: Iterable<number>): string {
 
 
 export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | undefined {
-	let min: T |undefined = undefined;
+	let min: T | undefined = undefined;
 	let minCost = Infinity;
 	for (const value of iter) {
 		const valueCost = cost(value);
@@ -115,68 +115,6 @@ export function intersectSet<T>(s1: Iterable<T>, s2: Set<T>): Set<T> {
 	return s;
 }
 
-
-interface BFSTreeNode<T, V> {
-	parent: BFSTreeNode<T, V> | undefined;
-	element: T;
-	value: V;
-}
-/**
- * Breadth-first search.
- *
- * Returns the values of the first found path from `rootElement` to the first element `selector` returned `true` for.
- *
- * @param rootElement The root element from which to start the search.
- * @param selector The selector for the list of next elements. This function takes an element and returns `true` if
- * the search is to conclude successfully on that element or a list of element-value-tuples.
- * @returns A list of selected values or `undefined` if the search failed.
- */
-export function BFS_old<T, V>(rootElement: T, selector: (element: T) => true | [T, V][]): V[] | undefined {
-	const rootChildren = selector(rootElement);
-	if (rootChildren === true)
-		return [];
-
-	const visited = new Set<T>([rootElement]);
-	let front: BFSTreeNode<T, V>[] = rootChildren.map(c => ({
-		parent: undefined,
-		element: c[0],
-		value: c[1],
-	}));
-
-	while (front.length > 0) {
-		const newFront: BFSTreeNode<T, V>[] = [];
-		for (const node of front) {
-			if (visited.has(node.element))
-				continue;
-			visited.add(node.element);
-
-			const children = selector(node.element);
-
-			if (children === true) {
-				// found it
-				const result: V[] = [];
-				let _node: BFSTreeNode<T, V> | undefined = node;
-				while (_node !== undefined) {
-					result.push(_node.value);
-					_node = _node.parent;
-				}
-				return result.reverse();
-			}
-
-			// add to new front
-			for (const [element, value] of children) {
-				newFront.push({
-					parent: node,
-					element,
-					value
-				});
-			}
-		}
-		front = newFront;
-	}
-
-	return undefined;
-}
 
 interface BFSNode<T> {
 	parent: BFSNode<T> | undefined;

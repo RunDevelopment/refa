@@ -4,7 +4,7 @@ import { CharMap } from "./char-map";
 import { CharRange, CharSet, Ranges } from "./char-set";
 import { rangesToString } from "./char-util";
 import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
-import { NFA, NFANode } from "./nfa";
+import type { NFA, NFANode } from "./nfa";
 import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
 
