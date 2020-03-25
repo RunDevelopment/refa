@@ -1,6 +1,6 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
-import { stringToCodePoints } from "../src/util";
+import { fromStringToUnicode } from "../src/words";
 import { literalToString, Literal, literalToNFA, removeIndentation } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
 
@@ -337,7 +337,7 @@ describe('NFA', function () {
 			for (const { words, expected } of cases) {
 				const persistentWords = typeof words === "string" ? words.split(/\s+/g) : [...words];
 				const title = persistentWords.map(w => JSON.stringify(w)).join(", ");
-				const chars = persistentWords.map(w => stringToCodePoints(w));
+				const chars = persistentWords.map(w => fromStringToUnicode(w));
 				const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
 				it(title, function () {
 					if (expected === undefined) {
