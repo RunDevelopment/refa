@@ -213,8 +213,17 @@ function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly
 export interface RegExpLiteral {
 	pattern: Expression;
 	flags: Flags;
+	maxCharacter: number;
 }
-export function parse(literal: { source: string; flags: string }, options?: RegExpParser.Options): RegExpLiteral {
+
+export interface ParseOptions extends RegExpParser.Options {
+	backreferences?: "default" | "throw" | "disable";
+	lookarounds?: "default" | "parse" | "throw" | "disable";
+}
+
+export function parse(literal: { source: string; flags: string }, options?: ParseOptions): RegExpLiteral {
+	options = options || {};
+
 	const parser = new RegExpParser(options);
 
 	const parsedFlags = parser.parseFlags(literal.flags);
@@ -232,12 +241,12 @@ export function parse(literal: { source: string; flags: string }, options?: RegE
 		alternatives: [],
 		source: getSource(parsedPattern)
 	};
-	addAlternatives(parsedPattern.alternatives, pattern, flags);
+	addAlternatives(parsedPattern.alternatives, pattern, flags, options);
 
-	return { pattern, flags };
+	return { pattern, flags, maxCharacter: flags.unicode ? 0x10FFFF : 0xFFFF };
 }
 
-function addAlternatives(alternatives: Ast.Alternative[], parent: Parent, flags: Flags): void {
+function addAlternatives(alternatives: Ast.Alternative[], parent: Parent, flags: Flags, options: ParseOptions): void {
 	for (const alt of alternatives) {
 		const elements: Element[] = [];
 		const concat: Concatenation = {
@@ -248,138 +257,158 @@ function addAlternatives(alternatives: Ast.Alternative[], parent: Parent, flags:
 		};
 		parent.alternatives.push(concat);
 
-		alt.elements.forEach(e => addElement(e, concat, flags));
+		alt.elements.forEach(e => addElement(e, concat, flags, options));
 	}
 }
 
-function addElement(element: Ast.Element, parent: Concatenation, flags: Flags): void {
+function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, options: ParseOptions): void {
 	const source: SourceLocation = getSource(element);
 
-	switch (element.type) {
-		case "Assertion":
-			{
-				switch (element.kind) {
-					case "lookahead":
-					case "lookbehind":
-						{
-							const assertion: Assertion = {
-								type: "Assertion",
-								kind: element.kind === "lookahead" ? "ahead" : "behind",
-								parent,
-								negate: element.negate,
-								alternatives: [],
-								source
-							};
-							parent.elements.push(assertion);
+	function addEmptyCharacterSet(): void {
+		const char: CharacterClass = {
+			type: "CharacterClass",
+			parent,
+			characters: createCharSet([], flags),
+			source
+		};
+		parent.elements.push(char);
+	}
 
-							addAlternatives(element.alternatives, assertion, flags);
-							break;
-						}
-					case "end":
-					case "start":
-					case "word":
-						{
-							const simpleAssertion = createAssertion(element, flags);
-							const assertion = desimplify(simpleAssertion, parent, source);
-							parent.elements.push(assertion);
-							break;
-						}
-					default:
-						throw assertNever(element, 'Unsupported element');
-				}
+	switch (element.type) {
+		case "Assertion": {
+			if (options.lookarounds === "throw") {
+				throw new Error("Assertions are not supported.");
+			}
+			if (options.lookarounds === "disable") {
+				addEmptyCharacterSet();
 				break;
 			}
-		case "CapturingGroup":
-		case "Group":
-			{
-				if (element.alternatives.length === 1) {
-					element.alternatives[0].elements.forEach(e => addElement(e, parent, flags));
-				} else if (element.alternatives.length > 1) {
-					const alteration: Alternation = {
-						type: "Alternation",
+
+			// "parse" is the default
+
+			switch (element.kind) {
+				case "lookahead":
+				case "lookbehind": {
+					const assertion: Assertion = {
+						type: "Assertion",
+						kind: element.kind === "lookahead" ? "ahead" : "behind",
 						parent,
+						negate: element.negate,
 						alternatives: [],
 						source
 					};
-					parent.elements.push(alteration);
-					addAlternatives(element.alternatives, alteration, flags);
+					parent.elements.push(assertion);
+
+					addAlternatives(element.alternatives, assertion, flags, options);
+					break;
 				}
-				break;
-			}
-		case "Character":
-		case "CharacterClass":
-		case "CharacterSet":
-			{
-				let characters: CharSet;
-				if (element.type === "Character") {
-					// e.g. a
-					characters = createCharSet([element.value], flags);
-				} else if (element.type === "CharacterSet") {
-					// e.g. \w
-					characters = createCharSet([element], flags);
-				} else {
-					// e.g. [^a-f\s]
-					characters = createCharSet(element.elements.map(e => {
-						switch (e.type) {
-							case "Character":
-								return e.value;
-							case "CharacterClassRange":
-								return { min: e.min.value, max: e.max.value };
-							case "CharacterSet":
-								return e;
-							default:
-								throw assertNever(e, 'Unsupported element');
-						}
-					}), flags);
-
-					if (element.negate) {
-						characters = characters.negate();
-					}
+				case "end":
+				case "start":
+				case "word": {
+					const simpleAssertion = createAssertion(element, flags);
+					const assertion = desimplify(simpleAssertion, parent, source);
+					parent.elements.push(assertion);
+					break;
 				}
-
-				const char: CharacterClass = {
-					type: "CharacterClass",
-					parent,
-					characters,
-					source
-				};
-				parent.elements.push(char);
-
-				break;
+				default:
+					throw assertNever(element, 'Unsupported element');
 			}
-		case "Quantifier":
-			{
-				const min: number = element.min;
-				const max: number = element.max === null ? Infinity : element.max;
-
-				const quant: Quantifier = {
-					type: "Quantifier",
+			break;
+		}
+		case "CapturingGroup":
+		case "Group": {
+			if (element.alternatives.length === 1) {
+				element.alternatives[0].elements.forEach(e => addElement(e, parent, flags, options));
+			} else if (element.alternatives.length > 1) {
+				const alteration: Alternation = {
+					type: "Alternation",
 					parent,
-					min,
-					max,
 					alternatives: [],
 					source
 				};
-				parent.elements.push(quant);
-
-				const qElement = element.element;
-				if (qElement.type === "CapturingGroup" || qElement.type === "Group") {
-					addAlternatives(qElement.alternatives, quant, flags);
-				} else {
-					const concat: Concatenation = {
-						type: "Concatenation",
-						parent: quant,
-						elements: [],
-						source: getSource(qElement)
+				parent.elements.push(alteration);
+				addAlternatives(element.alternatives, alteration, flags, options);
+			}
+			break;
+		}
+		case "Character":
+		case "CharacterClass":
+		case "CharacterSet": {
+			let characters: CharSet;
+			if (element.type === "Character") {
+				// e.g. a
+				characters = createCharSet([element.value], flags);
+			} else if (element.type === "CharacterSet") {
+				// e.g. \w
+				characters = createCharSet([element], flags);
+			} else {
+				// e.g. [^a-f\s]
+				characters = createCharSet(element.elements.map(e => {
+					switch (e.type) {
+						case "Character":
+							return e.value;
+						case "CharacterClassRange":
+							return { min: e.min.value, max: e.max.value };
+						case "CharacterSet":
+							return e;
+						default:
+							throw assertNever(e, 'Unsupported element');
 					}
-					quant.alternatives.push(concat);
+				}), flags);
 
-					addElement(qElement, concat, flags);
+				if (element.negate) {
+					characters = characters.negate();
 				}
+			}
 
+			const char: CharacterClass = {
+				type: "CharacterClass",
+				parent,
+				characters,
+				source
+			};
+			parent.elements.push(char);
+
+			break;
+		}
+		case "Quantifier": {
+			const min: number = element.min;
+			const max: number = element.max === null ? Infinity : element.max;
+
+			const quant: Quantifier = {
+				type: "Quantifier",
+				parent,
+				min,
+				max,
+				alternatives: [],
+				source
+			};
+			parent.elements.push(quant);
+
+			const qElement = element.element;
+			if (qElement.type === "CapturingGroup" || qElement.type === "Group") {
+				addAlternatives(qElement.alternatives, quant, flags, options);
+			} else {
+				const concat: Concatenation = {
+					type: "Concatenation",
+					parent: quant,
+					elements: [],
+					source: getSource(qElement)
+				}
+				quant.alternatives.push(concat);
+
+				addElement(qElement, concat, flags, options);
+			}
+
+			break;
+		}
+		case "Backreference":
+			if (options.backreferences === "disable") {
+				addEmptyCharacterSet();
 				break;
 			}
-		case "Backreference":
+
+			// "throw" is the default
 			throw new Error('Backreferences are not supported.');
 		default:
 			throw assertNever(element, 'Unsupported element');

@@ -518,25 +518,24 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 				break;
 			case "Assertion":
 				throw new Error('Assertions are not supported yet.');
-			case "CharacterClass":
-				{
-					const chars = element.characters;
-					if (chars.maximum !== options.maxCharacter) {
-						throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
-					}
+			case "CharacterClass": {
+				const chars = element.characters;
+				if (chars.maximum !== options.maxCharacter) {
+					throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
+				}
 
-					if (chars.isEmpty) {
-						// the whole concatenation can't go anywhere
-						baseMakeEmpty(nodeList, base);
-					} else {
-						// we know that base.final isn't empty, so just link all former finals to a new final node
-						const s = nodeList.createNode();
-						base.final.forEach(f => nodeList.linkNodes(f, s, chars));
-						base.final.clear();
-						base.final.add(s);
-					}
+				if (chars.isEmpty) {
+					// the whole concatenation can't go anywhere
+					baseMakeEmpty(nodeList, base);
+				} else {
+					// we know that base.final isn't empty, so just link all former finals to a new final node
+					const s = nodeList.createNode();
+					base.final.forEach(f => nodeList.linkNodes(f, s, chars));
+					base.final.clear();
+					base.final.add(s);
 				}
 				break;
+			}
 			case "Quantifier":
 				baseConcat(nodeList, base, handleQuantifier(element));
 				break;

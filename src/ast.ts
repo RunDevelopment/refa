@@ -173,52 +173,48 @@ function toPatternConcatenation(concat: Simple<Concatenation>): string {
 }
 function toPatternElement(element: Simple<Element>): string {
 	switch (element.type) {
-		case "Alternation":
-			{
-				return '(?:' + toPatternAlternatives(element.alternatives) + ')';
-			}
-		case "Assertion":
-			{
-				const kind = element.kind === "ahead" ? "" : "<";
-				const negate = element.negate ? "!" : "=";
-				return `(?${kind}${negate}${toPatternAlternatives(element.alternatives)})`;
-			}
-		case "CharacterClass":
-			{
-				return `[${rangesToString(element.characters.ranges)}]`;
-			}
-		case "Quantifier":
-			{
-				let quant: string;
-				if (element.max === Infinity) {
-					if (element.min === 0) {
-						quant = "*";
-					} else if (element.min === 1) {
-						quant = "+";
-					} else {
-						quant = `{${element.min},}`
-					}
-				} else if (element.max === 1) {
-					if (element.min === 0) {
-						quant = "?";
-					} else /* if (element.min === 1) */ {
-						quant = "";
-					}
-				} else if (element.min === element.max) {
-					quant = `{${element.min}}`;
+		case "Alternation": {
+			return '(?:' + toPatternAlternatives(element.alternatives) + ')';
+		}
+		case "Assertion": {
+			const kind = element.kind === "ahead" ? "" : "<";
+			const negate = element.negate ? "!" : "=";
+			return `(?${kind}${negate}${toPatternAlternatives(element.alternatives)})`;
+		}
+		case "CharacterClass": {
+			return `[${rangesToString(element.characters.ranges)}]`;
+		}
+		case "Quantifier": {
+			let quant: string;
+			if (element.max === Infinity) {
+				if (element.min === 0) {
+					quant = "*";
+				} else if (element.min === 1) {
+					quant = "+";
 				} else {
-					quant = `{${element.min},${element.max}}`;
+					quant = `{${element.min},}`
 				}
-
-				let content: string;
-				if (element.alternatives.length === 1) {
-					content = toPatternConcatenation(element.alternatives[0]);
-				} else {
-					content = '(?:' + toPatternAlternatives(element.alternatives) + ')';
+			} else if (element.max === 1) {
+				if (element.min === 0) {
+					quant = "?";
+				} else /* if (element.min === 1) */ {
+					quant = "";
 				}
-
-				return content + quant;
+			} else if (element.min === element.max) {
+				quant = `{${element.min}}`;
+			} else {
+				quant = `{${element.min},${element.max}}`;
 			}
+
+			let content: string;
+			if (element.alternatives.length === 1) {
+				content = toPatternConcatenation(element.alternatives[0]);
+			} else {
+				content = '(?:' + toPatternAlternatives(element.alternatives) + ')';
+			}
+
+			return content + quant;
+		}
 		default:
 			throw assertNever(element, 'Invalid element');
 	}
