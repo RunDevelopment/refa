@@ -35,51 +35,6 @@ export function filterMut<T>(array: T[], filter: (arg: T, prev: T | undefined) =
 	}
 }
 
-/**
- * Returns the Unicode code points of a given string.
- *
- * @param word
- */
-export function* stringToCodePoints(word: string): Iterable<number> {
-	// https://stackoverflow.com/a/21409165/7595472
-
-	for (let i = 0, l = word.length; i < l; i++) {
-		const c1 = word.charCodeAt(i);
-		if (c1 >= 0xD800 && c1 < 0xDC00 && i + 1 < l) {
-			const c2 = word.charCodeAt(i + 1);
-			if (c2 >= 0xDC00 && c2 < 0xE000) {
-				yield 0x10000 + ((c1 - 0xD800) << 10) + (c2 - 0xDC00);
-				i++;
-				continue;
-			}
-		}
-		yield c1;
-	}
-}
-/**
- * Returns the UTF16 character code of a given string.
- *
- * @param word
- */
-export function* stringToCharCodes(word: string): Iterable<number> {
-	for (let i = 0, l = word.length; i < l; i++) {
-		yield word.charCodeAt(i);
-	}
-}
-
-/**
- * Returns the corresponding string of some given UTF16 character codes or Unicode code points.
- *
- * @param codes
- */
-export function codesToString(codes: Iterable<number>): string {
-	let s = "";
-	for (const code of codes) {
-		s += String.fromCodePoint(code);
-	}
-	return s;
-}
-
 
 export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | undefined {
 	let min: T | undefined = undefined;

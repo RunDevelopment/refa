@@ -6,4 +6,5 @@ export * from "./nfa";
 export * from "./dfa";
 
 import * as JS from "./js/index";
-export { JS };
+import * as Words from "./words";
+export { JS, Words };
