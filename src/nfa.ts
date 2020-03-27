@@ -51,16 +51,8 @@ class NodeList {
 			throw new Error("You can't link nodes with the empty character set.");
 		}
 
-		function add(map: Map<NFANode, CharSet>, to: NFANode, characters: CharSet): void {
-			const current = map.get(to);
-			if (current === undefined) {
-				map.set(to, characters);
-			} else {
-				map.set(to, current.union(characters));
-			}
-		}
-		add(from.out, to, characters);
-		add(to.in, from, characters);
+		linkNodesAddImpl(from.out, to, characters);
+		linkNodesAddImpl(to.in, from, characters);
 	}
 
 	unlinkNodes(from: NFANode, to: NFANode): void {
@@ -172,6 +164,23 @@ class NodeList {
 	}
 
 }
+
+/**
+ * The actual implementation of the linkNodes function.
+ *
+ * @param map
+ * @param to
+ * @param characters
+ */
+function linkNodesAddImpl(map: Map<NFANode, CharSet>, to: NFANode, characters: CharSet): void {
+	const current = map.get(to);
+	if (current === undefined) {
+		map.set(to, characters);
+	} else {
+		map.set(to, current.union(characters));
+	}
+}
+
 
 interface SubList {
 	readonly initial: NFANode;
@@ -288,9 +297,13 @@ export class NFA implements FiniteAutomaton {
 
 		const nodeList = new NodeList();
 
+		// iterating the right nodes again and again takes time, so just cache them here
+		const leftNodes = [...left.nodes];
+		const rightNodes = [...right.nodes];
+
 		// node pair translation
-		const thisIndexMap = createIndexMap(left.nodes);
-		const otherIndexMap = createIndexMap(right.nodes);
+		const thisIndexMap = createIndexMap(leftNodes);
+		const otherIndexMap = createIndexMap(rightNodes);
 		const indexTranslator = cachedFunc<number, NFANode>(() => nodeList.createNode());
 		indexTranslator.cache.set(0, nodeList.initial);
 
@@ -313,10 +326,21 @@ export class NFA implements FiniteAutomaton {
 			}
 		}
 
+		/**
+		 * Now for the actual intersection:
+		 *
+		 * The main problem with FA intersection is the O(n^2) time and space complexity. While space might not be much
+		 * of an issue, time definitely is.
+		 *
+		 * The most expensive operation inside the nested loops below is the char set intersection, so we cache and
+		 * reuse all intersection results.
+		 */
+
 		// charset intersection cache
 
 		// go through all charset and assign each one a unique id
 		const charSetIdMap = new Map<CharSet, number>();
+		let charSetIdCounter = 0;
 		const hashTable: (CharSet[] | undefined)[] = [];
 		function addCharSet(set: CharSet): void {
 			if (charSetIdMap.has(set)) {
@@ -342,23 +366,25 @@ export class NFA implements FiniteAutomaton {
 			});
 
 			if (!added) {
-				charSetIdMap.set(set, charSetIdMap.size);
+				charSetIdMap.set(set, charSetIdCounter++);
 			}
 
 			hashEntry.push(set);
 		}
 
-		function consumer(_: number, node: NFANode): void {
+		function consumer(node: NFANode): void {
 			for (const charSet of node.out.values()) {
 				addCharSet(charSet);
 			}
 		}
-		thisIndexMap.forEach(consumer);
-		otherIndexMap.forEach(consumer);
+		leftNodes.forEach(consumer);
+		rightNodes.forEach(consumer);
 
 		// use the id of char sets to store pairs
-		const intersectionCache = new Map<number, CharSet>();
-		function intersectCharSets(a: CharSet, b: CharSet): CharSet {
+		// null be represent empty char sets
+		const intersectionCache: (CharSet | null)[] = [];
+		const charSetIdSize = charSetIdCounter;
+		function intersectCharSets(a: CharSet, b: CharSet): CharSet | null {
 			const aIndex = charSetIdMap.get(a);
 			const bIndex = charSetIdMap.get(b);
 
@@ -375,29 +401,34 @@ export class NFA implements FiniteAutomaton {
 			// since intersection is symmetric we don't care about the order
 			let index;
 			if (aIndex < bIndex) {
-				index = aIndex * charSetIdMap.size + bIndex;
+				index = aIndex * charSetIdSize + bIndex;
 			} else {
-				index = bIndex * charSetIdMap.size + aIndex;
+				index = bIndex * charSetIdSize + aIndex;
 			}
 
-			let result = intersectionCache.get(index);
+			let result: CharSet | null | undefined = intersectionCache[index];
 			if (result === undefined) {
 				result = a.intersect(b);
-				intersectionCache.set(index, result);
+				if (result.isEmpty) {
+					result = null;
+				}
+				intersectionCache[index] = result;
 			}
 
 			return result;
 		}
 
 		// add edges
-		for (const thisNode of left.nodes) {
-			for (const otherNode of right.nodes) {
+
+		for (const thisNode of leftNodes) {
+			for (const otherNode of rightNodes) {
 				const from = translate(thisNode, otherNode);
 				for (const [thisTo, thisTransition] of thisNode.out) {
 					for (const [otherTo, otherTransition] of otherNode.out) {
 						const transition = intersectCharSets(thisTransition, otherTransition);
-						if (!transition.isEmpty) {
-							nodeList.linkNodes(from, translate(thisTo, otherTo), transition);
+						if (transition) {
+							const to = translate(thisTo, otherTo);
+							nodeList.linkNodes(from, to, transition);
 						}
 					}
 				}
