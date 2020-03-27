@@ -302,6 +302,10 @@ export class CharSet {
 			}
 		}
 
+		if (newRanges.length === 0) {
+			return CharSet.empty(this.maximum);
+		}
+
 		return new CharSet(this.maximum, newRanges);
 	}
 

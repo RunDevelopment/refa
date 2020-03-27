@@ -313,13 +313,89 @@ export class NFA implements FiniteAutomaton {
 			}
 		}
 
+		// charset intersection cache
+
+		// go through all charset and assign each one a unique id
+		const charSetIdMap = new Map<CharSet, number>();
+		const hashTable: (CharSet[] | undefined)[] = [];
+		function addCharSet(set: CharSet): void {
+			if (charSetIdMap.has(set)) {
+				return;
+			}
+
+			let hash = 0;
+			set.ranges.forEach(({ min, max }) => {
+				hash = ((hash * 31 + min) ^ max * 31) & 0xFFFF;
+			});
+
+			let hashEntry = hashTable[hash];
+			if (hashEntry === undefined) {
+				hashTable[hash] = hashEntry = [];
+			}
+
+			const added = hashEntry.some(cs => {
+				if (cs.equals(set)) {
+					charSetIdMap.set(set, charSetIdMap.get(cs)!);
+					return true;
+				}
+				return false;
+			});
+
+			if (!added) {
+				charSetIdMap.set(set, charSetIdMap.size);
+			}
+
+			hashEntry.push(set);
+		}
+
+		function consumer(_: number, node: NFANode): void {
+			for (const charSet of node.out.values()) {
+				addCharSet(charSet);
+			}
+		}
+		thisIndexMap.forEach(consumer);
+		otherIndexMap.forEach(consumer);
+
+		// use the id of char sets to store pairs
+		const intersectionCache = new Map<number, CharSet>();
+		function intersectCharSets(a: CharSet, b: CharSet): CharSet {
+			const aIndex = charSetIdMap.get(a);
+			const bIndex = charSetIdMap.get(b);
+
+			if (aIndex === undefined || bIndex === undefined) {
+				// this shouldn't happen
+				throw new Error("All char sets should be indexed.");
+			}
+
+			// trivial
+			if (aIndex == bIndex) {
+				return a;
+			}
+
+			// since intersection is symmetric we don't care about the order
+			let index;
+			if (aIndex < bIndex) {
+				index = aIndex * charSetIdMap.size + bIndex;
+			} else {
+				index = bIndex * charSetIdMap.size + aIndex;
+			}
+
+			let result = intersectionCache.get(index);
+			if (result === undefined) {
+				result = a.intersect(b);
+				intersectionCache.set(index, result);
+			}
+
+			return result;
+		}
+
 		// add edges
 		for (const thisNode of left.nodes) {
 			for (const otherNode of right.nodes) {
 				const from = translate(thisNode, otherNode);
 				for (const [thisTo, thisTransition] of thisNode.out) {
 					for (const [otherTo, otherTransition] of otherNode.out) {
-						const transition = thisTransition.intersect(otherTransition);
+						const transition = intersectCharSets(thisTransition, otherTransition);
 						if (!transition.isEmpty) {
 							nodeList.linkNodes(from, translate(thisTo, otherTo), transition);
 						}
