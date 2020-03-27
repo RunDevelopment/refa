@@ -1,3 +1,5 @@
+import { CharSet } from "./char-set";
+
 export function fromUTF16ToString(word: Iterable<number>): string {
 	return String.fromCharCode(...word);
 }
@@ -35,4 +37,64 @@ export function fromStringToUnicode(string: string): number[] {
 	}
 
 	return word;
+}
+
+/**
+ * Iterates all words which can be constructed from the given word set (array of character sets).
+ *
+ * @param wordSet
+ */
+export function* wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<number[]> {
+	if (wordSet.length === 0) {
+		yield [];
+	} else {
+		const charsArray: number[][] = [];
+		for (const set of wordSet) {
+			const chars: number[] = [];
+			for (const { min, max } of set.ranges) {
+				for (let i = min; i <= max; i++) {
+					chars.push(i);
+				}
+			}
+			charsArray.push(chars);
+		}
+		yield* nestedIteration(charsArray);
+	}
+}
+
+function* nestedIteration<T>(arrays: T[][]): IterableIterator<T[]> {
+	const indexes: number[] = [];
+
+	for (let i = 0; i < arrays.length; i++) {
+		const array = arrays[i];
+		if (array.length === 0) {
+			return;
+		}
+		indexes[i] = 0;
+	}
+
+	function hasNext(): boolean {
+		let i = arrays.length - 1;
+		while (true) {
+			if (i < 0) {
+				return false;
+			}
+			const index = ++indexes[i];
+			if (index >= arrays[i].length) {
+				indexes[i] = 0;
+				i--;
+			} else {
+				break;
+			}
+		}
+		return true;
+	}
+
+	do {
+		const res: T[] = [];
+		for (let i = 0; i < indexes.length; i++) {
+			res[i] = arrays[i][indexes[i]];
+		}
+		yield res;
+	} while (hasNext());
 }
