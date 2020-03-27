@@ -202,7 +202,7 @@ export class CharSet {
 
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
-		if (first instanceof CharSet) {
+		if (first instanceof CharSet && data.length === 1) {
 			this.checkCompatibility(first);
 			return this.unionOtherRanges(first.ranges);
 		}
