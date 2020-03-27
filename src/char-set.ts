@@ -100,7 +100,8 @@ export class CharSet {
 		return this.ranges.length === 0;
 	}
 	/**
-	 * Returns `true` if all characters in the range from 0 to `this.maximum`, including 0 and `this.maximum`, are in the set.
+	 * Returns `true` if all characters in the range from 0 to `this.maximum`, including 0 and `this.maximum`, are in
+	 * the set.
 	 */
 	get isAll(): boolean {
 		return this.ranges.length === 1 && this.ranges[0].min === 0 && this.ranges[0].max === this.maximum;

@@ -1,6 +1,9 @@
 import { CharRange, CharSet } from "../char-set";
 import { CASE_VARIATIONS } from "../char-util";
-import { Element, Assertion, Simple, Alternation, Expression, Concatenation, Parent, SourceLocation, Quantifier, CharacterClass, desimplify } from "../ast";
+import {
+	Element, Assertion, Simple, Alternation, Expression, Concatenation, Parent, SourceLocation, Quantifier,
+	CharacterClass, desimplify
+} from "../ast";
 import { RegExpParser } from "regexpp";
 import * as Ast from "regexpp/ast";
 import { assertNever } from "../util";
@@ -15,7 +18,8 @@ export interface Flags {
 }
 
 
-export type PredefinedCharacterSet = AnyCharacterSet | DigitCharacterSet | PropertyCharacterSet | SpaceCharacterSet | WordCharacterSet;
+export type PredefinedCharacterSet =
+	AnyCharacterSet | DigitCharacterSet | PropertyCharacterSet | SpaceCharacterSet | WordCharacterSet;
 export interface AnyCharacterSet {
 	kind: "any";
 }

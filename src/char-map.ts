@@ -132,7 +132,10 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 		this.tree.deleteRange(range);
 	}
 
-	mapRange(range: CharRange, mapFn: (value: T | undefined, chars: CharRange, map: CharMap<T>) => T | undefined): void {
+	mapRange(
+		range: CharRange,
+		mapFn: (value: T | undefined, chars: CharRange, map: CharMap<T>) => T | undefined
+	): void {
 		this.tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});

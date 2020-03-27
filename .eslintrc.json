@@ -25,9 +25,20 @@
         }
     },
     "rules": {
-        "@typescript-eslint/indent": [
+        "max-len": [
             "error",
-            "tab"
+            {
+                "code": 120,
+                "tabWidth": 4,
+                "ignoreStrings": true
+            }
+        ],
+        "@typescript-eslint/no-inferrable-types": [
+            "error",
+            {
+                "ignoreParameters": true,
+                "ignoreProperties": true
+            }
         ],
         "@typescript-eslint/explicit-function-return-type": [
             "error",

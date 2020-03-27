@@ -188,6 +188,12 @@ interface SubList {
 }
 
 /*
+ * ####################################################################################################################
+ * ###                                                                                                              ###
+ * ###                                              I M P O R T A N T                                               ###
+ * ###                                                                                                              ###
+ * ####################################################################################################################
+ *
  * Note regarding the normalization of node lists and sub lists:
  *
  * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
@@ -491,7 +497,10 @@ export class NFA implements FiniteAutomaton {
 	static fromRegex(concat: Simple<Concatenation>, options: Readonly<NFAOptions>): NFA;
 	static fromRegex(expression: Simple<Expression>, options: Readonly<NFAOptions>): NFA;
 	static fromRegex(alternatives: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA;
-	static fromRegex(value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA {
+	static fromRegex(
+		value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
+		options: Readonly<NFAOptions>
+	): NFA {
 		let nodeList: NodeList;
 		if (Array.isArray(value)) {
 			nodeList = createNodeList(value as readonly Simple<Concatenation>[], options);
@@ -816,13 +825,8 @@ function baseOptimizationMergePrefixes(nodeList: NodeList, base: SubList): void 
 	 * So that e.g. /abc|abba/ will merged to /ab(c|ba)/ (similar to suffixes).
 	 */
 
-	const prefixNodes: NFANode[] = [];
-
-	// if the initial state has incoming transitions, we'd have to do some additional analysis on whether we can
-	// actually merge two outgoing nodes.
-	if (base.initial.in.size === 0) {
-		prefixNodes.push(base.initial);
-	}
+	const prefixNodes: NFANode[] = [base.initial];
+	// we can just do this because we know the initial node doesn't have any incoming transitions
 
 	while (prefixNodes.length > 0) {
 		const node = prefixNodes.pop()!;
@@ -857,8 +861,8 @@ function baseOptimizationMergePrefixes(nodeList: NodeList, base: SubList): void 
 					// we might be able to merge prefixes on this one
 					prefixNodes.push(current);
 
-					// there can be no other nodes with the same char set because if there were they would have been removed
-					// by this function in a previous union
+					// there can be no other nodes with the same char set because if there were they would have been
+					// removed by this function in a previous union
 					break;
 				}
 			}
@@ -909,8 +913,8 @@ function baseOptimizationMergeSuffixes(nodeList: NodeList, base: SubList): void 
 					// we might be able to merge prefixes on this one
 					suffixNodes.push(current);
 
-					// there can be no other nodes with the same char set because if there were they would have been removed
-					// by this function in a previous union
+					// there can be no other nodes with the same char set because if there were they would have been
+					// removed by this function in a previous union
 					break;
 				}
 			}

@@ -179,7 +179,8 @@ function eliminateStates(nodeList: NodeList): void {
 			elements: [a, b]
 		};
 	}
-	function getSingleCharClass(a: Simple<Alternation>): Simple<Concatenation> & { elements: [Simple<CharacterClass>] } | null {
+	function getSingleCharClass(
+		a: Simple<Alternation>): Simple<Concatenation> & { elements: [Simple<CharacterClass>] } | null {
 		for (const alt of a.alternatives) {
 			if (alt.elements.length === 1) {
 				const first = alt.elements[0];
@@ -217,11 +218,13 @@ function eliminateStates(nodeList: NodeList): void {
 				if (aCharClassAlt) {
 					const bCharClassAlt = getSingleCharClass(b);
 					if (bCharClassAlt) {
+						const aCharClass = aCharClassAlt.elements[0];
+						const bCharClass = bCharClassAlt.elements[0];
 						// merge the single char class
 						const newAlternatives: Simple<Concatenation>[] = [
 							asConcatenation({
 								type: "CharacterClass",
-								characters: aCharClassAlt.elements[0].characters.union(bCharClassAlt.elements[0].characters)
+								characters: aCharClass.characters.union(bCharClass.characters)
 							})
 						];
 						a.alternatives.forEach(alt => {
@@ -273,7 +276,9 @@ function eliminateStates(nodeList: NodeList): void {
 			alternatives: [asConcatenation(a), asConcatenation(b)]
 		};
 	}
-	function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): Simple<Alternation> {
+	function unionAlternationAndCharClass(
+		alternation: Simple<Alternation>,
+		char: Simple<CharacterClass>): Simple<Alternation> {
 		const charClassAlt = getSingleCharClass(alternation);
 		if (charClassAlt) {
 			// merge the single char class
@@ -588,7 +593,9 @@ function structurallyEqual(a: Simple<Element>, b: Simple<Element>): boolean {
 			throw assertNever(a);
 	}
 }
-function structurallyEqualAlternatives(a: readonly Simple<Concatenation>[], b: readonly Simple<Concatenation>[]): boolean {
+function structurallyEqualAlternatives(
+	a: readonly Simple<Concatenation>[],
+	b: readonly Simple<Concatenation>[]): boolean {
 	const l = a.length;
 	if (l !== b.length) return false;
 	for (let i = 0; i < l; i++) {
