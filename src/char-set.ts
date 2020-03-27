@@ -4,60 +4,66 @@ export interface CharRange {
 }
 
 
-export const Ranges = {
+/**
+ * This optimizes the given ranges in O(n) time.
+ *
+ * @param ranges
+ */
+function optimizeSortedRanges(ranges: CharRange[]): void {
+	let deleteCount = 0;
+	for (let i = 0, max = ranges.length - 1; i < max; i++) {
+		const current = ranges[i - deleteCount];
+		const next = ranges[i + 1];
 
-	/**
-	 * Given an array of character ranges, it will remove any duplicates and join overlapping and adjacent ranges.
-	 *
-	 * While the array itself will be modified, the range objects in the array will not.
-	 *
-	 * @param ranges
-	 */
-	optimize(ranges: CharRange[]): void {
-		// runs in O(n * log(n)), n = ranges.length
-
-		ranges.sort((a, b) => a.min - b.min);
-
-		let deleteCount = 0;
-		for (let i = 0; i < ranges.length - 1; i++) {
-			const current = ranges[i - deleteCount];
-			const next = ranges[i + 1];
-
-			if (current.max >= next.max) {
-				// current completely contains next.
-				deleteCount++;
-			} else if (next.min <= current.max + 1) {
-				// overlapping or adjacent.
-				ranges[i - deleteCount] = { min: current.min, max: next.max };
-				deleteCount++;
-			} else {
-				ranges[i - deleteCount + 1] = next;
-			}
-		}
-
-		ranges.splice(ranges.length - deleteCount, deleteCount);
-	},
-
-	negate: function* (ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
-		// runs in O(ranges.length)
-
-		if (ranges.length === 0) {
-			yield { min: 0, max: maximum };
+		if (current.max >= next.max) {
+			// current completely contains next.
+			deleteCount++;
+		} else if (next.min <= current.max + 1) {
+			// overlapping or adjacent.
+			ranges[i - deleteCount] = { min: current.min, max: next.max };
+			deleteCount++;
 		} else {
-			const first = ranges[0], last = ranges[ranges.length - 1];
-			if (first.min > 0) {
-				yield { min: 0, max: first.min - 1 };
-			}
-			for (let i = 1; i < ranges.length; i++) {
-				yield { min: ranges[i - 1].max + 1, max: ranges[i].min - 1 };
-			}
-			if (last.max < maximum) {
-				yield { min: last.max + 1, max: maximum };
-			}
+			ranges[i - deleteCount + 1] = next;
 		}
 	}
 
-};
+	if (deleteCount) {
+		ranges.length = ranges.length - deleteCount;
+	}
+}
+
+/**
+ * Given an array of character ranges, it will remove any duplicates and join overlapping and adjacent ranges.
+ *
+ * While the array itself will be modified, the range objects in the array will not.
+ *
+ * @param ranges
+ */
+export function optimizeRanges(ranges: CharRange[]): void {
+	// runs in O(n * log(n)), n = ranges.length
+
+	ranges.sort((a, b) => a.min - b.min);
+	optimizeSortedRanges(ranges);
+}
+
+function* negateRanges(ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
+	// runs in O(ranges.length)
+
+	if (ranges.length === 0) {
+		yield { min: 0, max: maximum };
+	} else {
+		const first = ranges[0], last = ranges[ranges.length - 1];
+		if (first.min > 0) {
+			yield { min: 0, max: first.min - 1 };
+		}
+		for (let i = 1; i < ranges.length; i++) {
+			yield { min: ranges[i - 1].max + 1, max: ranges[i].min - 1 };
+		}
+		if (last.max < maximum) {
+			yield { min: last.max + 1, max: maximum };
+		}
+	}
+}
 
 
 const emptyCache = new Map<number, CharSet>();
@@ -150,13 +156,17 @@ export class CharSet {
 	}
 
 
+	private checkCompatibility(value: CharSet): void {
+		if (value.maximum !== this.maximum) {
+			throw new RangeError(`The maximum of the other set has to be equal the maximum of this set.`);
+		}
+	}
+
 	private toRanges(value: CharSet): readonly CharRange[];
 	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange>;
 	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange> {
 		if (value instanceof CharSet) {
-			if (value.maximum !== this.maximum) {
-				throw new RangeError(`The maximum of the other set has to be equal the maximum of this set.`);
-			}
+			this.checkCompatibility(value);
 			return value.ranges;
 		} else {
 			return value;
@@ -187,10 +197,16 @@ export class CharSet {
 	}
 
 	negate(): CharSet {
-		return new CharSet(this.maximum, [...Ranges.negate(this.ranges, this.maximum)]);
+		return new CharSet(this.maximum, [...negateRanges(this.ranges, this.maximum)]);
 	}
 
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
+		const first = data[0];
+		if (first instanceof CharSet) {
+			this.checkCompatibility(first);
+			return this.unionOtherRanges(first.ranges);
+		}
+
 		const newRanges: CharRange[] = this.ranges.slice();
 		for (const rangesOrSet of data) {
 			for (const range of this.toRanges(rangesOrSet)) {
@@ -198,16 +214,95 @@ export class CharSet {
 			}
 		}
 
-		Ranges.optimize(newRanges);
+		optimizeRanges(newRanges);
+		return new CharSet(this.maximum, newRanges);
+	}
+
+	/**
+	 * This will create the union of this char set and the given ranges.
+	 *
+	 * __Note:__ The ranges are assumed to be optimized and compatible with this set.
+	 *
+	 * @param otherRanges
+	 */
+	private unionOtherRanges(otherRanges: readonly CharRange[]): CharSet {
+		// now we can just merge the sorted ranges in O(n)
+		const newRanges: CharRange[] = [];
+
+		const thisRanges = this.ranges;
+		let thisIndex = 0, otherIndex = 0;
+		let thisR = thisRanges[thisIndex], otherR = otherRanges[otherIndex];
+		while (thisR && otherR) {
+			if (thisR.min <= otherR.min) {
+				newRanges.push(thisR);
+				thisR = thisRanges[++thisIndex];
+			} else /* if (otherR.min < thisR.min) */ {
+				newRanges.push(otherR);
+				otherR = otherRanges[++otherIndex];
+			}
+		}
+
+		// append rest
+		for (; thisR; thisR = thisRanges[thisIndex++]) {
+			newRanges.push(thisR);
+		}
+		for (; otherR; otherR = otherRanges[otherIndex++]) {
+			newRanges.push(otherR);
+		}
+
+		// optimize
+		optimizeSortedRanges(newRanges);
+
 		return new CharSet(this.maximum, newRanges);
 	}
 
 	intersect(set: CharSet): CharSet;
 	intersect(ranges: Iterable<CharRange>): CharSet;
 	intersect(data: Iterable<CharRange> | CharSet): CharSet {
-		// TODO: more efficient approach
-		const set = data instanceof CharSet ? data : CharSet.empty(this.maximum).union(data);
-		return this.negate().union(Ranges.negate(set.ranges, set.maximum)).negate();
+		let other: CharSet;
+		if (data instanceof CharSet) {
+			this.checkCompatibility(data);
+			other = data;
+		} else {
+			// will be slower because the data has to be sorted and optimized which is done in O(n log n)
+			other = CharSet.empty(this.maximum).union(data);
+		}
+
+		const newRanges: CharRange[] = [];
+
+		// intersection done in O(n)
+
+		const thisRanges = this.ranges, otherRanges = other.ranges;
+		let thisIndex = 0, otherIndex = 0;
+		let thisR = thisRanges[thisIndex], otherR = otherRanges[otherIndex];
+		while (thisR && otherR) {
+			// skip if thisR and otherR are disjoint
+			if (thisR.max < otherR.min) {
+				thisR = thisRanges[++thisIndex];
+				continue;
+			}
+			if (otherR.max < thisR.min) {
+				otherR = otherRanges[++otherIndex];
+				continue;
+			}
+
+			// thisR and otherR overlap in at least one character
+
+			// add intersection
+			newRanges.push({ min: Math.max(thisR.min, otherR.min), max: Math.min(thisR.max, otherR.max) });
+
+			// advance one the one with the lower max or both if their max is the same
+			if (thisR.max < otherR.max) {
+				thisR = thisRanges[++thisIndex];
+			} else if (otherR.max < thisR.max) {
+				otherR = otherRanges[++otherIndex];
+			} else {
+				thisR = thisRanges[++thisIndex];
+				otherR = otherRanges[++otherIndex];
+			}
+		}
+
+		return new CharSet(this.maximum, newRanges);
 	}
 
 	without(set: CharSet): CharSet;
@@ -215,7 +310,7 @@ export class CharSet {
 	without(data: Iterable<CharRange> | CharSet): CharSet {
 		// TODO: more efficient approach
 		const set = data instanceof CharSet ? data : CharSet.empty(this.maximum).union(data);
-		return set.union(Ranges.negate(this.ranges, this.maximum)).negate();
+		return set.union(negateRanges(this.ranges, this.maximum)).negate();
 	}
 
 

@@ -1,7 +1,7 @@
 import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
 import { CharMap } from "./char-map";
-import { CharRange, CharSet, Ranges } from "./char-set";
+import { CharRange, CharSet, optimizeRanges } from "./char-set";
 import { rangesToString } from "./char-util";
 import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
 import type { NFA, NFANode } from "./nfa";
@@ -470,7 +470,7 @@ function getAtomicRanges(ranges: Iterable<CharRange>): CharRange[] {
 		cutSet.add(range.min);
 		cutSet.add(range.max + 1);
 	}
-	Ranges.optimize(union);
+	optimizeRanges(union);
 
 	// a sorted array of all cuts
 	const cuts = [...cutSet];

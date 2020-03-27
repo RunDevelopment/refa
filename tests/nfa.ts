@@ -261,6 +261,16 @@ describe('NFA', function () {
 
 					[5] -> none`
 			},
+			{
+				literal: /(?:a+){2,}/,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (1) : 61
+					    -> [2] : 61
+
+					[2] -> [2] : 61`
+			},
 		]);
 
 		interface TestCase {
@@ -496,6 +506,18 @@ describe('NFA', function () {
 					    -> (5) : 61
 
 					(5) -> (4) : 62`
+			},
+			{
+				literal: /a+/,
+				other: /(?:a+){2,}/,
+				// expected == /a{2,})/
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (1) : 61
+					    -> [2] : 61
+
+					[2] -> [2] : 61`
 			},
 		]);
 
