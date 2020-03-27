@@ -630,7 +630,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('intersect', function () {
+	describe('intersectionWordSets', function () {
 
 		test([
 			{
