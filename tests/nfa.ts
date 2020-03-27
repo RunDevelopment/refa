@@ -562,22 +562,22 @@ describe('NFA', function () {
 
 		test([
 			{
-				literal: /a/,
-				other: /b/,
+				left: /a/,
+				right: /b/,
 				expected: `
 					(0) -> none`
 			},
 			{
-				literal: /a*/,
-				other: /a/,
+				left: /a*/,
+				right: /a/,
 				expected: `
 					(0) -> [1] : 61
 
 					[1] -> none`
 			},
 			{
-				literal: /b*(ab+)*a/,
-				other: /a*(ba+)*/,
+				left: /b*(ab+)*a/,
+				right: /a*(ba+)*/,
 				// expected == /b?(ab)*a/
 				expected: `
 					(0) -> (1) : 61
@@ -597,8 +597,8 @@ describe('NFA', function () {
 					(5) -> (4) : 62`
 			},
 			{
-				literal: /a+/,
-				other: /(?:a+){2,}/,
+				left: /a+/,
+				right: /(?:a+){2,}/,
 				// expected == /a{2,})/
 				expected: `
 					(0) -> (1) : 61
@@ -611,19 +611,91 @@ describe('NFA', function () {
 		]);
 
 		interface TestCase {
-			literal: Literal;
-			other: Literal;
+			left: Literal;
+			right: Literal;
 			expected: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { literal, other, expected } of cases) {
-				it(`${literalToString(literal)} ∩ ${literalToString(other)}`, function () {
+			for (const { left, right, expected } of cases) {
+				it(`${literalToString(left)} ∩ ${literalToString(right)}`, function () {
 
-					const nfa = literalToNFA(literal);
-					const nfaOther = literalToNFA(other);
-					const actual = NFA.intersect(nfa, nfaOther).toString();
+					const nfaLeft = literalToNFA(left);
+					const nfaRight = literalToNFA(right);
+					const actual = NFA.intersect(nfaLeft, nfaRight).toString();
 					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
+				});
+			}
+		}
+
+	});
+
+	describe('intersect', function () {
+
+		test([
+			{
+				left: /a/,
+				right: /b/
+			},
+			{
+				left: /a*/,
+				right: /a/
+			},
+			{
+				left: /b*(ab+)*a/,
+				right: /a*(ba+)*/
+			},
+			{
+				left: /a+/,
+				right: /(?:a+){2,}/
+			},
+			{
+				left: /(?:[^>"'[\]]|"[^"]*"|'[^']*')/,
+				right: /(?:[^>"'[\]]|"[^"]*"|'[^']*'){2,}/
+			}
+		]);
+
+		interface TestCase {
+			left: Literal;
+			right: Literal;
+		}
+
+		function toArray<T>(iter: Iterable<T>, max: number = 100): T[] {
+			const array: T[] = [];
+			let i = 0;
+			for (const item of iter) {
+				if (i++ >= max) {
+					break;
+				}
+				array.push(item);
+			}
+			return array;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { left, right } of cases) {
+				it(`${literalToString(left)} ∩ ${literalToString(right)}`, function () {
+					const nfaLeft = literalToNFA(left);
+					const nfaRight = literalToNFA(right);
+
+					const intersect = NFA.intersect(nfaLeft, nfaRight);
+
+					const expected = toArray(intersect.wordSets());
+					const actual = toArray(NFA.intersectionWordSets(nfaLeft, nfaRight));
+
+					assert.strictEqual(actual.length, expected.length, "Number of word sets");
+					for (let i = 0; i < actual.length; i++) {
+						const actualWordSet = actual[i];
+						const expectedWordSet = expected[i];
+						assert.strictEqual(actualWordSet.length, expectedWordSet.length,
+							`Number of characters of word set ${i}.`);
+
+						for (let j = 0; j < actualWordSet.length; j++) {
+							const actualCharSet = actualWordSet[j];
+							const expectedCharSet = expectedWordSet[j];
+							assert.isTrue(actualCharSet.equals(expectedCharSet), "Char sets");
+						}
+					}
 				});
 			}
 		}

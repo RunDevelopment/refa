@@ -308,27 +308,27 @@ export class NFA implements FiniteAutomaton {
 		const rightNodes = [...right.nodes];
 
 		// node pair translation
-		const thisIndexMap = createIndexMap(leftNodes);
-		const otherIndexMap = createIndexMap(rightNodes);
+		const leftIndexMap = createIndexMap(leftNodes);
+		const rightIndexMap = createIndexMap(rightNodes);
 		const indexTranslator = cachedFunc<number, NFANode>(() => nodeList.createNode());
 		indexTranslator.cache.set(0, nodeList.initial);
 
-		function translate(thisNode: NFANode, otherNode: NFANode): NFANode {
-			const thisIndex = thisIndexMap.get(thisNode);
-			const otherIndex = otherIndexMap.get(otherNode);
+		function translate(leftNode: NFANode, rightNode: NFANode): NFANode {
+			const leftIndex = leftIndexMap.get(leftNode);
+			const rightIndex = rightIndexMap.get(rightNode);
 
-			if (thisIndex === undefined || otherIndex === undefined) {
+			if (leftIndex === undefined || rightIndex === undefined) {
 				// this shouldn't happen
 				throw new Error("All node should be indexed.");
 			}
 
-			return indexTranslator(thisIndex * otherIndexMap.size + otherIndex);
+			return indexTranslator(leftIndex * rightIndexMap.size + rightIndex);
 		}
 
 		// add finals
-		for (const thisFinal of left.nodes.final) {
-			for (const otherFinal of right.nodes.final) {
-				nodeList.final.add(translate(thisFinal, otherFinal));
+		for (const leftFinal of left.nodes.final) {
+			for (const rightFinal of right.nodes.final) {
+				nodeList.final.add(translate(leftFinal, rightFinal));
 			}
 		}
 
@@ -343,97 +343,22 @@ export class NFA implements FiniteAutomaton {
 		 */
 
 		// charset intersection cache
+		const intersectionCharSets: CharSet[] = [];
+		leftNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
+		rightNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
 
-		// go through all charset and assign each one a unique id
-		const charSetIdMap = new Map<CharSet, number>();
-		let charSetIdCounter = 0;
-		const hashTable: (CharSet[] | undefined)[] = [];
-		function addCharSet(set: CharSet): void {
-			if (charSetIdMap.has(set)) {
-				return;
-			}
-
-			let hash = 0;
-			set.ranges.forEach(({ min, max }) => {
-				hash = ((hash * 31 + min) ^ max * 31) & 0xFFFF;
-			});
-
-			let hashEntry = hashTable[hash];
-			if (hashEntry === undefined) {
-				hashTable[hash] = hashEntry = [];
-			}
-
-			const added = hashEntry.some(cs => {
-				if (cs.equals(set)) {
-					charSetIdMap.set(set, charSetIdMap.get(cs)!);
-					return true;
-				}
-				return false;
-			});
-
-			if (!added) {
-				charSetIdMap.set(set, charSetIdCounter++);
-			}
-
-			hashEntry.push(set);
-		}
-
-		function consumer(node: NFANode): void {
-			for (const charSet of node.out.values()) {
-				addCharSet(charSet);
-			}
-		}
-		leftNodes.forEach(consumer);
-		rightNodes.forEach(consumer);
-
-		// use the id of char sets to store pairs
-		// null be represent empty char sets
-		const intersectionCache: (CharSet | null)[] = [];
-		const charSetIdSize = charSetIdCounter;
-		function intersectCharSets(a: CharSet, b: CharSet): CharSet | null {
-			const aIndex = charSetIdMap.get(a);
-			const bIndex = charSetIdMap.get(b);
-
-			if (aIndex === undefined || bIndex === undefined) {
-				// this shouldn't happen
-				throw new Error("All char sets should be indexed.");
-			}
-
-			// trivial
-			if (aIndex == bIndex) {
-				return a;
-			}
-
-			// since intersection is symmetric we don't care about the order
-			let index;
-			if (aIndex < bIndex) {
-				index = aIndex * charSetIdSize + bIndex;
-			} else {
-				index = bIndex * charSetIdSize + aIndex;
-			}
-
-			let result: CharSet | null | undefined = intersectionCache[index];
-			if (result === undefined) {
-				result = a.intersect(b);
-				if (result.isEmpty) {
-					result = null;
-				}
-				intersectionCache[index] = result;
-			}
-
-			return result;
-		}
+		const intersect = createCharSetIntersectFn(intersectionCharSets);
 
 		// add edges
 
-		for (const thisNode of leftNodes) {
-			for (const otherNode of rightNodes) {
-				const from = translate(thisNode, otherNode);
-				for (const [thisTo, thisTransition] of thisNode.out) {
-					for (const [otherTo, otherTransition] of otherNode.out) {
-						const transition = intersectCharSets(thisTransition, otherTransition);
+		for (const leftNode of leftNodes) {
+			for (const rightNode of rightNodes) {
+				const from = translate(leftNode, rightNode);
+				for (const [leftTo, leftTransition] of leftNode.out) {
+					for (const [rightTo, rightTransition] of rightNode.out) {
+						const transition = intersect(leftTransition, rightTransition);
 						if (transition) {
-							const to = translate(thisTo, otherTo);
+							const to = translate(leftTo, rightTo);
 							nodeList.linkNodes(from, to, transition);
 						}
 					}
@@ -447,6 +372,112 @@ export class NFA implements FiniteAutomaton {
 		baseOptimizationReuseFinalStates(nodeList, nodeList);
 
 		return new NFA(nodeList, left.options);
+	}
+
+	/**
+	 * This is equivalent to `NFA.intersect(left, right).wordSets()` but it will lazily create the NFA while iterating.
+	 *
+	 * If only a small fraction of the actual word sets is needed, it might only construct a small part of the
+	 * intersection NFA.
+	 *
+	 * @param left
+	 * @param right
+	 */
+	static intersectionWordSets(left: NFA, right: NFA): Iterable<CharSet[]> {
+		checkOptionsCompatibility(left.options, right.options);
+
+		const nodeList = new NodeList();
+
+		// iterating the right nodes again and again takes time, so just cache them here
+		const leftNodes = [...left.nodes];
+		const rightNodes = [...right.nodes];
+
+		// node pair translation
+		const leftIndexMap = createIndexMap(leftNodes);
+		const rightIndexMap = createIndexMap(rightNodes);
+		const indexBackTranslatorMap = new Map<NFANode, number>();
+		const indexTranslator = cachedFunc<number, NFANode>(index => {
+			const node = nodeList.createNode();
+			indexBackTranslatorMap.set(node, index);
+			return node;
+		});
+		indexTranslator.cache.set(0, nodeList.initial);
+		indexBackTranslatorMap.set(nodeList.initial, 0);
+
+		function translate(leftNode: NFANode, rightNode: NFANode): NFANode {
+			const leftIndex = leftIndexMap.get(leftNode);
+			const rightIndex = rightIndexMap.get(rightNode);
+
+			if (leftIndex === undefined || rightIndex === undefined) {
+				// this shouldn't happen
+				throw new Error("All node should be indexed.");
+			}
+
+			return indexTranslator(leftIndex * rightIndexMap.size + rightIndex);
+		}
+
+		function translateBack(node: NFANode): [NFANode, NFANode] {
+			const nodeIndex = indexBackTranslatorMap.get(node);
+			if (nodeIndex === undefined) {
+				throw new Error("All created nodes have to be indexed.");
+			}
+
+			const rightIndex = nodeIndex % rightIndexMap.size;
+			const leftIndex = Math.floor(nodeIndex / rightIndexMap.size);
+
+			return [leftNodes[leftIndex], rightNodes[rightIndex]];
+		}
+
+		// add finals
+		for (const leftFinal of left.nodes.final) {
+			for (const rightFinal of right.nodes.final) {
+				nodeList.final.add(translate(leftFinal, rightFinal));
+			}
+		}
+
+		// charset intersection cache
+		const intersectionCharSets: CharSet[] = [];
+		leftNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
+		rightNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
+
+		const intersect = createCharSetIntersectFn(intersectionCharSets);
+
+		// the idea here is that we lazily create the intersection NFA
+
+		function addOutEdges(from: NFANode): void {
+			const [leftNode, rightNode] = translateBack(from);
+
+			for (const [leftTo, leftTransition] of leftNode.out) {
+				for (const [rightTo, rightTransition] of rightNode.out) {
+					const transition = intersect(leftTransition, rightTransition);
+					if (transition) {
+						nodeList.linkNodes(from, translate(leftTo, rightTo), transition);
+					}
+				}
+			}
+		}
+
+		return faIterateWordSets(
+			nodeList.initial,
+			n => {
+				addOutEdges(n);
+				return n.out;
+			},
+			f => nodeList.final.has(f)
+		);
+	}
+
+	/**
+	 * This is equivalent to `NFA.intersect(left, right).words()` but it will lazily create the NFA while iterating.
+	 *
+	 * If only a small fraction of the actual words is needed, it might only construct a small part of the
+	 * intersection NFA.
+	 *
+	 * @param left
+	 * @param right
+	 */
+	static intersectionWords(left: NFA, right: NFA): Iterable<number[]> {
+		return wordSetsToWords(NFA.intersectionWordSets(left, right));
 	}
 
 	/**
@@ -1079,4 +1110,92 @@ function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 		nodeList.unlinkNodes(base.initial, out);
 	}
 	base.final.clear();
+}
+
+
+/**
+ * Creates a function which can intersect any two char sets of the given set of character sets.
+ *
+ * The function return `null` if the intersection of two char sets is empty.
+ *
+ * @param charSets
+ */
+function createCharSetIntersectFn(charSets: Iterable<CharSet>): (a: CharSet, b: CharSet) => CharSet | null {
+	const charSetIdMap = new Map<CharSet, number>();
+	let charSetIdCounter = 0;
+
+	// the hash table will be used to detect equivalent but not identical char sets
+	const hashTable: (CharSet[] | undefined)[] = [];
+	function addCharSet(set: CharSet): void {
+		if (charSetIdMap.has(set)) {
+			return;
+		}
+
+		let hash = 0;
+		set.ranges.forEach(({ min, max }) => {
+			hash = ((hash * 31 + min) ^ max * 31) & 0xFFFF;
+		});
+
+		let hashEntry = hashTable[hash];
+		if (hashEntry === undefined) {
+			hashTable[hash] = hashEntry = [];
+		}
+
+		const added = hashEntry.some(cs => {
+			if (cs.equals(set)) {
+				charSetIdMap.set(set, charSetIdMap.get(cs)!);
+				return true;
+			}
+			return false;
+		});
+
+		if (!added) {
+			charSetIdMap.set(set, charSetIdCounter++);
+		}
+
+		hashEntry.push(set);
+	}
+
+	for (const set of charSets) {
+		addCharSet(set);
+	}
+
+	// use the id of char sets to store pairs
+	// null be represent empty char sets
+	const intersectionCache: (CharSet | null)[] = [];
+	const charSetIdSize = charSetIdCounter;
+
+	return (a: CharSet, b: CharSet): CharSet | null => {
+		const aIndex = charSetIdMap.get(a);
+		const bIndex = charSetIdMap.get(b);
+
+		if (aIndex === undefined || bIndex === undefined) {
+			// this shouldn't happen
+			throw new Error("All char sets should be indexed.");
+		}
+
+		// trivial
+		if (aIndex == bIndex) {
+			return a;
+		}
+
+		// since intersection is symmetric we don't care about the order
+		let index;
+		if (aIndex < bIndex) {
+			index = aIndex * charSetIdSize + bIndex;
+		} else {
+			index = bIndex * charSetIdSize + aIndex;
+		}
+
+		let result: CharSet | null | undefined = intersectionCache[index];
+		if (result === undefined) {
+			result = a.intersect(b);
+			if (result.isEmpty) {
+				result = null;
+			}
+			intersectionCache[index] = result;
+		}
+
+		return result;
+	}
 }

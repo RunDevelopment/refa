@@ -186,20 +186,89 @@ function createInTransitionMap<T>(states: Set<T>, getOutTransitions: (state: T) 
 }
 
 
+/**
+ * Iterates all word sets of the given FA.
+ *
+ * The `getOutTransitions` function is guaranteed to be called once and once only per state.
+ *
+ * @param initialState
+ * @param getOutTransitions
+ * @param final
+ */
 export function* faIterateWordSets<T>(initialState: T, getOutTransitions: (state: T) => Iterable<[T, CharSet]>,
 	final: (state: T) => boolean): Iterable<CharSet[]> {
 
 	interface BFSNode {
-		node: T;
+		state: T;
 		parent: BFSNode | null;
 		value: CharSet | null;
 	}
 
 	const root: BFSNode = {
-		node: initialState,
+		state: initialState,
 		parent: null,
 		value: null
 	};
+
+	/**
+	 * One major problem here are trap states (states which cannot reach a final state).
+	 *
+	 * To solve this, we will lazily and iteratively figure out for every state whether that state can reach a final
+	 * state. If we, at some point, do not discover new states, we have explored the full FA at which point we can
+	 * know for each state whether that state can reach a final state.
+	 */
+
+	const cachedGetOut = cachedFunc((state: T) => [...getOutTransitions(state)]);
+
+	const canReachFinalStateCache = new Map<T, boolean>();
+	function canReachFinalState(state: T): boolean | null {
+		const cachedValue = canReachFinalStateCache.get(state);
+		if (cachedValue !== undefined) {
+			return cachedValue;
+		}
+
+		const visited = new Set<T>();
+		function canReachImpl(state: T): boolean | null {
+			if (visited.has(state)) {
+				return false; // forming a cycle can't reach a final state
+			}
+			visited.add(state);
+
+			const cachedValue = canReachFinalStateCache.get(state);
+			if (cachedValue !== undefined) {
+				return cachedValue;
+			}
+
+			const out = cachedGetOut.cache.get(state);
+			if (out === undefined) {
+				return null; // inconclusive
+			}
+
+			let canReach: boolean | null = false;
+			for (const [outState] of out) {
+				if (final(outState)) {
+					canReach = true;
+					break;
+				}
+				const outStateCanReachFinal = canReachImpl(outState);
+				if (outStateCanReachFinal === true) {
+					canReach = true;
+					break;
+				}
+				if (outStateCanReachFinal === null) {
+					canReach = null;
+				}
+			}
+
+			if (canReach !== null) {
+				canReachFinalStateCache.set(state, canReach);
+			}
+
+			return canReach;
+		}
+
+		return canReachImpl(state);
+	}
 
 	// these two arrays are my substitute of a linked list
 	let currentWave: BFSNode[] = [root];
@@ -223,9 +292,13 @@ export function* faIterateWordSets<T>(initialState: T, getOutTransitions: (state
 	}
 
 	function createNextWaveOf(node: BFSNode): void {
-		for (const [to, chars] of getOutTransitions(node.node)) {
+		if (canReachFinalState(node.state) === false) {
+			return;
+		}
+
+		for (const [to, chars] of cachedGetOut(node.state)) {
 			nextWave.push({
-				node: to,
+				state: to,
 				parent: node,
 				value: chars
 			});
@@ -235,7 +308,7 @@ export function* faIterateWordSets<T>(initialState: T, getOutTransitions: (state
 	while (hasNextNode()) {
 		const current: BFSNode = currentWave.pop()!;
 
-		if (final(current.node)) {
+		if (final(current.state)) {
 			yield getPath(current);
 		}
 
