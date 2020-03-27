@@ -47,6 +47,9 @@ class NodeList {
 		if (from.list !== this) {
 			throw new Error("Use the node list associated with the nodes to link them.");
 		}
+		if (characters.isEmpty) {
+			throw new Error("You can't link nodes with the empty character set.");
+		}
 
 		function add(map: Map<NFANode, CharSet>, to: NFANode, characters: CharSet): void {
 			const current = map.get(to);
