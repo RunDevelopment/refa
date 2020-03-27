@@ -783,8 +783,10 @@ function baseUnion(nodeList: NodeList, base: SubList, alternative: SubList): voi
 		nodeList.unlinkNodes(alternative.initial, to);
 	}
 
-	// A optional optimization to reduce the number of nodes.
+	// optional optimization to reduce the number of nodes
 	baseOptimizationReuseFinalStates(nodeList, base);
+	baseOptimizationMergePrefixes(nodeList, base);
+	baseOptimizationMergeSuffixes(nodeList, base); // suffixes should to be done after ReuseFinalStates
 }
 
 function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): void {
@@ -803,6 +805,114 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): vo
 			for (const [to, characters] of [...toRemove.in]) {
 				nodeList.linkNodes(to, masterFinal, characters);
 				nodeList.unlinkNodes(to, toRemove);
+			}
+		}
+	}
+}
+
+function baseOptimizationMergePrefixes(nodeList: NodeList, base: SubList): void {
+	/**
+	 * The basic idea here to to merge suffixes and prefixes.
+	 * So that e.g. /abc|abba/ will merged to /ab(c|ba)/ (similar to suffixes).
+	 */
+
+	const prefixNodes: NFANode[] = [];
+
+	// if the initial state has incoming transitions, we'd have to do some additional analysis on whether we can
+	// actually merge two outgoing nodes.
+	if (base.initial.in.size === 0) {
+		prefixNodes.push(base.initial);
+	}
+
+	while (prefixNodes.length > 0) {
+		const node = prefixNodes.pop()!;
+		if (node.out.size < 2) {
+			continue;
+		}
+
+		const candidateOutNodes: NFANode[] = [];
+		for (const outNode of node.out.keys()) {
+			// the only incoming node is the prefix node
+			if (outNode.in.size === 1) {
+				candidateOutNodes.push(outNode);
+			}
+		}
+
+		while (candidateOutNodes.length >= 2) {
+			const current = candidateOutNodes.pop()!;
+			const currentCharSet = node.out.get(current)!;
+
+			for (let i = 0, l = candidateOutNodes.length; i < l; i++) {
+				const other = candidateOutNodes[i];
+				const otherCharSet = node.out.get(other)!;
+				if (currentCharSet.equals(otherCharSet)) {
+					// found a match -> remove other
+					for (const [otherTo, otherToCharSet] of other.out) {
+						nodeList.linkNodes(current, otherTo, otherToCharSet);
+						nodeList.unlinkNodes(other, otherTo);
+					}
+					nodeList.unlinkNodes(node, other);
+					candidateOutNodes.splice(i, 1);
+
+					// we might be able to merge prefixes on this one
+					prefixNodes.push(current);
+
+					// there can be no other nodes with the same char set because if there were they would have been removed
+					// by this function in a previous union
+					break;
+				}
+			}
+		}
+	}
+}
+function baseOptimizationMergeSuffixes(nodeList: NodeList, base: SubList): void {
+	// this will basically be the same as the prefix optimization but in the other direction
+
+	const suffixNodes: NFANode[] = [];
+
+	for (const final of base.final) {
+		if (final.out.size === 0) {
+			suffixNodes.push(final);
+		}
+	}
+
+	while (suffixNodes.length > 0) {
+		const node = suffixNodes.pop()!;
+		if (node.in.size < 2) {
+			continue;
+		}
+
+		const candidateInNodes: NFANode[] = [];
+		for (const inNode of node.in.keys()) {
+			// the only outgoing node is the suffix node
+			if (inNode.out.size === 1) {
+				candidateInNodes.push(inNode);
+			}
+		}
+
+		while (candidateInNodes.length >= 2) {
+			const current = candidateInNodes.pop()!;
+			const currentCharSet = node.in.get(current)!;
+
+			for (let i = 0, l = candidateInNodes.length; i < l; i++) {
+				const other = candidateInNodes[i];
+				const otherCharSet = node.in.get(other)!;
+				if (currentCharSet.equals(otherCharSet)) {
+					// found a match -> remove other
+					for (const [otherFrom, otherFromCharSet] of other.in) {
+						nodeList.linkNodes(otherFrom, current, otherFromCharSet);
+						nodeList.unlinkNodes(otherFrom, other);
+					}
+					nodeList.unlinkNodes(other, node);
+					candidateInNodes.splice(i, 1);
+
+					// we might be able to merge prefixes on this one
+					suffixNodes.push(current);
+
+					// there can be no other nodes with the same char set because if there were they would have been removed
+					// by this function in a previous union
+					break;
+				}
 			}
 		}
 	}
