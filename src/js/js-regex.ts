@@ -4,8 +4,7 @@ import {
 	Element, Assertion, Simple, Alternation, Expression, Concatenation, Parent, SourceLocation, Quantifier,
 	CharacterClass, desimplify
 } from "../ast";
-import { RegExpParser } from "regexpp";
-import * as Ast from "regexpp/ast";
+import { RegExpParser, AST } from "regexpp";
 import { assertNever } from "../util";
 import { DIGIT, LINE_TERMINATOR, SPACE, WORD } from "./js-util";
 
@@ -221,8 +220,36 @@ export interface RegExpLiteral {
 }
 
 export interface ParseOptions extends RegExpParser.Options {
-	backreferences?: "default" | "throw" | "disable";
-	lookarounds?: "default" | "parse" | "throw" | "disable";
+	/**
+	 * How to the parser will handle backreferences.
+	 *
+	 * `"disable"`: This is the default option. The parser will replace all backreferences with an empty character
+	 * class. This will cause all path containing a backreference to be removed from constructed FA.
+	 *
+	 * E.g. `(a*)(\1|b)` will be parsed as `(a*)([]|b)` which is equivalent to `a*b`.
+	 *
+	 * `"throw"`: The parser will throw an error when encountering an unresolvable backreference. Unresolvable
+	 * backreferences are ones which references a capturing group which can match more than a small finite number of
+	 * words.
+	 *
+	 * E.g. `(a*)b\1` will throw but `(a*)[^\s\S]\1` will not because the backreference will be removed anyway because
+	 * of the empty character class.
+	 */
+	backreferences?: "throw" | "disable";
+	/**
+	 * How the parser will handle lookarounds.
+	 *
+	 * `"parse"`: This is the default option. The parser will literally translate every lookaround to a RE AST
+	 * representation.
+	 *
+	 * `"disable"`: The parser will disable all lookarounds with an empty character class. This will cause all paths
+	 * containing a lookaround to be removed from constructed FA.
+	 *
+	 * `"throw"`: The parser will throw an error when encountering a lookaround.
+	 *
+	 * E.g. `a\b.` but not `a*([](\b){0})` because the `\b` cannot be reached.
+	 */
+	lookarounds?: "parse" | "throw" | "disable";
 }
 
 export function parse(literal: { source: string; flags: string }, options?: ParseOptions): RegExpLiteral {
@@ -250,7 +277,17 @@ export function parse(literal: { source: string; flags: string }, options?: Pars
 	return { pattern, flags, maxCharacter: flags.unicode ? 0x10FFFF : 0xFFFF };
 }
 
-function addAlternatives(alternatives: Ast.Alternative[], parent: Parent, flags: Flags, options: ParseOptions): void {
+function addEmptyCharacterSet(source: SourceLocation, parent: Concatenation, flags: Flags): void {
+	const char: CharacterClass = {
+		type: "CharacterClass",
+		parent,
+		characters: createCharSet([], flags),
+		source
+	};
+	parent.elements.push(char);
+}
+
+function addAlternatives(alternatives: AST.Alternative[], parent: Parent, flags: Flags, options: ParseOptions): void {
 	for (const alt of alternatives) {
 		const elements: Element[] = [];
 		const concat: Concatenation = {
@@ -261,21 +298,58 @@ function addAlternatives(alternatives: Ast.Alternative[], parent: Parent, flags:
 		};
 		parent.alternatives.push(concat);
 
-		alt.elements.forEach(e => addElement(e, concat, flags, options));
+		let error: Error | undefined = undefined;
+		for (const e of alt.elements) {
+			try {
+				addElement(e, concat, flags, options);
+			} catch (err) {
+				// we catch the error and only rethrow it if the alternative did not get removed
+				// the only errors which can be thrown are not-supported errors, so if the alternative gets removed
+				// anyway, we shouldn't throw the error
+				// Note: For multiple errors, only the first one will be re-thrown
+				if (error === undefined) {
+					error = err;
+				}
+			}
+
+			if (elements.length > 0) {
+				const last = elements[elements.length - 1];
+				if (last.type === "CharacterClass" && last.characters.isEmpty) {
+					// remove this alternative because it can never be matched
+					parent.alternatives.pop();
+					// now we don't need to rethrow the error
+					error = undefined;
+					break;
+				}
+			}
+		}
+
+		if (error !== undefined) {
+			// rethrow the error
+			throw error;
+		}
+	}
+
+	// we might end up with zero alternatives which isn't valid.
+	if (parent.alternatives.length === 0) {
+		const elements: Element[] = [];
+		const concat: Concatenation = {
+			type: "Concatenation",
+			parent,
+			elements,
+			source: getSource(parent.source)
+		};
+		parent.alternatives.push(concat);
+
+		addEmptyCharacterSet(concat.source, concat, flags);
 	}
 }
 
-function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, options: ParseOptions): void {
+function addElement(element: AST.Element, parent: Concatenation, flags: Flags, options: ParseOptions): void {
 	const source: SourceLocation = getSource(element);
 
-	function addEmptyCharacterSet(): void {
-		const char: CharacterClass = {
-			type: "CharacterClass",
-			parent,
-			characters: createCharSet([], flags),
-			source
-		};
-		parent.elements.push(char);
+	function addEmpty(): void {
+		addEmptyCharacterSet(source, parent, flags);
 	}
 
 	switch (element.type) {
@@ -284,7 +358,7 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, o
 				throw new Error("Assertions are not supported.");
 			}
 			if (options.lookarounds === "disable") {
-				addEmptyCharacterSet();
+				addEmpty();
 				break;
 			}
 
@@ -304,6 +378,31 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, o
 					parent.elements.push(assertion);
 
 					addAlternatives(element.alternatives, assertion, flags, options);
+
+					if (assertion.alternatives.length === 1) {
+						const concat = assertion.alternatives[0];
+						if (concat.elements.length === 0) {
+							// remove the empty lookaround
+							parent.elements.pop();
+							// if it's (?!) or (?<!), it will trivially reject, so just add an empty character class to
+							// simulate this behavior
+							if (assertion.negate) {
+								addEmpty();
+							}
+						}
+						if (concat.elements.length === 1) {
+							const first = concat.elements[0];
+							if (first.type === "CharacterClass" && first.characters.isEmpty) {
+								// the assertion can never match the empty character class
+								// if it's a negative assertion, we can just remove it but if it's a positive one, we
+								// have to replace it with an empty character class.
+								parent.elements.pop();
+								if (!assertion.negate) {
+									addEmpty();
+								}
+							}
+						}
+					}
 					break;
 				}
 				case "end":
@@ -317,22 +416,35 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, o
 				default:
 					throw assertNever(element, 'Unsupported element');
 			}
+
 			break;
 		}
 		case "CapturingGroup":
 		case "Group": {
-			if (element.alternatives.length === 1) {
-				element.alternatives[0].elements.forEach(e => addElement(e, parent, flags, options));
-			} else if (element.alternatives.length > 1) {
-				const alteration: Alternation = {
-					type: "Alternation",
-					parent,
-					alternatives: [],
-					source
-				};
-				parent.elements.push(alteration);
-				addAlternatives(element.alternatives, alteration, flags, options);
+			const alteration: Alternation = {
+				type: "Alternation",
+				parent,
+				alternatives: [],
+				source
+			};
+			parent.elements.push(alteration);
+			addAlternatives(element.alternatives, alteration, flags, options);
+
+			if (alteration.alternatives.length === 1) {
+				// just add the element of the alternative to the parent.
+				// This will make everything just work without any additional checks
+
+				// remove this alternation
+				parent.elements.pop();
+
+				const concat = alteration.alternatives[0];
+				for (const e of concat.elements) {
+					// set new parent
+					e.parent = parent;
+					parent.elements.push(e);
+				}
 			}
+
 			break;
 		}
 		case "Character":
@@ -377,7 +489,11 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, o
 		}
 		case "Quantifier": {
 			const min: number = element.min;
-			const max: number = element.max === null ? Infinity : element.max;
+			const max: number = element.max;
+
+			if (max === 0) {
+				return;
+			}
 
 			const quant: Quantifier = {
 				type: "Quantifier",
@@ -404,22 +520,75 @@ function addElement(element: Ast.Element, parent: Concatenation, flags: Flags, o
 				addElement(qElement, concat, flags, options);
 			}
 
+			if (quant.alternatives.length === 1) {
+				const concat = quant.alternatives[0];
+				if (concat.elements.length === 0) {
+					// the quantified element can only match the empty string, so just remove the quantifier
+					parent.elements.pop();
+				}
+				if (concat.elements.length === 1) {
+					const first = concat.elements[0];
+					if (first.type === "CharacterClass" && first.characters.isEmpty) {
+						// the quantified element is the empty character class.
+						// if the min of the quantifier is 0, we can just remove the quantifier otherwise it has to be
+						// replaced with the empty character class
+						parent.elements.pop();
+						if (quant.min > 0) {
+							addEmpty();
+						}
+					}
+				}
+			}
+
 			break;
 		}
-		case "Backreference":
-			if (options.backreferences === "disable") {
-				addEmptyCharacterSet();
+		case "Backreference": {
+			if (isEmptyStringBackreferences(element)) {
 				break;
 			}
 
-			// "throw" is the default
-			throw new Error('Backreferences are not supported.');
+			if (options.backreferences === "throw") {
+				throw new Error('Backreferences are not supported.');
+			}
+			addEmpty();
+
+			break;
+		}
 		default:
 			throw assertNever(element, 'Unsupported element');
 	}
 }
 
-function getSource(node: Ast.Node): SourceLocation {
+function isEmptyStringBackreferences(backRef: AST.Backreference): boolean {
+	const group = backRef.resolved;
+	if (backRef.start < group.end) {
+		// early or contained backreferences will always be replaced by the empty string in JS regex engines
+		return true;
+	}
+
+	// the group only matches the empty string
+	function isEmpty(element: AST.Element): boolean {
+		switch (element.type) {
+			case "Assertion":
+				return true;
+			case "Backreference":
+				return isEmptyStringBackreferences(element);
+			case "Quantifier":
+				return element.max === 0 || isEmpty(element.element);
+			case "CapturingGroup":
+			case "Group":
+				return element.alternatives.every(a => {
+					return a.elements.every(e => isEmpty(e));
+				});
+			default:
+				return false;
+		}
+	}
+
+	return isEmpty(group);
+}
+
+function getSource(node: SourceLocation): SourceLocation {
 	return {
 		start: node.start,
 		end: node.end
