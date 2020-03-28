@@ -301,14 +301,22 @@ export class NFA implements FiniteAutomaton {
 	static intersect(left: NFA, right: NFA): NFA {
 		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
 
+		// By recursively creating and following outgoing nodes, we only create the part of the intersection NFA which
+		// is connected to the initial state. This means that we do not create nodes which will be removed either way
+		// which can potentially speed up the intersection by orders of magnitude.
+
+		// (It doesn't matter in which way we traverse the NFA as long as we traverse all of it.)
 		DFS(nodeList.initial, from => {
 			addOutgoing(from);
 			return from.out.keys();
 		});
 
-		// since the node list has as much as O(n * m) many nodes, we'll try to get rid of as many as possible
+		// A cleanup still has to be performed because while all states are connected to the initial state, they might
+		// not be able to reach a final state. This will remove such trap states.
 		nodeList.removeUnreachable();
 
+		// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
+		// having less final states will make a lot of the NFA operations more efficient.
 		baseOptimizationReuseFinalStates(nodeList, nodeList);
 
 		return new NFA(nodeList, left.options);
@@ -391,6 +399,17 @@ export class NFA implements FiniteAutomaton {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
 		}
 		baseQuantify(this.nodes, this.nodes, min, max);
+	}
+
+	/**
+	 * After calling this function, this NFA will no longer accept the empty word.
+	 *
+	 * If the NFA does not accept the empty word before calling this function, the NFA will not be changed.
+	 *
+	 * If you want to add the empty word again, quantify this NFA with a minimum of 0 and a maximum of 1.
+	 */
+	removeEmptyWord(): void {
+		this.nodes.final.delete(this.nodes.initial);
 	}
 
 
@@ -987,6 +1006,16 @@ interface IntersectionEnv {
 	addOutgoing(from: NFANode): void;
 }
 
+/**
+ * Creates a new intersection environment for the two given NFAs.
+ *
+ * The initial and final states of the returned node list will be initialized and ready to use.
+ *
+ * Use the `addOutgoing` function to add the outgoing edges of nodes.
+ *
+ * @param left
+ * @param right
+ */
 function createNFAIntersectionEnv(left: NFA, right: NFA): IntersectionEnv {
 	checkOptionsCompatibility(left.options, right.options);
 
