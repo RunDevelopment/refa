@@ -213,6 +213,10 @@ function toPatternElement(element: Simple<Element>): string {
 				content = '(?:' + toPatternAlternatives(element.alternatives) + ')';
 			}
 
+			if (!content) {
+				content = "(?:)";
+			}
+
 			return content + quant;
 		}
 		default:
