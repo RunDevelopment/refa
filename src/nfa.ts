@@ -926,6 +926,37 @@ function basePlus(nodeList: NodeList, base: SubList): void {
 	}
 }
 
+/**
+ * Returns whether the given base can be expressed as `A+` for some A.
+ *
+ * @param base
+ */
+function baseIsPlusExpression(base: SubList): boolean {
+	// The following condition have to be fulfilled:
+	//
+	// All Final states have to link to all and only to all directly outgoing states of the initial state.
+
+	const initialOut = base.initial.out;
+
+	// check condition
+	for (const final of base.final) {
+		if (final === base.initial) {
+			// the initial state trivially fulfills the condition
+			continue;
+		}
+		if (final.out.size !== initialOut.size) {
+			return false;
+		}
+		for (const finalOut of final.out.keys()) {
+			if (!initialOut.has(finalOut)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: number): void {
 	if (max === 0) {
 		// this is a special case, so handle it before everything else
@@ -948,6 +979,33 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 		// since min can either be 0 (in which case the initial state has be handled above)
 		// or 1 (in which case it's trivial).
 		// e.g. /a{1}/
+		return;
+	}
+
+	// if base can be expressed as A+ for some A, then we can do some optimization
+	if (baseIsPlusExpression(base)) {
+		if (min <= 1) {
+			// If min == 0, then we know that A+ matches, them empty string and is the same as A*. Since no quantifier
+			// (except {0} which is already handled above) can change A*, we can just return.
+			// if min == 1, then A+ == (A+){1,max} for any max.
+			return;
+		}
+
+		// the base idea here is this:
+		// (A+){min,max} == (A+){min}(A+){0,max-min} == (A+){min}A* == A{min-1}A+A* == A{min-1}A+
+
+		// make a copy of A+
+		const aPlus = localCopy(nodeList, base);
+
+		// remove the + from the current A+
+		for (const final of base.final) {
+			for (const finalOut of final.out.keys()) {
+				nodeList.unlinkNodes(final, finalOut);
+			}
+		}
+
+		baseRepeat(nodeList, base, min - 1); // repeat A min-1 many times
+		baseConcat(nodeList, base, aPlus); // concat A{min-1} and A+
 		return;
 	}
 
