@@ -413,6 +413,34 @@ export class NFA implements FiniteAutomaton {
 	}
 
 
+	/**
+	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
+	 *
+	 * @param options
+	 */
+	static empty(options: Readonly<NFAOptions>): NFA {
+		const nodeList = new NodeList();
+		return new NFA(nodeList, options);
+	}
+
+	/**
+	 * Creates a new NFA which matches all words.
+	 *
+	 * @param options
+	 */
+	static all(options: Readonly<NFAOptions>): NFA {
+		const nodeList = new NodeList();
+		nodeList.final.add(nodeList.initial);
+
+		const allChars = CharSet.all(options.maxCharacter);
+		const other = nodeList.createNode();
+		nodeList.linkNodes(nodeList.initial, other, allChars);
+		nodeList.linkNodes(other, other, allChars);
+		nodeList.final.add(other);
+
+		return new NFA(nodeList, options);
+	}
+
 	static fromRegex(concat: Simple<Concatenation>, options: Readonly<NFAOptions>): NFA;
 	static fromRegex(expression: Simple<Expression>, options: Readonly<NFAOptions>): NFA;
 	static fromRegex(alternatives: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA;

@@ -810,6 +810,26 @@ describe('NFA', function () {
 
 	});
 
+	describe('empty() & all()', function () {
+
+		it('empty()', function () {
+			assert.isTrue(NFA.empty({ maxCharacter: 0xFF }).isEmpty);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isEmpty);
+
+			assert.isTrue(NFA.empty({ maxCharacter: 0xFF }).isFinite);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isFinite);
+		});
+
+		it('all()', function () {
+			assert.isFalse(NFA.all({ maxCharacter: 0xFF }).isEmpty);
+			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isEmpty);
+
+			assert.isFalse(NFA.all({ maxCharacter: 0xFF }).isFinite);
+			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isFinite);
+		});
+
+	});
+
 });
 
 function getWords(nfa: NFA): string[] {

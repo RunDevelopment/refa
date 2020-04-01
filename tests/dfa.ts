@@ -401,6 +401,26 @@ describe('DFA', function () {
 
 	});
 
+	describe('empty() & all()', function () {
+
+		it('empty()', function () {
+			assert.isTrue(DFA.empty({ maxCharacter: 0xFF }).isEmpty);
+			assert.isTrue(DFA.empty({ maxCharacter: 0xFFFF }).isEmpty);
+
+			assert.isTrue(DFA.empty({ maxCharacter: 0xFF }).isFinite);
+			assert.isTrue(DFA.empty({ maxCharacter: 0xFFFF }).isFinite);
+		});
+
+		it('all()', function () {
+			assert.isFalse(DFA.all({ maxCharacter: 0xFF }).isEmpty);
+			assert.isFalse(DFA.all({ maxCharacter: 0xFFFF }).isEmpty);
+
+			assert.isFalse(DFA.all({ maxCharacter: 0xFF }).isFinite);
+			assert.isFalse(DFA.all({ maxCharacter: 0xFFFF }).isFinite);
+		});
+
+	});
+
 });
 
 

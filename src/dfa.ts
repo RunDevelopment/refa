@@ -273,6 +273,35 @@ export class DFA implements FiniteAutomaton {
 		return new DFA(newNodeList, this.options);
 	}
 
+
+	/**
+	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
+	 *
+	 * @param options
+	 */
+	static empty(options: Readonly<DFAOptions>): DFA {
+		const nodeList = new NodeList();
+		return new DFA(nodeList, options);
+	}
+
+	/**
+	 * Creates a new DFA which matches all words.
+	 *
+	 * @param options
+	 */
+	static all(options: Readonly<DFAOptions>): DFA {
+		const nodeList = new NodeList();
+		nodeList.final.add(nodeList.initial);
+
+		const allChars = { min: 0, max: options.maxCharacter };
+		const other = nodeList.createNode();
+		nodeList.linkNodes(nodeList.initial, other, allChars);
+		nodeList.linkNodes(other, other, allChars);
+		nodeList.final.add(other);
+
+		return new DFA(nodeList, options);
+	}
+
 	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<DFAOptions>): DFA {
 		const nodeList = new NodeList();
 
