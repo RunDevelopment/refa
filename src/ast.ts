@@ -237,3 +237,53 @@ export function toPatternString(node: Simple<Node>): string {
 			return toPatternElement(node);
 	}
 }
+
+
+export interface VisitAstHandler {
+	onAlternationEnter?(node: Alternation): void;
+	onAlternationLeave?(node: Alternation): void;
+	onAssertionEnter?(node: Assertion): void;
+	onAssertionLeave?(node: Assertion): void;
+	onCharacterClassEnter?(node: CharacterClass): void;
+	onCharacterClassLeave?(node: CharacterClass): void;
+	onConcatenationEnter?(node: Concatenation): void;
+	onConcatenationLeave?(node: Concatenation): void;
+	onExpressionEnter?(node: Expression): void;
+	onExpressionLeave?(node: Expression): void;
+	onQuantifierEnter?(node: Quantifier): void;
+	onQuantifierLeave?(node: Quantifier): void;
+}
+
+export function visitAst(node: Node, handler: VisitAstHandler): void;
+export function visitAst(node: Node, handler: Record<string, any>): void {
+	const enter = handler["on" + node.type + "Enter"];
+	const leave = handler["on" + node.type + "Leave"];
+
+	if (enter) {
+		enter(node);
+	}
+
+	switch (node.type) {
+		case "Alternation":
+		case "Assertion":
+		case "Expression":
+		case "Quantifier":
+			for (const concat of node.alternatives) {
+				visitAst(concat, handler);
+			}
+			break;
+
+		case "Concatenation":
+			for (const element of node.elements) {
+				visitAst(element, handler);
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	if (leave) {
+		leave(node);
+	}
+}
