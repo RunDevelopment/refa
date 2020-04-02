@@ -1,6 +1,6 @@
 import { DFA } from "../../src/dfa";
 import { NFA } from "../../src/nfa";
-import { parse } from "../../src/js/js-regex";
+import { Parser } from "../../src/js";
 
 export interface Literal {
 	source: string;
@@ -12,13 +12,13 @@ export function literalToString(literal: Literal): string {
 }
 
 export function literalToDFA(literal: Literal): DFA {
-	const parsed = parse(literal);
-	return DFA.fromNFA(NFA.fromRegex(parsed.pattern, { maxCharacter: parsed.flags.unicode ? 0x10FFFF : 0xFFFF }));
+	const parsed = new Parser(literal).parse();
+	return DFA.fromNFA(NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter }));
 }
 
 export function literalToNFA(literal: Literal): NFA {
-	const parsed = parse(literal);
-	return NFA.fromRegex(parsed.pattern, { maxCharacter: parsed.flags.unicode ? 0x10FFFF : 0xFFFF });
+	const parsed = new Parser(literal).parse();
+	return NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter });
 }
 
 export function removeIndentation(expected: string): string {

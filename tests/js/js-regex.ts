@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { parse, ParseOptions } from "../../src/js/js-regex";
+import { Parser, ParseOptions } from "../../src/js";
 import { toPatternString } from "../../src/ast";
 
 describe('JS Regex', function () {
@@ -14,11 +14,12 @@ describe('JS Regex', function () {
 		for (const { literal, expected, options } of cases) {
 			const optionsStr = options ? " " + JSON.stringify(options) : "";
 			it(`/${literal.source}/${literal.flags}${optionsStr}`, function () {
+				const parser = new Parser(literal);
 				if (typeof expected === "string") {
-					assert.strictEqual(toPatternString(parse(literal, options).pattern), expected);
+					assert.strictEqual(toPatternString(parser.parse(options).expression), expected);
 				} else {
 					assert.throws(() => {
-						parse(literal, options);
+						parser.parse(options);
 					});
 				}
 			});
