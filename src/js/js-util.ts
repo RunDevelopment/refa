@@ -1,7 +1,9 @@
 import { CharRange } from "../char-set";
 
 
-export const DIGIT: CharRange = { min: 0x30, max: 0x39 }; // 0-9
+export const DIGIT: readonly CharRange[] = [
+	{ min: 0x30, max: 0x39 } // 0-9
+];
 export const SPACE: readonly CharRange[] = [
 	{ min: 0x09, max: 0x0d }, // \t \n \v \f \r
 	{ min: 0x20, max: 0x20 }, // space

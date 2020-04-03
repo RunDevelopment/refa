@@ -199,14 +199,14 @@ function printCharacters(chars: CharSet): string {
 
 	// if the first min is 0, then it's most likely negated, so don't even bother checking non-negated char sets
 	if (chars.ranges[0].min > 0) {
-		if (rangeEqual(chars.ranges, [DIGIT])) return "\\d";
+		if (rangeEqual(chars.ranges, DIGIT)) return "\\d";
 		if (rangeEqual(chars.ranges, WORD)) return "\\w";
 		if (rangeEqual(chars.ranges, SPACE)) return "\\s";
 	}
 
 	const negated = chars.negate();
 	if (rangeEqual(negated.ranges, LINE_TERMINATOR)) return ".";
-	if (rangeEqual(negated.ranges, [DIGIT])) return "\\D";
+	if (rangeEqual(negated.ranges, DIGIT)) return "\\D";
 	if (rangeEqual(negated.ranges, WORD)) return "\\W";
 	if (rangeEqual(negated.ranges, SPACE)) return "\\S";
 

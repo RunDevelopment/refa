@@ -46,7 +46,14 @@ export function optimizeRanges(ranges: CharRange[]): void {
 	optimizeSortedRanges(ranges);
 }
 
-function* negateRanges(ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
+/**
+ * Given an array of optimized character ranges, it will return an iterable of character ranges that matches the
+ * complete of the given ranges.
+ *
+ * @param ranges
+ * @param maximum
+ */
+export function* negateRanges(ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
 	// runs in O(ranges.length)
 
 	if (ranges.length === 0) {

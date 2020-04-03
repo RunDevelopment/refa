@@ -1,8 +1,11 @@
-import { CharRange, CharSet } from "../char-set";
+/* eslint-disable @typescript-eslint/camelcase */
+
+import { CharRange, CharSet, negateRanges } from "../char-set";
 import { CASE_VARIATIONS } from "../char-util";
 import { AST } from "regexpp";
 import { assertNever } from "../util";
 import { DIGIT, LINE_TERMINATOR, SPACE, WORD } from "./js-util";
+import { Alias, Binary_Property, General_Category, Script, Script_Extensions } from "./unicode";
 
 
 export type PredefinedCharacterSet =
@@ -17,6 +20,7 @@ export interface DigitCharacterSet {
 export interface PropertyCharacterSet {
 	kind: "property";
 	key: string;
+	value: string | null;
 	negate: boolean;
 }
 export interface SpaceCharacterSet {
@@ -46,6 +50,28 @@ export function createCharSet(
 
 	const ranges: CharRange[] = [];
 
+	function addChar(char: number): void {
+		ranges.push({ min: char, max: char });
+		if (ignoreCase) {
+			addVariations(char);
+		}
+	}
+	function addRange(range: CharRange): void {
+		ranges.push(range);
+		if (ignoreCase) {
+			addVariationsRange(range.min, range.max);
+		}
+	}
+	function addRanges(toAdd: readonly CharRange[], negate: boolean): void {
+		if (negate) {
+			for (const range of negateRanges(toAdd, maximum)) {
+				addRange(range);
+			}
+		} else {
+			toAdd.forEach(addRange);
+		}
+	}
+
 	function addVariations(c: number): void {
 		const variations = CASE_VARIATIONS.get(c);
 		if (variations !== undefined) {
@@ -74,39 +100,78 @@ export function createCharSet(
 
 	for (const char of chars) {
 		if (typeof char == "number") {
-			ranges.push({ min: char, max: char });
-			if (ignoreCase) {
-				addVariations(char);
-			}
+			addChar(char);
 		} else if ("kind" in char) {
 			switch (char.kind) {
-				case "digit":
-					if (char.negate) {
-						// we just quickly negate it ourselves. No need for a new CharSet
-						ranges.push({ min: 0, max: DIGIT.min - 1 }, { min: DIGIT.max + 1, max: maximum });
-					} else {
-						ranges.push(DIGIT);
-					}
-					break;
-
 				case "any":
 					if (dotAll) {
 						// since all character sets and ranges are combined using union, we can stop here
 						return CharSet.all(maximum);
 					} else {
-						ranges.push(...CharSet.all(maximum).without(LINE_TERMINATOR).ranges);
+						ranges.push(...negateRanges(LINE_TERMINATOR, maximum));
 					}
 					break;
 
-				case "property":
-					// TODO: implement
-					throw new Error(`Not implemented yet.`);
+				case "property": {
+					if (!unicode) {
+						throw new Error("Unicode property escapes cannot be used without the u flag.");
+					}
 
+					const { key, value, negate } = char;
+
+					if (value == null) {
+						if (key in Alias.Binary_Property) {
+							// binary property
+							const name = Alias.Binary_Property[key as keyof typeof Alias.Binary_Property];
+							addRanges(Binary_Property[name as keyof typeof Binary_Property], negate);
+						} else if (key in Alias.General_Category) {
+							// value from the general category
+							const name = Alias.General_Category[key as keyof typeof Alias.General_Category];
+							addRanges(General_Category[name as keyof typeof General_Category], negate);
+						} else {
+							throw new Error(`Unknown lone Unicode property name or value ${char.key}.`);
+						}
+					} else {
+						// key=value
+
+						if (!(key in Alias.NonBinaryProperty)) {
+							throw new Error(`Unknown Unicode property name ${char.key}.`);
+						}
+						const keyName = Alias.NonBinaryProperty[key as keyof typeof Alias.NonBinaryProperty];
+
+						let categoryAliases: Record<string, string>;
+						let categoryValues: Record<string, readonly CharRange[]>;
+						if (keyName === "General_Category") {
+							categoryAliases = Alias.General_Category;
+							categoryValues = General_Category;
+						} else if (keyName === "Script") {
+							categoryAliases = Alias.ScriptAndScript_Extensions;
+							categoryValues = Script;
+						} else if (keyName === "Script_Extensions") {
+							categoryAliases = Alias.ScriptAndScript_Extensions;
+							categoryValues = Script_Extensions;
+						} else {
+							throw assertNever(keyName);
+						}
+
+						if (!(value in categoryAliases)) {
+							throw new Error(`Unknown Unicode property value ${value} for the name ${key}.`);
+						}
+						const valueName = categoryAliases[value];
+
+						addRanges(categoryValues[valueName], negate);
+					}
+
+					break;
+				}
+
+				case "digit":
 				case "space":
 				case "word": {
-					const setRanges = char.kind === "space" ? SPACE : WORD;
+					// these character sets are always case invariant, so we can directly add them to the ranges list
+					const setRanges = char.kind === "digit" ? DIGIT : char.kind === "space" ? SPACE : WORD;
 					if (char.negate) {
-						ranges.push(...CharSet.empty(maximum).union(setRanges).negate().ranges);
+						ranges.push(...negateRanges(setRanges, maximum));
 					} else {
 						ranges.push(...setRanges);
 					}
@@ -117,10 +182,7 @@ export function createCharSet(
 					throw assertNever(char, 'Invalid predefined character set type');
 			}
 		} else {
-			ranges.push(char);
-			if (ignoreCase) {
-				addVariationsRange(char.min, char.max);
-			}
+			addRange(char);
 		}
 	}
 

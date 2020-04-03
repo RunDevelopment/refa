@@ -51,5 +51,20 @@
         "@typescript-eslint/no-use-before-define": 0,
         "@typescript-eslint/indent": 0,
         "no-constant-condition": 0
-    }
+    },
+    "overrides": [
+        {
+            "files":["scripts/**"],
+            "env": {
+                "browser": false,
+                "node": true,
+                "es6": true,
+                "commonjs": true
+            },
+            "rules": {
+                "@typescript-eslint/no-var-requires": "off",
+                "@typescript-eslint/explicit-function-return-type": "off"
+            }
+        }
+    ]
 }
