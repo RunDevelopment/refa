@@ -8,7 +8,7 @@
     "check": "npx eslint --ignore-path .gitignore src/**/*.ts tests/**/*.ts && npx tsc --noEmit && cd tests && npx tsc --noEmit",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "npx tsc",
-    "build:unicode": "npx ts-node scripts/create-unicode.js"
+    "build:unicode": "npx ts-node scripts/create-unicode.ts"
   },
   "keywords": [
     "dfa",

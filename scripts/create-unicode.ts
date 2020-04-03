@@ -1,8 +1,8 @@
-const fs = require("fs");
-const path = require("path");
-const { CharSet } = require("../src/char-set");
-const { runEncodeCharacters } = require("../src/char-util");
-const aliases = require("../src/js/unicode/alias");
+import * as fs from "fs";
+import * as path from "path";
+import { CharSet, CharRange } from "../src/char-set";
+import { runEncodeCharacters } from "../src/char-util";
+import * as aliases from "../src/js/unicode/alias";
 
 
 const UNICODE_SRC_DIR = path.join(__dirname, "../src/js/unicode");
@@ -13,12 +13,7 @@ createDataFile(Object.values(aliases.ScriptAndScript_Extensions), "Script", "scr
 createDataFile(Object.values(aliases.ScriptAndScript_Extensions), "Script_Extensions", "script-extensions-data.ts");
 
 
-/**
- * @param {Iterable<string>} properties
- * @param {string} category
- * @param {string} filename
- */
-function createDataFile(properties, category, filename) {
+function createDataFile(properties: Iterable<string>, category: string, filename: string): void {
 	console.log(`Creating ${filename}`);
 
 	const values = new Set(properties);
@@ -39,20 +34,16 @@ import { CharRange } from "../../char-set";
 `;
 
 	for (const prop of values) {
-		/** @type {number[]} */
-		const codePoints = require(`unicode-13.0.0/${category}/${prop}/code-points`);
+		const codePoints: number[] = require(`unicode-13.0.0/${category}/${prop}/code-points`);
 		const ranges = CharSet.empty(0x10FFFF).union(runEncodeCharacters(codePoints)).ranges;
+
 		code += `export const ${prop}: readonly CharRange[] = ${printRanges(ranges)};\n`;
 	}
 
 	fs.writeFileSync(path.join(UNICODE_SRC_DIR, filename), code, "utf-8");
 }
 
-/**
- * @param {Iterable<import("../src/char-set").CharRange>} ranges
- * @returns {string}
- */
-function printRanges(ranges) {
+function printRanges(ranges: Iterable<CharRange>): string {
 	let s = "[";
 	let i = 0;
 	for (const { min, max } of ranges) {

@@ -45,7 +45,7 @@ __At this point in time, the library is still in development and partially incom
 
 - Javascript RegExp
 
-  * RegExp to RE and RE to RegExp (_Unicode properties are not implemented yet_)
+  * RegExp to RE and RE to RegExp
 
 ### Limitations
 
