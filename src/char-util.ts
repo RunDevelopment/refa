@@ -15,7 +15,7 @@ export function* runEncodeCharacters(chars: Iterable<number>): Iterable<CharRang
 		if (start === -1) {
 			start = i;
 			length = 1;
-		} else if (i === start + length + 1) {
+		} else if (i === start + length) {
 			length++;
 		} else {
 			yield { min: start, max: start + length - 1 };
