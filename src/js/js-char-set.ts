@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import { CharRange, CharSet, negateRanges } from "../char-set";
-import { CASE_VARIATIONS } from "../char-util";
 import { AST } from "regexpp";
 import { assertNever } from "../util";
 import { DIGIT, LINE_TERMINATOR, SPACE, WORD } from "./js-util";
-import { Alias, Binary_Property, General_Category, Script, Script_Extensions } from "./unicode";
+import {
+	Alias, Binary_Property, General_Category, Script, Script_Extensions,
+	UnicodeCaseVarying, UnicodeCaseFolding
+} from "./unicode";
+import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
+import { runEncodeCharacters } from "../char-util";
 
 
 export type PredefinedCharacterSet =
@@ -32,6 +36,10 @@ export interface WordCharacterSet {
 	negate: boolean;
 }
 
+// \w with the i and u flags enabled
+const WORD_IU =
+	withCaseVaryingCharacters(CharSet.empty(0x10FFFF).union(WORD), UnicodeCaseFolding, UnicodeCaseVarying).ranges
+
 /**
 * Creates a new character set with the characters equivalent to a JavaScript regular expression character set.
 *
@@ -42,25 +50,61 @@ export function createCharSet(
 	chars: Iterable<number | CharRange | Readonly<PredefinedCharacterSet>>,
 	flags: Readonly<AST.Flags>
 ): CharSet {
-	// We just have to implement the ES spec
 	// https://tc39.es/ecma262/#sec-runtime-semantics-charactersetmatcher-abstract-operation
+
+	// This works by first adding all characters and ranges to a single ranges array while keeping track of whether
+	// added characters/ranges might vary in case (if ignoreCase).
+	// If ignoreCase and the ranges might vary in case, the case variations of all characters will be added.
 
 	const { unicode, ignoreCase, dotAll } = flags;
 	const maximum = unicode ? 0x10FFFF : 0xFFFF;
 
+	const caseFolding: Readonly<Record<number, readonly number[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
+	const caseVarying: CharSet = unicode ? UnicodeCaseVarying : UTF16CaseVarying;
+	const caseVaryingMin = caseVarying.ranges[0].min;
+	const caseVaryingMax = caseVarying.ranges[caseVarying.ranges.length - 1].max;
+
 	const ranges: CharRange[] = [];
+	let fullCaseCheck = false;
 
 	function addChar(char: number): void {
-		ranges.push({ min: char, max: char });
-		if (ignoreCase) {
-			addVariations(char);
+		/**
+		 * We will only add all case variation for the given character if:
+		 *  1) the regexp has the i flag set.
+		 *  2) we don't already do a full case check. Since the full case check will add all case variations of this
+		 *     character anyway, there's no reason to do it here.
+		 *  3) the given character actually varies in case.
+		 */
+		if (ignoreCase && !fullCaseCheck) {
+			const fold: readonly number[] | undefined = caseFolding[char];
+			if (fold) {
+				// add all case variations
+				for (let i = 0, l = fold.length; i < l; i++) {
+					const variation = fold[i];
+					ranges.push({ min: variation, max: variation });
+				}
+				// all case variations also include the given character, so we are done
+				return;
+			}
 		}
+		ranges.push({ min: char, max: char });
 	}
 	function addRange(range: CharRange): void {
-		ranges.push(range);
-		if (ignoreCase) {
-			addVariationsRange(range.min, range.max);
+		if (range.min === range.max) {
+			addChar(range.min);
+			return;
 		}
+
+		if (ignoreCase && !fullCaseCheck
+			// the given range do not include all case-varying characters
+			&& !(range.min <= caseVaryingMin && range.max >= caseVaryingMax)
+			// the given range contains case-varying characters
+			&& caseVarying.hasSome(range)
+		) {
+			fullCaseCheck = true;
+		}
+
+		ranges.push(range);
 	}
 	function addRanges(toAdd: readonly CharRange[], negate: boolean): void {
 		if (negate) {
@@ -72,38 +116,12 @@ export function createCharSet(
 		}
 	}
 
-	function addVariations(c: number): void {
-		const variations = CASE_VARIATIONS.get(c);
-		if (variations !== undefined) {
-			for (let i = 0, l = variations.length; i < l; i++) {
-				const variation = variations[i];
-				if (variation <= maximum) {
-					ranges.push({ min: variation, max: variation });
-				}
-			}
-		}
-	}
-	function addVariationsRange(min: number, max: number): void {
-		for (let c = min; c <= max; c++) {
-			const variations = CASE_VARIATIONS.get(c);
-			if (variations !== undefined) {
-				for (let i = 0, l = variations.length; i < l; i++) {
-					const variation = variations[i];
-					if (variation <= maximum && !(min <= variation && variation <= max)) {
-						// TODO: more efficient approach
-						ranges.push({ min: variation, max: variation });
-					}
-				}
-			}
-		}
-	}
-
 	for (const char of chars) {
 		if (typeof char == "number") {
 			addChar(char);
 		} else if ("kind" in char) {
 			switch (char.kind) {
-				case "any":
+				case "any": {
 					if (dotAll) {
 						// since all character sets and ranges are combined using union, we can stop here
 						return CharSet.all(maximum);
@@ -111,6 +129,7 @@ export function createCharSet(
 						ranges.push(...negateRanges(LINE_TERMINATOR, maximum));
 					}
 					break;
+				}
 
 				case "property": {
 					if (!unicode) {
@@ -118,58 +137,40 @@ export function createCharSet(
 					}
 
 					const { key, value, negate } = char;
+					const setRanges = getProperty(key, value);
 
-					if (value == null) {
-						if (key in Alias.Binary_Property) {
-							// binary property
-							const name = Alias.Binary_Property[key as keyof typeof Alias.Binary_Property];
-							addRanges(Binary_Property[name as keyof typeof Binary_Property], negate);
-						} else if (key in Alias.General_Category) {
-							// value from the general category
-							const name = Alias.General_Category[key as keyof typeof Alias.General_Category];
-							addRanges(General_Category[name as keyof typeof General_Category], negate);
-						} else {
-							throw new Error(`Unknown lone Unicode property name or value ${char.key}.`);
-						}
+					if (ignoreCase && negate) {
+						// there might be case-varying characters in the set, so we have to add all case variations
+						// before negating
+						let set = CharSet.empty(maximum).union(setRanges);
+						set = withCaseVaryingCharacters(set, caseFolding, caseVarying);
+
+						// we can directly push the ranges because we already handled all case-varying characters
+						ranges.push(...negateRanges(set.ranges, maximum));
 					} else {
-						// key=value
-
-						if (!(key in Alias.NonBinaryProperty)) {
-							throw new Error(`Unknown Unicode property name ${char.key}.`);
-						}
-						const keyName = Alias.NonBinaryProperty[key as keyof typeof Alias.NonBinaryProperty];
-
-						let categoryAliases: Record<string, string>;
-						let categoryValues: Record<string, readonly CharRange[]>;
-						if (keyName === "General_Category") {
-							categoryAliases = Alias.General_Category;
-							categoryValues = General_Category;
-						} else if (keyName === "Script") {
-							categoryAliases = Alias.ScriptAndScript_Extensions;
-							categoryValues = Script;
-						} else if (keyName === "Script_Extensions") {
-							categoryAliases = Alias.ScriptAndScript_Extensions;
-							categoryValues = Script_Extensions;
-						} else {
-							throw assertNever(keyName);
-						}
-
-						if (!(value in categoryAliases)) {
-							throw new Error(`Unknown Unicode property value ${value} for the name ${key}.`);
-						}
-						const valueName = categoryAliases[value];
-
-						addRanges(categoryValues[valueName], negate);
+						addRanges(setRanges, negate);
 					}
 
 					break;
 				}
 
 				case "digit":
-				case "space":
-				case "word": {
+				case "space": {
 					// these character sets are always case invariant, so we can directly add them to the ranges list
-					const setRanges = char.kind === "digit" ? DIGIT : char.kind === "space" ? SPACE : WORD;
+					const setRanges = char.kind === "digit" ? DIGIT : SPACE;
+
+					if (char.negate) {
+						ranges.push(...negateRanges(setRanges, maximum));
+					} else {
+						ranges.push(...setRanges);
+					}
+					break;
+				}
+
+				case "word": {
+					// \w and \W only case-varies in unicode mode.
+					const setRanges = unicode && ignoreCase ? WORD_IU : WORD;
+
 					if (char.negate) {
 						ranges.push(...negateRanges(setRanges, maximum));
 					} else {
@@ -186,5 +187,95 @@ export function createCharSet(
 		}
 	}
 
-	return CharSet.empty(maximum).union(ranges);
+	const cs = CharSet.empty(maximum).union(ranges);
+	if (!fullCaseCheck) {
+		// no full case check, so we're done here.
+		return cs;
+	}
+
+	return withCaseVaryingCharacters(cs, caseFolding, caseVarying);
+}
+
+
+/**
+ * Returns a character set which includes all characters of the given character set and all their case variations.
+ *
+ * @param cs
+ * @param caseFolding
+ * @param caseVarying
+ */
+function withCaseVaryingCharacters(
+	cs: CharSet,
+	caseFolding: Readonly<Record<number, readonly number[]>>,
+	caseVarying: CharSet
+): CharSet {
+	if (cs.hasEveryOf(caseVarying)) {
+		// this set already includes all case varying characters
+		return cs;
+	}
+
+	const actualCaseVarying = cs.intersect(caseVarying);
+	if (actualCaseVarying.isEmpty) {
+		return cs;
+	}
+
+	const caseVariationSet = new Set<number>();
+	for (const { min, max } of actualCaseVarying.ranges) {
+		for (let i = min; i <= max; i++) {
+			const fold = caseFolding[i];
+			for (let j = 0, l = fold.length; j < l; j++) {
+				caseVariationSet.add(fold[j]);
+			}
+		}
+	}
+	const caseVariationArray = [...caseVariationSet];
+	caseVariationArray.sort((a, b) => a - b);
+
+	return cs.union(runEncodeCharacters(caseVariationArray));
+}
+
+
+function getProperty(key: string, value: string | null): readonly CharRange[] {
+	if (value == null) {
+		if (key in Alias.Binary_Property) {
+			// binary property
+			const name = Alias.Binary_Property[key as keyof typeof Alias.Binary_Property];
+			return Binary_Property[name as keyof typeof Binary_Property];
+		} else if (key in Alias.General_Category) {
+			// value from the general category
+			const name = Alias.General_Category[key as keyof typeof Alias.General_Category];
+			return General_Category[name as keyof typeof General_Category];
+		} else {
+			throw new Error(`Unknown lone Unicode property name or value ${key}.`);
+		}
+	} else {
+		// key=value
+
+		if (!(key in Alias.NonBinaryProperty)) {
+			throw new Error(`Unknown Unicode property name ${key}.`);
+		}
+		const keyName = Alias.NonBinaryProperty[key as keyof typeof Alias.NonBinaryProperty];
+
+		let categoryAliases: Record<string, string>;
+		let categoryValues: Record<string, readonly CharRange[]>;
+		if (keyName === "General_Category") {
+			categoryAliases = Alias.General_Category;
+			categoryValues = General_Category;
+		} else if (keyName === "Script") {
+			categoryAliases = Alias.ScriptAndScript_Extensions;
+			categoryValues = Script;
+		} else if (keyName === "Script_Extensions") {
+			categoryAliases = Alias.ScriptAndScript_Extensions;
+			categoryValues = Script_Extensions;
+		} else {
+			throw assertNever(keyName);
+		}
+
+		if (!(value in categoryAliases)) {
+			throw new Error(`Unknown Unicode property value ${value} for the name ${key}.`);
+		}
+		const valueName = categoryAliases[value];
+
+		return categoryValues[valueName];
+	}
 }

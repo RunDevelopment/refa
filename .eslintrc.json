@@ -58,12 +58,10 @@
             "env": {
                 "browser": false,
                 "node": true,
-                "es6": true,
-                "commonjs": true
+                "es6": true
             },
             "rules": {
-                "@typescript-eslint/no-var-requires": "off",
-                "@typescript-eslint/explicit-function-return-type": "off"
+                "@typescript-eslint/no-var-requires": "off"
             }
         }
     ]

@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "check": "npx eslint --ignore-path .gitignore src/**/*.ts tests/**/*.ts && npx tsc --noEmit && cd tests && npx tsc --noEmit",
+    "check": "npx eslint --ignore-path .gitignore src/**/*.ts tests/**/*.ts scripts/**/*.ts && npx tsc --noEmit && cd tests && npx tsc --noEmit && cd ../scripts && npx tsc --noEmit",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "npx tsc",
-    "build:unicode": "npx ts-node scripts/create-unicode.ts"
+    "build:unicode": "npx ts-node scripts/create-unicode.ts",
+    "build:case-folding": "npx ts-node scripts/create-case-folding.ts"
   },
   "keywords": [
     "dfa",
