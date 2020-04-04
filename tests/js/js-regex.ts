@@ -176,6 +176,13 @@ describe('JS Regex', function () {
 			{
 				literal: /(a*)b\1/,
 				options: {
+					backreferences: "resolve"
+				},
+				expected: "[]"
+			},
+			{
+				literal: /(a*)b\1/,
+				options: {
 					backreferences: "disable"
 				},
 				expected: "[]"
@@ -187,10 +194,79 @@ describe('JS Regex', function () {
 				},
 				expected: Error
 			},
+
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "resolve"
+				},
+				expected: "[62]"
+			},
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "disable"
+				},
+				expected: "[62]"
+			},
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "throw"
+				},
+				expected: "[62]"
+			},
+
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "resolve",
+					disableOptimizations: true
+				},
+				expected: "(?:)[62]"
+			},
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "disable",
+					disableOptimizations: true
+				},
+				expected: "(?:)[62][]"
+			},
+			{
+				literal: /()b\1/,
+				options: {
+					backreferences: "throw",
+					disableOptimizations: true
+				},
+				expected: Error
+			},
+
+			{
+				literal: /(a*)[^\s\S]|b\1/,
+				options: {
+					backreferences: "resolve"
+				},
+				expected: "[62]"
+			},
+			{
+				literal: /(a*)[^\s\S]|b\1/,
+				options: {
+					backreferences: "disable"
+				},
+				expected: "[62]"
+			},
+			{
+				literal: /(a*)[^\s\S]|b\1/,
+				options: {
+					backreferences: "throw"
+				},
+				expected: "[62]"
+			},
 		]);
 	});
 
-	describe('parse finite backreferences', function () {
+	describe('parse constant backreferences', function () {
 		test([
 			// backreferences which can only ever be the empty
 			{
@@ -217,42 +293,44 @@ describe('JS Regex', function () {
 				literal: /((?=a)|()*|a{0})\1/,
 				expected: "(?:(?=[61])||)"
 			},
-			// TODO: More complicated cases
-			//{
-			//	literal: /(a*)|b\1/,
-			//	expected: "[61]*|[62]"
-			//},
+			{
+				literal: /(a*)|b\1/,
+				expected: "[61]*|[62]"
+			},
+			{
+				literal: /(?:\1(a)){2}/,
+				expected: "[61]{2}"
+			},
 
-			// backreferences which only be small finite number of words
-			// TODO:
-			//{
-			//	literal: /(a)\1/,
-			//	options: {
-			//		backreferences: "throw"
-			//	},
-			//	expected: "[61][61]"
-			//},
-			//{
-			//	literal: /(a|b|c)\1/,
-			//	options: {
-			//		backreferences: "throw"
-			//	},
-			//	expected: "[61][61]|[62][62]|[63][63]"
-			//},
-			//{
-			//	literal: /(a|b|c)\1/,
-			//	options: {
-			//		backreferences: "throw"
-			//	},
-			//	expected: ""
-			//},
-			//{
-			//	literal: /("|')(?:(?!\1)[^\\\r\n]|\\.)*\1/,
-			//	options: {
-			//		backreferences: "throw"
-			//	},
-			//	expected: ""
-			//},
+			// backreferences which only match a constant word
+
+			{
+				literal: /(a)\1?/,
+				expected: "[61][61]?"
+			},
+			{
+				literal: /(a)[^\s\S]|(a\1)\2/,
+				expected: "[61][61]"
+			},
+			{
+				literal: /(")(?:(?!\1)[^\\\r\n]|\\.)*\1/,
+				expected: "[22](?:(?![22])[0..9, b..c, e..5b, 5d..ffff]|[5c][0..9, b..c, e..2027, 202a..ffff])*[22]"
+			},
+
+			// where it can't be done
+
+			{
+				literal: /(a)?\1/,
+				expected: "[]"
+			},
+			{
+				literal: /(a)*\1/,
+				expected: "[]"
+			},
+			{
+				literal: /(?:b|(a))+\1/,
+				expected: "[]"
+			},
 		]);
 	});
 

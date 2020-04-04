@@ -7,14 +7,23 @@ import { RegExpParser, AST } from "regexpp";
 import { assertNever } from "../util";
 import { createAssertion } from "./js-assertion";
 import { createCharSet } from "./js-char-set";
+import {
+	somePathToBackreference, backreferenceAlwaysAfterGroup, removeLeadingLookbehinds, removeTrailingLookaheads
+} from "./js-util";
 
 
 export interface ParseOptions {
 	/**
 	 * How to the parser will handle backreferences.
 	 *
-	 * `"disable"`: This is the default option. The parser will replace all backreferences with an empty character
-	 * class. This will cause all path containing a backreference to be removed from constructed FA.
+	 * `"resolve"`: This is the default option. The parser will replace all non-resolvable backreferences with an empty
+	 * character class. This will cause all path containing a non-resolvable backreference to be removed from
+	 * constructed FA. Backreferences which can be resolved as one constant word, will be replaced with that word.
+	 *
+	 * E.g. `(a*)(a|\1)(\1|\2)` will be parsed as `(a*)(a|[])([]|a)` which is equivalent to `a*aa`.
+	 *
+	 * `"disable"`: The parser will replace all backreferences with an empty character class. This will cause all
+	 * path containing a backreference to be removed from constructed FA.
 	 *
 	 * E.g. `(a*)(\1|b)` will be parsed as `(a*)([]|b)` which is equivalent to `a*b`.
 	 *
@@ -25,7 +34,7 @@ export interface ParseOptions {
 	 * E.g. `(a*)b\1` will throw but `(a*)[^\s\S]\1` will not because the backreference will be removed anyway because
 	 * of the empty character class.
 	 */
-	backreferences?: "throw" | "disable";
+	backreferences?: "resolve" | "disable" | "throw";
 	/**
 	 * How the parser will handle lookarounds.
 	 *
@@ -39,7 +48,21 @@ export interface ParseOptions {
 	 *
 	 * E.g. `a\b.` but not `a*([](\b){0})` because the `\b` cannot be reached.
 	 */
-	lookarounds?: "parse" | "throw" | "disable";
+	lookarounds?: "parse" | "disable" | "throw";
+	/**
+	 * By default, the parser will try to optimize the generated RE as much as possible.
+	 *
+	 * If set to `true`, all trivial optimizations will be disabled. This includes:
+	 *
+	 * - Removing alternatives where all paths go through an empty character class.
+	 * - Removing 0 quantifiers.
+	 * - Inlining single-alternative groups.
+	 * - Removing backreferences which always resolve to the empty string.
+	 *
+	 * These optimization might prevent that certain backreferences or lookarounds get disabled (if configured) or throw
+	 * an error (if configured).
+	 */
+	disableOptimizations?: boolean;
 }
 
 export type RegexppAst = {
@@ -67,7 +90,8 @@ export class Parser {
 
 	readonly ast: RegexppAst;
 
-	private readonly charCache = new Map<string, CharSet>();
+	private readonly _charCache = new Map<string, CharSet>();
+	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, number[] | null>();
 
 
 	constructor(literal: { source: string; flags: string }, parserOptions?: RegExpParser.Options) {
@@ -103,7 +127,10 @@ export class Parser {
 	}
 
 
-	private addAlternatives(alternatives: AST.Alternative[], parent: Parent, context: ParserContext): void {
+	private addAlternatives(
+		alternatives: readonly AST.Alternative[],
+		parent: Parent, context: ParserContext
+	): void {
 		for (const alt of alternatives) {
 			const elements: Element[] = [];
 			const concat: Concatenation = {
@@ -114,35 +141,43 @@ export class Parser {
 			};
 			parent.alternatives.push(concat);
 
-			let error: Error | undefined = undefined;
-			for (const e of alt.elements) {
-				try {
+			if (context.disableOptimizations) {
+				for (const e of alt.elements) {
 					this.addElement(e, concat, context);
-				} catch (err) {
-					// we catch the error and only rethrow it if the alternative did not get removed
-					// the only errors which can be thrown are not-supported errors, so if the alternative gets removed
-					// anyway, we shouldn't throw the error
-					// Note: For multiple errors, only the first one will be re-thrown
-					if (error === undefined) {
-						error = err;
+				}
+			} else {
+				// optimized version
+
+				let error: Error | undefined = undefined;
+				for (const e of alt.elements) {
+					try {
+						this.addElement(e, concat, context);
+					} catch (err) {
+						// we catch the error and only rethrow it if the alternative did not get removed
+						// the only errors which can be thrown are not-supported errors, so if the alternative gets
+						// removed anyway, we shouldn't throw the error
+						// Note: For multiple errors, only the first one will be re-thrown
+						if (error === undefined) {
+							error = err;
+						}
+					}
+
+					if (elements.length > 0) {
+						const last = elements[elements.length - 1];
+						if (last.type === "CharacterClass" && last.characters.isEmpty) {
+							// remove the alternative
+							parent.alternatives.pop();
+							// don't throw any errors
+							error = undefined;
+							break;
+						}
 					}
 				}
 
-				if (elements.length > 0) {
-					const last = elements[elements.length - 1];
-					if (last.type === "CharacterClass" && last.characters.isEmpty) {
-						// remove the alternative
-						parent.alternatives.pop();
-						// don't throw any errors
-						error = undefined;
-						break;
-					}
+				if (error !== undefined) {
+					// rethrow the error
+					throw error;
 				}
-			}
-
-			if (error !== undefined) {
-				// rethrow the error
-				throw error;
 			}
 		}
 
@@ -162,183 +197,194 @@ export class Parser {
 	}
 
 	private addElement(element: AST.Element, parent: Concatenation, context: ParserContext): void {
-		const source: SourceLocation = getSource(element);
-
-		const addEmpty = (): void => {
-			this.addEmptyCharacterClass(source, parent, context);
-		}
-
 		switch (element.type) {
-			case "Assertion": {
+			case "Assertion":
+				return this.addAssertion(element, parent, context);
+
+			case "CapturingGroup":
+			case "Group":
+				return this.addGroup(element, parent, context);
+
+			case "Character":
+			case "CharacterClass":
+			case "CharacterSet":
+				return this.addCharacterClass(element, parent, context);
+
+			case "Quantifier":
+				return this.addQuantifier(element, parent, context);
+
+			case "Backreference":
+				return this.addBackreference(element, parent, context);
+
+			default:
+				throw assertNever(element, 'Unsupported element');
+		}
+	}
+
+	private addAssertion(
+		element: AST.Assertion,
+		parent: Concatenation, context: ParserContext
+	): void {
+
+		switch (element.kind) {
+			case "lookahead":
+			case "lookbehind": {
+				if (context.disableOptimizations) {
+					// we won't optimize, so there's no point in trying
+
+					if (context.lookarounds === "throw") {
+						throw new Error("Assertions are not supported.");
+					}
+					if (context.lookarounds === "disable") {
+						this.addEmptyCharacterClass(element, parent, context);
+						return;
+					}
+				}
+
+				const assertion: Assertion = {
+					type: "Assertion",
+					kind: element.kind === "lookahead" ? "ahead" : "behind",
+					parent,
+					negate: element.negate,
+					alternatives: [],
+					source: getSource(element)
+				};
+				parent.elements.push(assertion);
+
+				try {
+					this.addAlternatives(element.alternatives, assertion, context);
+				} catch (e) {
+
+					if (context.lookarounds === "throw") {
+						// we tried to optimize and failed, so we ignore e and throw our own error
+						throw new Error("Assertions are not supported.");
+					}
+					if (context.lookarounds === "disable") {
+						// we tried to optimize and failed, so we ignore e and disable the assertion
+						parent.elements.pop(); // remove the assertion
+						this.addEmptyCharacterClass(element, parent, context);
+						return;
+					}
+
+					// if the parsing fails, then rethrow
+					throw e;
+				}
+
+
+				if (!context.disableOptimizations) {
+					if (assertion.alternatives.length === 1) {
+						const concat = assertion.alternatives[0];
+						if (concat.elements.length === 0) {
+							// remove the empty lookaround
+							parent.elements.pop();
+							// if it's (?!) or (?<!), it will trivially reject, so just add an empty character class
+							// to simulate this behavior
+							if (assertion.negate) {
+								this.addEmptyCharacterClass(element, parent, context);
+							}
+							return;
+						}
+						if (concat.elements.length === 1) {
+							const first = concat.elements[0];
+							if (first.type === "CharacterClass" && first.characters.isEmpty) {
+								// the assertion can never match the empty character class
+								// if it's a negative assertion, we can just remove it but if it's a positive one,
+								// we have to replace it with an empty character class.
+								parent.elements.pop();
+								if (!assertion.negate) {
+									this.addEmptyCharacterClass(element, parent, context);
+								}
+								return;
+							}
+						}
+					}
+				}
+
+
+				if (context.lookarounds === "throw") {
+					// we tried to optimize and failed
+					throw new Error("Assertions are not supported.");
+				}
+				if (context.lookarounds === "disable") {
+					// we tried to optimize and failed
+					parent.elements.pop(); // remove the assertion
+					this.addEmptyCharacterClass(element, parent, context);
+					return;
+				}
+
+				break;
+			}
+			case "end":
+			case "start":
+			case "word": {
+				// there's no way to optimize this, so the logic is quite simple
+
 				if (context.lookarounds === "throw") {
 					throw new Error("Assertions are not supported.");
 				}
 				if (context.lookarounds === "disable") {
-					addEmpty();
-					break;
+					this.addEmptyCharacterClass(element, parent, context);
+					return;
 				}
 
 				// "parse" is the default
 
-				switch (element.kind) {
-					case "lookahead":
-					case "lookbehind": {
-						const assertion: Assertion = {
-							type: "Assertion",
-							kind: element.kind === "lookahead" ? "ahead" : "behind",
-							parent,
-							negate: element.negate,
-							alternatives: [],
-							source
-						};
-						parent.elements.push(assertion);
-
-						this.addAlternatives(element.alternatives, assertion, context);
-
-						if (assertion.alternatives.length === 1) {
-							const concat = assertion.alternatives[0];
-							if (concat.elements.length === 0) {
-								// remove the empty lookaround
-								parent.elements.pop();
-								// if it's (?!) or (?<!), it will trivially reject, so just add an empty character class
-								// to simulate this behavior
-								if (assertion.negate) {
-									addEmpty();
-								}
-							}
-							if (concat.elements.length === 1) {
-								const first = concat.elements[0];
-								if (first.type === "CharacterClass" && first.characters.isEmpty) {
-									// the assertion can never match the empty character class
-									// if it's a negative assertion, we can just remove it but if it's a positive one,
-									// we have to replace it with an empty character class.
-									parent.elements.pop();
-									if (!assertion.negate) {
-										addEmpty();
-									}
-								}
-							}
-						}
-						break;
-					}
-					case "end":
-					case "start":
-					case "word": {
-						const simpleAssertion = createAssertion(element, context.flags);
-						const assertion = desimplify(simpleAssertion, parent, source);
-						parent.elements.push(assertion);
-						break;
-					}
-					default:
-						throw assertNever(element, 'Unsupported element');
-				}
-
-				break;
-			}
-			case "CapturingGroup":
-			case "Group": {
-				const alteration: Alternation = {
-					type: "Alternation",
-					parent,
-					alternatives: [],
-					source
-				};
-				parent.elements.push(alteration);
-				this.addAlternatives(element.alternatives, alteration, context);
-
-				if (alteration.alternatives.length === 1) {
-					// just add the element of the alternative to the parent.
-					// This will make everything just work without any additional checks
-
-					// remove this alternation
-					parent.elements.pop();
-
-					const concat = alteration.alternatives[0];
-					for (const e of concat.elements) {
-						// set new parent
-						e.parent = parent;
-						parent.elements.push(e);
-					}
-				}
-
-				break;
-			}
-			case "Character":
-			case "CharacterClass":
-			case "CharacterSet": {
-				this.addCharacterClass(element, parent, context);
-
-				break;
-			}
-			case "Quantifier": {
-				const min: number = element.min;
-				const max: number = element.max;
-
-				if (max === 0) {
-					return;
-				}
-
-				const quant: Quantifier = {
-					type: "Quantifier",
-					parent,
-					min,
-					max,
-					alternatives: [],
-					source
-				};
-				parent.elements.push(quant);
-
-				const qElement = element.element;
-				if (qElement.type === "CapturingGroup" || qElement.type === "Group") {
-					this.addAlternatives(qElement.alternatives, quant, context);
-				} else {
-					const concat: Concatenation = {
-						type: "Concatenation",
-						parent: quant,
-						elements: [],
-						source: getSource(qElement)
-					}
-					quant.alternatives.push(concat);
-
-					this.addElement(qElement, concat, context);
-				}
-
-				if (quant.alternatives.length === 1) {
-					const concat = quant.alternatives[0];
-					if (concat.elements.length === 0) {
-						// the quantified element can only match the empty string, so just remove the quantifier
-						parent.elements.pop();
-					}
-					if (concat.elements.length === 1) {
-						const first = concat.elements[0];
-						if (first.type === "CharacterClass" && first.characters.isEmpty) {
-							// the quantified element is the empty character class.
-							// if the min of the quantifier is 0, we can just remove the quantifier otherwise it has to
-							// be replaced with the empty character class
-							parent.elements.pop();
-							if (quant.min > 0) {
-								addEmpty();
-							}
-						}
-					}
-				}
-
-				break;
-			}
-			case "Backreference": {
-				if (isEmptyStringBackreferences(element)) {
-					break;
-				}
-
-				if (context.backreferences === "throw") {
-					throw new Error('Backreferences are not supported.');
-				}
-				addEmpty();
-
+				const simpleAssertion = createAssertion(element, context.flags);
+				const assertion = desimplify(simpleAssertion, parent, getSource(element));
+				parent.elements.push(assertion);
 				break;
 			}
 			default:
 				throw assertNever(element, 'Unsupported element');
+		}
+	}
+
+	private addBackreference(
+		element: AST.Backreference,
+		parent: Concatenation, context: ParserContext
+	): void {
+		if (context.disableOptimizations) {
+			if (context.backreferences === "disable") {
+				this.addEmptyCharacterClass(element, parent, context);
+			}
+			if (context.backreferences === "throw") {
+				throw new Error('Backreferences are not supported.');
+			}
+		}
+
+		// try resolve
+
+		const result = this.resolveBackreference(element, context);
+
+		if (result === null || result.length !== 0) {
+			// could not optimize backreference away
+
+			if (context.backreferences === "disable") {
+				this.addEmptyCharacterClass(element, parent, context);
+			}
+			if (context.backreferences === "throw") {
+				throw new Error('Backreferences are not supported.');
+			}
+		}
+
+		if (result !== null) {
+			// add all characters of the constant word
+
+			const maxCharacter = context.flags.unicode ? 0x10FFFF : 0xFFFF;
+			for (const ch of result) {
+				const char: CharacterClass = {
+					type: "CharacterClass",
+					parent,
+					characters: CharSet.empty(maxCharacter).union([{ min: ch, max: ch }]),
+					source: getSource(element)
+				};
+				parent.elements.push(char);
+			}
+
+		} else {
+			// could not resolve
+
+			this.addEmptyCharacterClass(element, parent, context);
 		}
 	}
 
@@ -356,7 +402,7 @@ export class Parser {
 			cacheKey = getCharacterClassCacheKey(element.elements, element.negate);
 		}
 
-		const cached = this.charCache.get(cacheKey);
+		const cached = this._charCache.get(cacheKey);
 		if (cached !== undefined) {
 			// cache hit
 
@@ -390,7 +436,7 @@ export class Parser {
 				}
 			}
 
-			this.charCache.set(cacheKey, characters);
+			this._charCache.set(cacheKey, characters);
 		}
 
 		const char: CharacterClass = {
@@ -402,47 +448,194 @@ export class Parser {
 		parent.elements.push(char);
 	}
 
-	private addEmptyCharacterClass(source: SourceLocation, parent: Concatenation, context: ParserContext): void {
+	private addGroup(
+		element: AST.Group | AST.CapturingGroup,
+		parent: Concatenation, context: ParserContext
+	): void {
+		const alteration: Alternation = {
+			type: "Alternation",
+			parent,
+			alternatives: [],
+			source: getSource(element)
+		};
+		parent.elements.push(alteration);
+		this.addAlternatives(element.alternatives, alteration, context);
+
+		if (!context.disableOptimizations) {
+			if (alteration.alternatives.length === 1) {
+				// just add the elements of the alternative to the parent.
+				// This will make everything just work without any additional checks
+
+				// remove this alternation
+				parent.elements.pop();
+
+				const concat = alteration.alternatives[0];
+				for (const e of concat.elements) {
+					// set new parent
+					e.parent = parent;
+					parent.elements.push(e);
+				}
+			}
+		}
+	}
+
+	private addQuantifier(
+		element: AST.Quantifier,
+		parent: Concatenation, context: ParserContext
+	): void {
+		const min: number = element.min;
+		const max: number = element.max;
+
+		if (!context.disableOptimizations) {
+			if (max === 0) {
+				return;
+			}
+			if (min === 1 && max === 1) {
+				this.addElement(element.element, parent, context);
+				return;
+			}
+		}
+
+		const quant: Quantifier = {
+			type: "Quantifier",
+			parent,
+			min,
+			max,
+			alternatives: [],
+			source: getSource(element)
+		};
+		parent.elements.push(quant);
+
+		const qElement = element.element;
+
+		if (!context.disableOptimizations && qElement.type === "CapturingGroup" || qElement.type === "Group") {
+			this.addAlternatives(qElement.alternatives, quant, context);
+		} else {
+			const concat: Concatenation = {
+				type: "Concatenation",
+				parent: quant,
+				elements: [],
+				source: getSource(qElement)
+			}
+			quant.alternatives.push(concat);
+
+			this.addElement(qElement, concat, context);
+		}
+
+		if (!context.disableOptimizations) {
+			if (quant.alternatives.length === 1) {
+				const concat = quant.alternatives[0];
+				if (concat.elements.length === 0) {
+					// the quantified element can only match the empty string, so just remove the quantifier
+					parent.elements.pop();
+				}
+				if (concat.elements.length === 1) {
+					const first = concat.elements[0];
+					if (first.type === "CharacterClass" && first.characters.isEmpty) {
+						// the quantified element is the empty character class.
+						// if the min of the quantifier is 0, we can just remove the quantifier otherwise it has to
+						// be replaced with the empty character class
+						parent.elements.pop();
+						if (quant.min > 0) {
+							this.addEmptyCharacterClass(element, parent, context);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private addEmptyCharacterClass(node: SourceLocation, parent: Concatenation, context: ParserContext): void {
 		const char: CharacterClass = {
 			type: "CharacterClass",
 			parent,
 			characters: CharSet.empty(context.flags.unicode ? 0x10FFFF : 0xFFFF),
-			source
+			source: getSource(node)
 		};
 		parent.elements.push(char);
 	}
 
-}
-
-
-function isEmptyStringBackreferences(backRef: AST.Backreference): boolean {
-	const group = backRef.resolved;
-	if (backRef.start < group.end) {
-		// early or contained backreferences will always be replaced by the empty string in JS regex engines
-		return true;
-	}
-
-	// the group only matches the empty string
-	function isEmpty(element: AST.Element): boolean {
-		switch (element.type) {
-			case "Assertion":
-				return true;
-			case "Backreference":
-				return isEmptyStringBackreferences(element);
-			case "Quantifier":
-				return element.max === 0 || isEmpty(element.element);
-			case "CapturingGroup":
-			case "Group":
-				return element.alternatives.every(a => {
-					return a.elements.every(e => isEmpty(e));
-				});
-			default:
-				return false;
+	private resolveBackreference(element: AST.Backreference, context: ParserContext): number[] | null {
+		const cached = this._resolveCache.get(element);
+		if (cached !== undefined) {
+			return cached;
 		}
+
+		let result: number[] | null;
+		if (!somePathToBackreference(element)) {
+			result = [];
+		} else {
+			result = this.resolveConstantGroup(element.resolved, context);
+
+			if (result !== null && result.length > 0) {
+				if (!backreferenceAlwaysAfterGroup(element)) {
+					// since there might be some path with which we could reach the backreference without matching the
+					// the group, the backreference cannot be replaced with the constant word of the group
+					result = null;
+				}
+			}
+		}
+
+		this._resolveCache.set(element, result);
+		return result;
 	}
 
-	return isEmpty(group);
+	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): number[] | null {
+		const cached = this._resolveCache.get(element);
+		if (cached !== undefined) {
+			return cached;
+		}
+
+		let result: number[] | null;
+
+		const { expression } = this.parseElement(element, {
+			backreferences: "resolve",
+			lookarounds: context.lookarounds === "throw" ? "parse" : context.lookarounds
+		});
+
+		removeLeadingLookbehinds(expression);
+		removeTrailingLookaheads(expression);
+
+		// if the group is constant, then all that's left will be a single alternative of only single-character
+		// character classes
+
+		if (expression.alternatives.length === 1) {
+			const concat = expression.alternatives[0];
+			if (concat.elements.length === 1
+				&& concat.elements[0].type === "CharacterClass" && concat.elements[0].characters.isEmpty) {
+				// since the capturing can never be matched, all backreferences to it will always be replaced with the
+				// empty string
+				result = [];
+			} else {
+				result = [];
+
+				for (const char of concat.elements) {
+					if (char.type === "CharacterClass") {
+						const charset = char.characters;
+						if (charset.ranges.length === 1) {
+							const { min, max } = charset.ranges[0];
+							if (min === max) {
+								result.push(min);
+								continue;
+							}
+						}
+					}
+
+					result = null;
+					break;
+				}
+			}
+		} else {
+			result = null;
+		}
+
+		this._resolveCache.set(element, result);
+		return result;
+	}
+
 }
+
+
 
 function getSource(node: SourceLocation): SourceLocation {
 	return {
