@@ -45,6 +45,8 @@ describe('JS createCharSet', function () {
 			expected: "[41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a][20][41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a]"
 		},
 
+		// \w \W
+
 		{
 			literal: /\w/,
 			expected: "[30..39, 41..5a, 5f, 61..7a]"
@@ -78,6 +80,8 @@ describe('JS createCharSet', function () {
 			expected: "[0..2f, 3a..40, 5b..5e, 60, 7b..17e, 180..2129, 212b..10ffff]"
 		},
 
+		// \d \D
+
 		{
 			literal: /\d/,
 			expected: "[30..39]"
@@ -96,6 +100,25 @@ describe('JS createCharSet', function () {
 		},
 
 		{
+			literal: /\D/,
+			expected: "[0..2f, 3a..ffff]"
+		},
+		{
+			literal: /\D/i,
+			expected: "[0..2f, 3a..ffff]"
+		},
+		{
+			literal: /\D/u,
+			expected: "[0..2f, 3a..10ffff]"
+		},
+		{
+			literal: /\D/iu,
+			expected: "[0..2f, 3a..10ffff]"
+		},
+
+		// \s \S
+
+		{
 			literal: /\s/,
 			expected: "[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]"
 		},
@@ -111,6 +134,91 @@ describe('JS createCharSet', function () {
 			literal: /\s/iu,
 			expected: "[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]"
 		},
+
+		{
+			literal: /\S/,
+			expected: "[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff]"
+		},
+		{
+			literal: /\S/i,
+			expected: "[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff]"
+		},
+		{
+			literal: /\S/u,
+			expected: "[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..10ffff]"
+		},
+		{
+			literal: /\S/iu,
+			expected: "[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..10ffff]"
+		},
+
+		// . (dot)
+
+		{
+			literal: /./,
+			expected: "[0..9, b..c, e..2027, 202a..ffff]"
+		},
+		{
+			literal: /./i,
+			expected: "[0..9, b..c, e..2027, 202a..ffff]"
+		},
+		{
+			literal: /./m,
+			expected: "[0..9, b..c, e..2027, 202a..ffff]"
+		},
+		{
+			literal: /./s,
+			expected: "[0..ffff]"
+		},
+		{
+			literal: /./u,
+			expected: "[0..9, b..c, e..2027, 202a..10ffff]"
+		},
+		{
+			literal: /./iu,
+			expected: "[0..9, b..c, e..2027, 202a..10ffff]"
+		},
+		{
+			literal: /./mu,
+			expected: "[0..9, b..c, e..2027, 202a..10ffff]"
+		},
+		{
+			literal: /./su,
+			expected: "[0..10ffff]"
+		},
+
+		// character classes
+
+		{
+			literal: /[\s\S]/,
+			expected: "[0..ffff]"
+		},
+		{
+			literal: /[\s\S]/u,
+			expected: "[0..10ffff]"
+		},
+		{
+			literal: /[^]/u,
+			expected: "[0..10ffff]"
+		},
+		{
+			literal: /[^\D][^\d]/,
+			expected: "[30..39][0..2f, 3a..ffff]"
+		},
+		{
+			literal: /[^a-cx-z]/,
+			expected: "[0..60, 64..77, 7b..ffff]"
+		},
+		{
+			literal: /a[A][aA]/i,
+			expected: "[41, 61][41, 61][41, 61]"
+		},
+		{
+			literal: /[^a-cx-z]/i,
+			expected: "[0..40, 44..57, 5b..60, 64..77, 7b..ffff]"
+		},
+
+		// Unicode property escapes
 
 		{
 			// not in unicode mode
