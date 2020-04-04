@@ -3,13 +3,12 @@
 import { CharRange, CharSet, negateRanges } from "../char-set";
 import { AST } from "regexpp";
 import { assertNever } from "../util";
-import { DIGIT, LINE_TERMINATOR, SPACE, WORD } from "./js-util";
+import { DIGIT, LINE_TERMINATOR, SPACE, WORD, WORD_IU, withCaseVaryingCharacters } from "./js-util";
 import {
 	Alias, Binary_Property, General_Category, Script, Script_Extensions,
 	UnicodeCaseVarying, UnicodeCaseFolding
 } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
-import { runEncodeCharacters } from "../char-util";
 
 
 export type PredefinedCharacterSet =
@@ -35,10 +34,6 @@ export interface WordCharacterSet {
 	kind: "word";
 	negate: boolean;
 }
-
-// \w with the i and u flags enabled
-const WORD_IU =
-	withCaseVaryingCharacters(CharSet.empty(0x10FFFF).union(WORD), UnicodeCaseFolding, UnicodeCaseVarying).ranges
 
 /**
 * Creates a new character set with the characters equivalent to a JavaScript regular expression character set.
@@ -194,44 +189,6 @@ export function createCharSet(
 	}
 
 	return withCaseVaryingCharacters(cs, caseFolding, caseVarying);
-}
-
-
-/**
- * Returns a character set which includes all characters of the given character set and all their case variations.
- *
- * @param cs
- * @param caseFolding
- * @param caseVarying
- */
-function withCaseVaryingCharacters(
-	cs: CharSet,
-	caseFolding: Readonly<Record<number, readonly number[]>>,
-	caseVarying: CharSet
-): CharSet {
-	if (cs.hasEveryOf(caseVarying)) {
-		// this set already includes all case varying characters
-		return cs;
-	}
-
-	const actualCaseVarying = cs.intersect(caseVarying);
-	if (actualCaseVarying.isEmpty) {
-		return cs;
-	}
-
-	const caseVariationSet = new Set<number>();
-	for (const { min, max } of actualCaseVarying.ranges) {
-		for (let i = min; i <= max; i++) {
-			const fold = caseFolding[i];
-			for (let j = 0, l = fold.length; j < l; j++) {
-				caseVariationSet.add(fold[j]);
-			}
-		}
-	}
-	const caseVariationArray = [...caseVariationSet];
-	caseVariationArray.sort((a, b) => a - b);
-
-	return cs.union(runEncodeCharacters(caseVariationArray));
 }
 
 

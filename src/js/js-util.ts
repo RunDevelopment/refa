@@ -1,4 +1,44 @@
-import { CharRange } from "../char-set";
+import { CharSet, CharRange } from "../char-set";
+import { runEncodeCharacters } from "../char-util";
+import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
+
+
+/**
+ * Returns a character set which includes all characters of the given character set and all their case variations.
+ *
+ * @param cs
+ * @param caseFolding
+ * @param caseVarying
+ */
+export function withCaseVaryingCharacters(
+	cs: CharSet,
+	caseFolding: Readonly<Record<number, readonly number[]>>,
+	caseVarying: CharSet
+): CharSet {
+	if (cs.hasEveryOf(caseVarying)) {
+		// this set already includes all case varying characters
+		return cs;
+	}
+
+	const actualCaseVarying = cs.intersect(caseVarying);
+	if (actualCaseVarying.isEmpty) {
+		return cs;
+	}
+
+	const caseVariationSet = new Set<number>();
+	for (const { min, max } of actualCaseVarying.ranges) {
+		for (let i = min; i <= max; i++) {
+			const fold = caseFolding[i];
+			for (let j = 0, l = fold.length; j < l; j++) {
+				caseVariationSet.add(fold[j]);
+			}
+		}
+	}
+	const caseVariationArray = [...caseVariationSet];
+	caseVariationArray.sort((a, b) => a - b);
+
+	return cs.union(runEncodeCharacters(caseVariationArray));
+}
 
 
 export const DIGIT: readonly CharRange[] = [
@@ -27,3 +67,6 @@ export const LINE_TERMINATOR: readonly CharRange[] = [
 	{ min: 0x0d, max: 0x0d }, // \r
 	{ min: 0x2028, max: 0x2029 },
 ];
+
+export const WORD_IU: readonly CharRange[] =
+	withCaseVaryingCharacters(CharSet.empty(0x10FFFF).union(WORD), UnicodeCaseFolding, UnicodeCaseVarying).ranges;

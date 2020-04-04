@@ -1,7 +1,7 @@
 import { Element, Assertion, Simple } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
-import { LINE_TERMINATOR, WORD } from "./js-util";
+import { LINE_TERMINATOR, WORD, WORD_IU } from "./js-util";
 import { AST } from "regexpp";
 
 
@@ -54,7 +54,8 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 			// /\b/ == /(?:(?<!\w)(?=\w)|(?<=\w)(?!\w))/
 			// /\B/ == /(?:(?<=\w)(?=\w)|(?<!\w)(?!\w))/
 
-			const charSet: CharSet = CharSet.empty(maximum).union(WORD);
+			const charRanges = flags.ignoreCase && flags.unicode ? WORD_IU : WORD;
+			const charSet: CharSet = CharSet.empty(maximum).union(charRanges);
 			return {
 				type: "Alternation",
 				alternatives: [

@@ -8,7 +8,7 @@ describe('JS createCharSet', function () {
 
 	interface TestCase {
 		literal: { source: string; flags: string };
-		expected: string | Error;
+		expected: string | typeof Error;
 	}
 
 	function test(cases: Iterable<TestCase>): void {
@@ -113,9 +113,27 @@ describe('JS createCharSet', function () {
 		},
 
 		{
+			// not in unicode mode
 			literal: /\p{ASCII}/,
 			expected: "[70][7b][41][53][43][49][49][7d]"
 		},
+		{
+			// property names are case sensitive
+			// (invalid property names/values are a JS syntax error, so we have to use object literals)
+			literal: { source: String.raw`\p{ascii}`, flags: "u" },
+			expected: Error
+		},
+		{
+			// property names are case sensitive
+			literal: { source: String.raw`\p{any}`, flags: "u" },
+			expected: Error
+		},
+		{
+			// not a valid binary property name or property value
+			literal: { source: String.raw`\p{General_Category}`, flags: "u" },
+			expected: Error
+		},
+
 		{
 			literal: /\p{ASCII}/u,
 			expected: "[0..7f]"
