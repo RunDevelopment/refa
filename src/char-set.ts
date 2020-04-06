@@ -125,15 +125,15 @@ export class CharSet {
 	 */
 	toString(): string {
 		let s = "";
-		for (let i = 0, l = this.ranges.length; i < l; i++) {
-			const { min, max } = this.ranges[i];
-			s += min;
-			if (max > min) {
-				s += "-" + max;
+		for (const { min, max } of this.ranges) {
+			if (s !== "") s += ", ";
+			if (min == max) {
+				s += min.toString(16);
+			} else {
+				s += min.toString(16) + ".." + max.toString(16);
 			}
-			s += " ";
 		}
-		return `CharSet (${this.maximum}) [ ${s}]`; // TODO:
+		return `CharSet (${this.maximum}) [${s}]`;
 	}
 
 	/**
