@@ -11,26 +11,36 @@ import { faToRegex } from "./to-regex";
 export interface NFANode {
 	readonly id: number;
 	readonly list: NodeList;
-	readonly out: Map<NFANode, CharSet>;
-	readonly in: Map<NFANode, CharSet>;
+	readonly out: ReadonlyMap<NFANode, CharSet>;
+	readonly in: ReadonlyMap<NFANode, CharSet>;
 }
 
+let nodeListCounter = 0;
 class NodeList {
 
 	// variables for checks and debugging
 	private readonly id: number;
 	private _nodeCounter: number = 0;
-	private static _counter: number = 0;
 
+	/**
+	 * The initial state of this list.
+	 *
+	 * The initial state is fixed an cannot be changed or removed.
+	 */
 	readonly initial: NFANode;
-	readonly final: Set<NFANode>;
+	/**
+	 * The set of final states of this list.
+	 */
+	readonly finals: Set<NFANode> = new Set();
 
 	constructor() {
-		this.id = NodeList._counter++;
-		this.final = new Set();
+		this.id = nodeListCounter++;
 		this.initial = this.createNode();
 	}
 
+	/**
+	 * Creates a new node associated with this node list.
+	 */
 	createNode(): NFANode {
 		const node: NFANode = {
 			id: this._nodeCounter++,
@@ -40,6 +50,13 @@ class NodeList {
 		return node;
 	}
 
+	/**
+	 * Adds a transition from `from` to `to` using the given non-empty set of characters.
+	 *
+	 * @param from
+	 * @param to
+	 * @param characters
+	 */
 	linkNodes(from: NFANode, to: NFANode, characters: CharSet): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
@@ -51,10 +68,18 @@ class NodeList {
 			throw new Error("You can't link nodes with the empty character set.");
 		}
 
-		linkNodesAddImpl(from.out, to, characters);
-		linkNodesAddImpl(to.in, from, characters);
+		linkNodesAddImpl(from.out as Map<NFANode, CharSet>, to, characters);
+		linkNodesAddImpl(to.in as Map<NFANode, CharSet>, from, characters);
 	}
 
+	/**
+	 * Removes the transition from `from` to `to`.
+	 *
+	 * If there is no transition from `from` to `to`, an error will be thrown.
+	 *
+	 * @param from
+	 * @param to
+	 */
 	unlinkNodes(from: NFANode, to: NFANode): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
@@ -67,18 +92,22 @@ class NodeList {
 			throw new Error("Can't unlink nodes which aren't linked.");
 		}
 
-		from.out.delete(to);
-		to.in.delete(from);
+		(from.out as Map<NFANode, CharSet>).delete(to);
+		(to.in as Map<NFANode, CharSet>).delete(from);
 	}
 
+	/**
+	 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
+	 * removed.
+	 */
 	removeUnreachable(): void {
 		const makeEmpty = (): void => {
-			this.final.clear();
-			this.initial.in.clear();
-			this.initial.out.clear();
+			this.finals.clear();
+			(this.initial.in as Map<NFANode, CharSet>).clear();
+			(this.initial.out as Map<NFANode, CharSet>).clear();
 		}
 
-		if (this.final.size === 0) {
+		if (this.finals.size === 0) {
 			makeEmpty();
 			return;
 		}
@@ -88,7 +117,7 @@ class NodeList {
 				throw new Error("Cannot remove the initial state.");
 			}
 
-			this.final.delete(node);
+			this.finals.delete(node);
 			for (const outgoing of node.out.keys()) {
 				this.unlinkNodes(node, outgoing);
 			}
@@ -98,7 +127,7 @@ class NodeList {
 		};
 
 		// 1) Get all nodes
-		const allNodes = new Set<NFANode>(this.final);
+		const allNodes = new Set<NFANode>(this.finals);
 		DFS(this.initial, node => {
 			allNodes.add(node);
 			return [...node.in.keys(), ...node.out.keys()];
@@ -119,14 +148,14 @@ class NodeList {
 		});
 
 		// 4) We may not have any final states left
-		if (this.final.size === 0) {
+		if (this.finals.size === 0) {
 			makeEmpty();
 			return;
 		}
 
 		// 5) Get all nodes which can reach a final state
 		const canReachFinal = new Set<NFANode>();
-		for (const final of this.final) {
+		for (const final of this.finals) {
 			DFS(final, node => {
 				if (canReachFinal.has(node)) {
 					return [];
@@ -184,7 +213,7 @@ function linkNodesAddImpl(map: Map<NFANode, CharSet>, to: NFANode, characters: C
 
 interface SubList {
 	readonly initial: NFANode;
-	readonly final: Set<NFANode>;
+	readonly finals: Set<NFANode>;
 }
 
 /*
@@ -232,14 +261,14 @@ export class NFA implements FiniteAutomaton {
 	}
 
 	get isEmpty(): boolean {
-		return this.nodes.final.size === 0;
+		return this.nodes.finals.size === 0;
 	}
 
 	get isFinite(): boolean {
 		return this.isEmpty || faIsFinite(
 			this.nodes.initial,
 			n => n.out.keys(),
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
@@ -258,7 +287,7 @@ export class NFA implements FiniteAutomaton {
 
 		function match(index: number, node: NFANode): boolean {
 			if (index >= characters.length)
-				return nodes.final.has(node);
+				return nodes.finals.has(node);
 
 			const cp = characters[index];
 
@@ -283,7 +312,7 @@ export class NFA implements FiniteAutomaton {
 		return faIterateWordSets(
 			this.nodes.initial,
 			n => n.out,
-			f => this.nodes.final.has(f)
+			f => this.nodes.finals.has(f)
 		);
 	}
 
@@ -295,7 +324,7 @@ export class NFA implements FiniteAutomaton {
 		return faToString(
 			this.nodes.initial,
 			n => [...n.out].map(([to, characters]) => [to, rangesToString(characters.ranges)]),
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
@@ -303,10 +332,16 @@ export class NFA implements FiniteAutomaton {
 		return faToRegex(
 			this.nodes.initial,
 			n => n.out,
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
+	/**
+	 * Returns a new NFA which is equivalent to the intersection of the two given NFAs.
+	 *
+	 * @param left
+	 * @param right
+	 */
 	static intersect(left: NFA, right: NFA): NFA {
 		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
 
@@ -349,7 +384,7 @@ export class NFA implements FiniteAutomaton {
 				addOutgoing(n);
 				return n.out;
 			},
-			f => nodeList.final.has(f)
+			f => nodeList.finals.has(f)
 		);
 	}
 
@@ -367,7 +402,7 @@ export class NFA implements FiniteAutomaton {
 	}
 
 	/**
-	 * Modifies this NFA to also accept all words from the given NFA.
+	 * Modifies this NFA to accept all words from this NFA and the given NFA.
 	 *
 	 * @param nfa
 	 */
@@ -385,7 +420,7 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	concat(nfa: NFA): void {
+	append(nfa: NFA): void {
 		if (this === nfa) {
 			this.quantify(2, 2);
 			return;
@@ -399,7 +434,7 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	concatBefore(nfa: NFA): void {
+	prepend(nfa: NFA): void {
 		if (this === nfa) {
 			this.quantify(2, 2);
 			return;
@@ -432,7 +467,7 @@ export class NFA implements FiniteAutomaton {
 	 * If you want to add the empty word again, quantify this NFA with a minimum of 0 and a maximum of 1.
 	 */
 	removeEmptyWord(): void {
-		this.nodes.final.delete(this.nodes.initial);
+		this.nodes.finals.delete(this.nodes.initial);
 	}
 
 
@@ -453,13 +488,13 @@ export class NFA implements FiniteAutomaton {
 	 */
 	static all(options: Readonly<NFAOptions>): NFA {
 		const nodeList = new NodeList();
-		nodeList.final.add(nodeList.initial);
+		nodeList.finals.add(nodeList.initial);
 
 		const allChars = CharSet.all(options.maxCharacter);
 		const other = nodeList.createNode();
 		nodeList.linkNodes(nodeList.initial, other, allChars);
 		nodeList.linkNodes(other, other, allChars);
-		nodeList.final.add(other);
+		nodeList.finals.add(other);
 
 		return new NFA(nodeList, options);
 	}
@@ -495,7 +530,7 @@ export class NFA implements FiniteAutomaton {
 	}
 
 	/**
-	 * Creates a new NFA which matches all and only the given words.
+	 * Creates a new NFA which matches all and only all of the given words.
 	 *
 	 * @param words
 	 * @param options
@@ -530,10 +565,11 @@ export class NFA implements FiniteAutomaton {
 			for (const charCode of word) {
 				node = getNext(node, charCode);
 			}
-			nodeList.final.add(node);
+			nodeList.finals.add(node);
 		}
 
 		baseOptimizationReuseFinalStates(nodeList, nodeList);
+		baseOptimizationMergeSuffixes(nodeList, nodeList);
 
 		return new NFA(nodeList, options);
 	}
@@ -578,7 +614,7 @@ function createNodeList(
 
 	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
 		if (alternatives.length === 0) {
-			return { initial: nodeList.createNode(), final: new Set<NFANode>() };
+			return { initial: nodeList.createNode(), finals: new Set<NFANode>() };
 		}
 
 		const base = handleConcatenation(alternatives[0]);
@@ -592,7 +628,7 @@ function createNodeList(
 	function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
 		const elements = concatenation.elements;
 
-		const base: SubList = { initial: nodeList.createNode(), final: new Set<NFANode>() };
+		const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFANode>() };
 
 		// check for trivial cases first
 		for (let i = 0, l = elements.length; i < l; i++) {
@@ -610,10 +646,10 @@ function createNodeList(
 			}
 		}
 
-		base.final.add(base.initial);
+		base.finals.add(base.initial);
 
 		for (let i = 0, l = elements.length; i < l; i++) {
-			if (base.final.size === 0) {
+			if (base.finals.size === 0) {
 				// Since base is the empty language, concatenation has no effect, so let's stop early
 				break;
 			}
@@ -656,9 +692,9 @@ function createNodeList(
 				} else {
 					// we know that base.final isn't empty, so just link all former finals to a new final node
 					const s = nodeList.createNode();
-					base.final.forEach(f => nodeList.linkNodes(f, s, chars));
-					base.final.clear();
-					base.final.add(s);
+					base.finals.forEach(f => nodeList.linkNodes(f, s, chars));
+					base.finals.clear();
+					base.finals.add(s);
 				}
 				break;
 			}
@@ -698,7 +734,7 @@ function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 	DFS(toCopy.initial, node => {
 		const trans = translate(node);
 
-		if (toCopy.final.has(node)) {
+		if (toCopy.finals.has(node)) {
 			final.add(trans);
 		}
 
@@ -709,7 +745,7 @@ function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
 		return node.out.keys();
 	});
 
-	return { initial, final };
+	return { initial, finals: final };
 }
 
 /**
@@ -725,8 +761,8 @@ function baseReplaceWith(nodeList: NodeList, base: SubList, replacement: SubList
 	baseMakeEmpty(nodeList, base);
 
 	// transfer finals
-	replacement.final.forEach(f => {
-		base.final.add(f === replacement.initial ? base.initial : f);
+	replacement.finals.forEach(f => {
+		base.finals.add(f === replacement.initial ? base.initial : f);
 	});
 
 	// transfer nodes
@@ -746,11 +782,11 @@ function baseReplaceWith(nodeList: NodeList, base: SubList, replacement: SubList
  * @param after
  */
 function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
-	if (base.final.size === 0) {
+	if (base.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
 		return;
 	}
-	if (after.final.size === 0) {
+	if (after.finals.size === 0) {
 		// concat(base, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
 		baseMakeEmpty(nodeList, base);
 		return;
@@ -758,7 +794,7 @@ function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
 
 	// replace after initial with base finals
 	const initialEdges = [...after.initial.out];
-	for (const baseFinal of base.final) {
+	for (const baseFinal of base.finals) {
 		for (const [to, characters] of initialEdges) {
 			nodeList.linkNodes(baseFinal, to, characters);
 		}
@@ -769,13 +805,13 @@ function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
 	}
 
 	// If the initial of after isn't final, we have to clear the base finals
-	if (!after.final.has(after.initial)) {
-		base.final.clear();
+	if (!after.finals.has(after.initial)) {
+		base.finals.clear();
 	}
 	// transfer finals
-	after.final.forEach(n => {
+	after.finals.forEach(n => {
 		if (n !== after.initial) {
-			base.final.add(n);
+			base.finals.add(n);
 		}
 	});
 }
@@ -790,11 +826,11 @@ function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
  * @param before
  */
 function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): void {
-	if (base.final.size === 0) {
+	if (base.finals.size === 0) {
 		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
 		return;
 	}
-	if (before.final.size === 0) {
+	if (before.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, base) == EMPTY_LANGUAGE
 		baseMakeEmpty(nodeList, base);
 		return;
@@ -802,7 +838,7 @@ function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): v
 
 	// replace base initial with before finals
 	const initialEdges = [...base.initial.out];
-	for (const beforeFinal of before.final) {
+	for (const beforeFinal of before.finals) {
 		for (const [to, characters] of initialEdges) {
 			nodeList.linkNodes(beforeFinal, to, characters);
 		}
@@ -818,14 +854,14 @@ function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): v
 		nodeList.unlinkNodes(before.initial, to);
 	}
 
-	if (base.final.has(base.initial)) {
-		base.final.delete(base.initial);
+	if (base.finals.has(base.initial)) {
+		base.finals.delete(base.initial);
 
-		before.final.forEach(n => {
+		before.finals.forEach(n => {
 			if (n === before.initial) {
-				base.final.add(base.initial);
+				base.finals.add(base.initial);
 			} else {
-				base.final.add(n);
+				base.finals.add(n);
 			}
 		})
 	}
@@ -842,8 +878,8 @@ function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): v
  */
 function baseUnion(nodeList: NodeList, base: SubList, alternative: SubList): void {
 	// add finals
-	alternative.final.forEach(n => {
-		base.final.add(n === alternative.initial ? base.initial : n);
+	alternative.finals.forEach(n => {
+		base.finals.add(n === alternative.initial ? base.initial : n);
 	});
 
 	// transfer nodes to base
@@ -860,7 +896,7 @@ function baseUnion(nodeList: NodeList, base: SubList, alternative: SubList): voi
 
 function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): void {
 	const reusable: NFANode[] = [];
-	base.final.forEach(f => {
+	base.finals.forEach(f => {
 		if (f !== base.initial && f.out.size === 0) {
 			reusable.push(f);
 		}
@@ -870,7 +906,7 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): vo
 		const masterFinal: NFANode = reusable.pop()!;
 		for (let i = 0, l = reusable.length; i < l; i++) {
 			const toRemove = reusable[i];
-			base.final.delete(toRemove);
+			base.finals.delete(toRemove);
 			for (const [to, characters] of [...toRemove.in]) {
 				nodeList.linkNodes(to, masterFinal, characters);
 				nodeList.unlinkNodes(to, toRemove);
@@ -934,7 +970,7 @@ function baseOptimizationMergeSuffixes(nodeList: NodeList, base: SubList): void 
 
 	const suffixNodes: NFANode[] = [];
 
-	for (const final of base.final) {
+	for (const final of base.finals) {
 		if (final.out.size === 0) {
 			suffixNodes.push(final);
 		}
@@ -993,23 +1029,23 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 	if (times === 0) {
 		// trivial
 		baseMakeEmpty(nodeList, base);
-		base.final.add(base.initial);
+		base.finals.add(base.initial);
 		return;
 	}
 	if (times === 1) {
 		// trivial
 		return;
 	}
-	if (base.final.size === 1 && base.final.has(base.initial)) {
+	if (base.finals.size === 1 && base.finals.has(base.initial)) {
 		// base can only match the empty string
 		return;
 	}
-	if (base.final.size === 0) {
+	if (base.finals.size === 0) {
 		// base can't match any word
 		return;
 	}
 
-	if (!base.final.has(base.initial)) {
+	if (!base.finals.has(base.initial)) {
 		const copy = localCopy(nodeList, base);
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
@@ -1024,8 +1060,8 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 		// To get rid of these unnecessary transitions, we remove the initial states from the set of final states
 		// and manually store the final states of each concatenation.
 
-		const realFinal = new Set<NFANode>(base.final);
-		base.final.delete(base.initial);
+		const realFinal = new Set<NFANode>(base.finals);
+		base.finals.delete(base.initial);
 
 		const copy = localCopy(nodeList, base);
 
@@ -1033,15 +1069,15 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
 			baseConcat(nodeList, base, localCopy(nodeList, copy));
-			base.final.forEach(f => realFinal.add(f));
+			base.finals.forEach(f => realFinal.add(f));
 		}
 		// use the original copy
 		baseConcat(nodeList, base, copy);
-		base.final.forEach(f => realFinal.add(f));
+		base.finals.forEach(f => realFinal.add(f));
 
 		// transfer the final states
-		base.final.clear();
-		realFinal.forEach(f => base.final.add(f));
+		base.finals.clear();
+		realFinal.forEach(f => base.finals.add(f));
 
 		// NOTE: For this to be correct, it is assumed, that
 		//  1) concatenation doesn't replace the initial state of base
@@ -1058,7 +1094,7 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 function basePlus(nodeList: NodeList, base: SubList): void {
 	// The basic idea here is that we copy all edges from the initial state state to every final state. This means that
 	// all final states will then behave like the initial state.
-	for (const f of base.final) {
+	for (const f of base.finals) {
 		if (f !== base.initial) {
 			for (const [to, characters] of base.initial.out) {
 				nodeList.linkNodes(f, to, characters);
@@ -1080,7 +1116,7 @@ function baseIsPlusExpression(base: SubList): boolean {
 	const initialOut = base.initial.out;
 
 	// check condition
-	for (const final of base.final) {
+	for (const final of base.finals) {
 		if (final === base.initial) {
 			// the initial state trivially fulfills the condition
 			continue;
@@ -1103,17 +1139,17 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 		// this is a special case, so handle it before everything else
 		// e.g. /a{0}/
 		baseMakeEmpty(nodeList, base);
-		base.final.add(base.initial);
+		base.finals.add(base.initial);
 		return;
 	}
 
-	if (base.final.has(base.initial)) {
+	if (base.finals.has(base.initial)) {
 		// if the initial state is also final, then `min` is effectively 0
 		// e.g. /(a|)+/ == /(a|)*/
 		min = 0;
 	} else if (min === 0) {
 		// if `min` is 0, then the initial state has to be final
-		base.final.add(base.initial);
+		base.finals.add(base.initial);
 	}
 
 	if (max === 1) {
@@ -1139,7 +1175,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 		const aPlus = localCopy(nodeList, base);
 
 		// remove the + from the current A+
-		for (const final of base.final) {
+		for (const final of base.finals) {
 			for (const finalOut of final.out.keys()) {
 				nodeList.unlinkNodes(final, finalOut);
 			}
@@ -1159,7 +1195,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 
 		// make a copy of base and include the empty string
 		const copy = localCopy(nodeList, base);
-		copy.final.add(copy.initial);
+		copy.finals.add(copy.initial);
 
 		baseRepeat(nodeList, copy, max - min);
 		baseRepeat(nodeList, base, min);
@@ -1196,7 +1232,7 @@ function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 	for (const out of [...base.initial.out.keys()]) {
 		nodeList.unlinkNodes(base.initial, out);
 	}
-	base.final.clear();
+	base.finals.clear();
 }
 
 
@@ -1261,9 +1297,9 @@ function createNFAIntersectionEnv(left: NFA, right: NFA): IntersectionEnv {
 	}
 
 	// add finals
-	for (const leftFinal of left.nodes.final) {
-		for (const rightFinal of right.nodes.final) {
-			nodeList.final.add(translate(leftFinal, rightFinal));
+	for (const leftFinal of left.nodes.finals) {
+		for (const rightFinal of right.nodes.finals) {
+			nodeList.finals.add(translate(leftFinal, rightFinal));
 		}
 	}
 

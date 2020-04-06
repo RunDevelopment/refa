@@ -617,7 +617,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('concat', function () {
+	describe('append', function () {
 
 		test([
 			{
@@ -687,7 +687,7 @@ describe('NFA', function () {
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
 					const nfaRightCopy = nfaRight.copy();
-					nfaLeft.concat(nfaRight);
+					nfaLeft.append(nfaRight);
 
 					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
 
@@ -699,7 +699,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('concatBefore', function () {
+	describe('prepend', function () {
 
 		test([
 			{
@@ -769,7 +769,7 @@ describe('NFA', function () {
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
 					const nfaRightCopy = nfaRight.copy();
-					nfaLeft.concatBefore(nfaRight);
+					nfaLeft.prepend(nfaRight);
 
 					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
 

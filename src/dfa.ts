@@ -15,19 +15,18 @@ export interface DFANode {
 	readonly out: CharMap<DFANode>;
 }
 
+let nodeListCounter = 0;
 class NodeList {
 
 	// variables for checks and debugging
 	private readonly id: number;
 	private _nodeCounter: number = 0;
-	private static _counter: number = 0;
 
 	readonly initial: DFANode;
-	readonly final: Set<DFANode>;
+	readonly finals: Set<DFANode> = new Set();
 
 	constructor() {
-		this.id = NodeList._counter++;
-		this.final = new Set();
+		this.id = nodeListCounter++;
 		this.initial = this.createNode();
 	}
 
@@ -106,7 +105,7 @@ export class DFA implements FiniteAutomaton {
 	}
 
 	get isEmpty(): boolean {
-		return this.nodes.final.size === 0;
+		return this.nodes.finals.size === 0;
 	}
 
 	get isFinite(): boolean {
@@ -115,7 +114,7 @@ export class DFA implements FiniteAutomaton {
 		return faIsFinite(
 			this.nodes.initial,
 			n => n.out.values(),
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
@@ -131,7 +130,7 @@ export class DFA implements FiniteAutomaton {
 			}
 		}
 
-		return this.nodes.final.has(current);
+		return this.nodes.finals.has(current);
 	}
 
 	wordSets(): Iterable<CharSet[]> {
@@ -142,7 +141,7 @@ export class DFA implements FiniteAutomaton {
 		return faIterateWordSets(
 			this.nodes.initial,
 			n => invertCharMap(n.out, this.options.maxCharacter),
-			f => this.nodes.final.has(f)
+			f => this.nodes.finals.has(f)
 		);
 	}
 
@@ -157,7 +156,7 @@ export class DFA implements FiniteAutomaton {
 				const invertedMap = invertCharMap(node.out, this.options.maxCharacter);
 				return [...invertedMap].map(([n, r]) => [n, rangesToString(r.ranges)]);
 			},
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
@@ -165,7 +164,7 @@ export class DFA implements FiniteAutomaton {
 		return faToRegex(
 			this.nodes.initial,
 			n => invertCharMap(n.out, this.options.maxCharacter),
-			n => this.nodes.final.has(n)
+			n => this.nodes.finals.has(n)
 		);
 	}
 
@@ -189,7 +188,7 @@ export class DFA implements FiniteAutomaton {
 		}
 
 		translate(nodeList.initial);
-		nodeList.final.forEach(f => newNodeList.final.add(translate(f)));
+		nodeList.finals.forEach(f => newNodeList.finals.add(translate(f)));
 
 		return new DFA(newNodeList, this.options);
 	}
@@ -204,7 +203,7 @@ export class DFA implements FiniteAutomaton {
 		if (this === other) {
 			return true;
 		}
-		if (this.nodes.final.size !== other.nodes.final.size) {
+		if (this.nodes.finals.size !== other.nodes.finals.size) {
 			return false;
 		}
 
@@ -216,7 +215,7 @@ export class DFA implements FiniteAutomaton {
 			}
 			visitedThisNodes.add(thisNode);
 
-			if (this.nodes.final.has(thisNode) !== other.nodes.final.has(otherNode)) {
+			if (this.nodes.finals.has(thisNode) !== other.nodes.finals.has(otherNode)) {
 				return false;
 			}
 
@@ -256,7 +255,7 @@ export class DFA implements FiniteAutomaton {
 		const translate = (n: DFANode): DFANode => newNodeMap.get(n)!;
 
 		// initial and final
-		this.nodes.final.forEach(f => newNodeList.final.add(translate(f)));
+		this.nodes.finals.forEach(f => newNodeList.finals.add(translate(f)));
 
 		// transitions
 		P.forEach(nodes => {
@@ -291,13 +290,13 @@ export class DFA implements FiniteAutomaton {
 	 */
 	static all(options: Readonly<DFAOptions>): DFA {
 		const nodeList = new NodeList();
-		nodeList.final.add(nodeList.initial);
+		nodeList.finals.add(nodeList.initial);
 
 		const allChars = { min: 0, max: options.maxCharacter };
 		const other = nodeList.createNode();
 		nodeList.linkNodes(nodeList.initial, other, allChars);
 		nodeList.linkNodes(other, other, allChars);
-		nodeList.final.add(other);
+		nodeList.finals.add(other);
 
 		return new DFA(nodeList, options);
 	}
@@ -323,7 +322,7 @@ export class DFA implements FiniteAutomaton {
 				}
 				node = next;
 			}
-			nodeList.final.add(node);
+			nodeList.finals.add(node);
 		}
 
 		return new DFA(nodeList, options);
@@ -366,8 +365,8 @@ export class DFA implements FiniteAutomaton {
 			if (dfaNode === undefined) {
 				// this will create a new node AND set it as final if it contains a final NFA state
 				dfaNode = nodeList.createNode();
-				if (array.some(n => nfa.nodes.final.has(n))) {
-					nodeList.final.add(dfaNode);
+				if (array.some(n => nfa.nodes.finals.has(n))) {
+					nodeList.finals.add(dfaNode);
 				}
 
 				nfaNodesToDfaNodeMap.set(key, dfaNode);
@@ -385,8 +384,8 @@ export class DFA implements FiniteAutomaton {
 		// set initial states
 		nfaNodesToDfaNodeMap.set(getKey([nfa.nodes.initial]), nodeList.initial);
 		dfaNodeToNfaNodesMap.set(nodeList.initial, [nfa.nodes.initial]);
-		if (nfa.nodes.final.has(nfa.nodes.initial)) {
-			nodeList.final.add(nodeList.initial);
+		if (nfa.nodes.finals.has(nfa.nodes.initial)) {
+			nodeList.finals.add(nodeList.initial);
 		}
 
 		function getOutNode(node: DFANode, char: CharRange): DFANode | undefined {
@@ -448,7 +447,7 @@ function removeUnreachable(list: NodeList): void {
 		node.out.forEach(node => out.add(node));
 		out.forEach(n => walk(n));
 
-		if (list.final.has(node)) {
+		if (list.finals.has(node)) {
 			// if it's final, it satisfies both conditions
 			alive.add(node);
 		} else {
@@ -464,9 +463,9 @@ function removeUnreachable(list: NodeList): void {
 	walk(list.initial);
 
 	// remove dead finals
-	for (const finalNode of list.final) {
+	for (const finalNode of list.finals) {
 		if (!alive.has(finalNode)) {
-			list.final.delete(finalNode);
+			list.finals.delete(finalNode);
 		}
 	}
 
@@ -552,8 +551,8 @@ function findEquivalenceClasses(nodeList: NodeList): Set<Set<DFANode>> {
 
 	const alphabet: readonly CharRange[] = getAtomicRanges(allRanges);
 
-	const P = new Set<Set<DFANode>>([nodeList.final, withoutSet(allNodes, nodeList.final)]);
-	const W = new Set<Set<DFANode>>([nodeList.final]);
+	const P = new Set<Set<DFANode>>([nodeList.finals, withoutSet(allNodes, nodeList.finals)]);
+	const W = new Set<Set<DFANode>>([nodeList.finals]);
 
 	while (W.size > 0) {
 		const A: Set<DFANode> = firstOf(W)!;
