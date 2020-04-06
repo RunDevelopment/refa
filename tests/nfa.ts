@@ -617,6 +617,170 @@ describe('NFA', function () {
 
 	});
 
+	describe('concat', function () {
+
+		test([
+			{
+				left: /foo/,
+				right: /bar/,
+				expected: `
+					(0) -> (1) : 66
+
+					(1) -> (2) : 6f
+
+					(2) -> (3) : 6f
+
+					(3) -> (4) : 62
+
+					(4) -> (5) : 61
+
+					(5) -> [6] : 72
+
+					[6] -> none`
+			},
+			{
+				left: /a*/,
+				right: /b*/,
+				expected: `
+					[0] -> [1] : 61
+					    -> [2] : 62
+
+					[1] -> [1] : 61
+					    -> [2] : 62
+
+					[2] -> [2] : 62`
+			},
+			{
+				left: /a+/,
+				right: /b*/,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> [1] : 61
+					    -> [2] : 62
+
+					[2] -> [2] : 62`
+			},
+			{
+				left: /a*/,
+				right: /b+/,
+				expected: `
+					(0) -> (1) : 61
+					    -> [2] : 62
+
+					(1) -> (1) : 61
+					    -> [2] : 62
+
+					[2] -> [2] : 62`
+			},
+		]);
+
+		interface TestCase {
+			left: Literal;
+			right: Literal;
+			expected: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { left, right, expected } of cases) {
+				it(`${literalToString(left)} * ${literalToString(right)}`, function () {
+					const nfaLeft = literalToNFA(left);
+					const nfaRight = literalToNFA(right);
+					const nfaRightCopy = nfaRight.copy();
+					nfaLeft.concat(nfaRight);
+
+					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
+
+					const actual = nfaLeft.toString();
+					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
+				});
+			}
+		}
+
+	});
+
+	describe('concatBefore', function () {
+
+		test([
+			{
+				left: /foo/,
+				right: /bar/,
+				expected: `
+					(0) -> (1) : 62
+
+					(1) -> (2) : 61
+
+					(2) -> (3) : 72
+
+					(3) -> (4) : 66
+
+					(4) -> (5) : 6f
+
+					(5) -> [6] : 6f
+
+					[6] -> none`
+			},
+			{
+				left: /a*/,
+				right: /b*/,
+				expected: `
+					[0] -> [1] : 61
+					    -> [2] : 62
+
+					[1] -> [1] : 61
+
+					[2] -> [1] : 61
+					    -> [2] : 62`
+			},
+			{
+				left: /a+/,
+				right: /b*/,
+				expected: `
+					(0) -> [1] : 61
+					    -> (2) : 62
+
+					[1] -> [1] : 61
+
+					(2) -> [1] : 61
+					    -> (2) : 62`
+			},
+			{
+				left: /a*/,
+				right: /b+/,
+				expected: `
+					(0) -> [1] : 62
+
+					[1] -> [1] : 62
+					    -> [2] : 61
+
+					[2] -> [2] : 61`
+			},
+		]);
+
+		interface TestCase {
+			left: Literal;
+			right: Literal;
+			expected: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { left, right, expected } of cases) {
+				it(`${literalToString(right)} * ${literalToString(left)}`, function () {
+					const nfaLeft = literalToNFA(left);
+					const nfaRight = literalToNFA(right);
+					const nfaRightCopy = nfaRight.copy();
+					nfaLeft.concatBefore(nfaRight);
+
+					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
+
+					const actual = nfaLeft.toString();
+					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
+				});
+			}
+		}
+
+	});
+
 	describe('intersect', function () {
 
 		test([

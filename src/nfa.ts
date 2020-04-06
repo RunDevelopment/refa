@@ -212,6 +212,15 @@ export interface NFAOptions {
 	maxCharacter: number;
 }
 
+export interface NFAFromRegexOptions {
+	/**
+	 * Whether to replace all lookarounds with an empty character class when construction the NFA.
+	 *
+	 * Defaults to `false`.
+	 */
+	disableLookarounds?: boolean;
+}
+
 export class NFA implements FiniteAutomaton {
 
 	readonly nodes: NodeList;
@@ -382,7 +391,21 @@ export class NFA implements FiniteAutomaton {
 			return;
 		}
 		checkOptionsCompatibility(this.options, nfa.options);
-		baseConcat(this.nodes, this.nodes, nfa.nodes);
+		baseConcat(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
+	}
+
+	/**
+	 * Modifies this NFA to accept the concatenation of the given NFA and this NFA.
+	 *
+	 * @param nfa
+	 */
+	concatBefore(nfa: NFA): void {
+		if (this === nfa) {
+			this.quantify(2, 2);
+			return;
+		}
+		checkOptionsCompatibility(this.options, nfa.options);
+		baseConcatBefore(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
@@ -441,22 +464,31 @@ export class NFA implements FiniteAutomaton {
 		return new NFA(nodeList, options);
 	}
 
-	static fromRegex(concat: Simple<Concatenation>, options: Readonly<NFAOptions>): NFA;
-	static fromRegex(expression: Simple<Expression>, options: Readonly<NFAOptions>): NFA;
-	static fromRegex(alternatives: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NFA;
+	static fromRegex(
+		concat: Simple<Concatenation>,
+		options: Readonly<NFAOptions>, creationOptions?: Readonly<NFAFromRegexOptions>
+	): NFA;
+	static fromRegex(
+		expression: Simple<Expression>,
+		options: Readonly<NFAOptions>, creationOptions?: Readonly<NFAFromRegexOptions>
+	): NFA;
+	static fromRegex(
+		alternatives: readonly Simple<Concatenation>[],
+		options: Readonly<NFAOptions>, creationOptions?: Readonly<NFAFromRegexOptions>
+	): NFA;
 	static fromRegex(
 		value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
-		options: Readonly<NFAOptions>
+		options: Readonly<NFAOptions>, creationOptions?: Readonly<NFAFromRegexOptions>
 	): NFA {
 		let nodeList: NodeList;
 		if (Array.isArray(value)) {
-			nodeList = createNodeList(value as readonly Simple<Concatenation>[], options);
+			nodeList = createNodeList(value as readonly Simple<Concatenation>[], options, creationOptions || {});
 		} else {
 			const node = value as Simple<Expression> | Simple<Concatenation>;
 			if (node.type === "Concatenation") {
-				nodeList = createNodeList([node], options);
+				nodeList = createNodeList([node], options, creationOptions || {});
 			} else {
-				nodeList = createNodeList(node.alternatives, options);
+				nodeList = createNodeList(node.alternatives, options, creationOptions || {});
 			}
 		}
 		return new NFA(nodeList, options);
@@ -532,7 +564,11 @@ export class NFA implements FiniteAutomaton {
 
 
 
-function createNodeList(expression: readonly Simple<Concatenation>[], options: Readonly<NFAOptions>): NodeList {
+function createNodeList(
+	expression: readonly Simple<Concatenation>[],
+	options: Readonly<NFAOptions>,
+	creationOptions: Readonly<NFAFromRegexOptions>
+): NodeList {
 	const nodeList = new NodeList();
 	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
@@ -557,6 +593,23 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 		const elements = concatenation.elements;
 
 		const base: SubList = { initial: nodeList.createNode(), final: new Set<NFANode>() };
+
+		// check for trivial cases first
+		for (let i = 0, l = elements.length; i < l; i++) {
+			const element = elements[i];
+			if (element.type === "Assertion") {
+				if (creationOptions.disableLookarounds) {
+					return base;
+				} else {
+					throw new Error('Assertions are not supported yet.');
+				}
+			} else if (element.type === "CharacterClass") {
+				if (element.characters.isEmpty) {
+					return base;
+				}
+			}
+		}
+
 		base.final.add(base.initial);
 
 		for (let i = 0, l = elements.length; i < l; i++) {
@@ -582,8 +635,15 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 			case "Alternation":
 				baseConcat(nodeList, base, handleAlternation(element.alternatives));
 				break;
+
 			case "Assertion":
-				throw new Error('Assertions are not supported yet.');
+				if (creationOptions.disableLookarounds) {
+					baseMakeEmpty(nodeList, base);
+					break;
+				} else {
+					throw new Error('Assertions are not supported yet.');
+				}
+
 			case "CharacterClass": {
 				const chars = element.characters;
 				if (chars.maximum !== options.maxCharacter) {
@@ -603,7 +663,9 @@ function createNodeList(expression: readonly Simple<Concatenation>[], options: R
 				break;
 			}
 			case "Quantifier":
-				baseConcat(nodeList, base, handleQuantifier(element));
+				if (element.max > 0) {
+					baseConcat(nodeList, base, handleQuantifier(element));
+				}
 				break;
 
 			default:
@@ -716,6 +778,57 @@ function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
 			base.final.add(n);
 		}
 	});
+}
+
+/**
+ * Alters `base` to start with the `before` expression.
+ *
+ * `before` will be altered as well and cannot be used again after this operation.
+ *
+ * @param nodeList The node list of both `base` and `before`.
+ * @param base
+ * @param before
+ */
+function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): void {
+	if (base.final.size === 0) {
+		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
+		return;
+	}
+	if (before.final.size === 0) {
+		// concat(EMPTY_LANGUAGE, base) == EMPTY_LANGUAGE
+		baseMakeEmpty(nodeList, base);
+		return;
+	}
+
+	// replace base initial with before finals
+	const initialEdges = [...base.initial.out];
+	for (const beforeFinal of before.final) {
+		for (const [to, characters] of initialEdges) {
+			nodeList.linkNodes(beforeFinal, to, characters);
+		}
+	}
+	// unlink base initial
+	for (const [to] of initialEdges) {
+		nodeList.unlinkNodes(base.initial, to);
+	}
+	// link before initial out to base initial
+	for (const [to, characters] of before.initial.out) {
+		nodeList.linkNodes(base.initial, to, characters);
+		// and unlink before before initial
+		nodeList.unlinkNodes(before.initial, to);
+	}
+
+	if (base.final.has(base.initial)) {
+		base.final.delete(base.initial);
+
+		before.final.forEach(n => {
+			if (n === before.initial) {
+				base.final.add(base.initial);
+			} else {
+				base.final.add(n);
+			}
+		})
+	}
 }
 
 /**
