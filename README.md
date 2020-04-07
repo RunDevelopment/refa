@@ -20,15 +20,15 @@ __At this point in time, the library is still in development and partially incom
 
   * RE to NFA (_lookarounds are not implemented yet_)
   * NFA to DFA and DFA to NFA
-  * NFA to RE and DFA to RE
+  * NFA to RE and DFA to RE (_requires testing_)
 
 - DFA and NFA operations
 
   * Construction from a finite set of words
   * Print internal representation in a human-readable form
   * Test whether a word is accepted
-  * Test whether the language of the FA is the empty set
-  * Test whether the language of the FA is a finite set
+  * Test whether the language of an FA is the empty set
+  * Test whether the language of an FA is a finite set
 
 - DFA specific operations
 
@@ -41,7 +41,7 @@ __At this point in time, the library is still in development and partially incom
 
   * Union and Intersection with other NFA
   * Concatenation with other NFA
-  * Quantification (this includes the Kleene Star)
+  * Quantification
 
 - Javascript RegExp
 
