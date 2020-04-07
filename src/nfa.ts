@@ -248,6 +248,15 @@ export interface NFAFromRegexOptions {
 	 * Defaults to `false`.
 	 */
 	disableLookarounds?: boolean;
+	/**
+	 * The number at which the maximum of a quantifier will be assumed to be infinity.
+	 *
+	 * Quantifiers with a large finite maximum (e.g. `a{1,10000}`) can create huge NFAs with thousands of states. Any
+	 * Quantifier with a maximum greater or equal to this threshold will be assumed to be infinite.
+	 *
+	 * Defaults to `Infinity`.
+	 */
+	infinityThreshold?: number;
 }
 
 export class NFA implements FiniteAutomaton {
@@ -606,6 +615,9 @@ function createNodeList(
 	creationOptions: Readonly<NFAFromRegexOptions>
 ): NodeList {
 	const nodeList = new NodeList();
+
+	const infinityThreshold: number = creationOptions.infinityThreshold || Infinity;
+
 	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
 
@@ -662,7 +674,11 @@ function createNodeList(
 
 	function handleQuantifier(quant: Simple<Quantifier>): SubList {
 		const base = handleAlternation(quant.alternatives);
-		baseQuantify(nodeList, base, quant.min, quant.max);
+		let max = quant.max;
+		if (max >= infinityThreshold) {
+			max = Infinity;
+		}
+		baseQuantify(nodeList, base, quant.min, max);
 		return base;
 	}
 

@@ -109,8 +109,6 @@ export class DFA implements FiniteAutomaton {
 	}
 
 	get isFinite(): boolean {
-		//console.log(this.toString());
-
 		return faIsFinite(
 			this.nodes.initial,
 			n => n.out.values(),
