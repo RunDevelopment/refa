@@ -217,7 +217,7 @@ export class Parser {
 				return this.addBackreference(element, parent, context);
 
 			default:
-				throw assertNever(element, 'Unsupported element');
+				throw assertNever(element, "Unsupported element");
 		}
 	}
 
@@ -335,7 +335,7 @@ export class Parser {
 				break;
 			}
 			default:
-				throw assertNever(element, 'Unsupported element');
+				throw assertNever(element, "Unsupported element");
 		}
 	}
 
@@ -348,7 +348,7 @@ export class Parser {
 				this.addEmptyCharacterClass(element, parent, context);
 			}
 			if (context.backreferences === "throw") {
-				throw new Error('Backreferences are not supported.');
+				throw new Error("Backreferences are not supported.");
 			}
 		}
 
@@ -363,7 +363,7 @@ export class Parser {
 				this.addEmptyCharacterClass(element, parent, context);
 			}
 			if (context.backreferences === "throw") {
-				throw new Error('Backreferences are not supported.');
+				throw new Error("Backreferences are not supported.");
 			}
 		}
 
@@ -427,7 +427,7 @@ export class Parser {
 						case "CharacterSet":
 							return e;
 						default:
-							throw assertNever(e, 'Unsupported element');
+							throw assertNever(e, "Unsupported element");
 					}
 				}), context.flags);
 

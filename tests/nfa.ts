@@ -5,9 +5,9 @@ import { literalToString, Literal, literalToNFA, removeIndentation } from "./hel
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
 
 
-describe('NFA', function () {
+describe("NFA", function () {
 
-	describe('fromRegex', function () {
+	describe("fromRegex", function () {
 
 		test([
 			{
@@ -445,7 +445,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('fromWords', function () {
+	describe("fromWords", function () {
 
 		test([
 			{
@@ -519,7 +519,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('union', function () {
+	describe("union", function () {
 
 		test([
 			{
@@ -617,7 +617,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('append', function () {
+	describe("append", function () {
 
 		test([
 			{
@@ -699,7 +699,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('prepend', function () {
+	describe("prepend", function () {
 
 		test([
 			{
@@ -781,7 +781,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('intersect', function () {
+	describe("intersect", function () {
 
 		test([
 			{
@@ -852,7 +852,7 @@ describe('NFA', function () {
 
 	});
 
-	describe('intersectionWordSets', function () {
+	describe("intersectionWordSets", function () {
 
 		test([
 			{
@@ -924,9 +924,9 @@ describe('NFA', function () {
 
 	});
 
-	describe('isEmpty', function () {
+	describe("isEmpty", function () {
 
-		it('constructed from 0 words', function () {
+		it("constructed from 0 words", function () {
 			// empty language
 			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFF }).isEmpty);
 			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFFFF }).isEmpty);
@@ -936,7 +936,7 @@ describe('NFA', function () {
 			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xFFFF }).isEmpty);
 		});
 
-		describe('true', function () {
+		describe("true", function () {
 			for (const literal of EMPTY_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isTrue(literalToNFA(literal).isEmpty);
@@ -944,7 +944,7 @@ describe('NFA', function () {
 			}
 		});
 
-		describe('false', function () {
+		describe("false", function () {
 			for (const literal of NON_EMPTY_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isFalse(literalToNFA(literal).isEmpty);
@@ -954,9 +954,9 @@ describe('NFA', function () {
 
 	});
 
-	describe('isFinite', function () {
+	describe("isFinite", function () {
 
-		describe('true', function () {
+		describe("true", function () {
 			for (const literal of FINITE_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isTrue(literalToNFA(literal).isFinite);
@@ -964,7 +964,7 @@ describe('NFA', function () {
 			}
 		});
 
-		describe('false', function () {
+		describe("false", function () {
 			for (const literal of NON_FINITE_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isFalse(literalToNFA(literal).isFinite);
@@ -974,9 +974,9 @@ describe('NFA', function () {
 
 	});
 
-	describe('empty() & all()', function () {
+	describe("empty() & all()", function () {
 
-		it('empty()', function () {
+		it("empty()", function () {
 			assert.isTrue(NFA.empty({ maxCharacter: 0xFF }).isEmpty);
 			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isEmpty);
 
@@ -984,7 +984,7 @@ describe('NFA', function () {
 			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isFinite);
 		});
 
-		it('all()', function () {
+		it("all()", function () {
 			assert.isFalse(NFA.all({ maxCharacter: 0xFF }).isEmpty);
 			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isEmpty);
 

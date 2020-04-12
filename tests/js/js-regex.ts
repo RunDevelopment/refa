@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { Parser, ParseOptions } from "../../src/js";
 import { toPatternString } from "../../src/ast";
 
-describe('JS Regex', function () {
+describe("JS Regex", function () {
 
 	interface TestCase {
 		literal: { source: string; flags: string };
@@ -141,11 +141,11 @@ describe('JS Regex', function () {
 		},
 	];
 
-	describe('parse', function () {
+	describe("parse", function () {
 		test(cases);
 	});
 
-	describe('parse options: lookaround', function () {
+	describe("parse options: lookaround", function () {
 		test([
 			{
 				literal: /(?=abc)a|b/,
@@ -171,7 +171,7 @@ describe('JS Regex', function () {
 		]);
 	});
 
-	describe('parse options: backreferences', function () {
+	describe("parse options: backreferences", function () {
 		test([
 			{
 				literal: /(a*)b\1/,
@@ -266,7 +266,7 @@ describe('JS Regex', function () {
 		]);
 	});
 
-	describe('parse constant backreferences', function () {
+	describe("parse constant backreferences", function () {
 		test([
 			// backreferences which can only ever be the empty
 			{

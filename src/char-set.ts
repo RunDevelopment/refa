@@ -166,7 +166,8 @@ export class CharSet {
 
 	private checkCompatibility(value: CharSet): void {
 		if (value.maximum !== this.maximum) {
-			throw new RangeError(`The maximum of the other set has to be equal the maximum of this set.`);
+			throw new RangeError(`The maximum of the other set (${value.maximum}) `
+				+ `has to be equal the maximum of this set (${this.maximum}).`);
 		}
 	}
 

@@ -71,7 +71,7 @@ const READABLE_CHARACTERS = CharSet.empty(0x10FFFF).union([
  */
 export function getReadableCharacter(charset: CharSet): number {
 	if (charset.isEmpty) {
-		throw new Error('Cannot get a character from an empty character set.');
+		throw new Error("Cannot get a character from an empty character set.");
 	}
 
 	// trivial case

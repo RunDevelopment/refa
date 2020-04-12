@@ -649,7 +649,7 @@ function createNodeList(
 				if (creationOptions.disableLookarounds) {
 					return base;
 				} else {
-					throw new Error('Assertions are not supported yet.');
+					throw new Error("Assertions are not supported yet.");
 				}
 			} else if (element.type === "CharacterClass") {
 				if (element.characters.isEmpty) {
@@ -693,7 +693,7 @@ function createNodeList(
 					baseMakeEmpty(nodeList, base);
 					break;
 				} else {
-					throw new Error('Assertions are not supported yet.');
+					throw new Error("Assertions are not supported yet.");
 				}
 
 			case "CharacterClass": {

@@ -175,7 +175,7 @@ export function createCharSet(
 				}
 
 				default:
-					throw assertNever(char, 'Invalid predefined character set type');
+					throw assertNever(char, "Invalid predefined character set type");
 			}
 		} else {
 			addRange(char);

@@ -94,8 +94,8 @@ import { CharSet } from "${"../".repeat(filename.split(/\//g).length)}char-set";
  * A character set of all characters that have at least one case variation.
  */
 export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${
-		JSON.stringify(CASE_VARYING.ranges)
-		});
+	JSON.stringify(CASE_VARYING.ranges)
+});
 
 /**
  * A map for a given character to all it case variations. The list of case variations also includes the key character
@@ -105,11 +105,11 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  */
 export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = {
 	${caseFolding.map((fold, i) => {
-			if (fold.length > 1) {
-				return `[0x${i.toString(16)}]: ${JSON.stringify(fold)}`;
-			}
-			return "";
-		}).filter(Boolean).join(",\n\t")}
+		if (fold.length > 1) {
+			return `[0x${i.toString(16)}]: ${JSON.stringify(fold)}`;
+		}
+		return "";
+	}).filter(Boolean).join(",\n\t")}
 };
 `;
 

@@ -1,68 +1,74 @@
 {
-    "env": {
-        "browser": true,
-        "es6": true
-    },
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
-    ],
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "@typescript-eslint"
-    ],
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module",
-        "ecmaFeatures": {
-            "node": true,
-            "spread": true
-        }
-    },
-    "rules": {
-        "max-len": [
-            "error",
-            {
-                "code": 120,
-                "tabWidth": 4,
-                "ignoreStrings": true
-            }
-        ],
-        "@typescript-eslint/no-inferrable-types": [
-            "error",
-            {
-                "ignoreParameters": true,
-                "ignoreProperties": true
-            }
-        ],
-        "@typescript-eslint/explicit-function-return-type": [
-            "error",
-            {
-                "allowExpressions": true
-            }
-        ],
-        "@typescript-eslint/explicit-member-accessibility": 0,
-        "@typescript-eslint/no-non-null-assertion": 0,
-        "@typescript-eslint/no-use-before-define": 0,
-        "@typescript-eslint/indent": 0,
-        "no-constant-condition": 0
-    },
-    "overrides": [
-        {
-            "files":["scripts/**"],
-            "env": {
-                "browser": false,
-                "node": true,
-                "es6": true
-            },
-            "rules": {
-                "@typescript-eslint/no-var-requires": "off"
-            }
-        }
-    ]
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"parser": "@typescript-eslint/parser",
+	"plugins": [
+		"@typescript-eslint"
+	],
+	"parserOptions": {
+		"ecmaVersion": 2018,
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"node": true,
+			"spread": true
+		}
+	},
+	"rules": {
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1
+			}
+		],
+		"max-len": [
+			"error",
+			{
+				"code": 120,
+				"tabWidth": 4,
+				"ignoreStrings": true
+			}
+		],
+		"no-constant-condition": 0,
+		"quotes": "error",
+		"@typescript-eslint/no-inferrable-types": [
+			"error",
+			{
+				"ignoreParameters": true,
+				"ignoreProperties": true
+			}
+		],
+		"@typescript-eslint/explicit-function-return-type": [
+			"error",
+			{
+				"allowExpressions": true
+			}
+		],
+		"@typescript-eslint/explicit-member-accessibility": 0,
+		"@typescript-eslint/no-non-null-assertion": 0,
+		"@typescript-eslint/no-use-before-define": 0,
+		"@typescript-eslint/indent": 0
+	},
+	"overrides": [
+		{
+			"files": [
+				"scripts/**"
+			],
+			"env": {
+				"browser": false,
+				"node": true,
+				"es6": true
+			},
+			"rules": {
+				"@typescript-eslint/no-var-requires": "off"
+			}
+		}
+	]
 }

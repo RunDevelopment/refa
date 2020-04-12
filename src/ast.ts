@@ -119,7 +119,7 @@ export function desimplify(simple: Simple<Node>, parent: Parent | Concatenation 
 					break;
 
 				case "Concatenation":
-					throw new Error(`A concatenation cannot be parent of a concatenation.`);
+					throw new Error("A concatenation cannot be parent of a concatenation.");
 
 				default:
 					throw assertNever(parent);
@@ -174,7 +174,7 @@ function toPatternConcatenation(concat: Simple<Concatenation>): string {
 function toPatternElement(element: Simple<Element>): string {
 	switch (element.type) {
 		case "Alternation": {
-			return '(?:' + toPatternAlternatives(element.alternatives) + ')';
+			return "(?:" + toPatternAlternatives(element.alternatives) + ")";
 		}
 		case "Assertion": {
 			const kind = element.kind === "ahead" ? "" : "<";
@@ -210,7 +210,7 @@ function toPatternElement(element: Simple<Element>): string {
 			if (element.alternatives.length === 1) {
 				content = toPatternConcatenation(element.alternatives[0]);
 			} else {
-				content = '(?:' + toPatternAlternatives(element.alternatives) + ')';
+				content = "(?:" + toPatternAlternatives(element.alternatives) + ")";
 			}
 
 			if (!content) {
@@ -220,7 +220,7 @@ function toPatternElement(element: Simple<Element>): string {
 			return content + quant;
 		}
 		default:
-			throw assertNever(element, 'Invalid element');
+			throw assertNever(element, "Invalid element");
 	}
 }
 function toPatternAlternatives(expressions: readonly Simple<Concatenation>[]): string {

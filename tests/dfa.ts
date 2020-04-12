@@ -4,9 +4,9 @@ import { literalToString, literalToDFA, Literal, removeIndentation } from "./hel
 import { FINITE_LITERALS, NON_FINITE_LITERALS, EMPTY_LITERALS, NON_EMPTY_LITERALS } from "./helper/regexp-literals";
 
 
-describe('DFA', function () {
+describe("DFA", function () {
 
-	describe('fromWords', function () {
+	describe("fromWords", function () {
 
 		test([
 			{
@@ -85,7 +85,7 @@ describe('DFA', function () {
 
 	});
 
-	describe('fromNFA', function () {
+	describe("fromNFA", function () {
 
 		test([
 			{
@@ -351,9 +351,9 @@ describe('DFA', function () {
 
 	});
 
-	describe('isEmpty', function () {
+	describe("isEmpty", function () {
 
-		it('constructed from 0 words', function () {
+		it("constructed from 0 words", function () {
 			// empty language
 			assert.isTrue(DFA.fromWords([], { maxCharacter: 0xFF }).isEmpty);
 			assert.isTrue(DFA.fromWords([], { maxCharacter: 0xFFFF }).isEmpty);
@@ -363,7 +363,7 @@ describe('DFA', function () {
 			assert.isFalse(DFA.fromWords([[]], { maxCharacter: 0xFFFF }).isEmpty);
 		});
 
-		describe('true', function () {
+		describe("true", function () {
 			for (const literal of EMPTY_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isTrue(literalToDFA(literal).isEmpty);
@@ -371,7 +371,7 @@ describe('DFA', function () {
 			}
 		});
 
-		describe('false', function () {
+		describe("false", function () {
 			for (const literal of NON_EMPTY_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isFalse(literalToDFA(literal).isEmpty);
@@ -381,9 +381,9 @@ describe('DFA', function () {
 
 	});
 
-	describe('isFinite', function () {
+	describe("isFinite", function () {
 
-		describe('true', function () {
+		describe("true", function () {
 			for (const literal of FINITE_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isTrue(literalToDFA(literal).isFinite);
@@ -391,7 +391,7 @@ describe('DFA', function () {
 			}
 		});
 
-		describe('false', function () {
+		describe("false", function () {
 			for (const literal of NON_FINITE_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
 					assert.isFalse(literalToDFA(literal).isFinite);
@@ -401,9 +401,9 @@ describe('DFA', function () {
 
 	});
 
-	describe('empty() & all()', function () {
+	describe("empty() & all()", function () {
 
-		it('empty()', function () {
+		it("empty()", function () {
 			assert.isTrue(DFA.empty({ maxCharacter: 0xFF }).isEmpty);
 			assert.isTrue(DFA.empty({ maxCharacter: 0xFFFF }).isEmpty);
 
@@ -411,7 +411,7 @@ describe('DFA', function () {
 			assert.isTrue(DFA.empty({ maxCharacter: 0xFFFF }).isFinite);
 		});
 
-		it('all()', function () {
+		it("all()", function () {
 			assert.isFalse(DFA.all({ maxCharacter: 0xFF }).isEmpty);
 			assert.isFalse(DFA.all({ maxCharacter: 0xFFFF }).isEmpty);
 

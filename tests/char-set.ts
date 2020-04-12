@@ -24,25 +24,25 @@ function toRanges(input: (string | number | CharRange | [number, number])[]): Ch
 describe("CharSet", function () {
 
 	describe("toRanges (test setup)", function () {
-		it('should work with numbers', function () {
+		it("should work with numbers", function () {
 			assert.deepStrictEqual(toRanges([1, 97]), [
 				{ min: 1, max: 1 },
 				{ min: 97, max: 97 },
 			]);
 		});
-		it('should work with strings', function () {
+		it("should work with strings", function () {
 			assert.deepStrictEqual(toRanges(["a", "b"]), [
 				{ min: 97, max: 97 },
 				{ min: 98, max: 98 },
 			]);
 		});
-		it('should work with intervals', function () {
+		it("should work with intervals", function () {
 			assert.deepStrictEqual(toRanges([[1, 3], [65, 71]]), [
 				{ min: 1, max: 3 },
 				{ min: 65, max: 71 },
 			]);
 		});
-		it('should work with character ranges', function () {
+		it("should work with character ranges", function () {
 			const ranges: CharRange[] = [
 				{ min: 2, max: 53 },
 				{ min: 65, max: 65 },

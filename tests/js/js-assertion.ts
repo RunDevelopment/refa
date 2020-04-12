@@ -4,7 +4,7 @@ import { toPatternString } from "../../src/ast";
 
 
 
-describe('JS createCharSet', function () {
+describe("JS createCharSet", function () {
 
 	interface TestCase {
 		literal: { source: string; flags: string };

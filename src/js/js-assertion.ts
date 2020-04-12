@@ -78,6 +78,6 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 		}
 
 		default:
-			throw assertNever(assertion, 'Unknown assertion type');
+			throw assertNever(assertion, "Unknown assertion type");
 	}
 }
