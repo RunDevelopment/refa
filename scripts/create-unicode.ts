@@ -3,6 +3,7 @@ import * as path from "path";
 import { CharSet, CharRange } from "../src/char-set";
 import { runEncodeCharacters } from "../src/char-util";
 import * as aliases from "../src/js/unicode/alias";
+import { printRanges } from "./util";
 
 
 const UNICODE_SRC_DIR = path.join(__dirname, "../src/js/unicode");
@@ -41,16 +42,4 @@ import { CharRange } from "../../char-set";
 	}
 
 	fs.writeFileSync(path.join(UNICODE_SRC_DIR, filename), code, "utf-8");
-}
-
-function printRanges(ranges: Iterable<CharRange>): string {
-	let s = "[";
-	let i = 0;
-	for (const { min, max } of ranges) {
-		if (i++ > 0) {
-			s += ", ";
-		}
-		s += `{min:0x${min.toString(16).toUpperCase()},max:0x${max.toString(16).toUpperCase()}}`;
-	}
-	return s + "]";
 }

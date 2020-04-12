@@ -2,6 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { CharSet } from "../src/char-set";
 import { runEncodeCharacters } from "../src/char-util";
+import { printRanges } from "./util";
+
 
 const CaseFoldingCommon: ReadonlyMap<number, number> = require("unicode-13.0.0/Case_Folding/C/code-points");
 const CaseFoldingSimple: ReadonlyMap<number, number> = require("unicode-13.0.0/Case_Folding/S/code-points");
@@ -78,6 +80,13 @@ function createCaseFoldingFile(
 		}
 	}()));
 
+	const map: Record<number, number[]> = {};
+	caseFolding.forEach((fold, i) => {
+		if (fold.length > 1) {
+			map[i] = fold;
+		}
+	});
+
 	console.log(`${variablePrefix}: ${count} characters vary in case`);
 
 
@@ -94,7 +103,7 @@ import { CharSet } from "${"../".repeat(filename.split(/\//g).length)}char-set";
  * A character set of all characters that have at least one case variation.
  */
 export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${
-	JSON.stringify(CASE_VARYING.ranges)
+	printRanges(CASE_VARYING.ranges)
 });
 
 /**
@@ -103,14 +112,9 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  *
  * If the given character do not have case variations, it will not be part of this map.
  */
-export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = {
-	${caseFolding.map((fold, i) => {
-		if (fold.length > 1) {
-			return `[0x${i.toString(16)}]: ${JSON.stringify(fold)}`;
-		}
-		return "";
-	}).filter(Boolean).join(",\n\t")}
-};
+export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${
+	JSON.stringify(JSON.stringify(map))
+});
 `;
 
 	fs.writeFileSync(path.join(__dirname, "../src/js", filename), code, "utf-8");

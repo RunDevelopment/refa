@@ -63,5 +63,8 @@
   },
   "include": [
     "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/debug.ts"
   ]
 }
