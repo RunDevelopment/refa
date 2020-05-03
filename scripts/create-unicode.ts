@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { CharSet, CharRange } from "../src/char-set";
+import { CharSet } from "../src/char-set";
 import { runEncodeCharacters } from "../src/char-util";
 import * as aliases from "../src/js/unicode/alias";
 import { printRanges } from "./util";
