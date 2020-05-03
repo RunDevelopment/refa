@@ -9,7 +9,8 @@
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "npx rimraf dist/** && npx tsc",
     "build:unicode": "npx ts-node scripts/create-unicode.ts",
-    "build:case-folding": "npx ts-node scripts/create-case-folding.ts"
+    "build:case-folding": "npx ts-node scripts/create-case-folding.ts",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "dfa",
