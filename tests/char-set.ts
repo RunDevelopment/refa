@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { CharSet, CharRange } from "../src/char-set";
-import { readableIntervalString } from "./helper/chars";
+import { readableIntervalString, charsFromRegex } from "./helper/chars";
+import { JS } from "./../src";
 
 
 function toRanges(input: (string | number | CharRange | [number, number])[]): CharRange[] {
@@ -96,6 +97,91 @@ describe("CharSet", function () {
 	for (const test of testCases) {
 		it(test.title, function () {
 			assert.equal(readableIntervalString(test.set), test.content);
+		});
+	}
+
+	interface PredicateTestCase {
+		name: string;
+		cases: (() => boolean)[];
+	}
+
+	const charSetOf = charsFromRegex;
+	const predicateTests: PredicateTestCase[] = [
+		{
+			name: CharSet.prototype.has.name,
+			cases: [
+				() => charSetOf(/a/).has("a".charCodeAt(0)),
+				() => !charSetOf(/b/).has("a".charCodeAt(0)),
+				() => charSetOf(/\w/).has("a".charCodeAt(0)),
+				() => !charSetOf(/\W/).has("a".charCodeAt(0)),
+			]
+		},
+		{
+			name: CharSet.prototype.isSupersetOf.name,
+			cases: [
+				() => charSetOf(/a/).isSupersetOf(charSetOf(/a/)),
+				() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/a/)),
+				() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/[a-z]/)),
+				() => charSetOf(/\w/).isSupersetOf(charSetOf(/[a-z]/)),
+				() => charSetOf(/\w/).isSupersetOf(charSetOf(/\d/)),
+				() => charSetOf(/\w/).isSupersetOf(charSetOf(/\w/)),
+				() => charSetOf(/\W/).isSupersetOf(charSetOf(/\W/)),
+
+				() => !charSetOf(/\w/).isSupersetOf(charSetOf(/,/)),
+				() => !charSetOf(/\w/).isSupersetOf(charSetOf(/[,a]/)),
+
+				() => !charSetOf(/\d/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => charSetOf(/[a-z]/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => charSetOf(/\w/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+			]
+		},
+		{
+			name: CharSet.prototype.isSubsetOf.name,
+			cases: [
+				() => charSetOf(/a/).isSubsetOf(charSetOf(/a/)),
+				() => charSetOf(/a/).isSubsetOf(charSetOf(/[a-z]/)),
+				() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/[a-z]/)),
+				() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/\w/)),
+				() => charSetOf(/\d/).isSubsetOf(charSetOf(/\w/)),
+				() => charSetOf(/\w/).isSubsetOf(charSetOf(/\w/)),
+				() => charSetOf(/\W/).isSubsetOf(charSetOf(/\W/)),
+
+				() => !charSetOf(/,/).isSubsetOf(charSetOf(/\w/)),
+				() => !charSetOf(/[,a]/).isSubsetOf(charSetOf(/\w/)),
+
+				() => charSetOf(/a/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => !charSetOf(/\d/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => charSetOf(/[a-z]/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => !charSetOf(/\w/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+			]
+		},
+		{
+			name: CharSet.prototype.isDisjointWith.name,
+			cases: [
+				() => charSetOf(/a/).isDisjointWith(charSetOf(/b/)),
+				() => !charSetOf(/\d/).isDisjointWith(charSetOf(/\w/)),
+				() => charSetOf(/\w/).isDisjointWith(charSetOf(/\W/)),
+				() => !charSetOf(/\W/).isDisjointWith(charSetOf(/\W/)),
+
+				() => charSetOf(/,/).isDisjointWith(charSetOf(/\w/)),
+				() => !charSetOf(/[,a]/).isDisjointWith(charSetOf(/\w/)),
+
+				() => !charSetOf(/a/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => charSetOf(/\d/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => !charSetOf(/[a-z]/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				() => charSetOf(/\W/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+			]
+		},
+	];
+
+	for (const predicateTest of predicateTests) {
+		describe(predicateTest.name, function () {
+			for (const _case of predicateTest.cases) {
+				const caseName = _case.toString().replace(/\s+/g, " ").replace(/^\s*\(\s*\)\s*=>\s*/, "");
+				it(caseName, function () {
+					assert.isTrue(_case());
+				});
+			}
 		});
 	}
 
