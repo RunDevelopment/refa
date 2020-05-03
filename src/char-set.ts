@@ -366,7 +366,7 @@ export class CharSet {
 	}
 	isSubsetOf(other: CharSet | CharRange): boolean {
 		if (other instanceof CharSet) {
-			return other.isSubsetOf(this);
+			return other.isSupersetOf(this);
 		} else {
 			if (this.isEmpty) {
 				return true;
