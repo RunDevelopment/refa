@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 (2020-05-04)
+
+### Fixed
+
+- Calling `CharSet#isSubsetOf` caused a stack overflow because of infinite recursion.
+
+
 ## 0.2.0 (2020-05-03)
 
 ### Breaking changes
