@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 (2020-05-04)
+
+### Fixed
+
+- Added a `prepublish` script to actually publish changes.
+
+
 ## 0.2.1 (2020-05-04)
 
 ### Fixed
