@@ -435,7 +435,7 @@ export class NFA implements FiniteAutomaton {
 			return;
 		}
 		checkOptionsCompatibility(this.options, nfa.options);
-		baseConcat(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
+		baseAppend(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
@@ -449,7 +449,7 @@ export class NFA implements FiniteAutomaton {
 			return;
 		}
 		checkOptionsCompatibility(this.options, nfa.options);
-		baseConcatBefore(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
+		basePrepend(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
@@ -685,7 +685,7 @@ function createNodeList(
 	function handleElement(element: Simple<Element>, base: SubList): void {
 		switch (element.type) {
 			case "Alternation":
-				baseConcat(nodeList, base, handleAlternation(element.alternatives));
+				baseAppend(nodeList, base, handleAlternation(element.alternatives));
 				break;
 
 			case "Assertion":
@@ -716,7 +716,7 @@ function createNodeList(
 			}
 			case "Quantifier":
 				if (element.max > 0) {
-					baseConcat(nodeList, base, handleQuantifier(element));
+					baseAppend(nodeList, base, handleQuantifier(element));
 				}
 				break;
 
@@ -797,7 +797,7 @@ function baseReplaceWith(nodeList: NodeList, base: SubList, replacement: SubList
  * @param base
  * @param after
  */
-function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
+function baseAppend(nodeList: NodeList, base: SubList, after: SubList): void {
 	if (base.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
 		return;
@@ -841,7 +841,7 @@ function baseConcat(nodeList: NodeList, base: SubList, after: SubList): void {
  * @param base
  * @param before
  */
-function baseConcatBefore(nodeList: NodeList, base: SubList, before: SubList): void {
+function basePrepend(nodeList: NodeList, base: SubList, before: SubList): void {
 	if (base.finals.size === 0) {
 		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
 		return;
@@ -1066,10 +1066,10 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseConcat(nodeList, base, localCopy(nodeList, copy));
+			baseAppend(nodeList, base, localCopy(nodeList, copy));
 		}
 		// use the original copy
-		baseConcat(nodeList, base, copy);
+		baseAppend(nodeList, base, copy);
 
 	} else {
 		// We could use the above approach here as well but this would generate O(n^2) unnecessary transitions.
@@ -1084,11 +1084,11 @@ function baseRepeat(nodeList: NodeList, base: SubList, times: number): void {
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseConcat(nodeList, base, localCopy(nodeList, copy));
+			baseAppend(nodeList, base, localCopy(nodeList, copy));
 			base.finals.forEach(f => realFinal.add(f));
 		}
 		// use the original copy
-		baseConcat(nodeList, base, copy);
+		baseAppend(nodeList, base, copy);
 		base.finals.forEach(f => realFinal.add(f));
 
 		// transfer the final states
@@ -1198,7 +1198,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 		}
 
 		baseRepeat(nodeList, base, min - 1); // repeat A min-1 many times
-		baseConcat(nodeList, base, aPlus); // concat A{min-1} and A+
+		baseAppend(nodeList, base, aPlus); // concat A{min-1} and A+
 		return;
 	}
 
@@ -1215,7 +1215,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 
 		baseRepeat(nodeList, copy, max - min);
 		baseRepeat(nodeList, base, min);
-		baseConcat(nodeList, base, copy);
+		baseAppend(nodeList, base, copy);
 	} else {
 		if (min > 1) {
 			// e.g. /a{4,}/
@@ -1228,7 +1228,7 @@ function baseQuantify(nodeList: NodeList, base: SubList, min: number, max: numbe
 			// repeat
 			baseRepeat(nodeList, base, min - 1);
 
-			baseConcat(nodeList, base, copy);
+			baseAppend(nodeList, base, copy);
 		} else {
 			// e.g. /a*/, /a+/
 			// If `min` is 0 then the initial state will already be final because of the code above.

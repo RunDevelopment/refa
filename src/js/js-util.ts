@@ -17,7 +17,7 @@ export function withCaseVaryingCharacters(
 	caseFolding: Readonly<Record<number, readonly number[]>>,
 	caseVarying: CharSet
 ): CharSet {
-	if (cs.hasEveryOf(caseVarying)) {
+	if (cs.isSupersetOf(caseVarying)) {
 		// this set already includes all case varying characters
 		return cs;
 	}

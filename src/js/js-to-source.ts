@@ -148,8 +148,8 @@ function rangeEqual(a: readonly CharRange[], b: readonly CharRange[]): boolean {
 	return true;
 }
 
-function hasEveryOf(set: CharSet, ranges: readonly CharRange[]): boolean {
-	return ranges.every(r => set.hasEvery(r));
+function isSupersetOf(set: CharSet, ranges: readonly CharRange[]): boolean {
+	return ranges.every(r => set.isSupersetOf(r));
 }
 
 function printCharSetSimple(set: CharSet): string {
@@ -168,11 +168,11 @@ function printCharSet(set: CharSet): string {
 
 	let reducedSet = set;
 	let reducedPrefix = "";
-	if (hasEveryOf(reducedSet, SPACE)) {
+	if (isSupersetOf(reducedSet, SPACE)) {
 		reducedPrefix += "\\s";
 		reducedSet = reducedSet.without(SPACE);
 	}
-	if (hasEveryOf(reducedSet, WORD)) {
+	if (isSupersetOf(reducedSet, WORD)) {
 		reducedPrefix += "\\w";
 		reducedSet = reducedSet.without(WORD);
 	}

@@ -80,13 +80,13 @@ export function getReadableCharacter(charset: CharSet): number {
 	}
 
 	// check \w characters
-	if (charset.hasSome(LATIN_UPPER)) {
+	if (!charset.isDisjointWith(LATIN_UPPER)) {
 		return charset.intersect([LATIN_UPPER]).ranges[0].min;
 	}
-	if (charset.hasSome(LATIN_LOWER)) {
+	if (!charset.isDisjointWith(LATIN_LOWER)) {
 		return charset.intersect([LATIN_LOWER]).ranges[0].min;
 	}
-	if (charset.hasSome(LATIN_DIGIT)) {
+	if (!charset.isDisjointWith(LATIN_DIGIT)) {
 		return charset.intersect([LATIN_DIGIT]).ranges[0].min;
 	}
 	if (charset.has(LATIN_UNDERSCORE)) {
@@ -97,7 +97,7 @@ export function getReadableCharacter(charset: CharSet): number {
 	// More efficient approaches are welcome of course.
 
 	// check non-space characters
-	if (charset.hasSome(ASCII_WITHOUT_SPACE_AND_CONTROL)) {
+	if (!charset.isDisjointWith(ASCII_WITHOUT_SPACE_AND_CONTROL)) {
 		return charset.intersect([ASCII_WITHOUT_SPACE_AND_CONTROL]).ranges[0].min;
 	}
 

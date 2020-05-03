@@ -79,7 +79,7 @@ const allCache = new Map<number, CharSet>();
 /**
  * An immutable set of characters.
  *
- * All characters in the set have to be between and including 0 and the maximum.
+ * All characters in the set have to be between 0 (inclusive) and the maximum (inclusive).
  */
 export class CharSet {
 
@@ -328,92 +328,14 @@ export class CharSet {
 
 
 	has(character: number): boolean {
-		return this.hasEvery({ min: character, max: character });
+		return hasEveryOfRange(this.ranges, { min: character, max: character });
 	}
-	hasEvery(range: CharRange): boolean {
-		// runs in O(log(this.ranges.length))
 
-		const ranges = this.ranges;
-		const l = ranges.length;
-		const { min, max } = range;
-
-		// this is empty
-		if (l == 0)
-			return false;
-
-		// out of range
-		if (min < ranges[0].min || max > ranges[l - 1].max)
-			return false;
-
-		// the out of range check is enough in this case
-		if (l == 1)
-			return true;
-
-		let low = 0; // inclusive
-		let high = l; // exclusive
-		while (low < high) {
-			const m = low + ((high - low) >> 1);
-			const mRange = ranges[m];
-			const mMin = mRange.min;
-
-			if (mMin == min) {
-				return max <= mRange.max;
-			} else if (mMin < min) {
-				if (max <= mRange.max)
-					return true;
-				low = m + 1;
-			} else /* if (mMin > min) */ {
-				high = m;
-			}
+	isSupersetOf(other: CharSet | CharRange): boolean {
+		if (!(other instanceof CharSet)) {
+			return hasEveryOfRange(this.ranges, other);
 		}
 
-		return false;
-	}
-	hasSome(range: CharRange): boolean {
-		// runs in O(log(this.ranges.length))
-
-		const ranges = this.ranges;
-		const l = ranges.length;
-		const { min, max } = range;
-
-		// this is empty
-		if (l == 0)
-			return false;
-
-		// out of range
-		if (max < ranges[0].min || min > ranges[l - 1].max)
-			return false;
-
-		let low = 0; // inclusive
-		let high = l; // exclusive
-		while (low < high) {
-			const m = low + ((high - low) >> 1);
-			const mRange = ranges[m];
-			const mMin = mRange.min;
-
-			if (mMin == min) {
-				return true; // range.min is in this set
-			} else if (mMin < min) {
-				if (min <= mRange.max)
-					return true;
-				low = m + 1;
-			} else /* if (mMin > min) */ {
-				if (mMin <= max)
-					return true;
-				high = m;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns whether this set contains every character of the given set.
-	 *
-	 * Returns `true` if the given set is a subset of this set, `false` otherwise.
-	 * @param other The character set to compare to.
-	 */
-	hasEveryOf(other: CharSet): boolean {
 		// runs in O(this.ranges.length + other.ranges.length)
 
 		const thisRanges = this.ranges;
@@ -442,13 +364,28 @@ export class CharSet {
 		// otherItem is still defined that there are some chars in other which are not in this
 		return !otherItem;
 	}
+	isSubsetOf(other: CharSet | CharRange): boolean {
+		if (other instanceof CharSet) {
+			return other.isSubsetOf(this);
+		} else {
+			if (this.isEmpty) {
+				return true;
+			} else {
+				return other.min <= this.ranges[0].min && this.ranges[this.ranges.length - 1].max <= other.max;
+			}
+		}
+	}
+
 	/**
-	 * Returns whether this set contains some characters of the given set.
+	 * Returns whether this set and the given set (or range) are disjoint.
 	 *
-	 * Returns `false` if the given set and this set are disjoint, `true` otherwise.
-	 * @param other The character set to compare to.
+	 * @param other
 	 */
-	hasSomeOf(other: CharSet): boolean {
+	isDisjointWith(other: CharSet | CharRange): boolean {
+		if (!(other instanceof CharSet)) {
+			return !hasSomeOfRange(this.ranges, other);
+		}
+
 		// runs in O(this.ranges.length + other.ranges.length)
 
 		const thisRanges = this.ranges;
@@ -466,11 +403,86 @@ export class CharSet {
 				thisItem = thisRanges[++i];
 			} else {
 				// thisItem and otherItem have at least one character in common
-				return true;
+				return false;
 			}
 		}
 
-		return false;
+		return true;
 	}
 
+}
+
+function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolean {
+	// runs in O(log(ranges.length))
+
+	const l = ranges.length;
+	const { min, max } = range;
+
+	// this is empty
+	if (l == 0)
+		return false;
+
+	// out of range
+	if (min < ranges[0].min || max > ranges[l - 1].max)
+		return false;
+
+	// the out of range check is enough in this case
+	if (l == 1)
+		return true;
+
+	let low = 0; // inclusive
+	let high = l; // exclusive
+	while (low < high) {
+		const m = low + ((high - low) >> 1);
+		const mRange = ranges[m];
+		const mMin = mRange.min;
+
+		if (mMin == min) {
+			return max <= mRange.max;
+		} else if (mMin < min) {
+			if (max <= mRange.max)
+				return true;
+			low = m + 1;
+		} else /* if (mMin > min) */ {
+			high = m;
+		}
+	}
+
+	return false;
+}
+function hasSomeOfRange(ranges: readonly CharRange[], range: CharRange): boolean {
+	// runs in O(log(ranges.length))
+
+	const l = ranges.length;
+	const { min, max } = range;
+
+	// this is empty
+	if (l == 0)
+		return false;
+
+	// out of range
+	if (max < ranges[0].min || min > ranges[l - 1].max)
+		return false;
+
+	let low = 0; // inclusive
+	let high = l; // exclusive
+	while (low < high) {
+		const m = low + ((high - low) >> 1);
+		const mRange = ranges[m];
+		const mMin = mRange.min;
+
+		if (mMin == min) {
+			return true; // range.min is in this set
+		} else if (mMin < min) {
+			if (min <= mRange.max)
+				return true;
+			low = m + 1;
+		} else /* if (mMin > min) */ {
+			if (mMin <= max)
+				return true;
+			high = m;
+		}
+	}
+
+	return false;
 }

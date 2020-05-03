@@ -94,7 +94,7 @@ export function createCharSet(
 			// the given range do not include all case-varying characters
 			&& !(range.min <= caseVaryingMin && range.max >= caseVaryingMax)
 			// the given range contains case-varying characters
-			&& caseVarying.hasSome(range)
+			&& !caseVarying.isDisjointWith(range)
 		) {
 			fullCaseCheck = true;
 		}
