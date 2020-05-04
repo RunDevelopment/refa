@@ -114,6 +114,20 @@ export class CharSet {
 		return this.ranges.length === 1 && this.ranges[0].min === 0 && this.ranges[0].max === this.maximum;
 	}
 
+	/**
+	 * Returns the number of unique characters in the set.
+	 *
+	 * The returned number will be at least `0` and at most `this.maximum + 1`.
+	 */
+	get size(): number {
+		let size = 0;
+		for (let i = 0, l = this.ranges.length; i < l; i++) {
+			const { min, max } = this.ranges[i];
+			size += max - min + 1;
+		}
+		return size;
+	}
+
 
 	private constructor(maximum: number, ranges: readonly CharRange[]) {
 		this.maximum = maximum;

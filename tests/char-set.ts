@@ -108,6 +108,18 @@ describe("CharSet", function () {
 	const charSetOf = charsFromRegex;
 	const predicateTests: PredicateTestCase[] = [
 		{
+			name: "size",
+			cases: [
+				// eslint-disable-next-line no-empty-character-class
+				() => charSetOf(/[]/).size == 0,
+				() => charSetOf(/[^\s\S]/).size == 0,
+				() => charSetOf(/a/).size == 1,
+				() => charSetOf(/a/i).size == 2,
+				() => charSetOf(/\d/).size == 10,
+				() => charSetOf(/\w/).size == 10 + 26 + 26 + 1,
+			]
+		},
+		{
 			name: CharSet.prototype.has.name,
 			cases: [
 				() => charSetOf(/a/).has("a".charCodeAt(0)),
