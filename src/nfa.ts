@@ -923,9 +923,9 @@ function baseOptimizationReuseFinalStates(nodeList: NodeList, base: SubList): vo
 		for (let i = 0, l = reusable.length; i < l; i++) {
 			const toRemove = reusable[i];
 			base.finals.delete(toRemove);
-			for (const [to, characters] of [...toRemove.in]) {
-				nodeList.linkNodes(to, masterFinal, characters);
-				nodeList.unlinkNodes(to, toRemove);
+			for (const [from, characters] of [...toRemove.in]) {
+				nodeList.linkNodes(from, masterFinal, characters);
+				nodeList.unlinkNodes(from, toRemove);
 			}
 		}
 	}
