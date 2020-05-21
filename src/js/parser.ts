@@ -65,10 +65,10 @@ export interface ParseOptions {
 	disableOptimizations?: boolean;
 }
 
-export type RegexppAst = {
+export interface RegexppAst {
 	pattern: AST.Pattern;
 	flags: AST.Flags;
-};
+}
 
 export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern;
 
