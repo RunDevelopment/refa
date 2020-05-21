@@ -49,4 +49,4 @@ __At this point in time, the library is still in development and partially incom
 
 ### Limitations
 
-This library will never be able to support some modern features of regex engines such as [backreferences](https://www.rexegg.com/regex-capture.html), [atomic groups](https://www.rexegg.com/regex-disambiguation.html#atomic), [possessive quantifiers](https://www.rexegg.com/regex-quantifiers.html#possessive), and [recursion](https://www.rexegg.com/regex-recursion.html) because these features, generally, cannot be be represented by a DFA or NFA.
+This library will never be able to support some modern features of regex engines such as [backreferences](https://www.rexegg.com/regex-capture.html) and [recursion](https://www.rexegg.com/regex-recursion.html) because these features, generally, cannot be be represented by a DFA or NFA.
