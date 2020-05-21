@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import { CharRange, CharSet, negateRanges } from "../char-set";
-import { AST } from "regexpp";
 import { assertNever } from "../util";
+import { Flags } from "./js-flags";
 import { DIGIT, LINE_TERMINATOR, SPACE, WORD, WORD_IU, withCaseVaryingCharacters } from "./js-util";
 import {
 	Alias, Binary_Property, General_Category, Script, Script_Extensions,
@@ -43,7 +43,7 @@ export interface WordCharacterSet {
 */
 export function createCharSet(
 	chars: Iterable<number | CharRange | Readonly<PredefinedCharacterSet>>,
-	flags: Readonly<AST.Flags>
+	flags: Readonly<Flags>
 ): CharSet {
 	// https://tc39.es/ecma262/#sec-runtime-semantics-charactersetmatcher-abstract-operation
 

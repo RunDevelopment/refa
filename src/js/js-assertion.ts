@@ -2,7 +2,7 @@ import { Element, Assertion, Simple } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { LINE_TERMINATOR, WORD, WORD_IU } from "./js-util";
-import { AST } from "regexpp";
+import { Flags } from "./js-flags";
 
 
 export type BoundaryAssertion = WordBoundaryAssertion | TextBoundaryAssertion;
@@ -14,7 +14,7 @@ export interface TextBoundaryAssertion {
 	kind: "end" | "start";
 }
 
-export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<AST.Flags>): Simple<Element> {
+export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): Simple<Element> {
 	const maximum = flags.unicode ? 0x10FFFF : 0xFFFF;
 
 	const newAssertion = (negate: boolean, kind: "ahead" | "behind", characters: CharSet): Simple<Assertion> => {
