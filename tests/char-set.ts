@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import { CharSet, CharRange } from "../src/char-set";
 import { readableIntervalString, charsFromRegex } from "./helper/chars";
-import { JS } from "./../src";
 
 
 function toRanges(input: (string | number | CharRange | [number, number])[]): CharRange[] {
