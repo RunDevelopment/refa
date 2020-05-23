@@ -1,3 +1,5 @@
+import type { CharSet } from "./char-set";
+
 export interface FiniteAutomaton {
 
 	/**
@@ -16,6 +18,9 @@ export interface FiniteAutomaton {
 	 * @param word The characters of the word to test.
 	 */
 	test(word: Iterable<number>): boolean;
+
+	wordSets(): Iterable<CharSet[]>;
+	words(): Iterable<number[]>;
 
 	/**
 	 * Returns a string representation of this FA.

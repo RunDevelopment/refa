@@ -8,15 +8,25 @@ import type { DFA, DFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
 
 
-export interface NFANode {
+export interface ReadonlyNFANode {
+	readonly id: number;
+	readonly out: ReadonlyMap<ReadonlyNFANode, CharSet>;
+	readonly in: ReadonlyMap<ReadonlyNFANode, CharSet>;
+}
+export interface NFANode extends ReadonlyNFANode {
 	readonly id: number;
 	readonly list: NodeList;
-	readonly out: ReadonlyMap<NFANode, CharSet>;
-	readonly in: ReadonlyMap<NFANode, CharSet>;
+	readonly out: Map<NFANode, CharSet>;
+	readonly in: Map<NFANode, CharSet>;
+}
+export interface ReadonlyNodeList {
+	readonly initial: ReadonlyNFANode;
+	readonly finals: ReadonlySet<ReadonlyNFANode>;
+	[Symbol.iterator](): IterableIterator<ReadonlyNFANode>;
 }
 
 let nodeListCounter = 0;
-class NodeList {
+export class NodeList implements ReadonlyNodeList {
 
 	// variables for checks and debugging
 	private readonly id: number;
@@ -68,8 +78,8 @@ class NodeList {
 			throw new Error("You can't link nodes with the empty character set.");
 		}
 
-		linkNodesAddImpl(from.out as Map<NFANode, CharSet>, to, characters);
-		linkNodesAddImpl(to.in as Map<NFANode, CharSet>, from, characters);
+		linkNodesAddImpl(from.out, to, characters);
+		linkNodesAddImpl(to.in, from, characters);
 	}
 
 	/**
@@ -92,8 +102,8 @@ class NodeList {
 			throw new Error("Can't unlink nodes which aren't linked.");
 		}
 
-		(from.out as Map<NFANode, CharSet>).delete(to);
-		(to.in as Map<NFANode, CharSet>).delete(from);
+		from.out.delete(to);
+		to.in.delete(from);
 	}
 
 	/**
@@ -103,8 +113,8 @@ class NodeList {
 	removeUnreachable(): void {
 		const makeEmpty = (): void => {
 			this.finals.clear();
-			(this.initial.in as Map<NFANode, CharSet>).clear();
-			(this.initial.out as Map<NFANode, CharSet>).clear();
+			this.initial.in.clear();
+			this.initial.out.clear();
 		}
 
 		if (this.finals.size === 0) {
@@ -215,6 +225,10 @@ interface SubList {
 	readonly initial: NFANode;
 	readonly finals: Set<NFANode>;
 }
+interface ReadonlySubList {
+	readonly initial: ReadonlyNFANode;
+	readonly finals: ReadonlySet<ReadonlyNFANode>;
+}
 
 /*
  * ####################################################################################################################
@@ -259,7 +273,17 @@ export interface NFAFromRegexOptions {
 	infinityThreshold?: number;
 }
 
-export class NFA implements FiniteAutomaton {
+
+
+export interface ReadonlyNFA extends FiniteAutomaton {
+	readonly nodes: ReadonlyNodeList;
+	readonly options: Readonly<NFAOptions>;
+
+	copy(): NFA;
+	isDisjointWith(other: ReadonlyNFA): boolean;
+}
+
+export class NFA implements ReadonlyNFA, FiniteAutomaton {
 
 	readonly nodes: NodeList;
 	readonly options: Readonly<NFAOptions>;
@@ -345,13 +369,20 @@ export class NFA implements FiniteAutomaton {
 		);
 	}
 
+	isDisjointWith(other: ReadonlyNFA): boolean {
+		for (const _ of NFA.intersectionWordSets(this, other)) {
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Returns a new NFA which is equivalent to the intersection of the two given NFAs.
 	 *
 	 * @param left
 	 * @param right
 	 */
-	static intersect(left: NFA, right: NFA): NFA {
+	static intersect(left: ReadonlyNFA, right: ReadonlyNFA): NFA {
 		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
 
 		// By recursively creating and following outgoing nodes, we only create the part of the intersection NFA which
@@ -384,7 +415,7 @@ export class NFA implements FiniteAutomaton {
 	 * @param left
 	 * @param right
 	 */
-	static intersectionWordSets(left: NFA, right: NFA): Iterable<CharSet[]> {
+	static intersectionWordSets(left: ReadonlyNFA, right: ReadonlyNFA): Iterable<CharSet[]> {
 		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
 
 		return faIterateWordSets(
@@ -406,7 +437,7 @@ export class NFA implements FiniteAutomaton {
 	 * @param left
 	 * @param right
 	 */
-	static intersectionWords(left: NFA, right: NFA): Iterable<number[]> {
+	static intersectionWords(left: ReadonlyNFA, right: ReadonlyNFA): Iterable<number[]> {
 		return wordSetsToWords(NFA.intersectionWordSets(left, right));
 	}
 
@@ -415,7 +446,7 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	union(nfa: NFA): void {
+	union(nfa: ReadonlyNFA): void {
 		if (nfa === this) {
 			return;
 		}
@@ -429,7 +460,7 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	append(nfa: NFA): void {
+	append(nfa: ReadonlyNFA): void {
 		if (this === nfa) {
 			this.quantify(2, 2);
 			return;
@@ -443,7 +474,7 @@ export class NFA implements FiniteAutomaton {
 	 *
 	 * @param nfa
 	 */
-	prepend(nfa: NFA): void {
+	prepend(nfa: ReadonlyNFA): void {
 		if (this === nfa) {
 			this.quantify(2, 2);
 			return;
@@ -740,11 +771,11 @@ function checkOptionsCompatibility(thisOptions: Readonly<NFAOptions>, otherOptio
  * @param nodeList
  * @param toCopy
  */
-function localCopy(nodeList: NodeList, toCopy: SubList): SubList {
+function localCopy(nodeList: NodeList, toCopy: ReadonlySubList): SubList {
 	const initial = nodeList.createNode();
 	const final = new Set<NFANode>();
 
-	const translate = cachedFunc<NFANode, NFANode>(() => nodeList.createNode());
+	const translate = cachedFunc<ReadonlyNFANode, NFANode>(() => nodeList.createNode());
 	translate.cache.set(toCopy.initial, initial);
 
 	DFS(toCopy.initial, node => {
@@ -1267,7 +1298,7 @@ interface IntersectionEnv {
  * @param left
  * @param right
  */
-function createNFAIntersectionEnv(left: NFA, right: NFA): IntersectionEnv {
+function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): IntersectionEnv {
 	checkOptionsCompatibility(left.options, right.options);
 
 	const nodeList = new NodeList();
@@ -1288,7 +1319,7 @@ function createNFAIntersectionEnv(left: NFA, right: NFA): IntersectionEnv {
 	indexTranslator.cache.set(0, nodeList.initial);
 	indexBackTranslatorMap.set(nodeList.initial, 0);
 
-	function translate(leftNode: NFANode, rightNode: NFANode): NFANode {
+	function translate(leftNode: ReadonlyNFANode, rightNode: ReadonlyNFANode): NFANode {
 		const leftIndex = leftIndexMap.get(leftNode);
 		const rightIndex = rightIndexMap.get(rightNode);
 
@@ -1300,7 +1331,7 @@ function createNFAIntersectionEnv(left: NFA, right: NFA): IntersectionEnv {
 		return indexTranslator(leftIndex * rightIndexMap.size + rightIndex);
 	}
 
-	function translateBack(node: NFANode): [NFANode, NFANode] {
+	function translateBack(node: NFANode): [ReadonlyNFANode, ReadonlyNFANode] {
 		const nodeIndex = indexBackTranslatorMap.get(node);
 		if (nodeIndex === undefined) {
 			throw new Error("All created nodes have to be indexed.");
