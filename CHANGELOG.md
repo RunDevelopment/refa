@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 (TBD)
+
+### Breaking changes
+
+- New `JS.Parser` API.
+
+### Added
+
+- `CharSet#size` returns the number of characters in the set.
+
+### Changed
+
+- Better `Flags` interface for JS functions.
+- Some minor improvements.
+
+
 ## 0.2.2 (2020-05-04)
 
 ### Fixed
