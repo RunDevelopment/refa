@@ -1,8 +1,9 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode } from "../src/words";
-import { literalToString, Literal, literalToNFA, removeIndentation } from "./helper/fa";
+import { literalToString, literalToNFA, removeIndentation } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
+import { Literal } from "../src/js";
 
 
 describe("NFA", function () {

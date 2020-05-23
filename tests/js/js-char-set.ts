@@ -15,11 +15,11 @@ describe("JS createCharSet", function () {
 		for (const { literal, expected } of cases) {
 			it(`/${literal.source}/${literal.flags}`, function () {
 				if (typeof expected === "string") {
-					const parser = new Parser(literal);
+					const parser = Parser.fromLiteral(literal);
 					assert.strictEqual(toPatternString(parser.parse().expression), expected);
 				} else {
 					assert.throws(() => {
-						const parser = new Parser(literal);
+						const parser = Parser.fromLiteral(literal);
 						parser.parse();
 					});
 				}

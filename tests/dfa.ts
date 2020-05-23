@@ -1,7 +1,8 @@
 import { DFA } from "../src/dfa";
 import { assert } from "chai";
-import { literalToString, literalToDFA, Literal, removeIndentation } from "./helper/fa";
+import { literalToString, literalToDFA, removeIndentation } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, EMPTY_LITERALS, NON_EMPTY_LITERALS } from "./helper/regexp-literals";
+import { Literal } from "../src/js";
 
 
 describe("DFA", function () {

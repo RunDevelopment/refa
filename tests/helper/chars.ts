@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import { CharSet } from "../../src/char-set";
-import { Literal } from "./fa";
-import { Parser } from "../../src/js";
+import { Parser, Literal } from "../../src/js";
 
 
 export function readableIntervalString(chars: CharSet): string {
@@ -23,7 +22,7 @@ export function readableIntervalString(chars: CharSet): string {
 }
 
 export function charsFromRegex(literal: Literal): CharSet {
-	const parser = new Parser(literal);
+	const parser = Parser.fromLiteral(literal);
 	const { expression } = parser.parse();
 
 	assert.equal(expression.alternatives.length, 1);

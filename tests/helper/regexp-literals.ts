@@ -1,4 +1,5 @@
-import { Literal } from "./fa";
+import { Literal } from "../../src/js";
+
 
 export const EMPTY_LITERALS: Literal[] = [
 	/[^\s\S]/,

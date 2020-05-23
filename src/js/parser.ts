@@ -65,12 +65,17 @@ export interface ParseOptions {
 	disableOptimizations?: boolean;
 }
 
-export interface RegexppAst {
-	pattern: AST.Pattern;
-	flags: AST.Flags;
+export interface Literal {
+	readonly source: string;
+	readonly flags: string;
 }
 
-export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern;
+export interface RegexppAst {
+	readonly pattern: AST.Pattern;
+	readonly flags: AST.Flags;
+}
+
+export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern | AST.Alternative;
 
 export interface ParseResult {
 	expression: Expression;
@@ -79,11 +84,11 @@ export interface ParseResult {
 
 
 interface ParserContext extends ParseOptions {
-	flags: AST.Flags;
+	readonly flags: AST.Flags;
 }
 
 
-export class Parser {
+export class Parser implements Literal {
 
 	readonly source: string;
 	readonly flags: string;
@@ -94,21 +99,28 @@ export class Parser {
 	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, number[] | null>();
 
 
-	constructor(literal: { source: string; flags: string }, parserOptions?: RegExpParser.Options) {
-		this.source = literal.source;
-		this.flags = literal.flags;
+	private constructor(ast: RegexppAst) {
+		this.source = ast.pattern.raw;
+		this.flags = ast.flags.raw;
+		this.ast = ast;
+	}
 
+	static fromLiteral(literal: Literal, parserOptions?: RegExpParser.Options): Parser {
 		const parser = new RegExpParser(parserOptions);
-		const flags = parser.parseFlags(this.flags);
-		const pattern = parser.parsePattern(this.source, undefined, undefined, flags.unicode);
-		this.ast = { pattern, flags };
+		const flags = parser.parseFlags(literal.flags);
+		const pattern = parser.parsePattern(literal.source, undefined, undefined, flags.unicode);
+		const ast = { pattern, flags };
+		return new Parser(ast);
+	}
+	static fromAst(ast: RegexppAst): Parser {
+		return new Parser(ast);
 	}
 
 
-	parse(options?: ParseOptions): ParseResult {
+	parse(options?: Readonly<ParseOptions>): ParseResult {
 		return this.parseElement(this.ast.pattern, options);
 	}
-	parseElement(element: ParsableElement, options?: ParseOptions): ParseResult {
+	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const expression: Expression = {
 			type: "Expression",
 			parent: null,
@@ -118,7 +130,11 @@ export class Parser {
 
 		const context: ParserContext = { ...options, flags: this.ast.flags };
 
-		this.addAlternatives(element.alternatives, expression, context);
+		if (element.type === "Alternative") {
+			this.addAlternatives([element], expression, context);
+		} else {
+			this.addAlternatives(element.alternatives, expression, context);
+		}
 
 		return {
 			expression,

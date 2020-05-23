@@ -1,23 +1,18 @@
 import { DFA } from "../../src/dfa";
 import { NFA } from "../../src/nfa";
-import { Parser } from "../../src/js";
-
-export interface Literal {
-	source: string;
-	flags: string;
-}
+import { Parser, Literal } from "../../src/js";
 
 export function literalToString(literal: Literal): string {
 	return `/${literal.source}/${literal.flags}`;
 }
 
 export function literalToDFA(literal: Literal): DFA {
-	const parsed = new Parser(literal).parse();
+	const parsed = Parser.fromLiteral(literal).parse();
 	return DFA.fromNFA(NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter }));
 }
 
 export function literalToNFA(literal: Literal): NFA {
-	const parsed = new Parser(literal).parse();
+	const parsed = Parser.fromLiteral(literal).parse();
 	return NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter });
 }
 
