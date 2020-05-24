@@ -10,6 +10,7 @@ import { faToRegex } from "./to-regex";
 
 export interface ReadonlyNFANode {
 	readonly id: number;
+	readonly list: ReadonlyNodeList;
 	readonly out: ReadonlyMap<ReadonlyNFANode, CharSet>;
 	readonly in: ReadonlyMap<ReadonlyNFANode, CharSet>;
 }
@@ -19,6 +20,7 @@ export interface NFANode extends ReadonlyNFANode {
 	readonly out: Map<NFANode, CharSet>;
 	readonly in: Map<NFANode, CharSet>;
 }
+
 export interface ReadonlyNodeList {
 	readonly initial: ReadonlyNFANode;
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
@@ -279,7 +281,18 @@ export interface ReadonlyNFA extends FiniteAutomaton {
 	readonly nodes: ReadonlyNodeList;
 	readonly options: Readonly<NFAOptions>;
 
+	/**
+	 * Create a mutable copy of this NFA.
+	 */
 	copy(): NFA;
+	/**
+	 * Returns whether the languages of this and the other NFA are disjoint.
+	 *
+	 * The runtime of this algorithm is `O(n * m)` (n = number of states of this NFA, m = number of states of the other
+	 * NFA) but it's a lot faster in practice with the worst case being very rare.
+	 *
+	 * @param other
+	 */
 	isDisjointWith(other: ReadonlyNFA): boolean;
 }
 
@@ -305,9 +318,6 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		);
 	}
 
-	/**
-	 * Create a copy of this NFA.
-	 */
 	copy(): NFA {
 		const copy = new NFA(new NodeList(), this.options);
 		copy.union(this);
@@ -1155,7 +1165,7 @@ function basePlus(nodeList: NodeList, base: SubList): void {
  *
  * @param base
  */
-function baseIsPlusExpression(base: SubList): boolean {
+function baseIsPlusExpression(base: ReadonlySubList): boolean {
 	// The following condition have to be fulfilled:
 	//
 	// All Final states have to link to all and only to all directly outgoing states of the initial state.
