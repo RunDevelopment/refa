@@ -1,4 +1,4 @@
-import { Simple, MutSimple, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element, Node, Assertion } from "./ast";
+import { Simple, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
 import { CharSet } from "./char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever } from "./util";
 
@@ -517,55 +517,6 @@ function stateElimination<T>(initial: T, getOutTransitions: (value: T) => Iterab
 	}
 }
 
-interface Visitor {
-	visitExpression?(node: Expression): void;
-	visitAlternation?(node: Alternation): void;
-	visitAssertion?(node: Assertion): void;
-	visitCharacterClass?(node: CharacterClass): void;
-	visitConcatenation?(node: Concatenation): void;
-	visitQuantifier?(node: Quantifier): void;
-}
-interface SimpleVisitor {
-	visitExpression?(node: Simple<Expression>): void;
-	visitAlternation?(node: Simple<Alternation>): void;
-	visitAssertion?(node: Simple<Assertion>): void;
-	visitCharacterClass?(node: Simple<CharacterClass>): void;
-	visitConcatenation?(node: Simple<Concatenation>): void;
-	visitQuantifier?(node: Simple<Quantifier>): void;
-}
-interface MutSimpleVisitor {
-	visitExpression?(node: MutSimple<Expression>): void;
-	visitAlternation?(node: MutSimple<Alternation>): void;
-	visitAssertion?(node: MutSimple<Assertion>): void;
-	visitCharacterClass?(node: MutSimple<CharacterClass>): void;
-	visitConcatenation?(node: MutSimple<Concatenation>): void;
-	visitQuantifier?(node: MutSimple<Quantifier>): void;
-}
-
-function visitBottomUp(node: MutSimple<Node>, visitor: MutSimpleVisitor): void;
-function visitBottomUp(node: Simple<Node>, visitor: SimpleVisitor): void;
-function visitBottomUp(node: Node, visitor: Visitor): void;
-function visitBottomUp(node: Node | Simple<Node> | MutSimple<Node>, visitor: any): void {
-	switch (node.type) {
-		case "Alternation":
-		case "Assertion":
-		case "Expression":
-		case "Quantifier":
-			node.alternatives.forEach(a => visitBottomUp(a, visitor));
-			break;
-
-		case "Concatenation":
-			node.elements.forEach(e => visitBottomUp(e, visitor));
-			break;
-
-		default:
-			break;
-	}
-
-	const fn = visitor["visit" + node.type];
-	if (fn) fn(node);
-}
-
 function structurallyEqual(a: Simple<Element>, b: Simple<Element>): boolean {
 	if (a.type !== b.type) return false;
 	switch (a.type) {
@@ -614,9 +565,9 @@ function structurallyEqualConcatenation(a: Simple<Concatenation>, b: Simple<Conc
 	return true;
 }
 
-function optimize(expr: MutSimple<Expression>): void {
-	visitBottomUp(expr, {
-		visitConcatenation(node) {
+function optimize(expr: Simple<Expression>): void {
+	visitAst(expr, {
+		onConcatenationLeave(node) {
 			const elements = node.elements;
 			// make (?:|a) -> a?
 			for (let i = 0; i < elements.length; i++) {
@@ -672,7 +623,7 @@ export function faToRegex<T>(initial: T, getOutTransitions: (value: T) => Iterab
 	final: (value: T) => boolean): Simple<Expression> {
 
 	const expression = stateElimination(initial, getOutTransitions, final);
-	optimize(expression as MutSimple<Expression>);
+	optimize(expression);
 
 	return expression;
 }
