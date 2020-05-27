@@ -188,7 +188,7 @@ module.exports = {
        true: also detect dependencies that only exist before typescript-to-javascript compilation
        "specify": for each dependency identify whether it only exists before compilation or also after
      */
-    tsPreCompilationDeps: true,
+    tsPreCompilationDeps: "specify",
 
     /* if true combines the package.jsons found from the module up to the base
        folder the cruise is initiated from. Useful for how (some) mono-repos
