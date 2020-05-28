@@ -2,8 +2,9 @@ import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } fr
 import { FiniteAutomaton } from "./finite-automaton";
 import { CharMap } from "./char-map";
 import { CharRange, CharSet, optimizeRanges } from "./char-set";
-import { rangesToString } from "./char-util";
-import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
+import { invertCharMap } from "./char-util";
+import { FAIterator } from "./fa-iterator";
+import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
 import type { NFA, NFANode } from "./nfa";
 import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
@@ -85,6 +86,21 @@ class NodeList {
 
 }
 
+function toTransIter(list: NodeList, maximum: number): FAIterator<DFANode, Iterable<[DFANode, CharSet]>> {
+	return {
+		initial: list.initial,
+		getOut: n => invertCharMap(n.out, maximum),
+		isFinal: n => list.finals.has(n)
+	};
+}
+function toStateIter(list: NodeList): FAIterator<DFANode> {
+	return {
+		initial: list.initial,
+		getOut: n => n.out.values(),
+		isFinal: n => list.finals.has(n)
+	};
+}
+
 export interface DFAOptions {
 	/**
 	 * The maximum numerical value any character can have.
@@ -109,11 +125,7 @@ export class DFA implements FiniteAutomaton {
 	}
 
 	get isFinite(): boolean {
-		return faIsFinite(
-			this.nodes.initial,
-			n => n.out.values(),
-			n => this.nodes.finals.has(n)
-		);
+		return faIsFinite(toStateIter(this.nodes));
 	}
 
 	test(word: Iterable<number>): boolean {
@@ -136,11 +148,7 @@ export class DFA implements FiniteAutomaton {
 			return [];
 		}
 
-		return faIterateWordSets(
-			this.nodes.initial,
-			n => invertCharMap(n.out, this.options.maxCharacter),
-			f => this.nodes.finals.has(f)
-		);
+		return faIterateWordSets(toTransIter(this.nodes, this.options.maxCharacter));
 	}
 
 	words(): Iterable<number[]> {
@@ -148,22 +156,11 @@ export class DFA implements FiniteAutomaton {
 	}
 
 	toString(): string {
-		return faToString(
-			this.nodes.initial,
-			node => {
-				const invertedMap = invertCharMap(node.out, this.options.maxCharacter);
-				return [...invertedMap].map(([n, r]) => [n, rangesToString(r.ranges)]);
-			},
-			n => this.nodes.finals.has(n)
-		);
+		return faWithCharSetsToString(toTransIter(this.nodes, this.options.maxCharacter));
 	}
 
 	toRegex(): Simple<Expression> {
-		return faToRegex(
-			this.nodes.initial,
-			n => invertCharMap(n.out, this.options.maxCharacter),
-			n => this.nodes.finals.has(n)
-		);
+		return faToRegex(toTransIter(this.nodes, this.options.maxCharacter));
 	}
 
 	/**
@@ -600,22 +597,4 @@ function findEquivalenceClasses(nodeList: NodeList): Set<Set<DFANode>> {
 
 function rangeEqual(r1: CharRange, r2: CharRange): boolean {
 	return r1.min === r2.min && r1.max === r2.max;
-}
-
-function invertCharMap<T>(charMap: CharMap<T>, maximum: number): Map<T, CharSet> {
-	const rangeMap = new Map<T, CharRange[]>();
-
-	for (const [range, value] of charMap) {
-		let array = rangeMap.get(value);
-		if (array === undefined) {
-			rangeMap.set(value, array = []);
-		}
-		array.push(range);
-	}
-
-	const map = new Map<T, CharSet>();
-	for (const [value, ranges] of rangeMap) {
-		map.set(value, CharSet.empty(maximum).union(ranges));
-	}
-	return map;
 }

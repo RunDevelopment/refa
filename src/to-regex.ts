@@ -1,6 +1,7 @@
 import { Simple, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
 import { CharSet } from "./char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever } from "./util";
+import { FAIterator } from "./fa-iterator";
 
 
 type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
@@ -10,11 +11,11 @@ interface RegexFANode {
 }
 class NodeList {
 	readonly initial: RegexFANode;
-	readonly final: Set<RegexFANode>;
+	readonly finals: Set<RegexFANode>;
 
 	constructor() {
 		this.initial = this.createNode();
-		this.final = new Set();
+		this.finals = new Set();
 	}
 
 	createNode(): RegexFANode {
@@ -43,8 +44,7 @@ class NodeList {
 
 }
 
-function createNodeList<T>(initial: T, getOutTransitions: (value: T) => Iterable<[T, CharSet]>,
-	final: (value: T) => boolean): NodeList | null {
+function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeList | null {
 
 	const nodeList = new NodeList();
 
@@ -57,16 +57,16 @@ function createNodeList<T>(initial: T, getOutTransitions: (value: T) => Iterable
 	});
 
 	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
-	translate.cache.set(initial, tempInitial);
+	translate.cache.set(iter.initial, tempInitial);
 
-	DFS(initial, n => {
+	DFS(iter.initial, n => {
 		// set final
-		if (final(n)) {
-			nodeList.final.add(translate(n));
+		if (iter.isFinal(n)) {
+			nodeList.finals.add(translate(n));
 		}
 
 		// out transitions sorted by char set
-		const out = [...getOutTransitions(n)].sort(([, a], [, b]) => {
+		const out = [...iter.getOut(n)].sort(([, a], [, b]) => {
 			const diff = Number(a.isEmpty) - Number(b.isEmpty);
 			if (diff !== 0) return diff;
 
@@ -89,22 +89,22 @@ function createNodeList<T>(initial: T, getOutTransitions: (value: T) => Iterable
 		return out.map(x => x[0]);
 	});
 
-	if (nodeList.final.size === 0) {
+	if (nodeList.finals.size === 0) {
 		// empty language
 		return null;
 	}
 
 	// make a new final state with no outgoing edges
 	const tempFinal = nodeList.createNode();
-	nodeList.final.forEach(n => {
+	nodeList.finals.forEach(n => {
 		// add epsilon transition
 		nodeList.linkNodes(n, tempFinal, {
 			type: "Concatenation",
 			elements: []
 		});
 	});
-	nodeList.final.clear();
-	nodeList.final.add(tempFinal);
+	nodeList.finals.clear();
+	nodeList.finals.add(tempFinal);
 
 	// we now have an FA with one initial (source) and one final (drain) state
 
@@ -134,7 +134,7 @@ function createNodeList<T>(initial: T, getOutTransitions: (value: T) => Iterable
 }
 function eliminateStates(nodeList: NodeList): void {
 	const initial = nodeList.initial;
-	const final = firstOf(nodeList.final)!;
+	const final = firstOf(nodeList.finals)!;
 
 	const remainingStates = new Set<RegexFANode>();
 	DFS(initial, n => {
@@ -469,10 +469,9 @@ function eliminateStates(nodeList: NodeList): void {
 	}
 }
 
-function stateElimination<T>(initial: T, getOutTransitions: (value: T) => Iterable<[T, CharSet]>,
-	final: (value: T) => boolean): Simple<Expression> {
+function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simple<Expression> {
 
-	const nodeList = createNodeList(initial, getOutTransitions, final);
+	const nodeList = createNodeList(iter);
 	if (nodeList == null) {
 		return {
 			type: "Expression",
@@ -482,7 +481,7 @@ function stateElimination<T>(initial: T, getOutTransitions: (value: T) => Iterab
 
 	eliminateStates(nodeList);
 
-	const [finalState] = [...nodeList.final];
+	const [finalState] = [...nodeList.finals];
 	if (finalState.in.size !== 1 || !finalState.in.has(nodeList.initial)) {
 		throw new Error("State elimination failed.");
 	}
@@ -619,10 +618,9 @@ function optimize(expr: Simple<Expression>): void {
 	});
 }
 
-export function faToRegex<T>(initial: T, getOutTransitions: (value: T) => Iterable<[T, CharSet]>,
-	final: (value: T) => boolean): Simple<Expression> {
+export function faToRegex<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simple<Expression> {
 
-	const expression = stateElimination(initial, getOutTransitions, final);
+	const expression = stateElimination(iter);
 	optimize(expression);
 
 	return expression;

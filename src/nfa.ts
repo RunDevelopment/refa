@@ -2,8 +2,9 @@ import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { DFS, assertNever, createIndexMap, cachedFunc } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
-import { faToString, faIterateWordSets, wordSetsToWords, faIsFinite } from "./fa-util";
-import { rangesToString, invertCharMap } from "./char-util";
+import { faIterateStates, FAIterator } from "./fa-iterator";
+import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
+import { invertCharMap } from "./char-util";
 import type { DFA, DFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
 
@@ -21,14 +22,13 @@ export interface NFANode extends ReadonlyNFANode {
 	readonly in: Map<NFANode, CharSet>;
 }
 
-export interface ReadonlyNodeList {
+export interface ReadonlyNodeList extends Iterable<ReadonlyNFANode> {
 	readonly initial: ReadonlyNFANode;
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
-	[Symbol.iterator](): IterableIterator<ReadonlyNFANode>;
 }
 
 let nodeListCounter = 0;
-export class NodeList implements ReadonlyNodeList {
+export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 
 	// variables for checks and debugging
 	private readonly id: number;
@@ -186,22 +186,12 @@ export class NodeList implements ReadonlyNodeList {
 		});
 	}
 
-	*[Symbol.iterator](): IterableIterator<NFANode> {
-		const visited = new Set<NFANode>();
-		let toVisit = [this.initial];
-		while (toVisit.length > 0) {
-			const newVisit: NFANode[] = [];
-			for (const node of toVisit) {
-				if (!visited.has(node)) {
-					visited.add(node);
-					yield node;
-					for (const outNode of node.out.keys()) {
-						newVisit.push(outNode);
-					}
-				}
-			}
-			toVisit = newVisit;
-		}
+	[Symbol.iterator](): Iterator<NFANode> {
+		return faIterateStates({
+			initial: this.initial,
+			getOut: state => state.out.keys(),
+			isFinal: state => this.finals.has(state)
+		})[Symbol.iterator]();
 	}
 
 }
@@ -230,6 +220,21 @@ interface SubList {
 interface ReadonlySubList {
 	readonly initial: ReadonlyNFANode;
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
+}
+
+function toTransIter(list: ReadonlySubList): FAIterator<ReadonlyNFANode, Iterable<[ReadonlyNFANode, CharSet]>> {
+	return {
+		initial: list.initial,
+		getOut: n => n.out,
+		isFinal: n => list.finals.has(n)
+	};
+}
+function toStateIter(list: ReadonlySubList): FAIterator<ReadonlyNFANode> {
+	return {
+		initial: list.initial,
+		getOut: n => n.out.keys(),
+		isFinal: n => list.finals.has(n)
+	};
 }
 
 /*
@@ -311,11 +316,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	}
 
 	get isFinite(): boolean {
-		return this.isEmpty || faIsFinite(
-			this.nodes.initial,
-			n => n.out.keys(),
-			n => this.nodes.finals.has(n)
-		);
+		return this.isEmpty || faIsFinite(toStateIter(this.nodes));
 	}
 
 	copy(): NFA {
@@ -348,35 +349,18 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	}
 
 	wordSets(): Iterable<CharSet[]> {
-		if (this.isEmpty) {
-			return [];
-		}
-
-		return faIterateWordSets(
-			this.nodes.initial,
-			n => n.out,
-			f => this.nodes.finals.has(f)
-		);
+		return faIterateWordSets(toTransIter(this.nodes));
 	}
-
 	words(): Iterable<number[]> {
 		return wordSetsToWords(this.wordSets());
 	}
 
 	toString(): string {
-		return faToString(
-			this.nodes.initial,
-			n => [...n.out].map(([to, characters]) => [to, rangesToString(characters.ranges)]),
-			n => this.nodes.finals.has(n)
-		);
+		return faWithCharSetsToString(toTransIter(this.nodes));
 	}
 
 	toRegex(): Simple<Expression> {
-		return faToRegex(
-			this.nodes.initial,
-			n => n.out,
-			n => this.nodes.finals.has(n)
-		);
+		return faToRegex(toTransIter(this.nodes));
 	}
 
 	isDisjointWith(other: ReadonlyNFA): boolean {
@@ -428,14 +412,14 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	static intersectionWordSets(left: ReadonlyNFA, right: ReadonlyNFA): Iterable<CharSet[]> {
 		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
 
-		return faIterateWordSets(
-			nodeList.initial,
-			n => {
+		return faIterateWordSets({
+			initial: nodeList.initial,
+			getOut: n => {
 				addOutgoing(n);
 				return n.out;
 			},
-			f => nodeList.finals.has(f)
-		);
+			isFinal: n => nodeList.finals.has(n)
+		});
 	}
 
 	/**
