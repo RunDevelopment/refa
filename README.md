@@ -2,7 +2,7 @@
 
 [![Actions Status](https://github.com/RunDevelopment/refa/workflows/Node.js%20CI/badge.svg)](https://github.com/RunDevelopment/refa/actions)
 
-A library for finite automata (FA) and regular expressions (RE) in the context of Javascript RegExp.
+A library for regular expressions (RE) and finite automata (FA) in the context of Javascript RegExp.
 
 
 ## About
