@@ -504,6 +504,20 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		this.nodes.finals.delete(this.nodes.initial);
 	}
 
+	/**
+	 * Modifies this NFA such that all prefixes of all accepted words are also accepted.
+	 *
+	 * This means that all states reachable for the initial state that can reach a final state will be made final. All
+	 * unreachable states (cannot be reached from initial state and cannot reach (or are not) a final state) will be
+	 * removed by this operation.
+	 */
+	prefixes(): void {
+		this.nodes.removeUnreachable();
+		for (const node of this.nodes) {
+			this.nodes.finals.add(node);
+		}
+	}
+
 
 	/**
 	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
