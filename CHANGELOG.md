@@ -5,10 +5,15 @@
 ### Breaking changes
 
 - New `JS.Parser` API.
+- Removed `MutSimple` interface.
 
 ### Added
 
 - `CharSet#size` returns the number of characters in the set.
+- `NFA#prefixes()` will change the NFA such that it accepts all prefixes of itself.
+- New `ReadonlyNFA` interface.
+- New `FAIterator` interface as an abstraction over different FA representations. This is now the basis for virtually all FA operations that don't change the underlying data structure.
+- New `NoParent` and `NoSource` interface for AST nodes.
 
 ### Changed
 
