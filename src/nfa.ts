@@ -1000,7 +1000,7 @@ function baseOptimizationMergePrefixes(nodeList: NodeList, base: SubList): void 
 			for (let i = 0, l = candidateOutNodes.length; i < l; i++) {
 				const other = candidateOutNodes[i];
 				const otherCharSet = node.out.get(other)!;
-				if (currentCharSet.equals(otherCharSet)) {
+				if (currentCharSet.equals(otherCharSet) && base.finals.has(other) == base.finals.has(current)) {
 					// found a match -> remove other
 					for (const [otherTo, otherToCharSet] of other.out) {
 						nodeList.linkNodes(current, otherTo, otherToCharSet);
@@ -1052,7 +1052,7 @@ function baseOptimizationMergeSuffixes(nodeList: NodeList, base: SubList): void 
 			for (let i = 0, l = candidateInNodes.length; i < l; i++) {
 				const other = candidateInNodes[i];
 				const otherCharSet = node.in.get(other)!;
-				if (currentCharSet.equals(otherCharSet)) {
+				if (currentCharSet.equals(otherCharSet) && base.finals.has(other) == base.finals.has(current)) {
 					// found a match -> remove other
 					for (const [otherFrom, otherFromCharSet] of other.in) {
 						nodeList.linkNodes(otherFrom, current, otherFromCharSet);
