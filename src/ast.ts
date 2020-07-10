@@ -190,68 +190,11 @@ export function setParent(node: Node, parent: Node["parent"]): Node {
  * @param source
  */
 export function desimplify(simple: Simple<Concatenation>, parent: Parent, source: SourceLocation): Concatenation;
-export function desimplify(simple: Simple<Element>, parent: Concatenation, source: SourceLocation): Element;
 export function desimplify(simple: Simple<Expression>, parent: null, source: SourceLocation): Expression;
-export function desimplify(simple: Simple<Node>, parent: Parent | Concatenation | null, source: SourceLocation): Node {
-	const node = simple as Node;
-
-	node.source = source;
-
-	switch (node.type) {
-		case "Concatenation":
-			if (parent === null)
-				throw new Error("The parent of a concatenation cannot be null.");
-
-			switch (parent.type) {
-				case "Alternation":
-				case "Assertion":
-				case "Expression":
-				case "Quantifier":
-					node.parent = parent;
-					break;
-
-				case "Concatenation":
-					throw new Error("A concatenation cannot be parent of a concatenation.");
-
-				default:
-					throw assertNever(parent);
-			}
-
-			node.elements.forEach(e => desimplify(e, node, source));
-			break;
-
-		case "Alternation":
-		case "Assertion":
-		case "CharacterClass":
-		case "Quantifier":
-			if (parent === null)
-				throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
-
-			if (parent.type === "Concatenation") {
-				node.parent = parent;
-			} else {
-				throw new Error(`A(n) ${parent.type} cannot be parent of a(n) ${node.type}.`);
-			}
-
-			if (node.type !== "CharacterClass") {
-				node.alternatives.forEach(c => desimplify(c, node, source));
-			}
-			break;
-
-		case "Expression":
-			if (parent !== null)
-				throw new Error(`The parent of an expression has to be null and cannot be a(n) ${parent.type}.`);
-
-			node.parent = null;
-
-			node.alternatives.forEach(c => desimplify(c, node, source));
-			break;
-
-		default:
-			throw assertNever(node);
-	}
-
-	return node;
+export function desimplify(simple: Simple<Element>, parent: Concatenation, source: SourceLocation): Element;
+export function desimplify<T extends Node>(simple: Simple<T>, parent: T["parent"], source: SourceLocation): T;
+export function desimplify<T extends Node>(simple: Simple<T>, parent: T["parent"], source: SourceLocation): T {
+	return setParent(setSource(simple, source), parent);
 }
 
 
