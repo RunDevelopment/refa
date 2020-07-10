@@ -15,6 +15,10 @@
 - Better `Flags` interface for JS functions.
 - Some minor improvements.
 
+### Fixed
+
+- The prefix and suffix optimizations of the NFA construction didn't check the equivalence of states correctly.
+
 
 ## 0.2.2 (2020-05-04)
 
