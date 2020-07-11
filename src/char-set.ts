@@ -225,7 +225,7 @@ export class CharSet {
 
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
-		if (first instanceof CharSet && data.length === 1) {
+		if (data.length === 1 && first instanceof CharSet) {
 			this.checkCompatibility(first);
 			return this.unionOtherRanges(first.ranges);
 		}
@@ -249,7 +249,11 @@ export class CharSet {
 	 * @param otherRanges
 	 */
 	private unionOtherRanges(otherRanges: readonly CharRange[]): CharSet {
-		// now we can just merge the sorted ranges in O(n)
+		if (otherRanges.length === 0) {
+			return this;
+		}
+
+		// merge the sorted ranges in O(n)
 		const newRanges: CharRange[] = [];
 
 		const thisRanges = this.ranges;
