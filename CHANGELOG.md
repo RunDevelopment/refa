@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (TBD)
+## 0.3.0 (2020-07-11)
 
 ### Breaking changes
 
