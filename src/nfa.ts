@@ -999,14 +999,18 @@ function baseOptimizationMergePrefixes(nodeList: NodeList, base: SubList): void 
 
 			for (let i = 0, l = candidateOutNodes.length; i < l; i++) {
 				const other = candidateOutNodes[i];
+				const otherIsFinal = base.finals.has(other);
 				const otherCharSet = node.out.get(other)!;
-				if (currentCharSet.equals(otherCharSet) && base.finals.has(other) == base.finals.has(current)) {
-					// found a match -> remove other
+				if (currentCharSet.equals(otherCharSet) && otherIsFinal == base.finals.has(current)) {
+					// found a match -> remove `other`
 					for (const [otherTo, otherToCharSet] of other.out) {
 						nodeList.linkNodes(current, otherTo, otherToCharSet);
 						nodeList.unlinkNodes(other, otherTo);
 					}
 					nodeList.unlinkNodes(node, other);
+					if (otherIsFinal) {
+						base.finals.delete(other);
+					}
 					candidateOutNodes.splice(i, 1);
 
 					// we might be able to merge prefixes on this one
@@ -1051,14 +1055,18 @@ function baseOptimizationMergeSuffixes(nodeList: NodeList, base: SubList): void 
 
 			for (let i = 0, l = candidateInNodes.length; i < l; i++) {
 				const other = candidateInNodes[i];
+				const otherIsFinal = base.finals.has(other);
 				const otherCharSet = node.in.get(other)!;
-				if (currentCharSet.equals(otherCharSet) && base.finals.has(other) == base.finals.has(current)) {
+				if (currentCharSet.equals(otherCharSet) && otherIsFinal == base.finals.has(current)) {
 					// found a match -> remove other
 					for (const [otherFrom, otherFromCharSet] of other.in) {
 						nodeList.linkNodes(otherFrom, current, otherFromCharSet);
 						nodeList.unlinkNodes(otherFrom, other);
 					}
 					nodeList.unlinkNodes(other, node);
+					if (otherIsFinal) {
+						base.finals.delete(other);
+					}
 					candidateInNodes.splice(i, 1);
 
 					// we might be able to merge prefixes on this one
@@ -1353,8 +1361,18 @@ function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): Inters
 
 	// add finals
 	for (const leftFinal of left.nodes.finals) {
+		const leftIndex = leftIndexMap.get(leftFinal);
+		if (leftIndex === undefined) {
+			// skip final states that are not reachable from the initial state
+			continue;
+		}
 		for (const rightFinal of right.nodes.finals) {
-			nodeList.finals.add(translate(leftFinal, rightFinal));
+			const rightIndex = rightIndexMap.get(rightFinal);
+			if (rightIndex === undefined) {
+				// skip final states that are not reachable from the initial state
+				continue;
+			}
+			nodeList.finals.add(indexTranslator(leftIndex * rightIndexMap.size + rightIndex));
 		}
 	}
 

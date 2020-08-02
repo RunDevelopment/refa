@@ -1,6 +1,7 @@
 import { DFA } from "../../src/dfa";
-import { NFA } from "../../src/nfa";
+import { NFA, ReadonlyNFA } from "../../src/nfa";
 import { Parser, Literal } from "../../src/js";
+import { faIterateStates } from "../../src/fa-iterator";
 
 export function literalToString(literal: Literal): string {
 	return `/${literal.source}/${literal.flags}`;
@@ -34,4 +35,24 @@ export function removeIndentation(expected: string): string {
 	}
 
 	return lines.join("\n");
+}
+
+export function reachableFinalStates(nfa: ReadonlyNFA): number {
+	const iter = faIterateStates({
+		initial: nfa.nodes.initial,
+		getOut(node) {
+			return node.out.keys();
+		},
+		isFinal(node) {
+			return nfa.nodes.finals.has(node);
+		}
+	});
+
+	let count = 0;
+	for (const final of iter) {
+		if (nfa.nodes.finals.has(final)) {
+			count++;
+		}
+	}
+	return count;
 }

@@ -1,9 +1,10 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode } from "../src/words";
-import { literalToString, literalToNFA, removeIndentation } from "./helper/fa";
+import { literalToString, literalToNFA, removeIndentation, reachableFinalStates } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
-import { Literal } from "../src/js";
+import { Literal, Parser } from "../src/js";
+import { RegExpParser } from "regexpp";
 
 
 describe("NFA", function () {
@@ -446,6 +447,24 @@ describe("NFA", function () {
 
 					[6] -> [6] : 30..39`
 			},
+			{
+				literal: /<[=>]?|>=?|=>?|:=|\/=?/,
+				expected: `
+					(0) -> [1] : 2f, 3e
+					    -> (2) : 3a
+					    -> [3] : 3c
+					    -> [4] : 3d
+
+					[1] -> [5] : 3d
+
+					(2) -> [5] : 3d
+
+					[3] -> [5] : 3d..3e
+
+					[4] -> [5] : 3e
+
+					[5] -> none`
+			},
 		]);
 
 		interface TestCase {
@@ -456,7 +475,9 @@ describe("NFA", function () {
 		function test(cases: TestCase[]): void {
 			for (const { literal, expected } of cases) {
 				it(literalToString(literal), function () {
-					assert.strictEqual(literalToNFA(literal).toString(), removeIndentation(expected));
+					const nfa = literalToNFA(literal);
+					assert.strictEqual(nfa.toString(), removeIndentation(expected));
+					assert.strictEqual(nfa.nodes.finals.size, reachableFinalStates(nfa));
 				});
 			}
 		}
@@ -1010,6 +1031,27 @@ describe("NFA", function () {
 			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isFinite);
 		});
 
+	});
+
+	it("issue #5", function () {
+		const ast = new RegExpParser().parseLiteral(/<[=>]?|>=?|=>?|:=|\/=?|\*\*?|[&+-]/.toString());
+		const parser = Parser.fromAst(ast);
+
+		let total: NFA | undefined = undefined;
+		for (const alt of ast.pattern.alternatives) {
+			const nfa = NFA.fromRegex(parser.parseElement(alt).expression, { maxCharacter: 0xFFFF });
+			nfa.removeEmptyWord();
+
+			if (!total) {
+				total = nfa;
+			} else {
+				if (total.isDisjointWith(nfa)) {
+					total.union(nfa);
+				} else {
+					// do something
+				}
+			}
+		}
 	});
 
 });
