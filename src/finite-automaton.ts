@@ -44,3 +44,18 @@ export interface FiniteAutomaton {
 	toString(): string;
 	toRegex(): Simple<Expression>;
 }
+
+export interface IntersectionOptions {
+	/**
+	 * The maximum number of nodes the intersection operation is allowed to create before throwing a
+	 * `TooManyNodesError`.
+	 *
+	 * If the maximum number of nodes is unset or set to `Infinity`, the intersection operation may create as many nodes
+	 * as necessary to construct the intersection. This might cause the machine to run out of memory.
+	 */
+	maxNodes?: number;
+}
+
+export type ReadonlyIntersectionOptions = Readonly<IntersectionOptions>;
+
+export class TooManyNodesError extends Error { }

@@ -1,8 +1,8 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { DFS, assertNever, createIndexMap, cachedFunc } from "./util";
-import { FiniteAutomaton } from "./finite-automaton";
-import { faIterateStates, FAIterator } from "./fa-iterator";
+import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
+import { faIterateStates, FAIterator, faCanReachFinal } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
 import { invertCharMap } from "./char-util";
 import type { DFA, DFANode } from "./dfa";
@@ -296,9 +296,12 @@ export interface ReadonlyNFA extends FiniteAutomaton {
 	 * The runtime of this algorithm is `O(n * m)` (n = number of states of this NFA, m = number of states of the other
 	 * NFA) but it's a lot faster in practice with the worst case being very rare.
 	 *
+	 * Since this uses the intersection operation, you can supply intersection options.
+	 *
 	 * @param other
+	 * @param options
 	 */
-	isDisjointWith(other: ReadonlyNFA): boolean;
+	isDisjointWith(other: ReadonlyNFA, options?: ReadonlyIntersectionOptions): boolean;
 }
 
 export class NFA implements ReadonlyNFA, FiniteAutomaton {
@@ -363,11 +366,24 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		return faToRegex(toTransIter(this.nodes));
 	}
 
-	isDisjointWith(other: ReadonlyNFA): boolean {
-		for (const _ of NFA.intersectionWordSets(this, other)) {
-			return false;
+	isDisjointWith(other: ReadonlyNFA, options?: ReadonlyIntersectionOptions): boolean {
+		checkOptionsCompatibility(this.options, other.options);
+
+		const approximation = isDisjointApproximation(this.nodes, other.nodes, this.options.maxCharacter);
+		if (approximation !== null) {
+			return approximation;
 		}
-		return true;
+
+		const { nodeList, addOutgoing, isFinal } = createNFAIntersectionEnv(this, other, options);
+
+		return !faCanReachFinal({
+			initial: nodeList.initial,
+			getOut: n => {
+				addOutgoing(n);
+				return n.out.keys();
+			},
+			isFinal
+		});
 	}
 
 	/**
@@ -375,9 +391,10 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	 *
 	 * @param left
 	 * @param right
+	 * @param options
 	 */
-	static intersect(left: ReadonlyNFA, right: ReadonlyNFA): NFA {
-		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
+	static intersect(left: ReadonlyNFA, right: ReadonlyNFA, options?: ReadonlyIntersectionOptions): NFA {
+		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right, options);
 
 		// By recursively creating and following outgoing nodes, we only create the part of the intersection NFA which
 		// is connected to the initial state. This means that we do not create nodes which will be removed either way
@@ -409,8 +426,12 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	 * @param left
 	 * @param right
 	 */
-	static intersectionWordSets(left: ReadonlyNFA, right: ReadonlyNFA): Iterable<CharSet[]> {
-		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right);
+	static intersectionWordSets(
+		left: ReadonlyNFA,
+		right: ReadonlyNFA,
+		options?: ReadonlyIntersectionOptions
+	): Iterable<CharSet[]> {
+		const { nodeList, addOutgoing, isFinal } = createNFAIntersectionEnv(left, right, options);
 
 		return faIterateWordSets({
 			initial: nodeList.initial,
@@ -418,7 +439,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 				addOutgoing(n);
 				return n.out;
 			},
-			isFinal: n => nodeList.finals.has(n)
+			isFinal
 		});
 	}
 
@@ -1302,6 +1323,7 @@ function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 interface IntersectionEnv {
 	nodeList: NodeList;
 	addOutgoing(from: NFANode): void;
+	isFinal(node: NFANode): boolean;
 }
 
 /**
@@ -1314,8 +1336,14 @@ interface IntersectionEnv {
  * @param left
  * @param right
  */
-function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): IntersectionEnv {
+function createNFAIntersectionEnv(
+	left: ReadonlyNFA,
+	right: ReadonlyNFA,
+	options: undefined | ReadonlyIntersectionOptions
+): IntersectionEnv {
 	checkOptionsCompatibility(left.options, right.options);
+
+	const maxNodes = options?.maxNodes ?? Infinity;
 
 	const nodeList = new NodeList();
 
@@ -1323,13 +1351,30 @@ function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): Inters
 	const leftNodes = [...left.nodes];
 	const rightNodes = [...right.nodes];
 
+	// the set of final nodes
+	const leftFinals = left.nodes.finals;
+	const rightFinals = right.nodes.finals;
+
 	// node pair translation
 	const leftIndexMap = createIndexMap(leftNodes);
 	const rightIndexMap = createIndexMap(rightNodes);
 	const indexBackTranslatorMap = new Map<NFANode, number>();
+	let createdNodes = 0;
 	const indexTranslator = cachedFunc<number, NFANode>(index => {
+		if (createdNodes > maxNodes) {
+			throw new TooManyNodesError();
+		}
+		createdNodes++;
+
 		const node = nodeList.createNode();
 		indexBackTranslatorMap.set(node, index);
+
+		const rightIndex = index % rightIndexMap.size;
+		const leftIndex = Math.floor(index / rightIndexMap.size);
+		if (leftFinals.has(leftNodes[leftIndex]) && rightFinals.has(rightNodes[rightIndex])) {
+			nodeList.finals.add(node);
+		}
+
 		return node;
 	});
 	indexTranslator.cache.set(0, nodeList.initial);
@@ -1359,23 +1404,6 @@ function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): Inters
 		return [leftNodes[leftIndex], rightNodes[rightIndex]];
 	}
 
-	// add finals
-	for (const leftFinal of left.nodes.finals) {
-		const leftIndex = leftIndexMap.get(leftFinal);
-		if (leftIndex === undefined) {
-			// skip final states that are not reachable from the initial state
-			continue;
-		}
-		for (const rightFinal of right.nodes.finals) {
-			const rightIndex = rightIndexMap.get(rightFinal);
-			if (rightIndex === undefined) {
-				// skip final states that are not reachable from the initial state
-				continue;
-			}
-			nodeList.finals.add(indexTranslator(leftIndex * rightIndexMap.size + rightIndex));
-		}
-	}
-
 	// charset intersection cache
 	const intersectionCharSets: CharSet[] = [];
 	leftNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
@@ -1398,7 +1426,12 @@ function createNFAIntersectionEnv(left: ReadonlyNFA, right: ReadonlyNFA): Inters
 		}
 	}
 
-	return { nodeList, addOutgoing };
+	function isFinal(node: NFANode): boolean {
+		const [leftNode, rightNode] = translateBack(node);
+		return leftFinals.has(leftNode) && rightFinals.has(rightNode);
+	}
+
+	return { nodeList, addOutgoing, isFinal };
 }
 /**
  * Creates a function which can intersect any two char sets of the given set of character sets.
@@ -1485,4 +1518,50 @@ function createCharSetIntersectFn(charSets: Iterable<CharSet>): (a: CharSet, b: 
 
 		return result;
 	}
+}
+
+function outCharsOfInitial(nodes: ReadonlyNodeList, maxCharacter: number): { union: CharSet; final: CharSet } {
+	let union: CharSet | undefined = undefined;
+	let final: CharSet | undefined = undefined;
+
+	nodes.initial.out.forEach((chars, out) => {
+		union = union ? union.union(chars) : chars;
+		if (nodes.finals.has(out)) {
+			final = final ? final.union(chars) : chars;
+		}
+	});
+
+	return {
+		union: union ?? CharSet.empty(maxCharacter),
+		final: final ?? CharSet.empty(maxCharacter),
+	};
+}
+function isDisjointApproximation(
+	left: ReadonlyNodeList,
+	right: ReadonlyNodeList,
+	maxCharacter: number
+): boolean | null {
+	if (left.finals.size === 0 || right.finals.size === 0) {
+		// left or right is the empty language
+		return true;
+	}
+	if (left.finals.has(left.initial) && right.finals.has(right.initial)) {
+		// both left and right contain the empty word
+		return false;
+	}
+
+	const leftChars = outCharsOfInitial(left, maxCharacter);
+	const rightChars = outCharsOfInitial(right, maxCharacter);
+
+	if (!leftChars.final.isDisjointWith(rightChars.final)) {
+		// left and right share at least one single-character word
+		return false;
+	}
+	if (leftChars.union.isDisjointWith(rightChars.union)) {
+		// the first characters of all word of left and the first characters of all word from right are always different
+		return true;
+	}
+
+	// couldn't decide by the first character
+	return null;
 }
