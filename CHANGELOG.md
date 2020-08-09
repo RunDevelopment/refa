@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 (2020-08-09)
+
+### Fixed
+- The prefix and suffix optimization removed final states from the graph but not from the set of final states.
+- The intersection algorithm can now handle final states not reachable from the initial states of either NFAs.
+
+
 ## 0.3.0 (2020-07-11)
 
 ### Breaking changes
