@@ -69,7 +69,6 @@ export const LINE_TERMINATOR: readonly CharRange[] = [
 	{ min: 0x0d, max: 0x0d }, // \r
 	{ min: 0x2028, max: 0x2029 },
 ];
-
 export const WORD_IU: readonly CharRange[] =
 	withCaseVaryingCharacters(CharSet.empty(0x10FFFF).union(WORD), UnicodeCaseFolding, UnicodeCaseVarying).ranges;
 
