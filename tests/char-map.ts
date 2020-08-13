@@ -122,6 +122,31 @@ describe("CharMap", function () {
 
 	});
 
+	it("merge adjacent", function () {
+		const map = new CharMap<number>();
+
+		map.set(1, 0);
+		map.set(2, 0);
+
+		assertEqual(map, [
+			[{ min: 1, max: 2 }, 0],
+		]);
+
+		map.setEvery({ min: 4, max: 9 }, 0);
+
+		assertEqual(map, [
+			[{ min: 1, max: 2 }, 0],
+			[{ min: 4, max: 9 }, 0],
+		]);
+
+		map.set(3, 0);
+
+		assertEqual(map, [
+			[{ min: 1, max: 9 }, 0],
+		]);
+
+	});
+
 
 	function assertEqual<T>(charMap: CharMap<T>, expected: Iterable<[CharRange, T]>): void {
 		assert.deepEqual([...charMap], [...expected]);

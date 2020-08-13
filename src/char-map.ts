@@ -19,26 +19,20 @@ function checkChar(char: number): void {
 		throw new TypeError(`The given character has to be a non-negative integer. (char=${char})`);
 	}
 }
+function strictEqualFn<T>(a: T, b: T): boolean {
+	return a === b;
+}
 
 
-export class CharMap<T> implements Iterable<[CharRange, T]> {
-
-	private tree: AVLTree<T> = new AVLTree<T>();
-
-	get isEmpty(): boolean {
-		return this.tree.root === null;
-	}
+export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
+	isEmpty: boolean;
 
 	/**
 	 * Returns whether the given character is a key in the map.
 	 *
 	 * @param char
 	 */
-	has(char: number): boolean {
-		if (!Number.isFinite(char)) return false;
-		return this.tree.nodeOf(char) !== null;
-	}
-
+	has(char: number): boolean;
 	/**
 	 * Returns whether every character in the given range is a key in the map.
 	 *
@@ -46,6 +40,60 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 	 *
 	 * @param chars
 	 */
+	hasEvery(chars: CharRange): boolean;
+	/**
+	 * Returns whether some character in the given range is a key in the map.
+	 *
+	 * This is equivalent to: `[...chars].some(char => this.has(char))`.
+	 *
+	 * @param chars
+	 */
+	hasSome(chars: CharRange): boolean;
+
+	/**
+	 * Returns the value associated with the given character of `undefined` if the character is not key in the map.
+	 *
+	 * @param char
+	 */
+	get(char: number): T | undefined;
+
+	/**
+	 * Invokes the given callback for every item of the character map.
+	 *
+	 * This method is implemented more efficiently than other iterator based methods, so chose `forEach` where every
+	 * possible.
+	 *
+	 * @param callback
+	 */
+	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void;
+	keys(): Iterable<CharRange>;
+	values(): Iterable<T>;
+	entries(range?: CharRange): Iterable<[CharRange, T]>;
+}
+
+/**
+ * A map from characters to generic values.
+ *
+ * The map guarantees that there are no adjacent character ranges that map to the equal values, will always be iterated
+ * as one character range. The equality of values is given by a custom equal function or JavaScripts strict equality
+ * operator (`===`).
+ */
+export class CharMap<T> implements ReadonlyCharMap<T> {
+
+	private tree: AVLTree<T>;
+
+	constructor(equalFn?: (a: T, b: T) => boolean) {
+		this.tree = new AVLTree<T>(equalFn || strictEqualFn);
+	}
+
+	get isEmpty(): boolean {
+		return this.tree.root === null;
+	}
+
+	has(char: number): boolean {
+		if (!Number.isFinite(char)) return false;
+		return this.tree.nodeOf(char) !== null;
+	}
 	hasEvery(chars: CharRange): boolean {
 		checkRange(chars);
 		const { min, max } = chars;
@@ -71,24 +119,11 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 
 		return true;
 	}
-
-	/**
-	 * Returns whether some character in the given range is a key in the map.
-	 *
-	 * This is equivalent to: `[...chars].some(char => this.has(char))`.
-	 *
-	 * @param chars
-	 */
 	hasSome(chars: CharRange): boolean {
 		checkRange(chars);
 		return this.tree.nodeInRange(chars) !== null;
 	}
 
-	/**
-	 * Returns the value associated with the given character of `undefined` if the character is not key in the map.
-	 *
-	 * @param char
-	 */
 	get(char: number): T | undefined {
 		if (!Number.isFinite(char)) return undefined; // char is NaN, Inf, or -Inf
 		const node = this.tree.nodeOf(char);
@@ -132,25 +167,21 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 		this.tree.deleteRange(range);
 	}
 
+	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
+		this.tree.map((r, v) => {
+			return mapFn(v, r, this);
+		});
+	}
 	mapRange(
 		range: CharRange,
-		mapFn: (value: T | undefined, chars: CharRange, map: CharMap<T>) => T | undefined
+		mapFn: (value: T | undefined, chars: CharRange, map: ReadonlyCharMap<T>) => T | undefined
 	): void {
 		this.tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});
 	}
 
-
-	/**
-	 * Invokes the given callback for every item of the character map.
-	 *
-	 * This method is implemented more efficiently than other iterator based methods, so chose `forEach` where every
-	 * possible.
-	 *
-	 * @param callback
-	 */
-	forEach(callback: (value: T, chars: CharRange, map: CharMap<T>) => void): void {
+	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void {
 		const rec = (node: Node<T> | null): void => {
 			if (node) {
 				rec(node.left);
@@ -158,7 +189,6 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 				rec(node.right);
 			}
 		};
-
 		rec(this.tree.root);
 	}
 	*keys(): IterableIterator<CharRange> {
@@ -210,7 +240,6 @@ export class CharMap<T> implements Iterable<[CharRange, T]> {
 	[Symbol.iterator](): IterableIterator<[CharRange, T]> {
 		return this.entries();
 	}
-
 }
 
 
@@ -223,6 +252,16 @@ interface Node<T> {
 	parent: Node<T> | null;
 	left: Node<T> | null;
 	right: Node<T> | null;
+}
+interface DetachedNode<T> {
+	key: CharRange;
+	value: T;
+
+	balance: number;
+	height: number;
+	parent: null;
+	left: null;
+	right: null;
 }
 
 /**
@@ -378,7 +417,6 @@ function rotateLeft<T>(a: Node<T>): Node<T> {
 
 	return b;
 }
-
 function rotateRight<T>(a: Node<T>): Node<T> {
 	const b: Node<T> = a.left!;
 	b.parent = a.parent;
@@ -404,30 +442,42 @@ function rotateRight<T>(a: Node<T>): Node<T> {
 
 	return b;
 }
-
 function rotateLeftThenRight<T>(n: Node<T>): Node<T> {
 	n.left = rotateLeft(n.left!);
 	return rotateRight(n);
 }
-
 function rotateRightThenLeft<T>(n: Node<T>): Node<T> {
 	n.right = rotateRight(n.right!);
 	return rotateLeft(n);
 }
-
 function setBalance<T>(n: Node<T>): void {
 	n.height = 1 + Math.max(height(n.left), height(n.right));
 	n.balance = height(n.right) - height(n.left);
 }
-
 function height<T>(node: Node<T> | null): number {
 	return node === null ? 0 : node.height;
+}
+
+function areAdjacent<T>(left: Node<T>, right: Node<T>): boolean {
+	return left.key.max + 1 === right.key.min;
+}
+function areAdjacentRanges(left: CharRange, right: CharRange): boolean {
+	return left.max + 1 === right.min;
+}
+function unionAdjacentRanges(left: CharRange, right: CharRange): CharRange {
+	return { min: left.min, max: right.max };
 }
 
 
 class AVLTree<T> {
 
 	root: Node<T> | null = null;
+
+	constructor(public readonly equalFn: (a: T, b: T) => boolean) { }
+
+	isDetached(node: Node<T>): node is DetachedNode<T> {
+		return node !== this.root && node.parent === null && node.left === null && node.right === null;
+	}
 
 	/**
 	 * Returns the node which contains the given character or `null` if no such node exists.
@@ -491,6 +541,45 @@ class AVLTree<T> {
 	}
 
 
+	private mergeAdjacentLeft(key: CharRange, rightNode: Node<T>): void {
+		if (!areAdjacentRanges(key, rightNode.key)) {
+			throw new Error("The ranges are not adjacent");
+		}
+
+		let min = key.min;
+		const leftN = leftNeighbor(rightNode);
+		if (leftN) {
+			if (leftN.key.max >= key.min) {
+				throw new Error("The inserted key has to be disjoint with all other keys.");
+			}
+			if (areAdjacentRanges(leftN.key, key) && this.equalFn(leftN.value, rightNode.value)) {
+				min = leftN.key.min;
+				this.detachNode(leftN);
+			}
+		}
+
+		rightNode.key = { min, max: rightNode.key.max };
+	}
+	private mergeAdjacentRight(leftNode: Node<T>, key: CharRange): void {
+		if (!areAdjacentRanges(leftNode.key, key)) {
+			throw new Error("The ranges are not adjacent");
+		}
+
+		let max = key.max;
+		const rightN = rightNeighbor(leftNode);
+		if (rightN) {
+			if (rightN.key.min <= key.max) {
+				throw new Error("The inserted key has to be disjoint with all other keys.");
+			}
+			if (areAdjacentRanges(key, rightN.key) && this.equalFn(leftNode.value, rightN.value)) {
+				max = rightN.key.max;
+				this.detachNode(rightN);
+			}
+		}
+
+		leftNode.key = { min: leftNode.key.min, max };
+	}
+
 	insert(key: CharRange, value: T): void {
 		if (this.root == null) {
 			this.root = {
@@ -501,34 +590,52 @@ class AVLTree<T> {
 			return;
 		}
 
-		const { min: kMin, max: kMax } = key;
+		const { min: keyMin, max: keyMax } = key;
 		let parent: Node<T> = this.root;
 
 		while (true) {
-			if (parent.key.max < kMin) {
+			if (parent.key.max < keyMin) {
 				// [parent] [key]
-				if (parent.right) {
+				if (areAdjacentRanges(parent.key, key) && this.equalFn(parent.value, value)) {
+					this.mergeAdjacentRight(parent, key);
+					break;
+				} else if (parent.right) {
 					parent = parent.right;
 				} else {
-					parent.right = {
-						key, value, parent,
-						balance: 0, height: parent.height + 1,
-						left: null, right: null
-					};
-					this.rebalance(parent);
+					const rightN = rightNeighbor(parent);
+					if (rightN && areAdjacentRanges(key, rightN.key) && this.equalFn(value, rightN.value)) {
+						// merge with right neighbor
+						rightN.key = unionAdjacentRanges(key, rightN.key);
+					} else {
+						parent.right = {
+							key, value, parent,
+							balance: 0, height: parent.height + 1,
+							left: null, right: null
+						};
+						this.rebalance(parent);
+					}
 					break;
 				}
-			} else if (kMax < parent.key.min) {
+			} else if (keyMax < parent.key.min) {
 				// [key] [parent]
-				if (parent.left) {
+				if (areAdjacentRanges(key, parent.key) && this.equalFn(value, parent.value)) {
+					this.mergeAdjacentLeft(key, parent);
+					break;
+				} else if (parent.left) {
 					parent = parent.left;
 				} else {
-					parent.left = {
-						key, value, parent,
-						balance: 0, height: parent.height + 1,
-						left: null, right: null
-					};
-					this.rebalance(parent);
+					const leftN = leftNeighbor(parent);
+					if (leftN && areAdjacentRanges(leftN.key, key) && this.equalFn(leftN.value, value)) {
+						// merge with left neighbor
+						leftN.key = unionAdjacentRanges(leftN.key, key);
+					} else {
+						parent.left = {
+							key, value, parent,
+							balance: 0, height: parent.height + 1,
+							left: null, right: null
+						};
+						this.rebalance(parent);
+					}
 					break;
 				}
 			} else {
@@ -537,7 +644,61 @@ class AVLTree<T> {
 		}
 	}
 
-	deleteNode(node: Node<T>): void {
+	/**
+	 * This will replace the given old node with the given new node.
+	 *
+	 * The old node will be completely detached from the tree meaning that it will have neither children nor a parent
+	 * after this operation. The new node is assumed to be detached from the tree.
+	 *
+	 * This will not check whether the tree is valid afterwards.
+	 *
+	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
+	 * `value` values of all nodes in the tree will be the same after this operation as before.
+	 *
+	 * @param oldNode
+	 * @param newNode
+	 * @returns The old node but casted to the `DetachedNode` type.
+	 */
+	private dangerouslyReplaceNode(oldNode: Node<T>, newNode: DetachedNode<T>): DetachedNode<T> {
+		const _new = newNode as Node<T>;
+
+		const parent = oldNode.parent;
+		if (!parent) {
+			if (this.root === oldNode) {
+				_new.left = oldNode.left;
+				_new.right = oldNode.right;
+				oldNode.left = null;
+				oldNode.right = null;
+				this.root = _new;
+			} else {
+				throw new Error("The old node cannot be a detached node.");
+			}
+		} else {
+
+			_new.left = oldNode.left;
+			_new.right = oldNode.right;
+			_new.parent = parent;
+			oldNode.left = null;
+			oldNode.right = null;
+			oldNode.parent = null;
+			if (parent.left === oldNode) {
+				parent.left = newNode;
+			} else /* if (parent.right === oldNode) */ {
+				parent.right = newNode;
+			}
+		}
+
+		return oldNode as DetachedNode<T>;
+	}
+	/**
+	 * Detached the given node from the tree.
+	 *
+	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
+	 * `value` values of all nodes in the tree will be the same after this operation as before.
+	 *
+	 * @param node
+	 */
+	detachNode(node: Node<T>): DetachedNode<T> {
 		if (node.left == null && node.right == null) {
 			if (node.parent == null) {
 				this.root = null;
@@ -550,13 +711,12 @@ class AVLTree<T> {
 				}
 				this.rebalance(parent);
 			}
-			return;
+			node.parent = null;
+			return node as DetachedNode<T>;
 		}
 
 		const child = node.left != null ? rightmostNode(node.left) : leftmostNode(node.right!);
-		node.key = child.key;
-		node.value = child.value;
-		this.deleteNode(child);
+		return this.dangerouslyReplaceNode(node, this.detachNode(child));
 	}
 
 	deleteCharacter(char: number): boolean {
@@ -571,15 +731,15 @@ class AVLTree<T> {
 					node.key = { min: node.key.min, max: char - 1 };
 					this.insert({ min: char + 1, max: max }, node.value);
 				} else {
-					// [min char/max]
+					// [min char==max]
 					node.key = { min: node.key.min, max: node.key.max - 1 };
 				}
 			} else if (max != char) {
-				// [min/char max]
+				// [min==char max]
 				node.key = { min: node.key.min - 1, max: node.key.max };
 			} else {
 				// min == max == char
-				this.deleteNode(node);
+				this.detachNode(node);
 			}
 		}
 		return node !== null;
@@ -603,7 +763,7 @@ class AVLTree<T> {
 					return;
 				} else {
 					// The left node has to be removed
-					this.deleteNode(leftEdge);
+					this.detachNode(leftEdge);
 					if (max == rMax) {
 						return; // we got lucky and found an exact match, so we're done here
 					}
@@ -632,7 +792,7 @@ class AVLTree<T> {
 
 			if (min == rMin && max == rMax) {
 				// we got lucky and found an exact match
-				this.deleteNode(leftEdge);
+				this.detachNode(leftEdge);
 				return;
 			}
 		}
@@ -649,7 +809,7 @@ class AVLTree<T> {
 				rightEdge.key = { min: rMax + 1, max: rightEdge.key.max };
 			} else /* if (max == rMax) */ {
 				// [rMin [min rMax/max]]
-				this.deleteNode(rightEdge);
+				this.detachNode(rightEdge);
 			}
 		}
 
@@ -659,119 +819,216 @@ class AVLTree<T> {
 		while (true) {
 			const node = this.nodeInRange(range);
 			if (node) {
-				this.deleteNode(node);
+				this.detachNode(node);
 			} else {
 				break;
 			}
 		}
 	}
 
+	/**
+	 * Sets the value of the given node.
+	 *
+	 * This operation may detach some other nodes from the tree.
+	 *
+	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes except for the given one.
+	 *
+	 * @param node
+	 * @param newValue
+	 */
+	setNode(node: Node<T>, newValue: T): void {
+		if (this.equalFn(node.value, newValue)) {
+			// trivial
+			return;
+		}
+
+		node.value = newValue;
+
+		const leftN = leftNeighbor(node);
+		if (leftN && areAdjacent(leftN, node) && this.equalFn(leftN.value, newValue)) {
+			node.key = unionAdjacentRanges(leftN.key, node.key);
+			this.detachNode(leftN);
+		}
+
+		const rightN = leftNeighbor(node);
+		if (rightN && areAdjacent(node, rightN) && this.equalFn(newValue, rightN.value)) {
+			node.key = unionAdjacentRanges(node.key, rightN.key);
+			this.detachNode(rightN);
+		}
+	}
+
+	map(mapFn: (range: CharRange, value: T) => T): void {
+		if (!this.root) {
+			return;
+		}
+
+		let prevNode = leftmostNode(this.root);
+		prevNode.value = mapFn(prevNode.key, prevNode.value);
+
+		let node: Node<T> | null;
+		while ((node = rightNeighbor(prevNode))) {
+			node.value = mapFn(node.key, node.value);
+
+			if (areAdjacent(prevNode, node) && this.equalFn(prevNode.value, node.value)) {
+				node.key = unionAdjacentRanges(prevNode.key, node.key);
+				this.detachNode(prevNode);
+			}
+
+			prevNode = node;
+		}
+	}
+
+	private applyModifications(mods: [Node<T>, T][]): void {
+		if (mods.length === 0) {
+			return;
+		} else if (mods.length === 1) {
+			this.setNode(mods[0][0], mods[0][1]);
+		}
+
+		mods.sort((a, b) => a[0].key.min - b[0].key.min);
+
+		for (let i = 0, l = mods.length; i < l; i++) {
+			const [node, newValue] = mods[i];
+			node.value = newValue;
+
+			const prev = leftNeighbor(node);
+			if (prev && areAdjacent(prev, node) && this.equalFn(prev.value, newValue)) {
+				node.key = unionAdjacentRanges(prev.key, node.key);
+				this.detachNode(prev);
+			}
+
+			const next = rightNeighbor(node);
+			if (!(i + 1 < l && next === mods[i + 1][0])) {
+				// the right neighbor isn't the next modification
+				if (next && areAdjacent(node, next) && this.equalFn(newValue, next.value)) {
+					node.key = unionAdjacentRanges(node.key, next.key);
+					this.detachNode(next);
+				}
+			}
+		}
+	}
 	mapWithGaps(range: CharRange, mapFn: (range: CharRange, value: T | undefined) => T | undefined): void {
 		/**
 		 * This function only makes modifications to the tree after the given map function has been called for every
 		 * node and gap.
 		 */
 
-		const del: number[] = [];
-		const mod: [number, T][] = [];
-		const ins: [CharRange, T][] = [];
-
-		function simpleGap(r: CharRange): void {
-			if (r.min < range.min || r.max > range.max) {
-				throw new RangeError("The range of the given gap is not within the mapping range.");
-			}
-
-			const mapRes = mapFn(r, undefined);
-			if (mapRes !== undefined) {
-				ins.push([r, mapRes]);
-			}
-		}
-		function simpleNode(node: Node<T>): void {
-			if (node.key.min < range.min || node.key.max > range.max) {
-				throw new RangeError("The range of the given node is not within the mapping range.");
-			}
-
-			const mapRes = mapFn(node.key, node.value);
-			if (mapRes === undefined) {
-				del.push(node.key.min);
-			} else if (mapRes !== node.value) {
-				mod.push([node.key.min, mapRes]);
-			}
-		}
-
 		const leftmost = this.leftmostNodeInRange(range);
 
 		if (leftmost === null) {
 			// the trivial case of the entire given range is empty
 			const mapRes = mapFn(range, undefined);
-			if (mapRes !== undefined) this.insert(range, mapRes);
-
-			return;
-		}
-		if (leftmost.key.min <= range.min && range.max <= leftmost.key.max) {
-			// [leftmost.min ... [range] ... leftmost.max]
-			const mapRes = mapFn(range, leftmost.value);
-			const oldRange = leftmost.key;
-			const oldValue = leftmost.value;
-
-			if (mapRes === oldValue) return; // nothing changed
-
-			// left of range
-			if (oldRange.min < range.min) leftmost.key = { min: oldRange.min, max: range.min - 1 };
-			else this.deleteNode(leftmost);
-			// range
-			if (mapRes !== undefined) this.insert(range, mapRes);
-			// right of range
-			if (range.max < oldRange.max) this.insert({ min: range.max + 1, max: oldRange.max }, oldValue);
-
-			return;
-		}
-
-		const rightmost = this.rightmostNodeInRange(range);
-
-
-		if (range.min < leftmost.key.min) {
-			// there is a gap between the leftmost node and the start of the given range
-			simpleGap({ min: range.min, max: leftmost.key.min - 1 });
-		} else if (leftmost.key.min < range.min) {
-			// the leftmost node has to be split
-			ins.push([{ min: leftmost.key.min, max: range.min - 1 }, leftmost.value]);
-			leftmost.key = { min: range.min, max: leftmost.key.max };
-		}
-
-		let currentNode: Node<T> = leftmost;
-		while (currentNode !== rightmost) {
-			// the node itself
-			simpleNode(currentNode);
-
-			const nextNode = rightNeighbor(currentNode)!;
-			// the gap between the current node and the next node
-			if (currentNode.key.max + 1 < nextNode.key.min) {
-				simpleGap({ min: currentNode.key.max + 1, max: nextNode.key.min - 1 });
+			if (mapRes !== undefined) {
+				this.insert(range, mapRes);
 			}
 
-			currentNode = nextNode;
-		}
+		} else if (leftmost.key.min <= range.min && range.max <= leftmost.key.max) {
+			// [leftmost.min ... [range] ... leftmost.max]
+			const oldRange = leftmost.key;
+			const oldValue = leftmost.value;
+			const mapRes = mapFn(range, oldValue);
 
-		if (rightmost.key.max < range.max) {
-			// there's a gap after the rightmost node
-			simpleNode(rightmost);
-			simpleGap({ min: rightmost.key.max + 1, max: range.max });
-		} else if (rightmost.key.max > range.max) {
-			// the rightmost node goes beyond the given range
-			ins.push([{ min: range.max + 1, max: rightmost.key.max }, rightmost.value]);
-			rightmost.key = { min: rightmost.key.min, max: range.max };
-			simpleNode(rightmost);
+			if (mapRes === undefined) {
+				this.deleteRange(range);
+			} else if (this.equalFn(mapRes, oldValue)) {
+				// nothing changed
+			} else if (oldRange.min === range.min && range.max === oldRange.max) {
+				// range === leftmost.key
+				leftmost.value = mapRes;
+			} else if (oldRange.min < range.min) {
+				leftmost.key = { min: oldRange.min, max: range.min - 1 };
+				this.insert(range, mapRes);
+				if (range.max < oldRange.max) {
+					this.insert({ min: range.max + 1, max: oldRange.max }, oldValue);
+				}
+			} else /* if (oldRange.min === range.min && range.max < oldRange.max) */ {
+				leftmost.key = { min: range.max + 1, max: oldRange.max };
+				this.insert(range, mapRes);
+			}
+
 		} else {
-			// the rightmost node ends perfectly with the given range
-			simpleNode(rightmost);
-		}
+			const del: Node<T>[] = [];
+			const mod: [Node<T>, T][] = [];
+			const ins: [CharRange, T][] = [];
 
-		del.forEach(n => this.deleteNode(this.nodeOf(n)!));
-		mod.forEach(([char, v]) => this.nodeOf(char)!.value = v);
-		ins.forEach(([range, v]) => this.insert(range, v));
+			const simpleGap = (r: CharRange): void => {
+				if (r.min < range.min || r.max > range.max) {
+					throw new RangeError("The range of the given gap is not within the mapping range.");
+				}
+
+				const mapRes = mapFn(r, undefined);
+				if (mapRes !== undefined) {
+					ins.push([r, mapRes]);
+				}
+			};
+			const simpleNode = (node: Node<T>): void => {
+				if (node.key.min < range.min || node.key.max > range.max) {
+					throw new RangeError("The range of the given node is not within the mapping range.");
+				}
+
+				const mapRes = mapFn(node.key, node.value);
+				if (mapRes === undefined) {
+					del.push(node);
+				} else {
+					mod.push([node, mapRes]);
+				}
+			};
+
+			const rightmost = this.rightmostNodeInRange(range);
+
+
+			if (range.min < leftmost.key.min) {
+				// there is a gap between the leftmost node and the start of the given range
+				simpleGap({ min: range.min, max: leftmost.key.min - 1 });
+			} else if (leftmost.key.min < range.min) {
+				// the leftmost node has to be split
+				ins.push([{ min: leftmost.key.min, max: range.min - 1 }, leftmost.value]);
+				leftmost.key = { min: range.min, max: leftmost.key.max };
+			}
+
+			let currentNode: Node<T> = leftmost;
+			while (currentNode !== rightmost) {
+				// the node itself
+				simpleNode(currentNode);
+
+				const nextNode = rightNeighbor(currentNode)!;
+				// the gap between the current node and the next node
+				if (currentNode.key.max + 1 < nextNode.key.min) {
+					simpleGap({ min: currentNode.key.max + 1, max: nextNode.key.min - 1 });
+				}
+
+				currentNode = nextNode;
+			}
+
+			if (rightmost.key.max < range.max) {
+				// there's a gap after the rightmost node
+				simpleNode(rightmost);
+				simpleGap({ min: rightmost.key.max + 1, max: range.max });
+			} else if (rightmost.key.max > range.max) {
+				// the rightmost node goes beyond the given range
+				ins.push([{ min: range.max + 1, max: rightmost.key.max }, rightmost.value]);
+				rightmost.key = { min: rightmost.key.min, max: range.max };
+				simpleNode(rightmost);
+			} else {
+				// the rightmost node ends perfectly with the given range
+				simpleNode(rightmost);
+			}
+
+			// delete, modify, and insert
+			del.forEach(n => this.detachNode(n));
+			this.applyModifications(mod);
+			ins.forEach(([range, v]) => this.insert(range, v));
+		}
 	}
 
+	/**
+	 * Re-balances the given node.
+	 *
+	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
+	 * `value` values of all nodes in the tree will be the same after this operation as before.
+	 *
+	 * @param n
+	 */
 	private rebalance(n: Node<T>): void {
 		setBalance(n);
 

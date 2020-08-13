@@ -1,5 +1,5 @@
 import { CharRange, CharSet } from "./char-set";
-import { CharMap } from "./char-map";
+import { ReadonlyCharMap } from "./char-map";
 
 
 /**
@@ -30,16 +30,16 @@ export function* runEncodeCharacters(chars: Iterable<number>): Iterable<CharRang
 }
 
 
-export function invertCharMap<T>(charMap: CharMap<T>, maximum: number): Map<T, CharSet> {
+export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: number): Map<T, CharSet> {
 	const rangeMap = new Map<T, CharRange[]>();
 
-	for (const [range, value] of charMap) {
+	charMap.forEach((value, range) => {
 		let array = rangeMap.get(value);
 		if (array === undefined) {
 			rangeMap.set(value, array = []);
 		}
 		array.push(range);
-	}
+	});
 
 	const map = new Map<T, CharSet>();
 	for (const [value, ranges] of rangeMap) {
