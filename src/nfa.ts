@@ -5,7 +5,7 @@ import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError } from 
 import { faIterateStates, FAIterator, faCanReachFinal } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
 import { invertCharMap } from "./char-util";
-import type { DFA, DFANode } from "./dfa";
+import type { ReadonlyDFA, ReadonlyDFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
 
 
@@ -643,13 +643,13 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		return new NFA(nodeList, options);
 	}
 
-	static fromDFA(dfa: DFA): NFA {
+	static fromDFA(dfa: ReadonlyDFA): NFA {
 		const options: NFAOptions = {
 			maxCharacter: dfa.options.maxCharacter
 		};
 		const nodeList = new NodeList();
 
-		const translate = cachedFunc<DFANode, NFANode>(() => nodeList.createNode());
+		const translate = cachedFunc<ReadonlyDFANode, NFANode>(() => nodeList.createNode());
 		translate.cache.set(dfa.nodes.initial, nodeList.initial);
 
 		DFS(dfa.nodes.initial, dfaNode => {

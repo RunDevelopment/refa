@@ -33,7 +33,7 @@ __At this point in time, the library is still in development and partially incom
 - DFA specific operations
 
   * Intersection with other DFA (_not implemented yet_)
-  * DFA minification (_requires testing and further optimization_)
+  * DFA minimization
   * Complement (_not implemented yet_)
   * Structural equality
 

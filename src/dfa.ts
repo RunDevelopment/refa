@@ -1,23 +1,32 @@
 import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } from "./util";
 import { FiniteAutomaton } from "./finite-automaton";
-import { CharMap } from "./char-map";
-import { CharRange, CharSet, optimizeRanges } from "./char-set";
-import { invertCharMap } from "./char-util";
+import { CharMap, ReadonlyCharMap } from "./char-map";
+import { CharRange, CharSet } from "./char-set";
+import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
 import { FAIterator } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
-import type { NFA, NFANode } from "./nfa";
+import type { ReadonlyNFA, ReadonlyNFANode } from "./nfa";
 import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
 
 
-export interface DFANode {
+export interface ReadonlyDFANode {
+	readonly id: number;
+	readonly list: ReadonlyNodeList;
+	readonly out: ReadonlyCharMap<ReadonlyDFANode>;
+}
+export interface DFANode extends ReadonlyDFANode {
 	readonly id: number;
 	readonly list: NodeList;
 	readonly out: CharMap<DFANode>;
 }
 
+interface ReadonlyNodeList extends Iterable<ReadonlyDFANode> {
+	readonly initial: ReadonlyDFANode;
+	readonly finals: ReadonlySet<ReadonlyDFANode>;
+}
 let nodeListCounter = 0;
-class NodeList {
+class NodeList implements ReadonlyNodeList {
 
 	// variables for checks and debugging
 	private readonly id: number;
@@ -40,7 +49,7 @@ class NodeList {
 		return node;
 	}
 
-	linkNodes(from: DFANode, to: DFANode, characters: CharRange | number): void {
+	linkNodes(from: DFANode, to: DFANode, characters: CharSet | CharRange | number): void {
 		if (from.list !== to.list) {
 			throw new Error("You can't link nodes from different node lists.");
 		}
@@ -50,6 +59,10 @@ class NodeList {
 
 		if (typeof characters === "number") {
 			from.out.set(characters, to);
+		} else if (characters instanceof CharSet) {
+			for (const range of characters.ranges) {
+				from.out.setEvery(range, to);
+			}
 		} else {
 			from.out.setEvery(characters, to);
 		}
@@ -68,6 +81,63 @@ class NodeList {
 		}
 	}
 
+	removeUnreachable(): void {
+		/**
+		 * Remove all non-initial states which are
+		 *
+		 * 1) Not reachable from the initial state.
+		 * 2) Cannot reach a final state.
+		 *
+		 * (For condition 1, we just have to check the final states.)
+		 */
+
+		const alive = new Set<DFANode>();
+
+		const walked = new Set<DFANode>();
+		const walk = (node: DFANode): void => {
+			if (walked.has(node)) return;
+			walked.add(node);
+
+			// walk all out node
+			const out = new Set<DFANode>();
+			node.out.forEach(node => out.add(node));
+			out.forEach(n => walk(n));
+
+			if (this.finals.has(node)) {
+				// if it's final, it satisfies both conditions
+				alive.add(node);
+			} else {
+				// if at least one out node is alive, this node it too
+				for (const outNode of out) {
+					if (alive.has(outNode)) {
+						alive.add(node);
+						break;
+					}
+				}
+			}
+		};
+		walk(this.initial);
+
+		// remove dead finals
+		for (const finalNode of this.finals) {
+			if (!alive.has(finalNode)) {
+				this.finals.delete(finalNode);
+			}
+		}
+
+		// remove dead nodes reachable from the initial state
+		function removeDead(node: DFANode): void {
+			const toRemove: CharRange[] = [];
+			for (const [range, outNode] of node.out) {
+				if (!alive.has(outNode)) {
+					toRemove.push(range);
+				}
+			}
+			toRemove.forEach(n => node.out.deleteEvery(n));
+		}
+		removeDead(this.initial);
+	}
+
 	*[Symbol.iterator](): IterableIterator<DFANode> {
 		const visited = new Set<DFANode>();
 		let toVisit = [this.initial];
@@ -84,6 +154,17 @@ class NodeList {
 		}
 	}
 
+	stateIterator(): FAIterator<DFANode> {
+		return {
+			initial: this.initial,
+			getOut: n => {
+				const out = new Set<DFANode>();
+				n.out.forEach(n => out.add(n));
+				return out;
+			},
+			isFinal: n => this.finals.has(n)
+		};
+	}
 }
 
 function toTransIter(list: NodeList, maximum: number): FAIterator<DFANode, Iterable<[DFANode, CharSet]>> {
@@ -110,7 +191,24 @@ export interface DFAOptions {
 	maxCharacter: number;
 }
 
-export class DFA implements FiniteAutomaton {
+export interface ReadonlyDFA extends FiniteAutomaton {
+	readonly nodes: ReadonlyNodeList;
+	readonly options: Readonly<DFAOptions>;
+
+	/**
+	 * Creates a new DFA with is equivalent to this one.
+	 */
+	clone(): DFA;
+
+	/**
+	 * Returns whether this and the given DFA are structurally equal meaning that all nodes and all transitions are
+	 * equal.
+	 *
+	 * @param other
+	 */
+	structurallyEqual(other: ReadonlyDFA): boolean;
+}
+export class DFA implements ReadonlyDFA {
 
 	readonly nodes: NodeList;
 	readonly options: Readonly<DFAOptions>;
@@ -194,7 +292,7 @@ export class DFA implements FiniteAutomaton {
 	 *
 	 * @param other
 	 */
-	structurallyEqual(other: DFA): boolean {
+	structurallyEqual(other: ReadonlyDFA): boolean {
 		if (this === other) {
 			return true;
 		}
@@ -202,15 +300,17 @@ export class DFA implements FiniteAutomaton {
 			return false;
 		}
 
-		const visitedThisNodes = new Set<DFANode>();
+		const visitedThisNodes = new Set<ReadonlyDFANode>();
 
-		const isEqual = (thisNode: DFANode, otherNode: DFANode): boolean => {
+		const thisFinals: ReadonlySet<ReadonlyDFANode> = this.nodes.finals;
+		const otherFinals: ReadonlySet<ReadonlyDFANode> = other.nodes.finals;
+		const isEqual = (thisNode: ReadonlyDFANode, otherNode: ReadonlyDFANode): boolean => {
 			if (visitedThisNodes.has(thisNode)) {
 				return true;
 			}
 			visitedThisNodes.add(thisNode);
 
-			if (this.nodes.finals.has(thisNode) !== other.nodes.finals.has(otherNode)) {
+			if (thisFinals.has(thisNode) !== otherFinals.has(otherNode)) {
 				return false;
 			}
 
@@ -234,37 +334,51 @@ export class DFA implements FiniteAutomaton {
 		return isEqual(this.nodes.initial, other.nodes.initial);
 	}
 
-	/**
-	 * @returns {DFA}
-	 */
-	minimize(): DFA {
-		removeUnreachable(this.nodes);
-		const P = findEquivalenceClasses(this.nodes);
-		const newNodeList = new NodeList();
+	minimize(): void {
+		this.nodes.removeUnreachable();
+		if (this.nodes.initial.out.isEmpty) {
+			return;
+		}
 
-		const newNodeMap = new Map<DFANode, DFANode>();
-		P.forEach(nodes => {
-			const newNode = nodes.has(this.nodes.initial) ? newNodeList.initial : newNodeList.createNode();
-			nodes.forEach(n => newNodeMap.set(n, newNode));
-		});
-		const translate = (n: DFANode): DFANode => newNodeMap.get(n)!;
+		const P = findEquivalenceClasses(this.nodes, this.options.maxCharacter);
 
-		// initial and final
-		this.nodes.finals.forEach(f => newNodeList.finals.add(translate(f)));
-
-		// transitions
-		P.forEach(nodes => {
-			nodes.forEach(n => {
-				const from = translate(n);
-				n.out.forEach((outNode, charCode) => {
-					const to = translate(outNode);
-					from.out.deleteEvery(charCode);
-					newNodeList.linkNodes(from, to, charCode);
-				});
+		const mapping = new Map<DFANode, DFANode>();
+		P.forEach(eqClass => {
+			let first: DFANode | undefined = undefined;
+			if (eqClass.has(this.nodes.initial)) {
+				first = this.nodes.initial;
+			}
+			if (eqClass.size === 0) {
+				throw new Error("Empty equivalence class");
+			}
+			eqClass.forEach(node => {
+				if (first === undefined) {
+					first = node;
+				}
+				if (mapping.has(node)) {
+					throw new Error("Duplicate mapping");
+				}
+				mapping.set(node, first);
 			});
 		});
+		const translate = (node: DFANode): DFANode => {
+			const mappedNode = mapping.get(node);
+			if (mappedNode === undefined) {
+				throw new Error("Unmapped node");
+			}
+			return mappedNode;
+		};
 
-		return new DFA(newNodeList, this.options);
+		// adjust nodes
+		BFS(this.nodes.initial, node => {
+			node.out.map(translate);
+			return node.out.values();
+		});
+
+		// adjust finals
+		const mappedFinals = [...this.nodes.finals].map(translate);
+		this.nodes.finals.clear();
+		mappedFinals.forEach(n => this.nodes.finals.add(n));
 	}
 
 
@@ -323,16 +437,14 @@ export class DFA implements FiniteAutomaton {
 		return new DFA(nodeList, options);
 	}
 
-	static fromNFA(nfa: NFA): DFA {
-		const ranges: CharRange[] = [];
+	static fromNFA(nfa: ReadonlyNFA): DFA {
+		const transitionSets = new Set<CharSet>();
 		DFS(nfa.nodes.initial, n => {
-			n.out.forEach(charSet => {
-				ranges.push(...charSet.ranges);
-			});
+			n.out.forEach(c => transitionSets.add(c));
 			return n.out.keys();
 		});
 
-		const alphabet = getAtomicRanges(ranges);
+		const alphabet = getBaseSets(transitionSets);
 		const nodeList = new NodeList();
 
 		/**
@@ -340,15 +452,15 @@ export class DFA implements FiniteAutomaton {
 		 */
 
 		const nfaNodesToDfaNodeMap = new Map<string, DFANode>();
-		const dfaNodeToNfaNodesMap = new Map<DFANode, readonly NFANode[]>();
-		function getKey(nodes: readonly NFANode[]): string {
+		const dfaNodeToNfaNodesMap = new Map<DFANode, readonly ReadonlyNFANode[]>();
+		function getKey(nodes: readonly ReadonlyNFANode[]): string {
 			let key = "";
 			for (let i = 0, l = nodes.length; i < l; i++) {
 				key += "," + nodes[i].id.toString(16);
 			}
 			return key;
 		}
-		function getDfaNode(nodes: Iterable<NFANode>): DFANode {
+		function getDfaNode(nodes: Iterable<ReadonlyNFANode>): DFANode {
 			const array = [...nodes];
 			// sort
 			array.sort((a, b) => a.id - b.id);
@@ -369,7 +481,7 @@ export class DFA implements FiniteAutomaton {
 			}
 			return dfaNode;
 		}
-		function getNfaNodes(node: DFANode): readonly NFANode[] {
+		function getNfaNodes(node: DFANode): readonly ReadonlyNFANode[] {
 			const nodes = dfaNodeToNfaNodesMap.get(node);
 			if (nodes === undefined) {
 				throw new Error("Unregistered DFA node.");
@@ -383,12 +495,13 @@ export class DFA implements FiniteAutomaton {
 			nodeList.finals.add(nodeList.initial);
 		}
 
-		function getOutNode(node: DFANode, char: CharRange): DFANode | undefined {
+		function getOutNode(node: DFANode, baseSet: CharSet): DFANode | undefined {
+			const baseMin = baseSet.ranges[0].min;
 			const nfaNodes = getNfaNodes(node);
-			const outNodes: NFANode[] = [];
+			const outNodes: ReadonlyNFANode[] = [];
 			for (const nfaNode of nfaNodes) {
 				nfaNode.out.forEach((charSet, outNode) => {
-					if (charSet.has(char.min)) {
+					if (charSet.has(baseMin)) {
 						outNodes.push(outNode);
 					}
 				});
@@ -402,14 +515,16 @@ export class DFA implements FiniteAutomaton {
 			}
 		}
 
-		BFS(nodeList.initial, function* (state) {
-			for (const char of alphabet) {
-				const out = getOutNode(state, char);
+		BFS(nodeList.initial, state => {
+			const nodes = new Set<DFANode>();
+			for (const set of alphabet) {
+				const out = getOutNode(state, set);
 				if (out) {
-					nodeList.linkNodes(state, out, char);
-					yield out;
+					nodeList.linkNodes(state, out, set);
+					nodes.add(out);
 				}
 			}
+			return nodes;
 		});
 
 		return new DFA(nodeList, {
@@ -420,152 +535,88 @@ export class DFA implements FiniteAutomaton {
 }
 
 
-function removeUnreachable(list: NodeList): void {
-	/**
-	 * Remove all non-initial states which are
-	 *
-	 * 1) Not reachable from the initial state.
-	 * 2) Cannot reach a final state.
-	 *
-	 * (For condition 1, we just have to check the final states.)
-	 */
-
-	const alive = new Set<DFANode>();
-
-	const walked = new Set<DFANode>();
-	function walk(node: DFANode): void {
-		if (walked.has(node)) return;
-		walked.add(node);
-
-		// walk all out node
-		const out = new Set<DFANode>();
-		node.out.forEach(node => out.add(node));
-		out.forEach(n => walk(n));
-
-		if (list.finals.has(node)) {
-			// if it's final, it satisfies both conditions
-			alive.add(node);
-		} else {
-			// if at least one out node is alive, this node it too
-			for (const outNode of out) {
-				if (alive.has(outNode)) {
-					alive.add(node);
-					break;
-				}
-			}
-		}
-	}
-	walk(list.initial);
-
-	// remove dead finals
-	for (const finalNode of list.finals) {
-		if (!alive.has(finalNode)) {
-			list.finals.delete(finalNode);
-		}
-	}
-
-	// remove dead nodes reachable from the initial state
-	function removeDead(node: DFANode): void {
-		const toRemove: CharRange[] = [];
-		for (const [range, outNode] of node.out) {
-			if (!alive.has(outNode)) {
-				toRemove.push(range);
-			}
-		}
-		toRemove.forEach(n => node.out.deleteEvery(n));
-	}
-	removeDead(list.initial);
-}
-
-/**
- * Returns the atomic ranges for the given character ranges. The returned ranges will be sorted.
- *
- * The atomic ranges for a given set of character ranges are the smallest set of disjoint character ranges which can
- * build all the given character ranges via the union operation.
- *
- * @param ranges
- */
-function getAtomicRanges(ranges: Iterable<CharRange>): CharRange[] {
-	const union: CharRange[] = [];
-	const cutSet = new Set<number>();
-	for (const range of ranges) {
-		union.push(range);
-		cutSet.add(range.min);
-		cutSet.add(range.max + 1);
-	}
-	optimizeRanges(union);
-
-	// a sorted array of all cuts
-	const cuts = [...cutSet];
-	cuts.sort((a, b) => a - b);
-
-	// cut the union
-	const result: CharRange[] = [];
-
-	let cutIndex = 0;
-	for (const unionRange of union) {
-		cutIndex++; // we know that there is a cut at the beginning of every range
-
-		let min = unionRange.min;
-		const max = unionRange.max;
-
-		while (min <= max) {
-			const cut = cuts[cutIndex++];
-			result.push({ min: min, max: cut - 1 });
-			min = cut;
-		}
-	}
-
-	return result;
-}
-
-function findEquivalenceClasses(nodeList: NodeList): Set<Set<DFANode>> {
+function findEquivalenceClasses(nodeList: NodeList, maxCharacter: number): Set<ReadonlySet<DFANode>>;
+function findEquivalenceClasses(nodeList: ReadonlyNodeList, maxCharacter: number): Set<ReadonlySet<ReadonlyDFANode>>;
+function findEquivalenceClasses(nodeList: ReadonlyNodeList, maxCharacter: number): Set<ReadonlySet<ReadonlyDFANode>> {
 	// https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
+	if (nodeList.finals.size === 0) {
+		throw new Error("Cannot find equivalence classes for a DFA without final states.");
+	}
 
-	const allNodes = new Set<DFANode>();
-	const allRanges: CharRange[] = [];
-	/** A map from a char code to all nodes which have an incoming transition with that char code. */
-	const getInTransitions = cachedFunc<DFANode, CharMap<DFANode[]>>(() => new CharMap());
+	const getInMap = cachedFunc<ReadonlyDFANode, Map<ReadonlyDFANode, CharSet>>(() => new Map());
+	const allNodes: ReadonlyDFANode[] = [];
+	const allCharacterSets = new Set<CharSet>();
 
+	// Go through all nodes to:
+	//  1. Determine all nodes
+	//  2. Determine all used character sets
+	//  3. Create the in map of all nodes
 	DFS(nodeList.initial, node => {
-		node.out.forEach((to, range) => {
-			allRanges.push(range);
+		allNodes.push(node);
+		const out = invertCharMap(node.out, maxCharacter);
+		out.forEach((cs, n) => {
+			allCharacterSets.add(cs);
+			getInMap(n).set(node, cs);
+		});
+		return out.keys();
+	});
 
-			const inMap: CharMap<DFANode[]> = getInTransitions(to);
-			inMap.mapRange(range, set => {
-				if (set) {
-					return [...set, node];
+	// determine the base sets of all used character sets
+	//
+	// Hopcroft's algorithm scales linearly with the number of characters in the alphabet. This is bad news for us
+	// because in JS regex unicode mode, character sets can contain 1 million characters, so iterating over all of them
+	// is not feasible. To make this more efficient, we use the base sets of all the character sets in the given DFA
+	// instead. The base sets are a set of non-empty disjoint character sets from which all other character sets in the
+	// DFA can be constructed (via union). If we then decompose all character sets in the DFA into their base sets, we
+	// will create a new alphabet (of base sets) that behaves like the "original" alphabet. The only difference is that
+	// alphabet of base sets is MUCH smaller. The total number of base sets is bound by both the total number of unique
+	// character sets in the DFA and the number of character in the original alphabet.
+	const baseSets = getBaseSets(allCharacterSets);
+	const decompose = cachedFunc<CharSet, readonly number[]>(set => decomposeIntoBaseSets(set, baseSets));
+
+	// determine the incoming nodes by base set for all nodes
+	//
+	// The returned data structure is a nested array. The outer array takes the index of a base set as key and yields
+	// the list of nodes that have a transition via the key base set to the function argument node.
+	const getIn = cachedFunc<ReadonlyDFANode, readonly (readonly ReadonlyDFANode[])[]>(node => {
+		const inArray: ReadonlyDFANode[][] = [];
+		getInMap(node).forEach((cs, n) => {
+			decompose(cs).forEach(baseIndex => {
+				const value = inArray[baseIndex];
+				if (value) {
+					value.push(n);
 				} else {
-					return [node];
+					inArray[baseIndex] = [n];
 				}
 			});
 		});
-
-		return node.out.values();
+		return inArray;
 	});
 
-	const alphabet: readonly CharRange[] = getAtomicRanges(allRanges);
 
-	const P = new Set<Set<DFANode>>([nodeList.finals, withoutSet(allNodes, nodeList.finals)]);
-	const W = new Set<Set<DFANode>>([nodeList.finals]);
+	const P = new Set<ReadonlySet<ReadonlyDFANode>>([nodeList.finals]);
+	if (allNodes.length > nodeList.finals.size) {
+		P.add(withoutSet(allNodes, nodeList.finals));
+	}
+	const W = new Set<ReadonlySet<ReadonlyDFANode>>(P);
 
 	while (W.size > 0) {
-		const A: Set<DFANode> = firstOf(W)!;
+		const A: ReadonlySet<ReadonlyDFANode> = firstOf(W)!;
 		W.delete(A);
 
-		for (const atom of alphabet) {
-			const X = new Set<DFANode>();
-			A.forEach(n => {
-				const edges = getInTransitions(n);
-				// because of how the atomic ranges are defined, we can use any char in c
-				const inOfC = edges.get(atom.min);
-				if (inOfC === undefined) return;
-				inOfC.forEach(x => X.add(x));
+		// this essentially loops through all characters
+		for (let baseIndex = 0, l = baseSets.length; baseIndex < l; baseIndex++) {
+			const X = new Set<ReadonlyDFANode>();
+			A.forEach(node => {
+				const inArray = getIn(node)[baseIndex];
+				if (inArray) {
+					inArray.forEach(inNode => X.add(inNode));
+				}
 			});
 			if (X.size === 0) continue;
 
-			const pToAdd = [];
-			const pToDelete = [];
+			const pToAdd: ReadonlySet<ReadonlyDFANode>[] = [];
+			const pToDelete: ReadonlySet<ReadonlyDFANode>[] = [];
 			for (const Y of P) {
 				const intersection = intersectSet(X, Y);
 				if (intersection.size === 0) continue;
@@ -580,7 +631,7 @@ function findEquivalenceClasses(nodeList: NodeList): Set<Set<DFANode>> {
 					W.add(intersection);
 					W.add(without);
 				} else {
-					if (intersection.size < without.size) {
+					if (intersection.size <= without.size) {
 						W.add(intersection);
 					} else {
 						W.add(without);

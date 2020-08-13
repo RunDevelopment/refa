@@ -335,6 +335,15 @@ describe("DFA", function () {
 
 					[5] -> none`
 			},
+			{
+				literal: /a+|a*aa*/,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> [2] : 61
+
+					[2] -> [2] : 61`
+			},
 		]);
 
 		interface TestCase {
@@ -346,6 +355,149 @@ describe("DFA", function () {
 			for (const { literal, expected } of cases) {
 				it(literalToString(literal), function () {
 					assert.strictEqual(literalToDFA(literal).toString(), removeIndentation(expected));
+				});
+			}
+		}
+
+	});
+
+	describe("Minimize", function () {
+
+		test([
+			{
+				literal: /[^\s\S]/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /[^\s\S]*/,
+				expected: `
+					[0] -> none`
+			},
+			{
+				literal: /a*b*c*/,
+				expected: `
+					[0] -> [0] : 61
+					    -> [1] : 62
+					    -> [2] : 63
+
+					[1] -> [1] : 62
+					    -> [2] : 63
+
+					[2] -> [2] : 63`
+			},
+			{
+				literal: /a+b+c+/,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (1) : 61
+					    -> (2) : 62
+
+					(2) -> (2) : 62
+					    -> [3] : 63
+
+					[3] -> [3] : 63`
+			},
+			{
+				literal: /a+b+c+|a*/,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> [1] : 61
+					    -> (2) : 62
+
+					(2) -> (2) : 62
+					    -> [3] : 63
+
+					[3] -> [3] : 63`
+			},
+			{
+				literal: /a*(a+b+c+)?/,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> [1] : 61
+					    -> (2) : 62
+
+					(2) -> (2) : 62
+					    -> [3] : 63
+
+					[3] -> [3] : 63`
+			},
+			{
+				literal: /a+|a*aa*/,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> [1] : 61`
+			},
+			{
+				literal: /(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/,
+				expected: `
+					(0) -> (1) : 2e
+					    -> [2] : 30..39
+
+					(1) -> [3] : 30..39
+
+					[2] -> [2] : 30..39
+					    -> [3] : 2e
+					    -> (4) : 45
+
+					[3] -> [3] : 30..39
+					    -> (4) : 45
+
+					(4) -> (5) : 2b, 2d
+					    -> [6] : 30..39
+
+					(5) -> [6] : 30..39
+
+					[6] -> [6] : 30..39`
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			expected: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, expected } of cases) {
+				it(literalToString(literal), function () {
+					const dfa = literalToDFA(literal);
+					dfa.minimize();
+					assert.strictEqual(dfa.toString(), removeIndentation(expected));
+				});
+			}
+		}
+
+	});
+
+	describe("Minimize & Equal", function () {
+
+		test([
+			{
+				literals: [
+					/a+b+c+|a*/,
+					/a*(?:a+b+c+)?/,
+				],
+			},
+		]);
+
+		interface TestCase {
+			literals: [Literal, Literal, ...Literal[]];
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literals } of cases) {
+				it(literals.map(literalToString).join(" == "), function () {
+					const referenceDfa = literalToDFA(literals[0]);
+					referenceDfa.minimize();
+					for (let i = 0; i < literals.length; i++) {
+						const dfa = literalToDFA(literals[i]);
+						dfa.minimize();
+						assert.isTrue(dfa.structurallyEqual(referenceDfa));
+					}
 				});
 			}
 		}
