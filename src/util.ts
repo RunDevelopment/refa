@@ -33,6 +33,7 @@ export function filterMut<T>(array: T[], filter: (arg: T, prev: T | undefined) =
 			deleteCount++;
 		}
 	}
+	array.splice(array.length - deleteCount, deleteCount);
 }
 
 
@@ -52,6 +53,18 @@ export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | und
 export function iterToArray<T>(iter: Iterable<T>): readonly T[] {
 	return Array.isArray(iter) ? iter : [...iter];
 }
+export function iterToSet<T>(iter: Iterable<T>): ReadonlySet<T> {
+	return iter instanceof Set ? iter : new Set(iter);
+}
+export function iterToStableIter<T>(iter: Iterable<T>): Iterable<T> {
+	if (Array.isArray(iter)) {
+		return iter;
+	} else if (iter instanceof Set) {
+		return iter;
+	} else {
+		return [...iter];
+	}
+}
 
 export function firstOf<T>(iter: Iterable<T>): T | undefined {
 	for (const value of iter) {
@@ -60,14 +73,14 @@ export function firstOf<T>(iter: Iterable<T>): T | undefined {
 	return undefined;
 }
 
-export function withoutSet<T>(s1: Iterable<T>, s2: Set<T>): Set<T> {
+export function withoutSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	const s = new Set<T>();
 	for (const x of s1) {
 		if (!s2.has(x)) s.add(x);
 	}
 	return s;
 }
-export function intersectSet<T>(s1: Iterable<T>, s2: Set<T>): Set<T> {
+export function intersectSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	const s = new Set<T>();
 	for (const x of s1) {
 		if (s2.has(x)) s.add(x);
