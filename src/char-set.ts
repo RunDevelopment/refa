@@ -218,6 +218,26 @@ export class CharSet {
 		}
 		return true;
 	}
+	compare(other: CharSet): number {
+		if (other === this) return 0;
+		if (!(other instanceof CharSet)) return -1;
+		if (this.maximum !== other.maximum) return this.maximum - other.maximum;
+
+		// we want to guarantee that disjoint character sets are sorted by their smallest character.
+		if (this.isEmpty) return other.isEmpty ? 0 : -1;
+		if (other.isEmpty) return 1;
+		if (this.ranges[0].min !== other.ranges[0].min) return this.ranges[0].min - other.ranges[0].min;
+
+		if (this.ranges.length !== other.ranges.length) return this.ranges.length - other.ranges.length;
+
+		for (let i = 0, l = this.ranges.length; i < l; i++) {
+			const thisR = this.ranges[i];
+			const otherR = other.ranges[i];
+			if (thisR.min !== otherR.min) return thisR.min - otherR.min;
+			if (thisR.max !== otherR.max) return thisR.max - otherR.max;
+		}
+		return 0;
+	}
 
 	negate(): CharSet {
 		return new CharSet(this.maximum, [...negateRanges(this.ranges, this.maximum)]);
@@ -339,9 +359,8 @@ export class CharSet {
 	without(set: CharSet): CharSet;
 	without(ranges: Iterable<CharRange>): CharSet;
 	without(data: Iterable<CharRange> | CharSet): CharSet {
-		// TODO: more efficient approach
 		const set = data instanceof CharSet ? data : CharSet.empty(this.maximum).union(data);
-		return set.union(negateRanges(this.ranges, this.maximum)).negate();
+		return this.intersect(set.negate());
 	}
 
 
