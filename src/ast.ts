@@ -233,7 +233,7 @@ function toPatternElement(element: Simple<Element>): string {
 				if (element.min === 0) {
 					quant = "?";
 				} else /* if (element.min === 1) */ {
-					quant = "";
+					quant = "{1}";
 				}
 			} else if (element.min === element.max) {
 				quant = `{${element.min}}`;
@@ -242,7 +242,8 @@ function toPatternElement(element: Simple<Element>): string {
 			}
 
 			let content: string;
-			if (element.alternatives.length === 1) {
+			if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1
+				&& element.alternatives[0].elements[0].type === "CharacterClass") {
 				content = toPatternConcatenation(element.alternatives[0]);
 			} else {
 				content = "(?:" + toPatternAlternatives(element.alternatives) + ")";
