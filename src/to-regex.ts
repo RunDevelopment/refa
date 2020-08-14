@@ -1,4 +1,4 @@
-import { Simple, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
+import { Simple, Expression, Node, Parent, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
 import { CharSet } from "./char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever } from "./util";
 import { FAIterator } from "./fa-iterator";
@@ -171,25 +171,13 @@ function eliminateStates(nodeList: NodeList): void {
 			if (b.elements.length === 0) return a;
 			return {
 				type: "Concatenation",
-				elements: [...b.elements, a]
+				elements: [a, ...b.elements]
 			};
 		}
 		return {
 			type: "Concatenation",
 			elements: [a, b]
 		};
-	}
-	function getSingleCharClass(
-		a: Simple<Alternation>): Simple<Concatenation> & { elements: [Simple<CharacterClass>] } | null {
-		for (const alt of a.alternatives) {
-			if (alt.elements.length === 1) {
-				const first = alt.elements[0];
-				if (first.type === "CharacterClass") {
-					return alt as Simple<Concatenation> & { elements: [Simple<CharacterClass>] };
-				}
-			}
-		}
-		return null;
 	}
 	function asConcatenation(a: Simple<Element | Concatenation>): Simple<Concatenation> {
 		if (a.type === "Concatenation") {
@@ -203,72 +191,48 @@ function eliminateStates(nodeList: NodeList): void {
 	}
 	function union(a: RegexFANodeTransition, b: RegexFANodeTransition): RegexFANodeTransition {
 		if (a.type === "CharacterClass" && b.type === "CharacterClass") {
-			return {
-				type: "CharacterClass",
-				characters: a.characters.union(b.characters)
-			};
+			a.characters = a.characters.union(b.characters);
+			return a;
 		}
 
 		if (a.type === "Alternation") {
 			if (a.alternatives.length === 0) return b;
+
 			if (b.type === "Alternation") {
 				if (b.alternatives.length === 0) return a;
 
-				const aCharClassAlt = getSingleCharClass(a);
-				if (aCharClassAlt) {
-					const bCharClassAlt = getSingleCharClass(b);
-					if (bCharClassAlt) {
-						const aCharClass = aCharClassAlt.elements[0];
-						const bCharClass = bCharClassAlt.elements[0];
-						// merge the single char class
-						const newAlternatives: Simple<Concatenation>[] = [
-							asConcatenation({
-								type: "CharacterClass",
-								characters: aCharClass.characters.union(bCharClass.characters)
-							})
-						];
-						a.alternatives.forEach(alt => {
-							if (alt !== aCharClassAlt) newAlternatives.push(alt);
-						});
-						b.alternatives.forEach(alt => {
-							if (alt !== bCharClassAlt) newAlternatives.push(alt);
-						});
-						return {
-							type: "Alternation",
-							alternatives: newAlternatives
-						};
+				for (const alt of b.alternatives) {
+					if (alt.elements.length === 1) {
+						const e = alt.elements[0];
+						if (e.type === "CharacterClass") {
+							unionAlternationAndCharClass(a, e);
+							continue;
+						}
 					}
+					a.alternatives.push(alt);
 				}
 
-				return {
-					type: "Alternation",
-					alternatives: [...a.alternatives, ...b.alternatives]
-				};
-			} else if (b.type === "CharacterClass") {
-				return unionAlternationAndCharClass(a, b);
-			} else {
-				return {
-					type: "Alternation",
-					alternatives: [
-						...a.alternatives,
-						asConcatenation(b)
-					]
-				};
+				return a;
 			}
+
+			if (b.type === "CharacterClass") {
+				unionAlternationAndCharClass(a, b);
+				return a;
+			}
+
+			a.alternatives.push(asConcatenation(b));
+			return a;
 		}
 		if (b.type === "Alternation") {
 			if (b.alternatives.length === 0) return a;
+
 			if (a.type === "CharacterClass") {
-				return unionAlternationAndCharClass(b, a);
-			} else {
-				return {
-					type: "Alternation",
-					alternatives: [
-						...b.alternatives,
-						asConcatenation(a)
-					]
-				};
+				unionAlternationAndCharClass(b, a);
+				return b;
 			}
+
+			b.alternatives.push(asConcatenation(a));
+			return b;
 		}
 
 		return {
@@ -276,43 +240,32 @@ function eliminateStates(nodeList: NodeList): void {
 			alternatives: [asConcatenation(a), asConcatenation(b)]
 		};
 	}
-	function unionAlternationAndCharClass(
-		alternation: Simple<Alternation>,
-		char: Simple<CharacterClass>): Simple<Alternation> {
-		const charClassAlt = getSingleCharClass(alternation);
-		if (charClassAlt) {
-			// merge the single char class
-			const newAlternatives: Simple<Concatenation>[] = [
-				asConcatenation({
-					type: "CharacterClass",
-					characters: charClassAlt.elements[0].characters.union(char.characters)
-				})
-			];
-			alternation.alternatives.forEach(alt => {
-				if (alt !== charClassAlt) newAlternatives.push(alt);
-			});
-			return {
-				type: "Alternation",
-				alternatives: newAlternatives
-			};
+	function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): void {
+		for (const alt of alternation.alternatives) {
+			if (alt.elements.length === 1) {
+				const first = alt.elements[0];
+				if (first.type === "CharacterClass") {
+					first.characters = first.characters.union(char.characters);
+					return;
+				}
+			}
 		}
-		return {
-			type: "Alternation",
-			alternatives: [
-				asConcatenation(char),
-				...alternation.alternatives
-			]
-		};
+		alternation.alternatives.push(asConcatenation(char));
 	}
 	function star(a: RegexFANodeTransition): RegexFANodeTransition {
 		switch (a.type) {
 			case "Quantifier":
-				if (a.min === 0 && a.max === Infinity) return a;
+				if (a.max === 0) return { type: "Concatenation", elements: [] };
+				if (a.min === 0 || a.min === 1) {
+					a.min = 0;
+					a.max = Infinity;
+					return a;
+				}
 				return {
 					type: "Quantifier",
 					min: 0,
 					max: Infinity,
-					alternatives: a.alternatives
+					alternatives: [asConcatenation(a)]
 				};
 
 			case "Alternation":
@@ -324,8 +277,7 @@ function eliminateStates(nodeList: NodeList): void {
 				};
 
 			case "Concatenation":
-				if (a.elements.length === 0)
-					return a;
+				if (a.elements.length === 0) return a;
 				return {
 					type: "Quantifier",
 					min: 0,
@@ -451,7 +403,7 @@ function eliminateStates(nodeList: NodeList): void {
 			 *
 			 * The cost function for different operation will behave like this:
 			 *  1. `cost(star(t)) == cost(t)`
-			 *  2. `cost(concat(t1, t2)) == cost(t1) + cost(t2)`
+			 *  2. `cost(concat(t1, t2)) == cost(t1) * cost(t2)`
 			 *  3. `cost(union(t1, t2)) == cost(t1) + cost(t2)`
 			 */
 
@@ -460,7 +412,7 @@ function eliminateStates(nodeList: NodeList): void {
 				// n * 3, because `cost(concat(t_in, concat(star(t_ref), t_out))) == 3`
 				return (state.in.size - 1) * (state.out.size - 1) * 3;
 			} else {
-				// n * 3, because `cost(concat(t_in, t_out)) == 2`
+				// n * 2, because `cost(concat(t_in, t_out)) == 2`
 				return state.in.size * state.out.size * 2;
 			}
 		});
@@ -507,9 +459,7 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simpl
 				alternatives: [
 					{
 						type: "Concatenation",
-						elements: [
-							transition
-						]
+						elements: [transition]
 					}
 				]
 			};
@@ -564,64 +514,337 @@ function structurallyEqualConcatenation(a: Simple<Concatenation>, b: Simple<Conc
 	return true;
 }
 
-function optimize(expr: Simple<Expression>): void {
-	visitAst(expr, {
-		onConcatenationLeave(node) {
-			const elements = node.elements;
-			// make (?:|a) -> a?
-			for (let i = 0; i < elements.length; i++) {
-				const element = elements[i];
-				if (element.type === "Alternation") {
-					if (element.alternatives.some(a => a.elements.length === 0)) {
-						// remove empty alternatives
-						let alternatives = element.alternatives.filter(a => a.elements.length > 0);
+/**
+ * Multiplies `a` and `b`. This is guaranteed to return `0` if either or both values are `0`.
+ *
+ * @param a
+ * @param b
+ */
+function safeMultiply(a: number, b: number): number {
+	if (a === 0 || b === 0) {
+		return 0;
+	} else {
+		return a * b;
+	}
+}
 
-						// optimize alternatives
-						if (alternatives.length === 1 && alternatives[0].elements.length === 1) {
-							const singleElement = alternatives[0].elements[0];
-							if (singleElement.type === "Alternation") {
-								alternatives = singleElement.alternatives;
-							}
-						}
+type OfType<N, T> = N extends { type: T } ? N : never;
+type NodeOfType<T extends Node["type"]> = OfType<Node, T>;
 
-						let replaced = false;
-						// try to replace the alternative with an adjusted quantifier
-						if (alternatives.length === 1 && alternatives[0].elements.length === 1) {
-							const singleElement = alternatives[0].elements[0];
-							if (singleElement.type === "Quantifier") {
-								singleElement.min = 0;
-								elements[i] = singleElement;
-								replaced = true;
-							}
-						}
+function getSingleElement<T extends Element["type"]>(
+	parent: Simple<Parent>,
+	type: T
+): undefined | Simple<NodeOfType<T>> {
+	if (parent.alternatives.length === 1) {
+		const alt = parent.alternatives[0];
+		if (alt.elements.length === 1) {
+			const e = alt.elements[0];
+			if (e.type === type) {
+				return e as Simple<NodeOfType<T>>;
+			}
+		}
+	}
+	return undefined;
+}
 
-						// replace alternative with quantifier if not already replaced
-						if (!replaced) {
-							elements[i] = {
-								type: "Quantifier",
-								min: 0, max: 1,
-								alternatives
-							};
-						}
+function canMatchEmptyString(value: Simple<Node>): boolean {
+	switch (value.type) {
+		case "Assertion":
+		case "CharacterClass":
+			return false;
+
+		case "Alternation":
+		case "Expression":
+			return value.alternatives.some(canMatchEmptyString);
+
+		case "Concatenation":
+			return value.elements.every(canMatchEmptyString);
+
+		case "Quantifier":
+			return value.min === 0 || value.alternatives.some(canMatchEmptyString);
+
+		default:
+			throw assertNever(value);
+	}
+}
+
+function equalToQuantifiedElement(
+	quant: Simple<Quantifier>,
+	element: Simple<Element> | Simple<Concatenation>
+): boolean {
+	if (element.type === "Alternation" && element.alternatives.length === 1) {
+		if (equalToQuantifiedElement(quant, element.alternatives[0])) {
+			return true;
+		}
+	}
+	if (element.type === "Concatenation" && element.elements.length === 1) {
+		if (equalToQuantifiedElement(quant, element.elements[0])) {
+			return true;
+		}
+	}
+
+	if (quant.alternatives.length === 1) {
+		const alt = quant.alternatives[0];
+		if (element.type === "Concatenation") {
+			return structurallyEqualConcatenation(alt, element);
+		}
+
+		if (alt.elements.length === 1) {
+			return structurallyEqual(alt.elements[0], element);
+		} else {
+			return false;
+		}
+	} else {
+		return element.type === "Alternation"
+			&& structurallyEqualAlternatives(quant.alternatives, element.alternatives);
+	}
+}
+
+function inlineAlternatives(parent: Simple<Parent>): boolean {
+	let inlined = false;
+
+	for (let i = 0; i < parent.alternatives.length; i++) {
+		const concat = parent.alternatives[i];
+		if (concat.elements.length === 1) {
+			const e = concat.elements[0];
+			if (e.type === "Alternation") {
+				parent.alternatives.splice(i, 1, ...e.alternatives);
+				i--;
+				inlined = true;
+			}
+		}
+	}
+
+	return inlined;
+}
+function optimizeEmptyString(parent: Simple<Parent>): boolean {
+	let optimized = false;
+
+	if (parent.alternatives.length >= 2 && parent.alternatives.some(c => c.elements.length === 0)) {
+		parent.alternatives = parent.alternatives.filter(c => c.elements.length > 0);
+		optimized = true;
+
+		if (parent.alternatives.length === 0) {
+			// can't do that
+			parent.alternatives.push({ type: "Concatenation", elements: [] });
+		} else if (parent.alternatives.some(canMatchEmptyString)) {
+			// since the empty string can be matched by at least one of the other alternatives,
+			// we don't have to do anything
+		} else {
+			// try to change a quantifier. e.g. (?:|a+|b+) -> (?:a*|b+)
+			let changed = false;
+			for (const alt of parent.alternatives) {
+				if (alt.elements.length === 1) {
+					const e = alt.elements[0];
+					if (e.type === "Quantifier" && e.min === 1) {
+						// found a suitable quantifier
+						e.min = 0;
+						changed = true;
 					}
+				}
+
+				if (changed) {
+					break;
 				}
 			}
 
-			// make e.g. aa* -> a+
-			for (let i = 1; i < elements.length; i++) {
-				const element = elements[i];
-				if (element.type === "Quantifier") {
-					// TODO: Implement
+			if (!changed) {
+				// make a new quantifier
+				parent.alternatives = [{
+					type: "Concatenation",
+					elements: [
+						{
+							type: "Quantifier",
+							min: 0,
+							max: 1,
+							alternatives: parent.alternatives
+						}
+					]
+				}];
+			}
+		}
+	}
+
+	return optimized;
+}
+function factorOutCommonPreAndSuffix(parent: Simple<Parent>): boolean {
+	let changed = false;
+
+	if (parent.alternatives.length >= 2) {
+		let prefixLength = 0;
+		let suffixLength = 0;
+		const shortest = parent.alternatives.map(c => c.elements).sort((a, b) => a.length - b.length)[0];
+
+		// find prefix length
+		for (let i = 0; i < shortest.length; i++) {
+			const e = shortest[i];
+			if (parent.alternatives.every(c => structurallyEqual(e, c.elements[i]))) {
+				prefixLength++;
+			} else {
+				break;
+			}
+		}
+		// find suffix length
+		for (let i = 0; i < shortest.length - prefixLength; i++) {
+			const e = shortest[shortest.length - 1 - i];
+			if (parent.alternatives.every(c => structurallyEqual(e, c.elements[c.elements.length - 1 - i]))) {
+				suffixLength++;
+			} else {
+				break;
+			}
+		}
+
+		if (prefixLength > 0 || suffixLength > 0) {
+			changed = true;
+
+			const prefix = shortest.slice(0, prefixLength);
+			const suffix = shortest.slice(shortest.length - suffixLength, shortest.length);
+
+			// remove prefix and suffix
+			const alternatives = parent.alternatives;
+			for (const alt of alternatives) {
+				alt.elements.splice(0, prefixLength);
+				alt.elements.splice(alt.elements.length - suffixLength, suffixLength);
+			}
+
+			parent.alternatives = [{
+				type: "Concatenation",
+				elements: [
+					...prefix,
+					{
+						type: "Alternation",
+						alternatives
+					},
+					...suffix,
+				]
+			}];
+		}
+	}
+
+	return changed;
+}
+function inlineConcat(concat: Simple<Concatenation>): boolean {
+	let inlined = false;
+
+	for (let i = 0; i < concat.elements.length; i++) {
+		let e = concat.elements[i];
+
+		// e.g. ab{1} -> ab , a(?:a*b*)? -> a(?:a*b*)
+		if (e.type === "Quantifier" && e.max === 1) {
+			const canInline = e.min === 1 || (e.min === 0 && e.alternatives.some(canMatchEmptyString));
+			if (canInline) {
+				concat.elements[i] = e = {
+					type: "Alternation",
+					alternatives: e.alternatives
+				};
+				inlined = true;
+			}
+		}
+
+		// e.g. a(?:bc)d -> abcd
+		if (e.type === "Alternation" && e.alternatives.length === 1) {
+			concat.elements.splice(i, 1, ...e.alternatives[0].elements);
+			i--;
+			inlined = true;
+		}
+	}
+
+	return inlined;
+}
+function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
+	let optimized = false;
+
+	// make e.g. a*a -> a+
+	for (let i = 1; i < elements.length; i++) {
+		const quant = elements[i - 1];
+		const after = elements[i];
+		if (quant.type === "Quantifier") {
+			if (after.type === "Quantifier" && structurallyEqualAlternatives(quant.alternatives, after.alternatives)) {
+				// e.g. a+a* -> a+ , a{2,6}a{1,3} -> a{3,9}
+				quant.min += after.min;
+				quant.max += after.max;
+				elements.splice(i, 1);
+				i--;
+				optimized = true;
+			} else if (equalToQuantifiedElement(quant, after)) {
+				// e.g. a*a
+				quant.min++;
+				quant.max++;
+				elements.splice(i, 1);
+				i--;
+				optimized = true;
+			}
+		}
+	}
+
+	// make e.g. aa* -> a+
+	for (let i = elements.length - 1; i >= 1; i--) {
+		const before = elements[i - 1];
+		const quant = elements[i];
+		if (quant.type === "Quantifier") {
+			if (equalToQuantifiedElement(quant, before)) {
+				// e.g. aa*
+				quant.min++;
+				quant.max++;
+				elements.splice(i - 1, 1);
+				optimized = true;
+			}
+		}
+	}
+
+	return optimized;
+}
+
+function optimize(expr: Simple<Expression>): boolean {
+	let optimized = false;
+
+	visitAst(expr, {
+		onAlternationLeave(node) {
+			optimized = inlineAlternatives(node) || optimized;
+			optimized = optimizeEmptyString(node) || optimized;
+			optimized = factorOutCommonPreAndSuffix(node) || optimized;
+		},
+
+		onAssertionLeave(node) {
+			optimized = inlineAlternatives(node) || optimized;
+			optimized = optimizeEmptyString(node) || optimized;
+			optimized = factorOutCommonPreAndSuffix(node) || optimized;
+		},
+
+		onConcatenationLeave(node) {
+			optimized = inlineConcat(node) || optimized;
+			optimized = letQuantifiersConsumeNeighbors(node.elements) || optimized;
+		},
+
+		onExpressionLeave(node) {
+			optimized = inlineAlternatives(node) || optimized;
+			optimized = optimizeEmptyString(node) || optimized;
+			optimized = factorOutCommonPreAndSuffix(node) || optimized;
+		},
+
+		onQuantifierLeave(node) {
+			optimized = inlineAlternatives(node) || optimized;
+			optimized = optimizeEmptyString(node) || optimized;
+			optimized = factorOutCommonPreAndSuffix(node) || optimized;
+
+			// e.g. (?:a+)? -> a*
+			if (node.min === 0 || node.min === 1) {
+				const e = getSingleElement(node, "Quantifier");
+				if (e && (e.min === 0 || e.min === 1)) {
+					node.min *= e.min;
+					node.max = safeMultiply(node.max, e.max);
+					node.alternatives = e.alternatives;
+					optimized = true;
 				}
 			}
 		}
 	});
+
+	return optimized;
 }
 
 export function faToRegex<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simple<Expression> {
-
 	const expression = stateElimination(iter);
-	optimize(expression);
-
+	while (optimize(expression));
 	return expression;
 }
