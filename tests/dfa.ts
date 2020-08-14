@@ -545,6 +545,25 @@ describe("DFA", function () {
 					/a*(?:a+b+c+)?/,
 				],
 			},
+			{
+				literals: [
+					/a.*/,
+					/a\w*.*/,
+				],
+			},
+			{
+				literals: [
+					/:\w+:/,
+					/:(?:\w+|ABC|DEF|abc|def|1234567890):/,
+					/:(?:\w|\w\w|\w+|\w\w\w|ABC|DEF|abc|def|1234567890)+:/,
+				],
+			},
+			{
+				literals: [
+					/[ \t]+\S+|[ \t]+['"]\S|[ \t]+/,
+					/[ \t]+\S*/,
+				],
+			},
 		]);
 
 		interface TestCase {

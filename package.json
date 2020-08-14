@@ -9,6 +9,7 @@
     "lint": "npx eslint --ignore-path .gitignore **/*.ts",
     "check-dependencies": "npx depcruise --validate .dependency-cruiser.js src --exclude debug.ts",
     "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "test:fast": "mocha -r ts-node/register 'tests/**/*.ts' --exclude tests/regex-stress-test.ts",
     "build": "npx rimraf dist/** && npx tsc",
     "build:unicode": "npx ts-node scripts/create-unicode.ts",
     "build:case-folding": "npx ts-node scripts/create-case-folding.ts",
