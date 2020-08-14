@@ -134,6 +134,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		checkChar(char);
 		this.tree.deleteCharacter(char);
 		this.tree.insert({ min: char, max: char }, value);
+		this.tree.validateTree();
 	}
 
 	/**
@@ -147,12 +148,16 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	setEvery(chars: CharRange, value: T): void {
 		checkRange(chars);
 		this.tree.deleteRange(chars);
+		this.tree.validateTree();
 		this.tree.insert(chars, value);
+		this.tree.validateTree();
 	}
 
 	delete(char: number): boolean {
 		if (!Number.isFinite(char)) return false;
-		return this.tree.deleteCharacter(char);
+		const result = this.tree.deleteCharacter(char);
+		this.tree.validateTree();
+		return result;
 	}
 
 	/**
@@ -165,12 +170,14 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	deleteEvery(range: CharRange): void {
 		checkRange(range);
 		this.tree.deleteRange(range);
+		this.tree.validateTree();
 	}
 
 	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
 		this.tree.map((r, v) => {
 			return mapFn(v, r, this);
 		});
+		this.tree.validateTree();
 	}
 	mapRange(
 		range: CharRange,
@@ -179,6 +186,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this.tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});
+		this.tree.validateTree();
 	}
 
 	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void {
@@ -243,46 +251,59 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 }
 
 
-interface Node<T> {
+interface ReadonlyNode<T> {
+	readonly key: CharRange;
+	readonly value: T;
+
+	readonly height: number;
+	readonly parent: ReadonlyNode<T> | null;
+	readonly left: ReadonlyNode<T> | null;
+	readonly right: ReadonlyNode<T> | null;
+}
+interface FixedNode<T> extends ReadonlyNode<T> {
 	key: CharRange;
 	value: T;
 
-	balance: number;
+	readonly height: number;
+	readonly parent: FixedNode<T> | null;
+	readonly left: FixedNode<T> | null;
+	readonly right: FixedNode<T> | null;
+}
+interface Node<T> extends FixedNode<T> {
+	key: CharRange;
+	value: T;
+
 	height: number;
 	parent: Node<T> | null;
 	left: Node<T> | null;
 	right: Node<T> | null;
 }
-interface DetachedNode<T> {
-	key: CharRange;
-	value: T;
-
-	balance: number;
-	height: number;
-	parent: null;
-	left: null;
-	right: null;
-}
 
 /**
  * Returns the right neighbor of the given node or `null` if the given node is the rightmost node in its tree.
  *
- * This takes _O(log n)_ time (n = total number of nodes in the tree).
+ * If a balanced tree, this takes at most _O(log n)_ time with an average of _O(1)_
+ * (n = total number of nodes in the tree).
  *
  * @param node
  */
-function rightNeighbor<T>(node: Node<T>): Node<T> | null {
+function rightNeighbor<T>(node: Node<T>): Node<T> | null;
+function rightNeighbor<T>(node: FixedNode<T>): FixedNode<T> | null;
+function rightNeighbor<T>(node: ReadonlyNode<T>): ReadonlyNode<T> | null;
+function rightNeighbor<T>(node: ReadonlyNode<T>): ReadonlyNode<T> | null {
 	if (node.right) {
 		// get the leftmost of the right sub-tree
 		return leftmostNode(node.right);
 	} else {
 		let parent = node.parent;
 		while (parent) {
-			if (parent.left == node) {
+			if (parent.left === node) {
 				return parent;
-			} else /* if (parent.right == node) */ {
+			} else if (parent.right === node) {
 				node = parent;
 				parent = parent.parent;
+			} else {
+				throw new Error("Expected the node to be a child of its parent.");
 			}
 		}
 		return null;
@@ -291,35 +312,47 @@ function rightNeighbor<T>(node: Node<T>): Node<T> | null {
 /**
  * Returns the left neighbor of the given node or `null` if the given node is the leftmost node in its tree.
  *
- * This takes _O(log n)_ time (n = total number of nodes in the tree).
+ * If a balanced tree, this takes at most _O(log n)_ time with an average of _O(1)_
+ * (n = total number of nodes in the tree).
  *
  * @param node
  */
-function leftNeighbor<T>(node: Node<T>): Node<T> | null {
+function leftNeighbor<T>(node: Node<T>): Node<T> | null;
+function leftNeighbor<T>(node: FixedNode<T>): FixedNode<T> | null;
+function leftNeighbor<T>(node: ReadonlyNode<T>): ReadonlyNode<T> | null;
+function leftNeighbor<T>(node: ReadonlyNode<T>): ReadonlyNode<T> | null {
 	if (node.left) {
 		// get the rightmost of the left sub-tree
 		return rightmostNode(node.left);
 	} else {
 		let parent = node.parent;
 		while (parent) {
-			if (parent.right == node) {
+			if (parent.right === node) {
 				return parent;
-			} else /* if (parent.left == node) */ {
+			} else if (parent.left === node) {
 				node = parent;
 				parent = parent.parent;
+			} else {
+				throw new Error("Expected the node to be a child of its parent.");
 			}
 		}
 		return null;
 	}
 }
 
-function leftmostNode<T>(root: Node<T>): Node<T> {
+function leftmostNode<T>(root: Node<T>): Node<T>;
+function leftmostNode<T>(root: FixedNode<T>): FixedNode<T>;
+function leftmostNode<T>(root: ReadonlyNode<T>): ReadonlyNode<T>;
+function leftmostNode<T>(root: ReadonlyNode<T>): ReadonlyNode<T> {
 	while (root.left) {
 		root = root.left;
 	}
 	return root;
 }
-function rightmostNode<T>(root: Node<T>): Node<T> {
+function rightmostNode<T>(root: Node<T>): Node<T>;
+function rightmostNode<T>(root: FixedNode<T>): FixedNode<T>;
+function rightmostNode<T>(root: ReadonlyNode<T>): ReadonlyNode<T>;
+function rightmostNode<T>(root: ReadonlyNode<T>): Node<T> {
 	while (root.right) {
 		root = root.right;
 	}
@@ -335,7 +368,10 @@ function rightmostNode<T>(root: Node<T>): Node<T> {
  * @param node
  * @param range
  */
-function leftmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null {
+function leftmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null;
+function leftmostNodeInRange<T>(node: FixedNode<T> | null, range: CharRange): FixedNode<T> | null;
+function leftmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null;
+function leftmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null {
 	if (node === null) return null;
 
 	const { min, max } = range;
@@ -367,6 +403,9 @@ function leftmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T>
  * @param node
  * @param range
  */
+function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null;
+function rightmostNodeInRange<T>(node: FixedNode<T> | null, range: CharRange): FixedNode<T> | null;
+function rightmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null;
 function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null {
 	if (node === null) return null;
 
@@ -392,73 +431,7 @@ function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T
 }
 
 
-function rotateLeft<T>(a: Node<T>): Node<T> {
-	const b: Node<T> = a.right!;
-	b.parent = a.parent;
-
-	a.right = b.left;
-
-	if (a.right != null)
-		a.right.parent = a;
-
-	b.left = a;
-	a.parent = b;
-
-	if (b.parent != null) {
-		if (b.parent.right == a) {
-			b.parent.right = b;
-		} else {
-			b.parent.left = b;
-		}
-	}
-
-	setBalance(a);
-	setBalance(b);
-
-	return b;
-}
-function rotateRight<T>(a: Node<T>): Node<T> {
-	const b: Node<T> = a.left!;
-	b.parent = a.parent;
-
-	a.left = b.right;
-
-	if (a.left != null)
-		a.left.parent = a;
-
-	b.right = a;
-	a.parent = b;
-
-	if (b.parent != null) {
-		if (b.parent.right == a) {
-			b.parent.right = b;
-		} else {
-			b.parent.left = b;
-		}
-	}
-
-	setBalance(a);
-	setBalance(b);
-
-	return b;
-}
-function rotateLeftThenRight<T>(n: Node<T>): Node<T> {
-	n.left = rotateLeft(n.left!);
-	return rotateRight(n);
-}
-function rotateRightThenLeft<T>(n: Node<T>): Node<T> {
-	n.right = rotateRight(n.right!);
-	return rotateLeft(n);
-}
-function setBalance<T>(n: Node<T>): void {
-	n.height = 1 + Math.max(height(n.left), height(n.right));
-	n.balance = height(n.right) - height(n.left);
-}
-function height<T>(node: Node<T> | null): number {
-	return node === null ? 0 : node.height;
-}
-
-function areAdjacent<T>(left: Node<T>, right: Node<T>): boolean {
+function areAdjacent<T>(left: ReadonlyNode<T>, right: ReadonlyNode<T>): boolean {
 	return left.key.max + 1 === right.key.min;
 }
 function areAdjacentRanges(left: CharRange, right: CharRange): boolean {
@@ -468,6 +441,10 @@ function unionAdjacentRanges(left: CharRange, right: CharRange): CharRange {
 	return { min: left.min, max: right.max };
 }
 
+// The basic AVL implementation is from here:
+// https://www.codesdope.com/course/data-structures-avl-trees/
+// This includes balancing, deletion of a single node, and the insertion of a single node
+// (without the merging of adjacent nodes).
 
 class AVLTree<T> {
 
@@ -475,8 +452,30 @@ class AVLTree<T> {
 
 	constructor(public readonly equalFn: (a: T, b: T) => boolean) { }
 
-	isDetached(node: Node<T>): node is DetachedNode<T> {
-		return node !== this.root && node.parent === null && node.left === null && node.right === null;
+	validateTree(): void {
+		if (this.root) {
+			if (this.root.parent) {
+				throw new Error("Invalid tree: The root element cannot have a parent.");
+			}
+		}
+		const rec = (node: Node<T> | null): void => {
+			if (node) {
+				if (node.left) {
+					if (node.left.parent !== node) {
+						throw new Error("Invalid tree: The root element cannot have a parent.");
+					}
+				}
+				if (node.right) {
+					if (node.right.parent !== node) {
+						throw new Error("Invalid tree: The root element cannot have a parent.");
+					}
+				}
+
+				rec(node.left);
+				rec(node.right);
+			}
+		};
+		rec(this.root);
 	}
 
 	/**
@@ -541,7 +540,7 @@ class AVLTree<T> {
 	}
 
 
-	private mergeAdjacentLeft(key: CharRange, rightNode: Node<T>): void {
+	private mergeAdjacentLeft(key: CharRange, rightNode: FixedNode<T>): void {
 		if (!areAdjacentRanges(key, rightNode.key)) {
 			throw new Error("The ranges are not adjacent");
 		}
@@ -560,7 +559,7 @@ class AVLTree<T> {
 
 		rightNode.key = { min, max: rightNode.key.max };
 	}
-	private mergeAdjacentRight(leftNode: Node<T>, key: CharRange): void {
+	private mergeAdjacentRight(leftNode: FixedNode<T>, key: CharRange): void {
 		if (!areAdjacentRanges(leftNode.key, key)) {
 			throw new Error("The ranges are not adjacent");
 		}
@@ -581,114 +580,155 @@ class AVLTree<T> {
 	}
 
 	insert(key: CharRange, value: T): void {
-		if (this.root == null) {
-			this.root = {
-				key, value, parent: null,
-				balance: 0, height: 1,
-				left: null, right: null
-			};
-			return;
+		let parent: Node<T> | null = null;
+		let temp: Node<T> | null = this.root;
+		while (temp !== null) {
+			parent = temp;
+			if (key.max < parent.key.min) {
+				temp = temp.left;
+			} else if (parent.key.min < key.max) {
+				temp = temp.right;
+			} else {
+				throw new Error("The inserted key has to be disjoint with all other keys.");
+			}
 		}
 
-		const { min: keyMin, max: keyMax } = key;
-		let parent: Node<T> = this.root;
-
-		while (true) {
-			if (parent.key.max < keyMin) {
+		if (parent !== null) {
+			// check whether we can merge the current value with an existing node instead of creating a new one
+			if (parent.key.max < key.min) {
 				// [parent] [key]
 				if (areAdjacentRanges(parent.key, key) && this.equalFn(parent.value, value)) {
 					this.mergeAdjacentRight(parent, key);
-					break;
-				} else if (parent.right) {
-					parent = parent.right;
+					return;
 				} else {
 					const rightN = rightNeighbor(parent);
 					if (rightN && areAdjacentRanges(key, rightN.key) && this.equalFn(value, rightN.value)) {
 						// merge with right neighbor
 						rightN.key = unionAdjacentRanges(key, rightN.key);
-					} else {
-						parent.right = {
-							key, value, parent,
-							balance: 0, height: parent.height + 1,
-							left: null, right: null
-						};
-						this.rebalance(parent);
+						return;
 					}
-					break;
 				}
-			} else if (keyMax < parent.key.min) {
+			} else {
 				// [key] [parent]
 				if (areAdjacentRanges(key, parent.key) && this.equalFn(value, parent.value)) {
 					this.mergeAdjacentLeft(key, parent);
-					break;
-				} else if (parent.left) {
-					parent = parent.left;
+					return;
 				} else {
 					const leftN = leftNeighbor(parent);
 					if (leftN && areAdjacentRanges(leftN.key, key) && this.equalFn(leftN.value, value)) {
 						// merge with left neighbor
 						leftN.key = unionAdjacentRanges(leftN.key, key);
-					} else {
-						parent.left = {
-							key, value, parent,
-							balance: 0, height: parent.height + 1,
-							left: null, right: null
-						};
-						this.rebalance(parent);
+						return;
 					}
-					break;
 				}
-			} else {
-				throw new Error("The inserted key has to be disjoint with all other keys.");
 			}
+		}
+
+		const n = newNode(key, value, parent);
+		if (parent === null) { //newly added node is root
+			this.root = n;
+			return;
+		} else if (n.key.max < parent.key.min) {
+			parent.left = n;
+		} else {
+			parent.right = n;
+		}
+
+		let z: Node<T> = n;
+
+		while (parent !== null) {
+			updateHeight(parent);
+
+			const x = parent.parent;
+			if (x === null) {
+				break;
+			}
+
+			if (balanceFactor(x) <= -2 || balanceFactor(x) >= 2) {//grandparent is unbalanced
+				if (parent === x.left) {
+					if (z === x.left.left) //case 1
+						rotateRight(this, x);
+
+					else if (z === x.left.right) {//case 3
+						rotateLeft(this, parent);
+						rotateRight(this, x);
+					}
+				}
+				else if (parent === x.right) {
+					if (z === x.right.right) //case 2
+						rotateLeft(this, x);
+
+					else if (z === x.right.left) {//case 4
+						rotateRight(this, parent);
+						rotateLeft(this, x);
+					}
+				}
+				break;
+			}
+			parent = parent.parent;
+			z = z.parent!;
 		}
 	}
 
-	/**
-	 * This will replace the given old node with the given new node.
-	 *
-	 * The old node will be completely detached from the tree meaning that it will have neither children nor a parent
-	 * after this operation. The new node is assumed to be detached from the tree.
-	 *
-	 * This will not check whether the tree is valid afterwards.
-	 *
-	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
-	 * `value` values of all nodes in the tree will be the same after this operation as before.
-	 *
-	 * @param oldNode
-	 * @param newNode
-	 * @returns The old node but casted to the `DetachedNode` type.
-	 */
-	private dangerouslyReplaceNode(oldNode: Node<T>, newNode: DetachedNode<T>): DetachedNode<T> {
-		const _new = newNode as Node<T>;
+	private transplant(u: Node<T>, v: Node<T> | null): void {
+		if (u.parent === null) //u is root
+			this.root = v;
+		else if (u === u.parent.left) //u is left child
+			u.parent.left = v;
+		else //u is right child
+			u.parent.right = v;
 
-		const parent = oldNode.parent;
-		if (!parent) {
-			if (this.root === oldNode) {
-				_new.left = oldNode.left;
-				_new.right = oldNode.right;
-				oldNode.left = null;
-				oldNode.right = null;
-				this.root = _new;
-			} else {
-				throw new Error("The old node cannot be a detached node.");
-			}
-		} else {
+		if (v !== null)
+			v.parent = u.parent;
+	}
+	private avlDeleteFixup(n: Node<T>): void {
+		let p: Node<T> | null = n;
 
-			_new.left = oldNode.left;
-			_new.right = oldNode.right;
-			_new.parent = parent;
-			oldNode.left = null;
-			oldNode.right = null;
-			oldNode.parent = null;
-			if (parent.left === oldNode) {
-				parent.left = newNode;
-			} else /* if (parent.right === oldNode) */ {
-				parent.right = newNode;
+		while (p !== null) {
+			updateHeight(p);
+
+			if (balanceFactor(p) <= -2 || balanceFactor(p) >= 2) { //grandparent is unbalanced
+				const x = p;
+				let y: Node<T>, z: Node<T>;
+
+				//taller child of x will be y
+				if (height(x.left) > height(x.right))
+					y = x.left!;
+				else
+					y = x.right!;
+
+				//taller child of y will be z
+				if (height(y.left) > height(y.right)) {
+					z = y.left!;
+				} else if (height(y.left) < height(y.right)) {
+					z = y.right!;
+				} else { //same height, go for single rotation
+					if (y === x.left) {
+						z = y.left!;
+					} else {
+						z = y.right!;
+					}
+				}
+
+				if (y === x.left) {
+					if (z === x.left.left) { //case 1
+						rotateRight(this, x);
+					} else if (z === x.left.right) {//case 3
+						rotateLeft(this, y);
+						rotateRight(this, x);
+					}
+				}
+				else if (y === x.right) {
+					if (z === x.right.right) {//case 2
+						rotateLeft(this, x);
+					} else if (z === x.right.left) {//case 4
+						rotateRight(this, y);
+						rotateLeft(this, x);
+					}
+				}
 			}
+			p = p.parent;
 		}
-
-		return oldNode as DetachedNode<T>;
 	}
 	/**
 	 * Detached the given node from the tree.
@@ -696,49 +736,54 @@ class AVLTree<T> {
 	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
 	 * `value` values of all nodes in the tree will be the same after this operation as before.
 	 *
-	 * @param node
+	 * @param z
 	 */
-	detachNode(node: Node<T>): DetachedNode<T> {
-		if (node.left == null && node.right == null) {
-			if (node.parent == null) {
-				this.root = null;
-			} else {
-				const parent: Node<T> = node.parent;
-				if (parent.left == node) {
-					parent.left = null;
-				} else /* if (parent.right == node) */ {
-					parent.right = null;
-				}
-				this.rebalance(parent);
-			}
-			node.parent = null;
-			return node as DetachedNode<T>;
+	detachNode(z: Node<T>): void {
+		if (z.left === null) {
+			this.transplant(z, z.right);
+			if (z.right !== null)
+				this.avlDeleteFixup(z.right);
 		}
-
-		const child = node.left != null ? rightmostNode(node.left) : leftmostNode(node.right!);
-		return this.dangerouslyReplaceNode(node, this.detachNode(child));
+		else if (z.right === null) {
+			this.transplant(z, z.left);
+			if (z.left !== null)
+				this.avlDeleteFixup(z.left);
+		}
+		else {
+			const y = leftmostNode(z.right); //leftmostNode element in right subtree
+			if (y.parent !== z) {
+				this.transplant(y, y.right);
+				y.right = z.right;
+				y.right.parent = y;
+			}
+			this.transplant(z, y);
+			y.left = z.left;
+			y.left.parent = y;
+			if (y !== null)
+				this.avlDeleteFixup(y);
+		}
 	}
 
 	deleteCharacter(char: number): boolean {
 		const node = this.nodeOf(char);
 		if (node) {
 			const { min, max } = node.key;
-			if (min != char) {
+			if (min !== char) {
 				// [min char ...
 
-				if (max != char) {
+				if (max !== char) {
 					// [min char max]
 					node.key = { min: node.key.min, max: char - 1 };
 					this.insert({ min: char + 1, max: max }, node.value);
 				} else {
-					// [min char==max]
+					// [min char===max]
 					node.key = { min: node.key.min, max: node.key.max - 1 };
 				}
-			} else if (max != char) {
-				// [min==char max]
+			} else if (max !== char) {
+				// [min===char max]
 				node.key = { min: node.key.min - 1, max: node.key.max };
 			} else {
-				// min == max == char
+				// min === max === char
 				this.detachNode(node);
 			}
 		}
@@ -754,7 +799,7 @@ class AVLTree<T> {
 		if (leftEdge) {
 			const { min, max } = leftEdge.key;
 
-			if (min == rMin) {
+			if (min === rMin) {
 				// there is nothing left of range.min
 				if (max > rMax) {
 					// [[min/rMin rMax] max]
@@ -764,7 +809,7 @@ class AVLTree<T> {
 				} else {
 					// The left node has to be removed
 					this.detachNode(leftEdge);
-					if (max == rMax) {
+					if (max === rMax) {
 						return; // we got lucky and found an exact match, so we're done here
 					}
 				}
@@ -781,7 +826,7 @@ class AVLTree<T> {
 					// we adjust the range of the leftEdge and insert a new node
 					this.insert({ min: rMax + 1, max: max }, leftEdge.value);
 					return;
-				} else if (max == rMax) {
+				} else if (max === rMax) {
 					// [min [rMin rMax/max]]
 					return;
 				} /* else {
@@ -790,14 +835,14 @@ class AVLTree<T> {
 				} */
 			}
 
-			if (min == rMin && max == rMax) {
+			if (min === rMin && max === rMax) {
 				// we got lucky and found an exact match
 				this.detachNode(leftEdge);
 				return;
 			}
 		}
 
-		const rightEdge = this.nodeOf(range.max);
+		let rightEdge = this.nodeOf(range.max);
 		if (rightEdge) {
 			const { max } = rightEdge.key;
 
@@ -807,23 +852,23 @@ class AVLTree<T> {
 			if (max > rMax) {
 				// [rMin <min rMax] max>
 				rightEdge.key = { min: rMax + 1, max: rightEdge.key.max };
-			} else /* if (max == rMax) */ {
+			} else /* if (max === rMax) */ {
 				// [rMin [min rMax/max]]
 				this.detachNode(rightEdge);
+				rightEdge = null;
 			}
 		}
 
 		// search and delete all node which are included by the range
 		// since we handle the edge case already, all node are either completely in the range or not at all
-
-		while (true) {
-			const node = this.nodeInRange(range);
-			if (node) {
-				this.detachNode(node);
-			} else {
-				break;
-			}
+		const toRemove: Node<T>[] = [];
+		let current = this.leftmostNodeInRange(range);
+		while (current) {
+			toRemove.push(current);
+			current = rightNeighbor(current);
 		}
+
+		toRemove.forEach(node => this.detachNode(node));
 	}
 
 	/**
@@ -1020,36 +1065,65 @@ class AVLTree<T> {
 			ins.forEach(([range, v]) => this.insert(range, v));
 		}
 	}
+}
 
-	/**
-	 * Re-balances the given node.
-	 *
-	 * This operation is guaranteed to uphold the __referential integrity__ of all nodes. This means that the `key` and
-	 * `value` values of all nodes in the tree will be the same after this operation as before.
-	 *
-	 * @param n
-	 */
-	private rebalance(n: Node<T>): void {
-		setBalance(n);
 
-		if (n.balance == -2) {
-			if (height(n.left!.left) >= height(n.left!.right))
-				n = rotateRight(n);
-			else
-				n = rotateLeftThenRight(n);
-
-		} else if (n.balance == 2) {
-			if (height(n.right!.right) >= height(n.right!.left))
-				n = rotateLeft(n);
-			else
-				n = rotateRightThenLeft(n);
-		}
-
-		if (n.parent != null) {
-			this.rebalance(n.parent);
-		} else {
-			this.root = n;
-		}
+function newNode<T>(key: CharRange, value: T, parent: Node<T> | null): Node<T> {
+	return {
+		key, value, parent,
+		height: 1, left: null, right: null
+	};
+}
+function height<T>(n: ReadonlyNode<T> | null): number {
+	return n?.height ?? 0;
+}
+function updateHeight<T>(n: Node<T>): void {
+	n.height = 1 + Math.max(height(n.right), height(n.left));
+}
+function balanceFactor<T>(n: ReadonlyNode<T>): number {
+	return height(n.left) - height(n.right);
+}
+function rotateLeft<T>(tree: AVLTree<T>, x: Node<T>): void {
+	const y = x.right!;
+	x.right = y.left;
+	if (y.left !== null) {
+		y.left.parent = x;
 	}
+	y.parent = x.parent;
+	if (x.parent === null) { //x is root
+		tree.root = y;
+	}
+	else if (x === x.parent.left) { //x is left child
+		x.parent.left = y;
+	}
+	else { //x is right child
+		x.parent.right = y;
+	}
+	y.left = x;
+	x.parent = y;
 
+	updateHeight(x);
+	updateHeight(y);
+}
+function rotateRight<T>(tree: AVLTree<T>, x: Node<T>): void {
+	const y = x.left!;
+	x.left = y.right;
+	if (y.right !== null) {
+		y.right.parent = x;
+	}
+	y.parent = x.parent;
+	if (x.parent === null) { //x is root
+		tree.root = y;
+	}
+	else if (x === x.parent.right) { //x is left child
+		x.parent.right = y;
+	}
+	else { //x is right child
+		x.parent.left = y;
+	}
+	y.right = x;
+	x.parent = y;
+
+	updateHeight(x);
+	updateHeight(y);
 }
