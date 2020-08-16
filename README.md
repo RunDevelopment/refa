@@ -20,7 +20,7 @@ __At this point in time, the library is still in development and partially incom
 
   * RE to NFA (_lookarounds are not implemented yet_)
   * NFA to DFA and DFA to NFA
-  * NFA to RE and DFA to RE (_requires testing_)
+  * NFA to RE and DFA to RE
 
 - DFA and NFA operations
 
