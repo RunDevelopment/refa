@@ -133,9 +133,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	set(char: number, value: T): void {
 		checkChar(char);
 		this.tree.deleteCharacter(char);
-		//this.tree.validateTree("deleteCharacter");
 		this.tree.insert({ min: char, max: char }, value);
-		//this.tree.validateTree("insert");
 	}
 
 	/**
@@ -149,15 +147,12 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	setEvery(chars: CharRange, value: T): void {
 		checkRange(chars);
 		this.tree.deleteRange(chars);
-		//this.tree.validateTree("deleteRange");
 		this.tree.insert(chars, value);
-		//this.tree.validateTree("insert");
 	}
 
 	delete(char: number): boolean {
 		if (!Number.isFinite(char)) return false;
 		const result = this.tree.deleteCharacter(char);
-		//this.tree.validateTree("deleteCharacter");
 		return result;
 	}
 
@@ -171,14 +166,12 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	deleteEvery(range: CharRange): void {
 		checkRange(range);
 		this.tree.deleteRange(range);
-		//this.tree.validateTree("deleteRange");
 	}
 
 	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
 		this.tree.map((r, v) => {
 			return mapFn(v, r, this);
 		});
-		//this.tree.validateTree("map");
 	}
 	mapRange(
 		range: CharRange,
@@ -187,7 +180,6 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this.tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});
-		//this.tree.validateTree("mapWithGaps");
 	}
 
 	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void {
