@@ -1,6 +1,6 @@
 import { Simple, Expression, Node, Parent, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
 import { CharSet } from "./char-set";
-import { cachedFunc, DFS, firstOf, minOf, assertNever } from "./util";
+import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "./util";
 import { FAIterator } from "./fa-iterator";
 
 
@@ -239,18 +239,19 @@ function eliminateStates(nodeList: NodeList): void {
 			type: "Alternation",
 			alternatives: [asConcatenation(a), asConcatenation(b)]
 		};
-	}
-	function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): void {
-		for (const alt of alternation.alternatives) {
-			if (alt.elements.length === 1) {
-				const first = alt.elements[0];
-				if (first.type === "CharacterClass") {
-					first.characters = first.characters.union(char.characters);
-					return;
+
+		function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): void {
+			for (const alt of alternation.alternatives) {
+				if (alt.elements.length === 1) {
+					const first = alt.elements[0];
+					if (first.type === "CharacterClass") {
+						first.characters = first.characters.union(char.characters);
+						return;
+					}
 				}
 			}
+			alternation.alternatives.push(asConcatenation(char));
 		}
-		alternation.alternatives.push(asConcatenation(char));
 	}
 	function star(a: RegexFANodeTransition): RegexFANodeTransition {
 		switch (a.type) {
@@ -294,6 +295,35 @@ function eliminateStates(nodeList: NodeList): void {
 				};
 		}
 	}
+	function copy(a: RegexFANodeTransition): RegexFANodeTransition {
+		switch (a.type) {
+			case "Alternation":
+				return {
+					type: "Alternation",
+					alternatives: a.alternatives.map(a => copy(a) as Simple<Concatenation>)
+				};
+			case "Concatenation":
+				return {
+					type: "Concatenation",
+					elements: a.elements.map(e => copy(e as RegexFANodeTransition) as Simple<Element>)
+				};
+			case "CharacterClass":
+				return {
+					type: "CharacterClass",
+					characters: a.characters
+				};
+			case "Quantifier":
+				return {
+					type: "Quantifier",
+					alternatives: a.alternatives.map(a => copy(a) as Simple<Concatenation>),
+					max: a.max,
+					min: a.min,
+				};
+
+			default:
+				throw assertNever(a);
+		}
+	}
 
 	function removeTrivialReflexiveTransition(state: RegexFANode): void {
 		if (state.out.has(state)) {
@@ -320,14 +350,15 @@ function eliminateStates(nodeList: NodeList): void {
 				nodeList.linkNodes(inState, state, concat(inTrans, star(refTrans)));
 			}
 		}
+
 	}
 	function removeTrivialConcat(state: RegexFANode): null | RegexFANode[] {
 		if (state.in.size === 1 && state.out.size === 1) {
 			// (A) -[a]-> (B) -[b]-> (C)  ==  (A) -[ab]-> (C)
-			const [inState,] = firstOf(state.in)!;
-			const [outState,] = firstOf(state.out)!;
-			const inTrans = nodeList.unlinkNodes(inState, state)!;
-			const outTrans = nodeList.unlinkNodes(state, outState)!;
+			const [inState, inTrans] = firstOf(state.in)!;
+			const [outState, outTrans] = firstOf(state.out)!;
+			nodeList.unlinkNodes(inState, state);
+			nodeList.unlinkNodes(state, outState);
 
 			linkWithUnion(inState, outState, concat(inTrans, outTrans));
 
@@ -363,13 +394,13 @@ function eliminateStates(nodeList: NodeList): void {
 			const refStar = star(refTrans);
 			state.in.forEach((inTrans, inState) => {
 				state.out.forEach((outTrans, outState) => {
-					linkWithUnion(inState, outState, concat(inTrans, concat(refStar, outTrans)));
+					linkWithUnion(inState, outState, concat(copy(inTrans), concat(copy(refStar), copy(outTrans))));
 				});
 			});
 		} else {
 			state.in.forEach((inTrans, inState) => {
 				state.out.forEach((outTrans, outState) => {
-					linkWithUnion(inState, outState, concat(inTrans, outTrans));
+					linkWithUnion(inState, outState, concat(copy(inTrans), copy(outTrans)));
 				});
 			});
 		}
@@ -572,31 +603,25 @@ function equalToQuantifiedElement(
 	quant: Simple<Quantifier>,
 	element: Simple<Element> | Simple<Concatenation>
 ): boolean {
-	if (element.type === "Alternation" && element.alternatives.length === 1) {
-		if (equalToQuantifiedElement(quant, element.alternatives[0])) {
-			return true;
+	if (element.type === "Alternation") {
+		return structurallyEqualAlternatives(quant.alternatives, element.alternatives);
+	} else if (element.type === "Concatenation") {
+		if (element.elements.length === 1) {
+			return equalToQuantifiedElement(quant, element.elements[0]);
+		} else {
+			return quant.alternatives.length === 1 && structurallyEqualConcatenation(quant.alternatives[0], element);
 		}
-	}
-	if (element.type === "Concatenation" && element.elements.length === 1) {
-		if (equalToQuantifiedElement(quant, element.elements[0])) {
-			return true;
-		}
-	}
-
-	if (quant.alternatives.length === 1) {
-		const alt = quant.alternatives[0];
-		if (element.type === "Concatenation") {
-			return structurallyEqualConcatenation(alt, element);
-		}
-
-		if (alt.elements.length === 1) {
-			return structurallyEqual(alt.elements[0], element);
+	} else {
+		if (quant.alternatives.length === 1) {
+			const alt = quant.alternatives[0];
+			if (alt.elements.length === 1) {
+				return structurallyEqual(alt.elements[0], element);
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
-	} else {
-		return element.type === "Alternation"
-			&& structurallyEqualAlternatives(quant.alternatives, element.alternatives);
 	}
 }
 
@@ -754,43 +779,39 @@ function inlineConcat(concat: Simple<Concatenation>): boolean {
 function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 	let optimized = false;
 
-	// make e.g. a*a -> a+
-	for (let i = 1; i < elements.length; i++) {
-		const quant = elements[i - 1];
-		const after = elements[i];
-		if (quant.type === "Quantifier") {
-			if (after.type === "Quantifier" && structurallyEqualAlternatives(quant.alternatives, after.alternatives)) {
-				// e.g. a+a* -> a+ , a{2,6}a{1,3} -> a{3,9}
-				quant.min += after.min;
-				quant.max += after.max;
-				elements.splice(i, 1);
-				i--;
-				optimized = true;
-			} else if (equalToQuantifiedElement(quant, after)) {
+	function consumeNonQuantifierLeftToRight(): void {
+		// make e.g. a*a -> a+
+		filterMut(elements, (after, quant) => {
+			if (quant && quant.type === "Quantifier" && equalToQuantifiedElement(quant, after)) {
 				// e.g. a*a
 				quant.min++;
 				quant.max++;
-				elements.splice(i, 1);
-				i--;
 				optimized = true;
+				return false;
+			} else {
+				return true;
 			}
-		}
+		});
 	}
 
-	// make e.g. aa* -> a+
-	for (let i = elements.length - 1; i >= 1; i--) {
-		const before = elements[i - 1];
-		const quant = elements[i];
-		if (quant.type === "Quantifier") {
-			if (equalToQuantifiedElement(quant, before)) {
-				// e.g. aa*
-				quant.min++;
-				quant.max++;
-				elements.splice(i - 1, 1);
+	consumeNonQuantifierLeftToRight();
+	elements.reverse();
+	consumeNonQuantifierLeftToRight();
+	elements.reverse();
+
+	// make e.g. a*a+ -> a+
+	filterMut(elements, (after, quant) => {
+		if (quant && quant.type === "Quantifier" && after.type === "Quantifier") {
+			if (structurallyEqualAlternatives(quant.alternatives, after.alternatives)) {
+				// e.g. a+a* -> a+ , a{2,6}a{1,3} -> a{3,9}
+				quant.min += after.min;
+				quant.max += after.max;
 				optimized = true;
+				return false;
 			}
 		}
-	}
+		return true;
+	});
 
 	return optimized;
 }

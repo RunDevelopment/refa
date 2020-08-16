@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { literalToString, literalToNFA } from "./helper/fa";
+import { literalToString, literalToNFA, nfaEqual } from "./helper/fa";
 import { Literal, toLiteral } from "../src/js";
 import { NFA } from "../src/nfa";
 
@@ -40,8 +40,10 @@ describe("toRegex", function () {
 			for (const { literal, expected } of cases) {
 				it(literalToString(literal), function () {
 					const nfa = literalToNFA(literal);
-					const actual = toLiteral(nfa.toRegex());
+					const re = nfa.toRegex();
+					const actual = toLiteral(re);
 					assert.strictEqual(`/${actual.source}/${actual.flags}`, expected);
+					assert.isTrue(nfaEqual(nfa, NFA.fromRegex(re, nfa.options)));
 				});
 			}
 		}
@@ -51,33 +53,33 @@ describe("toRegex", function () {
 	describe("Intersections", function () {
 
 		test([
-			//{
-			//	literals: [
-			//		/a+/,
-			//		/a*/,
-			//	],
-			//	expected: String.raw`/a+/`
-			//},
-			//{
-			//	literals: [
-			//		/a+ba*|cbc/,
-			//		/a*ba+/,
-			//	],
-			//	expected: String.raw`/a+ba+/`
-			//},
-			//{
-			//	literals: [
-			//		/\s\.\s|[a.]*\.[a.]+/,
-			//		/[a.]+\.[a.]*/,
-			//	],
-			//	expected: String.raw`/(?:\.[.a]*\.|[.a]+\.(?:(?:[.a]*\.)?|[.a]*\.))[.a]+/`
-			//},
+			{
+				literals: [
+					/a+/,
+					/a*/,
+				],
+				expected: String.raw`/a+/`
+			},
+			{
+				literals: [
+					/a+ba*|cbc/,
+					/a*ba+/,
+				],
+				expected: String.raw`/a+ba+/`
+			},
+			{
+				literals: [
+					/\s\.\s|[a.]*\.[a.]+/,
+					/[a.]+\.[a.]*/,
+				],
+				expected: String.raw`/\.[.a]*\.[.a]*|[.a]+\.(?:(?:[.a]*\.)?[.a]+|[.a]*\.[.a]*)/`
+			},
 			{
 				literals: [
 					/[&.]*\.[&.]+/,
 					/[&.]+\.[&.]*/,
 				],
-				expected: String.raw`/(?:\.[&.]*\.|[&.]+\.(?:(?:[&.]*\.)?|[&.]*\.))[&.]+/`
+				expected: String.raw`/[&.]+\.(?:[&.]*\.)?[&.]+|[&.]*\.[&.]*\.[&.]*/i`
 			},
 		]);
 
@@ -93,10 +95,11 @@ describe("toRegex", function () {
 					for (let i = 1; i < literals.length; i++) {
 						inter = NFA.intersect(inter, literalToNFA(literals[i]))
 					}
-					console.log(inter.toString());
 
-					const actual = toLiteral(inter.toRegex());
+					const re = inter.toRegex();
+					const actual = toLiteral(re);
 					assert.strictEqual(`/${actual.source}/${actual.flags}`, expected);
+					assert.isTrue(nfaEqual(inter, NFA.fromRegex(re, inter.options)));
 				});
 			}
 		}

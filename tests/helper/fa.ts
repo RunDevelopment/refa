@@ -56,3 +56,11 @@ export function reachableFinalStates(nfa: ReadonlyNFA): number {
 	}
 	return count;
 }
+
+export function nfaEqual(a: ReadonlyNFA, b: ReadonlyNFA): boolean {
+	const dfaA = DFA.fromNFA(a);
+	const dfaB = DFA.fromNFA(b);
+	dfaA.minimize();
+	dfaB.minimize();
+	return dfaA.structurallyEqual(dfaB);
+}
