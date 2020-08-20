@@ -291,6 +291,43 @@ export function* IterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
 }
 
 
+/**
+ * Traverses the given graph in any order. All elements will be visited exactly once.
+ *
+ * @param root
+ * @param next
+ */
+export function traverse<S extends object>(root: S, next: (element: S) => Iterable<S>): void {
+	const visited = new WeakSet<S>();
+
+	// It's important that this is implemented iteratively.
+	// A recursive implementation might cause a stack overflow.
+
+	let toCheck: readonly S[] = [root];
+
+	while (toCheck.length > 0) {
+		const newToCheck: S[] = [];
+
+		for (let i = 0, l = toCheck.length; i < l; i++) {
+			const element = toCheck[i];
+
+			if (!visited.has(element)) {
+				visited.add(element);
+
+				for (const nextElement of next(element)) {
+					if (!visited.has(nextElement)) {
+						newToCheck.push(nextElement);
+					}
+				}
+			}
+		}
+
+		toCheck = newToCheck;
+	}
+
+}
+
+
 export function createIndexMap<T>(items: Iterable<T>): Map<T, number> {
 	const map = new Map<T, number>();
 	let i = 0;

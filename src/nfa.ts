@@ -1,6 +1,6 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { DFS, assertNever, createIndexMap, cachedFunc } from "./util";
+import { assertNever, createIndexMap, cachedFunc, traverse } from "./util";
 import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
 import { faIterateStates, FAIterator, faCanReachFinal } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
@@ -140,14 +140,14 @@ export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 
 		// 1) Get all nodes
 		const allNodes = new Set<NFANode>(this.finals);
-		DFS(this.initial, node => {
+		traverse(this.initial, node => {
 			allNodes.add(node);
 			return [...node.in.keys(), ...node.out.keys()];
 		});
 
 		// 2) Get all nodes reachable from the initial state
 		const reachableFromInitial = new Set<NFANode>();
-		DFS(this.initial, node => {
+		traverse(this.initial, node => {
 			reachableFromInitial.add(node);
 			return node.out.keys();
 		});
@@ -168,7 +168,7 @@ export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 		// 5) Get all nodes which can reach a final state
 		const canReachFinal = new Set<NFANode>();
 		for (const final of this.finals) {
-			DFS(final, node => {
+			traverse(final, node => {
 				if (canReachFinal.has(node)) {
 					return [];
 				}
@@ -401,7 +401,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		// which can potentially speed up the intersection by orders of magnitude.
 
 		// (It doesn't matter in which way we traverse the NFA as long as we traverse all of it.)
-		DFS(nodeList.initial, from => {
+		traverse(nodeList.initial, from => {
 			addOutgoing(from);
 			return from.out.keys();
 		});
@@ -652,7 +652,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		const translate = cachedFunc<ReadonlyDFANode, NFANode>(() => nodeList.createNode());
 		translate.cache.set(dfa.nodes.initial, nodeList.initial);
 
-		DFS(dfa.nodes.initial, dfaNode => {
+		traverse(dfa.nodes.initial, dfaNode => {
 			const transNode = translate(dfaNode);
 			const byNode = invertCharMap(dfaNode.out, options.maxCharacter);
 			byNode.forEach((charSet, outDfaNode) => {
@@ -807,7 +807,7 @@ function localCopy(nodeList: NodeList, toCopy: ReadonlySubList): SubList {
 	const translate = cachedFunc<ReadonlyNFANode, NFANode>(() => nodeList.createNode());
 	translate.cache.set(toCopy.initial, initial);
 
-	DFS(toCopy.initial, node => {
+	traverse(toCopy.initial, node => {
 		const trans = translate(node);
 
 		if (toCopy.finals.has(node)) {

@@ -1,4 +1,4 @@
-import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } from "./util";
+import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, BFS, traverse } from "./util";
 import { FiniteAutomaton, TooManyNodesError } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
@@ -388,7 +388,7 @@ export class DFA implements ReadonlyDFA {
 		};
 
 		// adjust nodes
-		BFS(this.nodes.initial, node => {
+		traverse(this.nodes.initial, node => {
 			node.out.map(translate);
 			return node.out.values();
 		});
@@ -413,7 +413,7 @@ export class DFA implements ReadonlyDFA {
 		this.nodes.linkNodes(trap, trap, all);
 
 		// Link all gaps to the trap state
-		BFS(this.nodes.initial, node => {
+		traverse(this.nodes.initial, node => {
 			const outNodes = new Set(node.out.values());
 			node.out.mapRange(all, (nodeOrUndef => nodeOrUndef ?? trap));
 			return outNodes;
@@ -488,7 +488,7 @@ export class DFA implements ReadonlyDFA {
 		const maxNodes = creationOptions?.maxNodes ?? Infinity;
 
 		const transitionSets = new Set<CharSet>();
-		DFS(nfa.nodes.initial, n => {
+		traverse(nfa.nodes.initial, n => {
 			n.out.forEach(c => transitionSets.add(c));
 			return n.out.keys();
 		});
@@ -569,7 +569,7 @@ export class DFA implements ReadonlyDFA {
 			}
 		}
 
-		BFS(nodeList.initial, state => {
+		traverse(nodeList.initial, state => {
 			const nodes = new Set<DFANode>();
 			for (const set of alphabet) {
 				const out = getOutNode(state, set);
@@ -605,7 +605,7 @@ function findEquivalenceClasses(nodeList: ReadonlyNodeList, maxCharacter: number
 	//  1. Determine all nodes
 	//  2. Determine all used character sets
 	//  3. Create the in map of all nodes
-	DFS(nodeList.initial, node => {
+	traverse(nodeList.initial, node => {
 		allNodes.push(node);
 		const out = invertCharMap(node.out, maxCharacter);
 		out.forEach((cs, n) => {
