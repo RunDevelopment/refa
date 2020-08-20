@@ -1,5 +1,5 @@
 import { withoutSet, firstOf, intersectSet, DFS, cachedFunc, filterMut, BFS } from "./util";
-import { FiniteAutomaton } from "./finite-automaton";
+import { FiniteAutomaton, TooManyNodesError } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
@@ -181,6 +181,21 @@ function toStateIter(list: NodeList): FAIterator<DFANode> {
 		isFinal: n => list.finals.has(n)
 	};
 }
+
+export interface CreationOptions {
+	/**
+	 * The maximum number of nodes the DFA creation operation is allowed to create before throwing a
+	 * `TooManyNodesError`.
+	 *
+	 * If the maximum number of nodes is unset or set to `Infinity`, the DFA creation operation may create as many nodes
+	 * as necessary to construct the DFA. This might cause the machine to run out of memory as the conversion from NFA
+	 * to DFA may create up to 2^n many nodes.
+	 */
+	maxNodes?: number;
+}
+
+export type ReadonlyCreationOptions = Readonly<CreationOptions>;
+
 
 export interface DFAOptions {
 	/**
@@ -437,7 +452,9 @@ export class DFA implements ReadonlyDFA {
 		return new DFA(nodeList, options);
 	}
 
-	static fromNFA(nfa: ReadonlyNFA): DFA {
+	static fromNFA(nfa: ReadonlyNFA, creationOptions?: ReadonlyCreationOptions): DFA {
+		const maxNodes = creationOptions?.maxNodes ?? Infinity;
+
 		const transitionSets = new Set<CharSet>();
 		DFS(nfa.nodes.initial, n => {
 			n.out.forEach(c => transitionSets.add(c));
@@ -446,6 +463,7 @@ export class DFA implements ReadonlyDFA {
 
 		const alphabet = getBaseSets(transitionSets);
 		const nodeList = new NodeList();
+		let nodeCount = 0;
 
 		/**
 		 * This will use the subset method to construct the DFA.
@@ -472,6 +490,10 @@ export class DFA implements ReadonlyDFA {
 			if (dfaNode === undefined) {
 				// this will create a new node AND set it as final if it contains a final NFA state
 				dfaNode = nodeList.createNode();
+				nodeCount++;
+				if (nodeCount > maxNodes) {
+					throw new TooManyNodesError();
+				}
 				if (array.some(n => nfa.nodes.finals.has(n))) {
 					nodeList.finals.add(dfaNode);
 				}
