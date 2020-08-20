@@ -3,7 +3,7 @@ import { FiniteAutomaton, TooManyNodesError } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
-import { FAIterator } from "./fa-iterator";
+import { FAIterator, faIterateStates } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
 import type { ReadonlyNFA, ReadonlyNFANode } from "./nfa";
 import { Simple, Expression } from "./ast";
@@ -349,6 +349,9 @@ export class DFA implements ReadonlyDFA {
 		return isEqual(this.nodes.initial, other.nodes.initial);
 	}
 
+	/**
+	 * [Minimizes](https://en.wikipedia.org/wiki/DFA_minimization) this DFA.
+	 */
 	minimize(): void {
 		this.nodes.removeUnreachable();
 		if (this.nodes.initial.out.isEmpty) {
@@ -394,6 +397,35 @@ export class DFA implements ReadonlyDFA {
 		const mappedFinals = [...this.nodes.finals].map(translate);
 		this.nodes.finals.clear();
 		mappedFinals.forEach(n => this.nodes.finals.add(n));
+	}
+
+	/**
+	 * Complements this DFA.
+	 *
+	 * This DFA after calling this function will accept all words that are not accepted by this DFA before calling this
+	 * function.
+	 */
+	complement(): void {
+		const all: CharRange = { min: 0, max: this.options.maxCharacter };
+
+		// create a trap state
+		const trap = this.nodes.createNode();
+		this.nodes.linkNodes(trap, trap, all);
+
+		// Link all gaps to the trap state
+		BFS(this.nodes.initial, node => {
+			const outNodes = new Set(node.out.values());
+			node.out.mapRange(all, (nodeOrUndef => nodeOrUndef ?? trap));
+			return outNodes;
+		});
+
+		// Complement the set of final states.
+		const nonFinal = withoutSet(faIterateStates(this.nodes.stateIterator()), this.nodes.finals);
+		this.nodes.finals.clear();
+		nonFinal.forEach(n => this.nodes.finals.add(n));
+
+		// one or more final states might have become trap states, so let's remove them
+		this.nodes.removeUnreachable();
 	}
 
 

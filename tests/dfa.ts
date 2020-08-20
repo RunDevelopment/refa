@@ -586,6 +586,85 @@ describe("DFA", function () {
 
 	});
 
+	describe("Complement", function () {
+
+		test([
+			{
+				literal: /[^\s\S]/,
+				expected: `
+					[0] -> [1] : 0..ffff
+
+					[1] -> [1] : 0..ffff`
+			},
+			{
+				literal: /(?:)/,
+				expected: `
+					(0) -> [1] : 0..ffff
+
+					[1] -> [1] : 0..ffff`
+			},
+			{
+				literal: /[\s\S]*/,
+				expected: `
+					(0) -> none`
+			},
+			{
+				literal: /[\s\S]+/,
+				expected: `
+					[0] -> none`
+			},
+			{
+				literal: /a+/,
+				expected: `
+					[0] -> [1] : 0..60, 62..ffff
+					    -> (2) : 61
+
+					[1] -> [1] : 0..ffff
+
+					(2) -> [1] : 0..60, 62..ffff
+					    -> (2) : 61`
+			},
+			{
+				literal: /a*b*c*/,
+				expected: `
+					(0) -> [1] : 0..60, 64..ffff
+					    -> (2) : 61
+					    -> (3) : 62
+					    -> (4) : 63
+
+					[1] -> [1] : 0..ffff
+
+					(2) -> [1] : 0..60, 64..ffff
+					    -> (2) : 61
+					    -> (3) : 62
+					    -> (4) : 63
+
+					(3) -> [1] : 0..61, 64..ffff
+					    -> (3) : 62
+					    -> (4) : 63
+
+					(4) -> [1] : 0..62, 64..ffff
+					    -> (4) : 63`
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			expected: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, expected } of cases) {
+				it(literalToString(literal), function () {
+					const dfa = literalToDFA(literal);
+					dfa.complement();
+					assert.strictEqual(dfa.toString(), removeIndentation(expected));
+				});
+			}
+		}
+
+	});
+
 	describe("isEmpty", function () {
 
 		it("constructed from 0 words", function () {
