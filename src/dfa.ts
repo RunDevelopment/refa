@@ -541,7 +541,7 @@ export class DFA implements ReadonlyDFA {
 				dfaNode = nodeList.createNode();
 				nodeCount++;
 				if (nodeCount > maxNodes) {
-					throw new TooManyNodesError();
+					throw new TooManyNodesError(`Number of created nodes exceeded ${maxNodes}.`);
 				}
 				if (array.some(n => nfa.nodes.finals.has(n))) {
 					nodeList.finals.add(dfaNode);
