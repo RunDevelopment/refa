@@ -299,32 +299,15 @@ export function* IterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
  */
 export function traverse<S extends object>(root: S, next: (element: S) => Iterable<S>): void {
 	const visited = new WeakSet<S>();
+	const toCheck: S[] = [root];
 
-	// It's important that this is implemented iteratively.
-	// A recursive implementation might cause a stack overflow.
-
-	let toCheck: readonly S[] = [root];
-
-	while (toCheck.length > 0) {
-		const newToCheck: S[] = [];
-
-		for (let i = 0, l = toCheck.length; i < l; i++) {
-			const element = toCheck[i];
-
-			if (!visited.has(element)) {
-				visited.add(element);
-
-				for (const nextElement of next(element)) {
-					if (!visited.has(nextElement)) {
-						newToCheck.push(nextElement);
-					}
-				}
-			}
+	let element;
+	while ((element = toCheck.pop())) {
+		if (!visited.has(element)) {
+			visited.add(element);
+			toCheck.push(...next(element));
 		}
-
-		toCheck = newToCheck;
 	}
-
 }
 
 
