@@ -42,6 +42,14 @@ class NodeList {
 		return t;
 	}
 
+	relinkNodes(from: RegexFANode, to: RegexFANode, newTransition: RegexFANodeTransition): void {
+		if (!from.out.has(to)) {
+			throw new Error("The two nodes are not linked");
+		}
+		from.out.set(to, newTransition);
+		to.in.set(from, newTransition);
+	}
+
 }
 
 function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeList | null {
@@ -156,28 +164,40 @@ function eliminateStates(nodeList: NodeList): void {
 		if (a.type === "Concatenation") {
 			if (a.elements.length === 0) return b;
 			if (b.type === "Concatenation") {
-				return {
-					type: "Concatenation",
-					elements: [...a.elements, ...b.elements]
-				};
+				a.elements.push(...b.elements);
+			} else if (b.type === "Alternation") {
+				factorOutCommonPreAndSuffix(b);
+				a.elements.push(b);
 			} else {
-				return {
-					type: "Concatenation",
-					elements: [...a.elements, b]
-				};
+				a.elements.push(b);
 			}
+			inlineConcat(a);
+			return a;
 		}
 		if (b.type === "Concatenation") {
 			if (b.elements.length === 0) return a;
-			return {
-				type: "Concatenation",
-				elements: [a, ...b.elements]
-			};
+			if (a.type === "Alternation") {
+				factorOutCommonPreAndSuffix(a);
+				b.elements.unshift(a);
+			} else {
+				b.elements.unshift(a);
+			}
+			inlineConcat(b);
+			return b;
 		}
-		return {
+
+		if (a.type === "Alternation") {
+			factorOutCommonPreAndSuffix(a);
+		}
+		if (b.type === "Alternation") {
+			factorOutCommonPreAndSuffix(b);
+		}
+		const newConcat: Simple<Concatenation> = {
 			type: "Concatenation",
 			elements: [a, b]
 		};
+		inlineConcat(newConcat);
+		return newConcat;
 	}
 	function asConcatenation(a: Simple<Element | Concatenation>): Simple<Concatenation> {
 		if (a.type === "Concatenation") {
@@ -295,48 +315,121 @@ function eliminateStates(nodeList: NodeList): void {
 				};
 		}
 	}
-	function copy(a: RegexFANodeTransition): RegexFANodeTransition {
+	function plus(a: RegexFANodeTransition): RegexFANodeTransition {
 		switch (a.type) {
+			case "Quantifier":
+				if (a.max === 0) return { type: "Concatenation", elements: [] };
+				if (a.min === 0) {
+					a.min = 0;
+					a.max = Infinity;
+					return a;
+				}
+				if (a.min === 1) {
+					a.max = Infinity;
+					return a;
+				}
+				return {
+					type: "Quantifier",
+					min: 1,
+					max: Infinity,
+					alternatives: [asConcatenation(a)]
+				};
+
+			case "Alternation":
+				return {
+					type: "Quantifier",
+					min: 1,
+					max: Infinity,
+					alternatives: a.alternatives
+				};
+
+			case "Concatenation":
+				if (a.elements.length === 0) return a;
+				return {
+					type: "Quantifier",
+					min: 1,
+					max: Infinity,
+					alternatives: [a]
+				};
+
+			default:
+				return {
+					type: "Quantifier",
+					min: 1,
+					max: Infinity,
+					alternatives: [asConcatenation(a)]
+				};
+		}
+	}
+	function copy(t: RegexFANodeTransition): RegexFANodeTransition {
+		switch (t.type) {
 			case "Alternation":
 				return {
 					type: "Alternation",
-					alternatives: a.alternatives.map(a => copy(a) as Simple<Concatenation>)
+					alternatives: t.alternatives.map(a => copy(a) as Simple<Concatenation>)
 				};
 			case "Concatenation":
 				return {
 					type: "Concatenation",
-					elements: a.elements.map(e => copy(e as RegexFANodeTransition) as Simple<Element>)
+					elements: t.elements.map(e => copy(e as RegexFANodeTransition) as Simple<Element>)
 				};
 			case "CharacterClass":
 				return {
 					type: "CharacterClass",
-					characters: a.characters
+					characters: t.characters
 				};
 			case "Quantifier":
 				return {
 					type: "Quantifier",
-					alternatives: a.alternatives.map(a => copy(a) as Simple<Concatenation>),
-					max: a.max,
-					min: a.min,
+					alternatives: t.alternatives.map(a => copy(a) as Simple<Concatenation>),
+					max: t.max,
+					min: t.min,
 				};
 
 			default:
-				throw assertNever(a);
+				throw assertNever(t);
 		}
 	}
 
 	function removeTrivialReflexiveTransition(state: RegexFANode): void {
 		if (state.out.has(state)) {
-			if (state.out.size === 2) {
+			if (state.in.size === 2 && state.out.size === 2) {
+				// (A) -[a]-> (B) -[b]-> (C)  ==  (A) -[a]-> (B) -[c*b]-> (C)  ==  (A) -[ac*]-> (B) -[b]-> (C)
+				//             Δ  \
+				//              \[c]
+
+				// Since we choose the between two equivalent outcomes here, we will try to make a good choice.
+
+				const refTrans = nodeList.unlinkNodes(state, state)!;
+				const [outState, outTrans] = firstOf(state.out)!;
+				const [inState, inTrans] = firstOf(state.in)!;
+
+				if (structurallyEqual(inTrans, refTrans)) {
+					// a == c  =>  (A) -[a+]-> (B) -[b]-> (C)
+					nodeList.relinkNodes(inState, state, plus(refTrans));
+				} else {
+					if (structurallyEqual(refTrans, outTrans)) {
+						// c == b  =>  (A) -[a]-> (B) -[b+]-> (C)
+						nodeList.relinkNodes(state, outState, plus(refTrans));
+					} else {
+						// (A) -[a]-> (B) -[c*b]-> (C)
+						nodeList.relinkNodes(state, outState, concat(star(refTrans), outTrans));
+					}
+				}
+
+			} else if (state.out.size === 2) {
 				// (A1) -[a1]-v                     (A1) -[a1]-v
 				// (A2) -[a2]-> (B) -[b]-> (C)  ==  (A2) -[a2]-> (B) -[c*b]-> (C)
 				// (An) -[an]-^  Δ  \               (An) -[an]-^
 				//                \[c]
 
 				const refTrans = nodeList.unlinkNodes(state, state)!;
-				const [outState,] = firstOf(state.out)!;
-				const outTrans = nodeList.unlinkNodes(state, outState)!;
-				nodeList.linkNodes(state, outState, concat(star(refTrans), outTrans));
+				const [outState, outTrans] = firstOf(state.out)!;
+				if (structurallyEqual(refTrans, outTrans)) {
+					nodeList.relinkNodes(state, outState, plus(refTrans));
+				} else {
+					nodeList.relinkNodes(state, outState, concat(star(refTrans), outTrans));
+				}
 
 			} else if (state.in.size === 2) {
 				//                /[b1]-> (C1)                       /[b1]-> (C1)
@@ -345,9 +438,12 @@ function eliminateStates(nodeList: NodeList): void {
 				//         [c]/
 
 				const refTrans = nodeList.unlinkNodes(state, state)!;
-				const [inState,] = firstOf(state.in)!;
-				const inTrans = nodeList.unlinkNodes(inState, state)!;
-				nodeList.linkNodes(inState, state, concat(inTrans, star(refTrans)));
+				const [inState, inTrans] = firstOf(state.in)!;
+				if (structurallyEqual(inTrans, refTrans)) {
+					nodeList.relinkNodes(inState, state, plus(refTrans));
+				} else {
+					nodeList.relinkNodes(inState, state, concat(inTrans, star(refTrans)));
+				}
 			}
 		}
 
@@ -497,7 +593,7 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simpl
 	}
 }
 
-function structurallyEqual(a: Simple<Element>, b: Simple<Element>): boolean {
+function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element | Concatenation>): boolean {
 	if (a.type !== b.type) return false;
 	switch (a.type) {
 		case "Alternation": {
@@ -513,6 +609,10 @@ function structurallyEqual(a: Simple<Element>, b: Simple<Element>): boolean {
 		case "CharacterClass": {
 			const other = b as Simple<CharacterClass>;
 			return a.characters.equals(other.characters);
+		}
+		case "Concatenation": {
+			const other = b as Simple<Concatenation>;
+			return structurallyEqualConcatenation(a, other);
 		}
 		case "Quantifier": {
 			const other = b as Simple<Quantifier>;
