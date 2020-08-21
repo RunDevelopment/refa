@@ -24,6 +24,14 @@ export interface DFANode extends ReadonlyDFANode {
 interface ReadonlyNodeList extends Iterable<ReadonlyDFANode> {
 	readonly initial: ReadonlyDFANode;
 	readonly finals: ReadonlySet<ReadonlyDFANode>;
+	/**
+	 * Returns the number of nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states. This will not include unreachable final states.
+	 *
+	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 */
+	count(): number;
 }
 let nodeListCounter = 0;
 class NodeList implements ReadonlyNodeList {
@@ -136,6 +144,15 @@ class NodeList implements ReadonlyNodeList {
 			toRemove.forEach(n => node.out.deleteEvery(n));
 		}
 		removeDead(this.initial);
+	}
+
+	count(): number {
+		let c = 0;
+		traverse(this.initial, n => {
+			c++;
+			return n.out.values();
+		});
+		return c;
 	}
 
 	*[Symbol.iterator](): IterableIterator<DFANode> {

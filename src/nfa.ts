@@ -25,6 +25,14 @@ export interface NFANode extends ReadonlyNFANode {
 export interface ReadonlyNodeList extends Iterable<ReadonlyNFANode> {
 	readonly initial: ReadonlyNFANode;
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
+	/**
+	 * Returns the number of nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states. This will not include unreachable final states.
+	 *
+	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 */
+	count(): number;
 }
 
 let nodeListCounter = 0;
@@ -184,6 +192,15 @@ export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 				removeNode(node);
 			}
 		});
+	}
+
+	count(): number {
+		let c = 0;
+		traverse(this.initial, n => {
+			c++;
+			return n.out.keys();
+		});
+		return c;
 	}
 
 	[Symbol.iterator](): Iterator<NFANode> {
