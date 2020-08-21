@@ -17,7 +17,7 @@ export interface ParseOptions {
 	 * How to the parser will handle backreferences.
 	 *
 	 * `"resolve"`: This is the default option. The parser will replace all non-resolvable backreferences with an empty
-	 * character class. This will cause all path containing a non-resolvable backreference to be removed from
+	 * character class. This will cause all paths containing a non-resolvable backreference to be removed from
 	 * constructed FA. Backreferences which can be resolved as one constant word, will be replaced with that word.
 	 *
 	 * E.g. `(a*)(a|\1)(\1|\2)` will be parsed as `(a*)(a|[])([]|a)` which is equivalent to `a*aa`.
@@ -57,10 +57,9 @@ export interface ParseOptions {
 	 * - Removing alternatives where all paths go through an empty character class.
 	 * - Removing 0 quantifiers.
 	 * - Inlining single-alternative groups.
-	 * - Removing backreferences which always resolve to the empty string.
+	 * - Removing backreferences that always resolve to the empty string.
 	 *
-	 * These optimization might prevent that certain backreferences or lookarounds get disabled (if configured) or throw
-	 * an error (if configured).
+	 * These optimization might prevent that certain backreferences or lookarounds from throwing an error.
 	 */
 	disableOptimizations?: boolean;
 }
