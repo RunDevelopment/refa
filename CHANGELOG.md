@@ -1,8 +1,41 @@
 # Changelog
 
+## 0.4.0 (2020-08-23)
+
+### Breaking changes
+
+- Removed `JS.toSource`. Use `JS.toLiteral` instead.
+
+### Added
+
+- `NFA#suffixes()` will change the NFA to accepts all suffixes of its language.
+- New options for intersection operations.
+- Added a method to count the number of nodes in DFA and NFA.
+- `DFA#complement()` will make the DFA match the opposite language.
+- New options for the DFA creation operation.
+- New `ReadonlyDFA` interface.
+- New `ReadonlyCharMap<T>` interface.
+- `CharSet#compare(CharSet)` will compare two character sets. This can be used to sort character sets.
+- Added regex stress test. This will check common operations on all 2.5K regexes of the PrismJS syntax highlighter.
+
+### Changed
+
+- The RE produced by the `toRegex` functions is now optimized to be as minimal as possible.
+- `JS.toLiteral` will now make efficient use of flags to produce smaller literals.
+
+### Fixed
+
+- Fixed and improved `DFA.minimize()`.
+- Fixed `CharMap`'s AVL tree implementation.
+- Underlying implementation of the `toRegex` functions will now the correct AST and that much faster.
+- Fixed `filterMut` in util.
+- `toPatternString` now correctly handles quantified empty concatenations.
+
+
 ## 0.3.1 (2020-08-09)
 
 ### Fixed
+
 - The prefix and suffix optimization removed final states from the graph but not from the set of final states.
 - The intersection algorithm can now handle final states not reachable from the initial states of either NFAs.
 
