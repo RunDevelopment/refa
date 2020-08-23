@@ -11,6 +11,9 @@ export interface FiniteAutomaton {
 
 	/**
 	 * Returns whether the formal language accepted by this FA contains finitely many words.
+	 *
+	 * __Note__: Finite does not mean that all words can be iterated in practice. E.g. the set of all Unicode words with
+	 * 10 or less characters contains 2.6e54 many words and can be accepted by a DFA with only 11 states.
 	 */
 	isFinite: boolean;
 

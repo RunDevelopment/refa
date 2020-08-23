@@ -73,6 +73,8 @@ export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 	/**
 	 * Adds a transition from `from` to `to` using the given non-empty set of characters.
 	 *
+	 * If two nodes are already linked, the character sets will be combined.
+	 *
 	 * @param from
 	 * @param to
 	 * @param characters
