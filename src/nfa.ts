@@ -547,15 +547,61 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	/**
 	 * Modifies this NFA such that all prefixes of all accepted words are also accepted.
 	 *
-	 * This means that all states reachable for the initial state that can reach a final state will be made final. All
-	 * unreachable states (cannot be reached from initial state and cannot reach (or are not) a final state) will be
-	 * removed by this operation.
+	 * If the language of this NFA is empty, then it will remain empty.
+	 *
+	 * Unreachable states will be removed by this operation.
 	 */
 	prefixes(): void {
 		this.nodes.removeUnreachable();
+
+		if (this.isEmpty) {
+			return;
+		}
+
 		for (const node of this.nodes) {
 			this.nodes.finals.add(node);
 		}
+	}
+
+	/**
+	 * Modifies this NFA such that all suffixes of all accepted words are also accepted.
+	 *
+	 * If the language of this NFA is empty, then it will remain empty.
+	 *
+	 * Unreachable states will be removed by this operation.
+	 */
+	suffixes(): void {
+		this.nodes.removeUnreachable();
+
+		if (this.isEmpty) {
+			return;
+		}
+
+		function inSet(node: NFANode): CharSet {
+			let total: CharSet | undefined = undefined;
+
+			node.in.forEach(set => {
+				if (total === undefined) {
+					total = set;
+				} else {
+					total = total.union(set);
+				}
+			})
+
+			if (total === undefined) {
+				throw new Error("The node doesn't have incoming transitions.");
+			}
+			return total;
+		}
+
+		const initial = this.nodes.initial;
+		for (const node of this.nodes) {
+			if (node !== initial) {
+				const set = inSet(node);
+				this.nodes.linkNodes(initial, node, set);
+			}
+		}
+		this.nodes.finals.add(initial);
 	}
 
 

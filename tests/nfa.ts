@@ -1,10 +1,11 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
-import { fromStringToUnicode } from "../src/words";
+import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { literalToString, literalToNFA, removeIndentation, reachableFinalStates } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
 import { Literal, Parser } from "../src/js";
 import { RegExpParser } from "regexpp";
+import { prefixes, suffixes } from "./helper/util";
 
 
 describe("NFA", function () {
@@ -544,8 +545,8 @@ describe("NFA", function () {
 				const persistentWords = typeof words === "string" ? words.split(/\s+/g) : [...words];
 				const title = persistentWords.map(w => JSON.stringify(w)).join(", ");
 				const chars = persistentWords.map(w => fromStringToUnicode(w));
-				const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
 				it(title, function () {
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
 					if (expected === undefined) {
 						const unique = [...new Set<string>(persistentWords)];
 						assert.sameMembers(getWords(nfa), unique);
@@ -1032,6 +1033,100 @@ describe("NFA", function () {
 		});
 
 	});
+
+	describe("prefixes", function () {
+
+		test([
+			{
+				words: [],
+			},
+			{
+				words: [""],
+			},
+			{
+				words: ["", "a"],
+			},
+			{
+				words: ["", "a", "aa", "aaa"],
+			},
+			{
+				words: ["foobar", "foo", "bar"],
+			},
+			{
+				words: ["bet", "let", "street", "sheet", "diet"],
+			},
+			{
+				words: ["bet", "bat", "boot", "boat"],
+			},
+		]);
+
+		interface TestCase {
+			words: readonly string[];
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { words } of cases) {
+				const title = words.map(w => JSON.stringify(w)).join(", ");
+				it(`${title}`, function () {
+					const chars = words.map(w => fromStringToUnicode(w));
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					nfa.prefixes();
+
+					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
+					const expected = [...prefixes(words)];
+					assert.sameMembers(acutal, expected);
+				});
+			}
+		}
+
+	})
+
+	describe("suffixes", function () {
+
+		test([
+			{
+				words: [],
+			},
+			{
+				words: [""],
+			},
+			{
+				words: ["", "a"],
+			},
+			{
+				words: ["", "a", "aa", "aaa"],
+			},
+			{
+				words: ["foobar", "foo", "bar"],
+			},
+			{
+				words: ["bet", "let", "street", "sheet", "diet"],
+			},
+			{
+				words: ["bet", "bat", "boot", "boat"],
+			},
+		]);
+
+		interface TestCase {
+			words: readonly string[];
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { words } of cases) {
+				const title = words.map(w => JSON.stringify(w)).join(", ");
+				it(`${title}`, function () {
+					const chars = words.map(w => fromStringToUnicode(w));
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					nfa.suffixes();
+
+					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
+					const expected = [...suffixes(words)];
+					assert.sameMembers(acutal, expected);
+				});
+			}
+		}
+
+	})
 
 	it("issue #5", function () {
 		const ast = new RegExpParser().parseLiteral(/<[=>]?|>=?|=>?|:=|\/=?|\*\*?|[&+-]/.toString());
