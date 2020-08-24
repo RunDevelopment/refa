@@ -37,7 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "chai": "^4.2.0",
-    "dependency-cruiser": "^9.3.0",
+    "dependency-cruiser": "^9.11.1",
     "eslint": "^6.8.0",
     "mocha": "^7.1.1",
     "rimraf": "^3.0.2",
@@ -46,7 +46,7 @@
     "unicode-13.0.0": "^0.8.0"
   },
   "dependencies": {
-    "regexpp": "^3.0.0"
+    "regexpp": "^3.1.0"
   },
   "files": [
     "dist/**"
