@@ -1,6 +1,6 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
-import { assertNever, createIndexMap, cachedFunc, traverse } from "./util";
+import { assertNever, cachedFunc, traverse } from "./util";
 import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
 import { faIterateStates, FAIterator, faCanReachFinal } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
@@ -387,11 +387,6 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 
 	isDisjointWith(other: ReadonlyNFA, options?: ReadonlyIntersectionOptions): boolean {
 		checkOptionsCompatibility(this.options, other.options);
-
-		const approximation = isDisjointApproximation(this.nodes, other.nodes, this.options.maxCharacter);
-		if (approximation !== null) {
-			return approximation;
-		}
 
 		const { nodeList, addOutgoing, isFinal } = createNFAIntersectionEnv(this, other, options);
 
@@ -1410,9 +1405,9 @@ function createNFAIntersectionEnv(
 
 	const maxNodes = options?.maxNodes ?? Infinity;
 
-	// iterating the right nodes again and again takes time, so just cache them here
-	const leftNodes = [...left.nodes];
-	const rightNodes = [...right.nodes];
+	// lazy maps
+	const { toIndex: leftToIndex, toNode: leftToNode } = lazyNodeIndex(left.nodes);
+	const { toIndex: rightToIndex, toNode: rightToNode } = lazyNodeIndex(right.nodes);
 
 	// the set of final nodes
 	const leftFinals = left.nodes.finals;
@@ -1424,60 +1419,48 @@ function createNFAIntersectionEnv(
 	}
 
 	// node pair translation
-	const leftIndexMap = createIndexMap(leftNodes);
-	const rightIndexMap = createIndexMap(rightNodes);
-	const indexBackTranslatorMap = new Map<NFANode, number>();
+	const indexBackTranslatorMap = new Map<NFANode, string>();
+	indexBackTranslatorMap.set(nodeList.initial, "0;0");
+	const indexTranslatorCache: Record<string, NFANode | undefined> = {
+		"0;0": nodeList.initial
+	};
 	let createdNodes = 0;
-	const indexTranslator = cachedFunc<number, NFANode>(index => {
-		if (createdNodes > maxNodes) {
-			throw new TooManyNodesError();
-		}
-		createdNodes++;
-
-		const node = nodeList.createNode();
-		indexBackTranslatorMap.set(node, index);
-
-		const rightIndex = index % rightIndexMap.size;
-		const leftIndex = Math.floor(index / rightIndexMap.size);
-		if (leftFinals.has(leftNodes[leftIndex]) && rightFinals.has(rightNodes[rightIndex])) {
-			nodeList.finals.add(node);
-		}
-
-		return node;
-	});
-	indexTranslator.cache.set(0, nodeList.initial);
-	indexBackTranslatorMap.set(nodeList.initial, 0);
-
 	function translate(leftNode: ReadonlyNFANode, rightNode: ReadonlyNFANode): NFANode {
-		const leftIndex = leftIndexMap.get(leftNode);
-		const rightIndex = rightIndexMap.get(rightNode);
+		const leftKey = leftToIndex(leftNode);
+		const rightKey = rightToIndex(rightNode);
+		const key = "" + leftKey + ";" + rightKey;
 
-		if (leftIndex === undefined || rightIndex === undefined) {
-			// this shouldn't happen
-			throw new Error("All node should be indexed.");
+		let node = indexTranslatorCache[key];
+		if (node === undefined) {
+			if (createdNodes > maxNodes) {
+				throw new TooManyNodesError();
+			}
+			createdNodes++;
+
+			node = nodeList.createNode();
+			indexTranslatorCache[key] = node;
+			indexBackTranslatorMap.set(node, key);
+
+			if (leftFinals.has(leftNode) && rightFinals.has(rightNode)) {
+				nodeList.finals.add(node);
+			}
 		}
-
-		return indexTranslator(leftIndex * rightIndexMap.size + rightIndex);
+		return node;
 	}
 
 	function translateBack(node: NFANode): [ReadonlyNFANode, ReadonlyNFANode] {
-		const nodeIndex = indexBackTranslatorMap.get(node);
-		if (nodeIndex === undefined) {
+		const nodeKey = indexBackTranslatorMap.get(node);
+		if (nodeKey === undefined) {
 			throw new Error("All created nodes have to be indexed.");
 		}
 
-		const rightIndex = nodeIndex % rightIndexMap.size;
-		const leftIndex = Math.floor(nodeIndex / rightIndexMap.size);
-
-		return [leftNodes[leftIndex], rightNodes[rightIndex]];
+		const separatorIndex = nodeKey.indexOf(";");
+		const leftKey = nodeKey.substr(0, separatorIndex);
+		const rightKey = nodeKey.substr(separatorIndex + 1);
+		return [leftToNode(leftKey), rightToNode(rightKey)];
 	}
 
-	// charset intersection cache
-	const intersectionCharSets: CharSet[] = [];
-	leftNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
-	rightNodes.forEach(n => intersectionCharSets.push(...n.out.values()));
-
-	const intersect = createCharSetIntersectFn(intersectionCharSets);
+	const intersect = createCharSetIntersectFn();
 
 	// add edges
 
@@ -1495,11 +1478,19 @@ function createNFAIntersectionEnv(
 	}
 
 	function isFinal(node: NFANode): boolean {
-		const [leftNode, rightNode] = translateBack(node);
-		return leftFinals.has(leftNode) && rightFinals.has(rightNode);
+		return nodeList.finals.has(node);
 	}
 
 	return { nodeList, addOutgoing, isFinal };
+}
+
+const HASH_MASK = 0xFFFF;
+function computeHash(a: CharSet): number {
+	let hash = a.maximum & HASH_MASK;
+	a.ranges.forEach(({ min, max }) => {
+		hash = ((hash * 31 + min) ^ max * 31) & HASH_MASK;
+	});
+	return hash;
 }
 /**
  * Creates a function which can intersect any two char sets of the given set of character sets.
@@ -1508,128 +1499,95 @@ function createNFAIntersectionEnv(
  *
  * @param charSets
  */
-function createCharSetIntersectFn(charSets: Iterable<CharSet>): (a: CharSet, b: CharSet) => CharSet | null {
+function createCharSetIntersectFn(): (a: CharSet, b: CharSet) => CharSet | null {
+	const hashTable: Record<number, CharSet | undefined> = {};
 	const charSetIdMap = new Map<CharSet, number>();
-	let charSetIdCounter = 0;
 
-	// the hash table will be used to detect equivalent but not identical char sets
-	const hashTable: (CharSet[] | undefined)[] = [];
-	function addCharSet(set: CharSet): void {
-		if (charSetIdMap.has(set)) {
-			return;
-		}
-
-		let hash = 0;
-		set.ranges.forEach(({ min, max }) => {
-			hash = ((hash * 31 + min) ^ max * 31) & 0xFFFF;
-		});
-
-		let hashEntry = hashTable[hash];
-		if (hashEntry === undefined) {
-			hashTable[hash] = hashEntry = [];
-		}
-
-		const added = hashEntry.some(cs => {
-			if (cs.equals(set)) {
-				charSetIdMap.set(set, charSetIdMap.get(cs)!);
-				return true;
+	function getId(set: CharSet): number {
+		let id = charSetIdMap.get(set);
+		if (id === undefined) {
+			let hash = computeHash(set);
+			while (true) {
+				const entry = hashTable[hash];
+				if (entry === undefined) {
+					// make new entry
+					hashTable[hash] = set;
+					id = charSetIdMap.size;
+					break;
+				} else if (entry.equals(set)) {
+					// same as previous set
+					id = charSetIdMap.get(entry)!;
+					break;
+				} else {
+					// handle hash collision
+					hash = (hash + 1) & HASH_MASK;
+				}
 			}
-			return false;
-		});
-
-		if (!added) {
-			charSetIdMap.set(set, charSetIdCounter++);
+			charSetIdMap.set(set, id);
 		}
-
-		hashEntry.push(set);
-	}
-
-	for (const set of charSets) {
-		addCharSet(set);
+		return id;
 	}
 
 	// use the id of char sets to store pairs
 	// null be represent empty char sets
-	const intersectionCache: (CharSet | null)[] = [];
-	const charSetIdSize = charSetIdCounter;
+	const intersectionCache: Record<string, CharSet | null | undefined> = {};
 
 	return (a: CharSet, b: CharSet): CharSet | null => {
-		const aIndex = charSetIdMap.get(a);
-		const bIndex = charSetIdMap.get(b);
-
-		if (aIndex === undefined || bIndex === undefined) {
-			// this shouldn't happen
-			throw new Error("All char sets should be indexed.");
-		}
+		const aId = getId(a);
+		const bId = getId(b);
 
 		// trivial
-		if (aIndex == bIndex) {
+		if (aId == bId) {
 			return a;
 		}
 
 		// since intersection is symmetric we don't care about the order
-		let index;
-		if (aIndex < bIndex) {
-			index = aIndex * charSetIdSize + bIndex;
+		let key;
+		if (aId < bId) {
+			key = "" + aId + ";" + bId;
 		} else {
-			index = bIndex * charSetIdSize + aIndex;
+			key = "" + bId + ";" + aId;
 		}
 
-		let result: CharSet | null | undefined = intersectionCache[index];
+		let result: CharSet | null | undefined = intersectionCache[key];
 		if (result === undefined) {
 			result = a.intersect(b);
 			if (result.isEmpty) {
 				result = null;
 			}
-			intersectionCache[index] = result;
+			intersectionCache[key] = result;
 		}
 
 		return result;
 	}
 }
 
-function outCharsOfInitial(nodes: ReadonlyNodeList, maxCharacter: number): { union: CharSet; final: CharSet } {
-	let union: CharSet | undefined = undefined;
-	let final: CharSet | undefined = undefined;
-
-	nodes.initial.out.forEach((chars, out) => {
-		union = union ? union.union(chars) : chars;
-		if (nodes.finals.has(out)) {
-			final = final ? final.union(chars) : chars;
-		}
-	});
+interface LazyIndex {
+	toNode(id: number | string): ReadonlyNFANode;
+	toIndex(node: ReadonlyNFANode): number;
+}
+function lazyNodeIndex(nodes: ReadonlyNodeList): LazyIndex {
+	const ids = [nodes.initial];
+	const map = new Map<ReadonlyNFANode, number>();
+	map.set(nodes.initial, 0);
 
 	return {
-		union: union ?? CharSet.empty(maxCharacter),
-		final: final ?? CharSet.empty(maxCharacter),
+		toNode(id: number | string): ReadonlyNFANode {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const node = ids[id as any];
+			if (node === undefined) {
+				throw new Error("Unknown id");
+			}
+			return node;
+		},
+		toIndex(node: ReadonlyNFANode): number {
+			let id = map.get(node);
+			if (id === undefined) {
+				id = ids.length;
+				ids.push(node);
+				map.set(node, id);
+			}
+			return id;
+		}
 	};
-}
-function isDisjointApproximation(
-	left: ReadonlyNodeList,
-	right: ReadonlyNodeList,
-	maxCharacter: number
-): boolean | null {
-	if (left.finals.size === 0 || right.finals.size === 0) {
-		// left or right is the empty language
-		return true;
-	}
-	if (left.finals.has(left.initial) && right.finals.has(right.initial)) {
-		// both left and right contain the empty word
-		return false;
-	}
-
-	const leftChars = outCharsOfInitial(left, maxCharacter);
-	const rightChars = outCharsOfInitial(right, maxCharacter);
-
-	if (!leftChars.final.isDisjointWith(rightChars.final)) {
-		// left and right share at least one single-character word
-		return false;
-	}
-	if (leftChars.union.isDisjointWith(rightChars.union)) {
-		// the first characters of all word of left and the first characters of all word from right are always different
-		return true;
-	}
-
-	// couldn't decide by the first character
-	return null;
 }
