@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1 (2020-08-29)
+
+### Changed
+
+- NFA intersection performance optimizations by using lazy data structures. `NFA#disjointWith` is now a lot faster.
+
+### Fixed
+
+- Fixed NFA intersection always discarding the empty word. The intersection can now contain the empty word.
+
+
 ## 0.4.0 (2020-08-23)
 
 ### Breaking changes
