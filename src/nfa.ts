@@ -1410,8 +1410,6 @@ function createNFAIntersectionEnv(
 
 	const maxNodes = options?.maxNodes ?? Infinity;
 
-	const nodeList = new NodeList();
-
 	// iterating the right nodes again and again takes time, so just cache them here
 	const leftNodes = [...left.nodes];
 	const rightNodes = [...right.nodes];
@@ -1419,6 +1417,11 @@ function createNFAIntersectionEnv(
 	// the set of final nodes
 	const leftFinals = left.nodes.finals;
 	const rightFinals = right.nodes.finals;
+
+	const nodeList = new NodeList();
+	if (leftFinals.has(left.nodes.initial) && rightFinals.has(right.nodes.initial)) {
+		nodeList.finals.add(nodeList.initial);
+	}
 
 	// node pair translation
 	const leftIndexMap = createIndexMap(leftNodes);

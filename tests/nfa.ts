@@ -870,6 +870,13 @@ describe("NFA", function () {
 
 					[2] -> [2] : 61`
 			},
+			{
+				left: /a*/,
+				right: /b*/,
+				// expected == /(?:)/
+				expected: `
+					[0] -> none`
+			},
 		]);
 
 		interface TestCase {
