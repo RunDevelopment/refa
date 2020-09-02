@@ -9,6 +9,22 @@ import type { ReadonlyDFA, ReadonlyDFANode } from "./dfa";
 import { faToRegex } from "./to-regex";
 
 
+/*
+ * ####################################################################################################################
+ * ###                                                                                                              ###
+ * ###                                              I M P O R T A N T                                               ###
+ * ###                                                                                                              ###
+ * ####################################################################################################################
+ *
+ * Note regarding the normalization of node lists and sub lists:
+ *
+ * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
+ * This simple property makes the implementation of all NFA operations efficient and almost trivial.
+ *
+ * ALL of the below operations assume that every given (sub) node list is normalized.
+ */
+
+
 export interface ReadonlyNFANode {
 	readonly id: number;
 	readonly list: ReadonlyNodeList;
@@ -255,21 +271,6 @@ function toStateIter(list: ReadonlySubList): FAIterator<ReadonlyNFANode> {
 		isFinal: n => list.finals.has(n)
 	};
 }
-
-/*
- * ####################################################################################################################
- * ###                                                                                                              ###
- * ###                                              I M P O R T A N T                                               ###
- * ###                                                                                                              ###
- * ####################################################################################################################
- *
- * Note regarding the normalization of node lists and sub lists:
- *
- * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
- * This simple property makes the implementation of all NFA operations efficient and almost trivial.
- *
- * ALL of the below operations assume that every given (sub) node list is normalized.
- */
 
 
 export interface NFAOptions {
