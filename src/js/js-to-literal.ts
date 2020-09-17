@@ -224,10 +224,33 @@ function printInCharClass(char: number): string {
 	return printAsHex(char);
 }
 
+const printableRanges: readonly CharRange[] = [
+	{ min: 0x30, max: 0x39 }, // 0-9
+	{ min: 0x41, max: 0x5A }, // A-Z
+	{ min: 0x61, max: 0x7A }, // a-z
+];
+function printRangeImpl(range: CharRange): string {
+	if (printableRanges.some(({ min, max }) => min <= range.min && range.max <= max)) {
+		// printable ASCII char range
+		return String.fromCharCode(range.min) + "-" + String.fromCharCode(range.max);
+	} else {
+		return printAsHex(range.min) + "-" + printAsHex(range.max);
+	}
+}
 function printRange(range: CharRange): string {
 	if (range.min === range.max) return printInCharClass(range.min);
 	if (range.min === range.max - 1) return printInCharClass(range.min) + printInCharClass(range.max);
-	return printInCharClass(range.min) + "-" + printInCharClass(range.max);
+
+	const size = range.max - range.min + 1;
+	if (size <= 6) {
+		const candidates = [
+			Array.from({ length: size }).map((_, i) => i + range.min).map(printInCharClass).join(""),
+			printRangeImpl(range),
+		];
+		return getShortest(candidates);
+	} else {
+		return printRangeImpl(range);
+	}
 }
 
 function printOutsideOfCharClass(char: number): string {
