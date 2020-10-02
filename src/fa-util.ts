@@ -1,7 +1,7 @@
 import { CharSet } from "./char-set";
-import { cachedFunc, IterateBFS } from "./util";
+import { cachedFunc } from "./util";
 import { wordSetToWords } from "./words";
-import { FAIterator, faMapOut, faIterateStates, faCacheOut, faMapOutIter, faFilterOutIter, faHasCycle } from "./fa-iterator";
+import { FAIterator, faMapOut, faIterateStates, faCacheOut, faMapOutIter } from "./fa-iterator";
 import { rangesToString } from "./char-util";
 
 
@@ -65,55 +65,6 @@ export function faToString<T>(iter: FAIterator<T, Iterable<[T, string]>>): strin
 export function faWithCharSetsToString<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): string {
 	return faToString(faMapOutIter(iter, ([n, cs]) => [n, rangesToString(cs.ranges)]))
 }
-
-
-/**
- * Returns whether the given FA matches a formal language with only finitely many words.
- *
- * @param iter
- */
-export function faIsFinite<T>(iter: FAIterator<T>): boolean {
-	/**
-	 * The goal is to find a cycle from which we can reach any final state. If we can find such a cycle, we can pump as
-	 * many words as we like making the language infinite.
-	 */
-
-	iter = faCacheOut(faMapOut(iter, i => [...i]));
-
-	const states = [...faIterateStates(iter)];
-	const finals = states.filter(iter.isFinal);
-	const inMap = createInTransitionMap(states, iter.getOut);
-
-	// get all states that can reach a final state
-	const statesToFinal = new Set(IterateBFS(finals, s => inMap.get(s)!));
-
-	// an iter where each state can reach a final state
-	const iterToFinal = faFilterOutIter(iter, s => statesToFinal.has(s));
-
-	// If this iter has a cycle, then this cycle will be reachable from the initial state and any node in that cycle can
-	// reach a final state.
-	return !faHasCycle(iterToFinal);
-}
-
-function createInTransitionMap<T>(
-	states: ReadonlySet<T> | readonly T[],
-	getOut: (state: T) => Iterable<T>
-): Map<T, Set<T>> {
-	const inTransitions = new Map<T, Set<T>>();
-
-	for (const s of states) {
-		inTransitions.set(s, new Set<T>());
-	}
-
-	for (const s of states) {
-		for (const out of getOut(s)) {
-			inTransitions.get(out)!.add(s);
-		}
-	}
-
-	return inTransitions;
-}
-
 
 /**
  * Iterates all word sets of the given FA.

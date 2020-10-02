@@ -891,7 +891,7 @@ describe("NFA", function () {
 
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
-					const actual = NFA.intersect(nfaLeft, nfaRight).toString();
+					const actual = NFA.fromIntersection(nfaLeft, nfaRight).toString();
 					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
 				});
 			}
@@ -947,10 +947,10 @@ describe("NFA", function () {
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
 
-					const intersect = NFA.intersect(nfaLeft, nfaRight);
+					const intersect = NFA.fromIntersection(nfaLeft, nfaRight);
 
 					const expected = toArray(intersect.wordSets());
-					const actual = toArray(NFA.intersectionWordSets(nfaLeft, nfaRight));
+					const actual = toArray(nfaLeft.intersectionWordSets(nfaRight));
 
 					assert.strictEqual(actual.length, expected.length, "Number of word sets");
 					for (let i = 0; i < actual.length; i++) {
@@ -1142,7 +1142,7 @@ describe("NFA", function () {
 		let total: NFA | undefined = undefined;
 		for (const alt of ast.pattern.alternatives) {
 			const nfa = NFA.fromRegex(parser.parseElement(alt).expression, { maxCharacter: 0xFFFF });
-			nfa.removeEmptyWord();
+			nfa.withoutEmptyWord();
 
 			if (!total) {
 				total = nfa;

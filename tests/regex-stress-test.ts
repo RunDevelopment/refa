@@ -21,7 +21,7 @@ function equalLanguage(expected: ReadonlyDFA, re: Simple<Expression>, maxCharact
 	const nfa = NFA.fromRegex(re, { maxCharacter }, {
 		disableLookarounds: true
 	});
-	const dfa = DFA.fromNFA(nfa, { maxNodes: 100000 });
+	const dfa = DFA.fromFA(nfa, { maxNodes: 100000 });
 	dfa.minimize();
 
 	assert.isTrue(expected.structurallyEqual(dfa));
@@ -40,7 +40,7 @@ describe("Regex stress test", function () {
 			const nfa = NFA.fromRegex(expression, { maxCharacter }, {
 				disableLookarounds: true
 			});
-			const dfa = DFA.fromNFA(nfa);
+			const dfa = DFA.fromFA(nfa);
 			dfa.minimize();
 
 			const re = nfa.toRegex();

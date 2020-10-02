@@ -9,7 +9,7 @@ export function literalToString(literal: Literal): string {
 
 export function literalToDFA(literal: Literal): DFA {
 	const parsed = Parser.fromLiteral(literal).parse();
-	return DFA.fromNFA(NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter }));
+	return DFA.fromFA(NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter }));
 }
 
 export function literalToNFA(literal: Literal): NFA {
@@ -58,8 +58,8 @@ export function reachableFinalStates(nfa: ReadonlyNFA): number {
 }
 
 export function nfaEqual(a: ReadonlyNFA, b: ReadonlyNFA): boolean {
-	const dfaA = DFA.fromNFA(a);
-	const dfaB = DFA.fromNFA(b);
+	const dfaA = DFA.fromFA(a);
+	const dfaB = DFA.fromFA(b);
 	dfaA.minimize();
 	dfaB.minimize();
 	return dfaA.structurallyEqual(dfaB);

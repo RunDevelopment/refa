@@ -1,12 +1,11 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
-import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
-import { faIterateStates, FAIterator, faCanReachFinal } from "./fa-iterator";
-import { faIterateWordSets, wordSetsToWords, faIsFinite, faWithCharSetsToString } from "./fa-util";
-import { invertCharMap } from "./char-util";
-import type { ReadonlyDFA, ReadonlyDFANode } from "./dfa";
+import { FiniteAutomaton, TransitionIterable, ReadonlyIntersectionOptions, TransitionIterableFA } from "./finite-automaton";
+import { faIterateStates, FAIterator, faCanReachFinal, faMarkPureOut, faMapOut, faTraverse, faLanguageIsFinite } from "./fa-iterator";
+import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
 import { faToRegex } from "./to-regex";
+import { lazyIntersection, TransitionMapBuilder } from "./intersection";
 
 
 /*
@@ -257,27 +256,12 @@ interface ReadonlySubList {
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
 }
 
-function toTransIter(list: ReadonlySubList): FAIterator<ReadonlyNFANode, Iterable<[ReadonlyNFANode, CharSet]>> {
-	return {
-		initial: list.initial,
-		getOut: n => n.out,
-		isFinal: n => list.finals.has(n)
-	};
-}
-function toStateIter(list: ReadonlySubList): FAIterator<ReadonlyNFANode> {
-	return {
-		initial: list.initial,
-		getOut: n => n.out.keys(),
-		isFinal: n => list.finals.has(n)
-	};
-}
-
 
 export interface NFAOptions {
 	/**
 	 * The maximum numerical value any character can have.
 	 *
-	 * This will be the maximum of all underlying {@link CharSet | CharSet}s.
+	 * This will be the maximum of all underlying {@link CharSet}s.
 	 */
 	maxCharacter: number;
 }
@@ -302,50 +286,61 @@ export interface NFAFromRegexOptions {
 
 
 
-export interface ReadonlyNFA extends FiniteAutomaton {
+export interface ReadonlyNFA extends TransitionIterableFA {
 	readonly nodes: ReadonlyNodeList;
 	readonly options: Readonly<NFAOptions>;
+
+	stateIterator(): FAIterator<ReadonlyNFANode>;
+	transitionIterator(): FAIterator<ReadonlyNFANode, ReadonlyMap<ReadonlyNFANode, CharSet>>;
 
 	/**
 	 * Create a mutable copy of this NFA.
 	 */
 	copy(): NFA;
-	/**
-	 * Returns whether the languages of this and the other NFA are disjoint.
-	 *
-	 * The runtime of this algorithm is `O(n * m)` (n = number of states of this NFA, m = number of states of the other
-	 * NFA) but it's a lot faster in practice with the worst case being very rare.
-	 *
-	 * Since this uses the intersection operation, you can supply intersection options.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	isDisjointWith(other: ReadonlyNFA, options?: ReadonlyIntersectionOptions): boolean;
 }
 
-export class NFA implements ReadonlyNFA, FiniteAutomaton {
+export class NFA implements ReadonlyNFA {
 
 	readonly nodes: NodeList;
-	readonly options: Readonly<NFAOptions>;
+	readonly maxCharacter: number;
 
-	private constructor(nodes: NodeList, options: Readonly<NFAOptions>) {
+	private constructor(nodes: NodeList, maxCharacter: number) {
 		this.nodes = nodes;
-		this.options = options;
+		this.maxCharacter = maxCharacter;
+	}
+
+	get options(): Readonly<NFAOptions> {
+		return { maxCharacter: this.maxCharacter };
 	}
 
 	get isEmpty(): boolean {
 		return this.nodes.finals.size === 0;
 	}
-
 	get isFinite(): boolean {
-		return this.isEmpty || faIsFinite(toStateIter(this.nodes));
+		return this.isEmpty || faLanguageIsFinite(this.stateIterator());
+	}
+
+	stateIterator(): FAIterator<ReadonlyNFANode> {
+		const initial: ReadonlyNFANode = this.nodes.initial;
+		const finals: ReadonlySet<ReadonlyNFANode> = this.nodes.finals;
+		return faMarkPureOut({
+			initial,
+			getOut: n => n.out.keys(),
+			isFinal: n => finals.has(n)
+		});
+	}
+	transitionIterator(): FAIterator<ReadonlyNFANode, ReadonlyMap<ReadonlyNFANode, CharSet>> {
+		const initial: ReadonlyNFANode = this.nodes.initial;
+		const finals: ReadonlySet<ReadonlyNFANode> = this.nodes.finals;
+		return faMarkPureOut({
+			initial,
+			getOut: n => n.out,
+			isFinal: n => finals.has(n)
+		});
 	}
 
 	copy(): NFA {
-		const copy = new NFA(new NodeList(), this.options);
-		copy.union(this);
-		return copy;
+		return NFA.fromFA(this);
 	}
 
 	test(word: Iterable<number>): boolean {
@@ -372,145 +367,97 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	}
 
 	wordSets(): Iterable<CharSet[]> {
-		return faIterateWordSets(toTransIter(this.nodes));
+		return faIterateWordSets(this.transitionIterator());
 	}
 	words(): Iterable<number[]> {
 		return wordSetsToWords(this.wordSets());
 	}
 
 	toString(): string {
-		return faWithCharSetsToString(toTransIter(this.nodes));
+		return faWithCharSetsToString(this.transitionIterator());
 	}
 
 	toRegex(): Simple<Expression> {
-		return faToRegex(toTransIter(this.nodes));
+		return faToRegex(this.transitionIterator());
 	}
 
-	isDisjointWith(other: ReadonlyNFA, options?: ReadonlyIntersectionOptions): boolean {
-		checkOptionsCompatibility(this.options, other.options);
 
-		const { nodeList, addOutgoing, isFinal } = createNFAIntersectionEnv(this, other, options);
+	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean {
+		checkCompatibility(this, other);
 
-		return !faCanReachFinal({
-			initial: nodeList.initial,
-			getOut: n => {
-				addOutgoing(n);
-				return n.out.keys();
-			},
-			isFinal
-		});
+		const iter = lazyIntersection(
+			new TransitionMapBuilder(),
+			this.transitionIterator(),
+			other.transitionIterator(),
+			options
+		);
+
+		return !faCanReachFinal(faMapOut(iter, n => n.keys()));
+	}
+	intersectionWordSets(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<CharSet[]> {
+		checkCompatibility(this, other);
+
+		const iter = lazyIntersection(
+			new TransitionMapBuilder(),
+			this.transitionIterator(),
+			other.transitionIterator(),
+			options
+		);
+
+		return faIterateWordSets(iter);
+	}
+	intersectionWords(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<number[]> {
+		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
-	/**
-	 * Returns a new NFA which is equivalent to the intersection of the two given NFAs.
-	 *
-	 * @param left
-	 * @param right
-	 * @param options
-	 */
-	static intersect(left: ReadonlyNFA, right: ReadonlyNFA, options?: ReadonlyIntersectionOptions): NFA {
-		const { nodeList, addOutgoing } = createNFAIntersectionEnv(left, right, options);
-
-		// By recursively creating and following outgoing nodes, we only create the part of the intersection NFA which
-		// is connected to the initial state. This means that we do not create nodes which will be removed either way
-		// which can potentially speed up the intersection by orders of magnitude.
-
-		// (It doesn't matter in which way we traverse the NFA as long as we traverse all of it.)
-		traverse(nodeList.initial, from => {
-			addOutgoing(from);
-			return from.out.keys();
-		});
-
-		// A cleanup still has to be performed because while all states are connected to the initial state, they might
-		// not be able to reach a final state. This will remove such trap states.
-		nodeList.removeUnreachable();
-
-		// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
-		// having less final states will make a lot of the NFA operations more efficient.
-		baseOptimizationReuseFinalStates(nodeList, nodeList);
-
-		return new NFA(nodeList, left.options);
-	}
-
-	/**
-	 * This is equivalent to `NFA.intersect(left, right).wordSets()` but it will lazily create the NFA while iterating.
-	 *
-	 * If only a small fraction of the actual word sets is needed, it might only construct a small part of the
-	 * intersection NFA.
-	 *
-	 * @param left
-	 * @param right
-	 */
-	static intersectionWordSets(
-		left: ReadonlyNFA,
-		right: ReadonlyNFA,
-		options?: ReadonlyIntersectionOptions
-	): Iterable<CharSet[]> {
-		const { nodeList, addOutgoing, isFinal } = createNFAIntersectionEnv(left, right, options);
-
-		return faIterateWordSets({
-			initial: nodeList.initial,
-			getOut: n => {
-				addOutgoing(n);
-				return n.out;
-			},
-			isFinal
-		});
-	}
-
-	/**
-	 * This is equivalent to `NFA.intersect(left, right).words()` but it will lazily create the NFA while iterating.
-	 *
-	 * If only a small fraction of the actual words is needed, it might only construct a small part of the
-	 * intersection NFA.
-	 *
-	 * @param left
-	 * @param right
-	 */
-	static intersectionWords(left: ReadonlyNFA, right: ReadonlyNFA): Iterable<number[]> {
-		return wordSetsToWords(NFA.intersectionWordSets(left, right));
-	}
-
-	/**
-	 * Modifies this NFA to accept all words from this NFA and the given NFA.
-	 *
-	 * @param nfa
-	 */
-	union(nfa: ReadonlyNFA): void {
-		if (nfa === this) {
-			return;
+	private _localCopy(other: TransitionIterable): SubList {
+		if (other instanceof NFA) {
+			return localCopy(this.nodes, other.nodes);
+		} else {
+			return localCopyOfIterator(this.nodes, other.transitionIterator());
 		}
-
-		checkOptionsCompatibility(this.options, nfa.options);
-		baseUnion(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
-	 * Modifies this NFA to accept the concatenation of this NFA and the given NFA.
+	 * Modifies this NFA to accept all words from this NFA and the given FA.
 	 *
-	 * @param nfa
+	 * @param other
 	 */
-	append(nfa: ReadonlyNFA): void {
-		if (this === nfa) {
+	union(other: TransitionIterable): void {
+		if (other === this) {
+			// do nothing
+		} else {
+			checkCompatibility(this, other);
+			baseUnion(this.nodes, this.nodes, this._localCopy(other));
+		}
+	}
+
+	/**
+	 * Modifies this NFA to accept the concatenation of this NFA and the given FA.
+	 *
+	 * @param other
+	 */
+	append(other: TransitionIterable): void {
+		if (this === other) {
 			this.quantify(2, 2);
-			return;
+		} else {
+			checkCompatibility(this, other);
+			baseAppend(this.nodes, this.nodes, this._localCopy(other));
 		}
-		checkOptionsCompatibility(this.options, nfa.options);
-		baseAppend(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
-	 * Modifies this NFA to accept the concatenation of the given NFA and this NFA.
+	 * Modifies this NFA to accept the concatenation of the given NFA and this FA.
 	 *
-	 * @param nfa
+	 * @param other
 	 */
-	prepend(nfa: ReadonlyNFA): void {
-		if (this === nfa) {
+	prepend(other: TransitionIterable): void {
+		if (this === other) {
 			this.quantify(2, 2);
-			return;
+		} else {
+			checkCompatibility(this, other);
+			basePrepend(this.nodes, this.nodes, this._localCopy(other));
 		}
-		checkOptionsCompatibility(this.options, nfa.options);
-		basePrepend(this.nodes, this.nodes, localCopy(this.nodes, nfa.nodes));
 	}
 
 	/**
@@ -530,13 +477,9 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	}
 
 	/**
-	 * After calling this function, this NFA will no longer accept the empty word.
-	 *
-	 * If the NFA does not accept the empty word before calling this function, the NFA will not be changed.
-	 *
-	 * If you want to add the empty word again, quantify this NFA with a minimum of 0 and a maximum of 1.
+	 * Removes the empty word from the accepted languages of this NFA.
 	 */
-	removeEmptyWord(): void {
+	withoutEmptyWord(): void {
 		this.nodes.finals.delete(this.nodes.initial);
 	}
 
@@ -602,13 +545,50 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 
 
 	/**
+	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
+	 *
+	 * @param left
+	 * @param right
+	 * @param options
+	 */
+	static fromIntersection(
+		left: TransitionIterable,
+		right: TransitionIterable,
+		options?: ReadonlyIntersectionOptions
+	): NFA {
+		checkCompatibility(left, right);
+
+		const nodeList = new NodeList();
+
+		const iter = lazyIntersection(
+			nodeList,
+			left.transitionIterator(),
+			right.transitionIterator(),
+			options
+		);
+
+		// traverse the whole iterator to create our NodeList
+		faTraverse(faMapOut(iter, n => n.out.keys()));
+
+		// A cleanup still has to be performed because while all states are connected to the initial state, they might
+		// not be able to reach a final state. This will remove such trap states.
+		nodeList.removeUnreachable();
+
+		// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
+		// having less final states will make a lot of the NFA operations more efficient.
+		baseOptimizationReuseFinalStates(nodeList, nodeList);
+
+		return new NFA(nodeList, left.maxCharacter);
+	}
+
+	/**
 	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
 	 *
 	 * @param options
 	 */
 	static empty(options: Readonly<NFAOptions>): NFA {
 		const nodeList = new NodeList();
-		return new NFA(nodeList, options);
+		return new NFA(nodeList, options.maxCharacter);
 	}
 
 	/**
@@ -626,7 +606,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		nodeList.linkNodes(other, other, allChars);
 		nodeList.finals.add(other);
 
-		return new NFA(nodeList, options);
+		return new NFA(nodeList, options.maxCharacter);
 	}
 
 	static fromRegex(
@@ -656,7 +636,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 				nodeList = createNodeList(node.alternatives, options, creationOptions || {});
 			}
 		}
-		return new NFA(nodeList, options);
+		return new NFA(nodeList, options.maxCharacter);
 	}
 
 	/**
@@ -667,10 +647,11 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 	 */
 	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<NFAOptions>): NFA {
 		const nodeList = new NodeList();
+		const { maxCharacter } = options;
 
 		function getNext(node: NFANode, char: number): NFANode {
-			if (char > options.maxCharacter) {
-				throw new Error(`All characters have to be <= options.maxCharacter (${options.maxCharacter}).`);
+			if (char > maxCharacter) {
+				throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 			}
 			if (!Number.isInteger(char)) {
 				throw new Error(`All characters have to be integers, ${char} is not.`);
@@ -683,7 +664,7 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 			}
 
 			const newNode = nodeList.createNode();
-			const charSet = CharSet.empty(options.maxCharacter).union([{ min: char, max: char }]);
+			const charSet = CharSet.empty(maxCharacter).union([{ min: char, max: char }]);
 			nodeList.linkNodes(node, newNode, charSet);
 
 			return newNode;
@@ -701,29 +682,41 @@ export class NFA implements ReadonlyNFA, FiniteAutomaton {
 		baseOptimizationReuseFinalStates(nodeList, nodeList);
 		baseOptimizationMergeSuffixes(nodeList, nodeList);
 
-		return new NFA(nodeList, options);
+		return new NFA(nodeList, maxCharacter);
 	}
 
-	static fromDFA(dfa: ReadonlyDFA): NFA {
-		const options: NFAOptions = {
-			maxCharacter: dfa.options.maxCharacter
-		};
+	static fromFA(fa: TransitionIterable): NFA {
+		return NFA.fromTransitionIterator(fa.transitionIterator(), { maxCharacter: fa.maxCharacter });
+	}
+
+	static fromTransitionIterator<InputNode>(
+		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
+		options: Readonly<NFAOptions>
+	): NFA {
+		const { maxCharacter } = options;
 		const nodeList = new NodeList();
 
-		const translate = cachedFunc<ReadonlyDFANode, NFANode>(() => nodeList.createNode());
-		translate.cache.set(dfa.nodes.initial, nodeList.initial);
+		const translate = cachedFunc<InputNode, NFANode>(() => nodeList.createNode());
+		translate.cache.set(iter.initial, nodeList.initial);
 
-		traverse(dfa.nodes.initial, dfaNode => {
-			const transNode = translate(dfaNode);
-			const byNode = invertCharMap(dfaNode.out, options.maxCharacter);
-			byNode.forEach((charSet, outDfaNode) => {
+		traverse(iter.initial, node => {
+			const transNode = translate(node);
+
+			if (iter.isFinal(node)) {
+				nodeList.finals.add(transNode);
+			}
+
+			const out = iter.getOut(node);
+			out.forEach((charSet, outDfaNode) => {
+				if (charSet.maximum !== maxCharacter) {
+					throw new Error("Some character sets do not conform to the given maximum.");
+				}
 				nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
 			});
-
-			return byNode.keys();
+			return out.keys();
 		});
 
-		return new NFA(nodeList, options);
+		return new NFA(nodeList, maxCharacter);
 	}
 
 }
@@ -848,8 +841,11 @@ function createNodeList(
 
 }
 
-function checkOptionsCompatibility(thisOptions: Readonly<NFAOptions>, otherOptions: Readonly<NFAOptions>): void {
-	if (thisOptions.maxCharacter !== otherOptions.maxCharacter) {
+function checkCompatibility(
+	a: FiniteAutomaton | TransitionIterable,
+	b: FiniteAutomaton | TransitionIterable
+): void {
+	if (a.maxCharacter !== b.maxCharacter) {
 		throw new RangeError("Both NFAs have to have the same max character.");
 	}
 }
@@ -862,27 +858,34 @@ function checkOptionsCompatibility(thisOptions: Readonly<NFAOptions>, otherOptio
  * @param toCopy
  */
 function localCopy(nodeList: NodeList, toCopy: ReadonlySubList): SubList {
+	return localCopyOfIterator(nodeList, {
+		initial: toCopy.initial,
+		getOut: n => n.out,
+		isFinal: n => toCopy.finals.has(n)
+	});
+}
+function localCopyOfIterator<T>(nodeList: NodeList, iter: FAIterator<T, ReadonlyMap<T, CharSet>>): SubList {
 	const initial = nodeList.createNode();
-	const final = new Set<NFANode>();
+	const finals = new Set<NFANode>();
 
-	const translate = cachedFunc<ReadonlyNFANode, NFANode>(() => nodeList.createNode());
-	translate.cache.set(toCopy.initial, initial);
+	const translate = cachedFunc<T, NFANode>(() => nodeList.createNode());
+	translate.cache.set(iter.initial, initial);
 
-	traverse(toCopy.initial, node => {
+	traverse(iter.initial, node => {
 		const trans = translate(node);
 
-		if (toCopy.finals.has(node)) {
-			final.add(trans);
+		if (iter.isFinal(node)) {
+			finals.add(trans);
 		}
 
-		for (const [to, characters] of node.out) {
+		const out = iter.getOut(node);
+		for (const [to, characters] of out) {
 			nodeList.linkNodes(trans, translate(to), characters);
 		}
-
-		return node.out.keys();
+		return out.keys();
 	});
 
-	return { initial, finals: final };
+	return { initial, finals };
 }
 
 /**
@@ -1378,217 +1381,4 @@ function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 		nodeList.unlinkNodes(base.initial, out);
 	}
 	base.finals.clear();
-}
-
-
-interface IntersectionEnv {
-	nodeList: NodeList;
-	addOutgoing(from: NFANode): void;
-	isFinal(node: NFANode): boolean;
-}
-
-/**
- * Creates a new intersection environment for the two given NFAs.
- *
- * The initial and final states of the returned node list will be initialized and ready to use.
- *
- * Use the `addOutgoing` function to add the outgoing edges of nodes.
- *
- * @param left
- * @param right
- */
-function createNFAIntersectionEnv(
-	left: ReadonlyNFA,
-	right: ReadonlyNFA,
-	options: undefined | ReadonlyIntersectionOptions
-): IntersectionEnv {
-	checkOptionsCompatibility(left.options, right.options);
-
-	const maxNodes = options?.maxNodes ?? Infinity;
-
-	// lazy maps
-	const { toIndex: leftToIndex, toNode: leftToNode } = lazyNodeIndex(left.nodes);
-	const { toIndex: rightToIndex, toNode: rightToNode } = lazyNodeIndex(right.nodes);
-
-	// the set of final nodes
-	const leftFinals = left.nodes.finals;
-	const rightFinals = right.nodes.finals;
-
-	const nodeList = new NodeList();
-	if (leftFinals.has(left.nodes.initial) && rightFinals.has(right.nodes.initial)) {
-		nodeList.finals.add(nodeList.initial);
-	}
-
-	// node pair translation
-	const indexBackTranslatorMap = new Map<NFANode, string>();
-	indexBackTranslatorMap.set(nodeList.initial, "0;0");
-	const indexTranslatorCache: Record<string, NFANode | undefined> = {
-		"0;0": nodeList.initial
-	};
-	let createdNodes = 0;
-	function translate(leftNode: ReadonlyNFANode, rightNode: ReadonlyNFANode): NFANode {
-		const leftKey = leftToIndex(leftNode);
-		const rightKey = rightToIndex(rightNode);
-		const key = "" + leftKey + ";" + rightKey;
-
-		let node = indexTranslatorCache[key];
-		if (node === undefined) {
-			if (createdNodes > maxNodes) {
-				throw new TooManyNodesError();
-			}
-			createdNodes++;
-
-			node = nodeList.createNode();
-			indexTranslatorCache[key] = node;
-			indexBackTranslatorMap.set(node, key);
-
-			if (leftFinals.has(leftNode) && rightFinals.has(rightNode)) {
-				nodeList.finals.add(node);
-			}
-		}
-		return node;
-	}
-
-	function translateBack(node: NFANode): [ReadonlyNFANode, ReadonlyNFANode] {
-		const nodeKey = indexBackTranslatorMap.get(node);
-		if (nodeKey === undefined) {
-			throw new Error("All created nodes have to be indexed.");
-		}
-
-		const separatorIndex = nodeKey.indexOf(";");
-		const leftKey = nodeKey.substr(0, separatorIndex);
-		const rightKey = nodeKey.substr(separatorIndex + 1);
-		return [leftToNode(leftKey), rightToNode(rightKey)];
-	}
-
-	const intersect = createCharSetIntersectFn();
-
-	// add edges
-
-	function addOutgoing(from: NFANode): void {
-		const [leftNode, rightNode] = translateBack(from);
-
-		for (const [leftTo, leftTransition] of leftNode.out) {
-			for (const [rightTo, rightTransition] of rightNode.out) {
-				const transition = intersect(leftTransition, rightTransition);
-				if (transition) {
-					nodeList.linkNodes(from, translate(leftTo, rightTo), transition);
-				}
-			}
-		}
-	}
-
-	function isFinal(node: NFANode): boolean {
-		return nodeList.finals.has(node);
-	}
-
-	return { nodeList, addOutgoing, isFinal };
-}
-
-const HASH_MASK = 0xFFFF;
-function computeHash(a: CharSet): number {
-	let hash = a.maximum & HASH_MASK;
-	a.ranges.forEach(({ min, max }) => {
-		hash = ((hash * 31 + min) ^ max * 31) & HASH_MASK;
-	});
-	return hash;
-}
-/**
- * Creates a function which can intersect any two char sets of the given set of character sets.
- *
- * The function return `null` if the intersection of two char sets is empty.
- *
- * @param charSets
- */
-function createCharSetIntersectFn(): (a: CharSet, b: CharSet) => CharSet | null {
-	const hashTable: Record<number, CharSet | undefined> = {};
-	const charSetIdMap = new Map<CharSet, number>();
-
-	function getId(set: CharSet): number {
-		let id = charSetIdMap.get(set);
-		if (id === undefined) {
-			let hash = computeHash(set);
-			while (true) {
-				const entry = hashTable[hash];
-				if (entry === undefined) {
-					// make new entry
-					hashTable[hash] = set;
-					id = charSetIdMap.size;
-					break;
-				} else if (entry.equals(set)) {
-					// same as previous set
-					id = charSetIdMap.get(entry)!;
-					break;
-				} else {
-					// handle hash collision
-					hash = (hash + 1) & HASH_MASK;
-				}
-			}
-			charSetIdMap.set(set, id);
-		}
-		return id;
-	}
-
-	// use the id of char sets to store pairs
-	// null be represent empty char sets
-	const intersectionCache: Record<string, CharSet | null | undefined> = {};
-
-	return (a: CharSet, b: CharSet): CharSet | null => {
-		const aId = getId(a);
-		const bId = getId(b);
-
-		// trivial
-		if (aId == bId) {
-			return a;
-		}
-
-		// since intersection is symmetric we don't care about the order
-		let key;
-		if (aId < bId) {
-			key = "" + aId + ";" + bId;
-		} else {
-			key = "" + bId + ";" + aId;
-		}
-
-		let result: CharSet | null | undefined = intersectionCache[key];
-		if (result === undefined) {
-			result = a.intersect(b);
-			if (result.isEmpty) {
-				result = null;
-			}
-			intersectionCache[key] = result;
-		}
-
-		return result;
-	}
-}
-
-interface LazyIndex {
-	toNode(id: number | string): ReadonlyNFANode;
-	toIndex(node: ReadonlyNFANode): number;
-}
-function lazyNodeIndex(nodes: ReadonlyNodeList): LazyIndex {
-	const ids = [nodes.initial];
-	const map = new Map<ReadonlyNFANode, number>();
-	map.set(nodes.initial, 0);
-
-	return {
-		toNode(id: number | string): ReadonlyNFANode {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const node = ids[id as any];
-			if (node === undefined) {
-				throw new Error("Unknown id");
-			}
-			return node;
-		},
-		toIndex(node: ReadonlyNFANode): number {
-			let id = map.get(node);
-			if (id === undefined) {
-				id = ids.length;
-				ids.push(node);
-				map.set(node, id);
-			}
-			return id;
-		}
-	};
 }

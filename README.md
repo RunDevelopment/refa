@@ -24,7 +24,7 @@ __At this point in time, the library is still in development and partially incom
 
 - DFA and NFA operations
 
-  * Construction from a finite set of words
+  * Construction from other FA, the intersection of two FA, or a finite set of words
   * Print internal representation in a human-readable form
   * Test whether a word is accepted
   * Test whether the language of an FA is the empty set
@@ -32,20 +32,18 @@ __At this point in time, the library is still in development and partially incom
 
 - DFA specific operations
 
-  * Intersection with other DFA (_not implemented yet_)
-  * DFA minimization
+  * Minimization
   * Complement
   * Structural equality
 
 - NFA specific operations
 
-  * Union and Intersection with other NFA
-  * Concatenation with other NFA
+  * Union and Concatenation with other FA
   * Quantification
 
 - Javascript RegExp
 
-  * RegExp to RE and RE to RegExp
+  * RegExp to RE and RE to RegExp (backreferences are not supported)
 
 ### Limitations
 

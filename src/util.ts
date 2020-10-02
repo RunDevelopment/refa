@@ -297,8 +297,8 @@ export function* IterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
  * @param root
  * @param next
  */
-export function traverse<S extends object>(root: S, next: (element: S) => Iterable<S>): void {
-	const visited = new WeakSet<S>();
+export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
+	const visited = new Set<S>();
 	const toCheck: S[] = [root];
 
 	let element;
@@ -308,16 +308,6 @@ export function traverse<S extends object>(root: S, next: (element: S) => Iterab
 			toCheck.push(...next(element));
 		}
 	}
-}
-
-
-export function createIndexMap<T>(items: Iterable<T>): Map<T, number> {
-	const map = new Map<T, number>();
-	let i = 0;
-	for (const node of items) {
-		map.set(node, i++);
-	}
-	return map;
 }
 
 export function assertNever(value: never, message?: string): never {

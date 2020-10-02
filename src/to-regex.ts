@@ -919,34 +919,24 @@ function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 function optimize(expr: Simple<Expression>): boolean {
 	let optimized = false;
 
-	visitAst(expr, {
-		onAlternationLeave(node) {
-			optimized = inlineAlternatives(node) || optimized;
-			optimized = optimizeEmptyString(node) || optimized;
-			optimized = factorOutCommonPreAndSuffix(node) || optimized;
-		},
+	function onNodeWithAlternatives(node: Simple<Alternation | Assertion | Expression | Quantifier>): void {
+		optimized = inlineAlternatives(node) || optimized;
+		optimized = optimizeEmptyString(node) || optimized;
+		optimized = factorOutCommonPreAndSuffix(node) || optimized;
+	}
 
-		onAssertionLeave(node) {
-			optimized = inlineAlternatives(node) || optimized;
-			optimized = optimizeEmptyString(node) || optimized;
-			optimized = factorOutCommonPreAndSuffix(node) || optimized;
-		},
+	visitAst(expr, {
+		onAlternationLeave: onNodeWithAlternatives,
+		onAssertionLeave: onNodeWithAlternatives,
+		onExpressionLeave: onNodeWithAlternatives,
 
 		onConcatenationLeave(node) {
 			optimized = inlineConcat(node) || optimized;
 			optimized = letQuantifiersConsumeNeighbors(node.elements) || optimized;
 		},
 
-		onExpressionLeave(node) {
-			optimized = inlineAlternatives(node) || optimized;
-			optimized = optimizeEmptyString(node) || optimized;
-			optimized = factorOutCommonPreAndSuffix(node) || optimized;
-		},
-
 		onQuantifierLeave(node) {
-			optimized = inlineAlternatives(node) || optimized;
-			optimized = optimizeEmptyString(node) || optimized;
-			optimized = factorOutCommonPreAndSuffix(node) || optimized;
+			onNodeWithAlternatives(node);
 
 			// e.g. (?:a+)? -> a*
 			if (node.min === 0 || node.min === 1) {

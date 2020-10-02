@@ -93,7 +93,7 @@ describe("toRegex", function () {
 				it(literals.map(literalToString).join(" ∩ "), function () {
 					let inter = literalToNFA(literals[0]);
 					for (let i = 1; i < literals.length; i++) {
-						inter = NFA.intersect(inter, literalToNFA(literals[i]))
+						inter = NFA.fromIntersection(inter, literalToNFA(literals[i]))
 					}
 
 					const re = inter.toRegex();
