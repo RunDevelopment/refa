@@ -43,7 +43,7 @@ __At this point in time, the library is still in development and partially incom
 
 - Javascript RegExp
 
-  * RegExp to RE and RE to RegExp (backreferences are not supported)
+  * RegExp to RE and RE to RegExp (non-trivial backreferences are not supported)
 
 ### Limitations
 

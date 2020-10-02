@@ -1,4 +1,4 @@
-import { Simple, Node, Expression, Concatenation, visitAst } from "../ast";
+import { Simple, Node, Expression, Concatenation, visitAst, Element, Assertion } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
 import { DIGIT, WORD, SPACE, LINE_TERMINATOR, withCaseVaryingCharacters, WORD_IU } from "./js-util";
@@ -53,59 +53,77 @@ function toSource(
 		if (node.type === "Concatenation") {
 			let s = "";
 			for (const element of node.elements) {
-				switch (element.type) {
-					case "Alternation":
-						s += "(?:" + toSource(element.alternatives, flags) + ")";
-						break;
-
-					case "Assertion":
-						s += "(?";
-						if (element.kind === "behind") s += "<";
-						s += element.negate ? "!" : "=";
-						s += toSource(element.alternatives, flags);
-						s += ")";
-						break;
-
-					case "CharacterClass":
-						s += printCharacters(element.characters, flags);
-						break;
-
-					case "Quantifier":
-						if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1) {
-							const e = element.alternatives[0].elements[0];
-							if (e.type === "Alternation" || e.type === "CharacterClass") {
-								s += toSource(element.alternatives[0], flags);
-							} else {
-								s += "(?:" + toSource(element.alternatives, flags) + ")";
-							}
-						} else {
-							s += "(?:" + toSource(element.alternatives, flags) + ")";
-						}
-
-						if (element.min === 0 && element.max === Infinity) {
-							s += "*";
-						} else if (element.min === 1 && element.max === Infinity) {
-							s += "+";
-						} else if (element.min === 0 && element.max === 1) {
-							s += "?";
-						} else if (element.max === Infinity) {
-							s += `{${element.min},}`;
-						} else if (element.min === element.max) {
-							s += `{${element.min}}`;
-						} else {
-							s += `{${element.min},${element.max}}`;
-						}
-						break;
-
-					default:
-						throw assertNever(element);
-				}
+				s += elementToSource(element, flags);
 			}
 			return s;
 		} else {
 			return toSource(node.alternatives, flags);
 		}
 	}
+}
+function elementToSource(element: Simple<Element>, flags: Flags): string {
+	switch (element.type) {
+		case "Alternation": {
+			return "(?:" + toSource(element.alternatives, flags) + ")";
+		}
+		case "Assertion": {
+			if (isEdgeAssertion(element, flags)) {
+				return element.kind === "behind" ? "^" : "$";
+			}
+			let s = "(?";
+			if (element.kind === "behind") s += "<";
+			s += element.negate ? "!" : "=";
+			s += toSource(element.alternatives, flags);
+			s += ")";
+			return s;
+		}
+		case "CharacterClass": {
+			return printCharacters(element.characters, flags);
+		}
+		case "Quantifier": {
+			let s;
+			if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1) {
+				const e = element.alternatives[0].elements[0];
+				if (e.type === "Alternation" || e.type === "CharacterClass") {
+					s = toSource(element.alternatives[0], flags);
+				} else {
+					s = "(?:" + toSource(element.alternatives, flags) + ")";
+				}
+			} else {
+				s = "(?:" + toSource(element.alternatives, flags) + ")";
+			}
+
+			if (element.min === 0 && element.max === Infinity) {
+				s += "*";
+			} else if (element.min === 1 && element.max === Infinity) {
+				s += "+";
+			} else if (element.min === 0 && element.max === 1) {
+				s += "?";
+			} else if (element.max === Infinity) {
+				s += `{${element.min},}`;
+			} else if (element.min === element.max) {
+				s += `{${element.min}}`;
+			} else {
+				s += `{${element.min},${element.max}}`;
+			}
+			return s;
+		}
+		default:
+			throw assertNever(element);
+	}
+}
+function isEdgeAssertion(assertion: Simple<Assertion>, flags: Flags): boolean {
+	if (assertion.negate && assertion.alternatives.length === 1) {
+		const alt = assertion.alternatives[0];
+		if (alt.elements.length === 1) {
+			const e = alt.elements[0];
+			if (e.type === "CharacterClass") {
+				const chars = e.characters;
+				return flags.multiline && isNonLineTerminator(chars, flags) || !flags.multiline && chars.isAll;
+			}
+		}
+	}
+	return false;
 }
 
 
@@ -172,6 +190,16 @@ function getFlags(value: readonly Simple<Node>[]): Flags {
 			unicode,
 			ignoreCase: value.every(node => isIgnoreCase(node, !!unicode))
 		};
+	}
+}
+
+const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(0x10FFFF).union(LINE_TERMINATOR).negate();
+const NON_LINE_TERMINATOR = CharSet.empty(0xFFFF).union(LINE_TERMINATOR).negate();
+function isNonLineTerminator(chars: CharSet, flags: Flags): boolean {
+	if (flags.unicode) {
+		return chars.equals(UNICODE_NON_LINE_TERMINATOR);
+	} else {
+		return chars.equals(NON_LINE_TERMINATOR);
 	}
 }
 
@@ -353,7 +381,7 @@ function printCharSet(set: CharSet, flags: Flags): string {
 }
 
 function printCharacters(chars: CharSet, flags: Flags): string {
-	if (chars.isAll) return "[\\s\\S]";
+	if (chars.isAll) return flags.dotAll ? "." : "[\\s\\S]";
 	if (chars.isEmpty) return "[^\\s\\S]";
 
 	const min = chars.ranges[0].min;
@@ -381,7 +409,7 @@ function printCharacters(chars: CharSet, flags: Flags): string {
 	}
 
 	const negated = chars.negate();
-	if (rangeEqual(negated.ranges, LINE_TERMINATOR)) return ".";
+	if (!flags.dotAll && rangeEqual(negated.ranges, LINE_TERMINATOR)) return ".";
 	if (rangeEqual(negated.ranges, DIGIT)) return "\\D";
 	if (rangeEqual(negated.ranges, SPACE)) return "\\S";
 	if (flags.ignoreCase && flags.unicode) {
