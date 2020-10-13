@@ -27,7 +27,7 @@ describe("toRegex", function () {
 			},
 			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
-				expected: String.raw`/\d+(?:\.\d*|(?:\.\d*)?E[+\-]\d+)?/i`
+				expected: String.raw`/\d+(?:\.\d*|(?:\.\d*)?E[-+]\d+)?/i`
 			},
 		]);
 

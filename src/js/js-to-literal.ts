@@ -335,49 +335,93 @@ function getShortest(values: string[]): string {
 	return values.sort((a, b) => a.length - b.length)[0];
 }
 
+function factorStrings(a: readonly string[], b: readonly string[]): string[] {
+	const product: string[] = [];
+	for (const aItem of a) {
+		for (const bItem of b) {
+			product.push(aItem + bItem);
+		}
+	}
+	return product;
+}
+
+
+
 function printCharSet(set: CharSet, flags: Flags): string {
-	/**
-	 * The simplest approach would be to print all ranges but the resulting character class might not be minimal or
-	 * readable, so we try to subtract common char sets first in an attempt to make it more readable.
-	 */
+	type CandidateCreator = (set: CharSet) => string[];
 
-	let reducedSet = set;
-	let reducedPrefix = "";
-	if (isSupersetOf(reducedSet, SPACE)) {
-		reducedPrefix += "\\s";
-		reducedSet = reducedSet.without(SPACE);
-	}
-	if (flags.ignoreCase && flags.unicode) {
-		if (isSupersetOf(reducedSet, WORD_IU)) {
-			reducedPrefix += "\\w";
-			reducedSet = reducedSet.without(WORD_IU);
-		}
-	} else {
-		if (isSupersetOf(reducedSet, WORD)) {
-			reducedPrefix += "\\w";
-			reducedSet = reducedSet.without(WORD);
-		}
-	}
-	if (isSupersetOf(reducedSet, DIGIT)) {
-		reducedPrefix += "\\d";
-		reducedSet = reducedSet.without(DIGIT);
-	}
-
-	const candidates: string[] = [
-		printCharSetSimple(set)
-	];
-	if (flags.ignoreCase) {
-		candidates.push(printCharSetSimpleIgnoreCase(set));
-	}
-
-	if (set !== reducedSet) {
-		candidates.push(reducedPrefix + printCharSetSimple(reducedSet));
+	const simpleCreator: CandidateCreator = set => {
+		const candidates: string[] = [
+			printCharSetSimple(set)
+		];
 		if (flags.ignoreCase) {
-			candidates.push(reducedPrefix + printCharSetSimpleIgnoreCase(reducedSet));
+			candidates.push(printCharSetSimpleIgnoreCase(set));
 		}
-	}
+		return candidates;
+	};
+	const reducedCreator: CandidateCreator = set => {
+		// The simplest approach would be to print all ranges but the resulting character class might not be minimal or
+		// readable, so we try to subtract common char sets first in an attempt to make it more readable.
 
-	return getShortest(candidates);
+		let reducedSet = set;
+		let reducedPrefix = "";
+		if (isSupersetOf(reducedSet, SPACE)) {
+			reducedPrefix += "\\s";
+			reducedSet = reducedSet.without(SPACE);
+		}
+		if (flags.ignoreCase && flags.unicode) {
+			if (isSupersetOf(reducedSet, WORD_IU)) {
+				reducedPrefix += "\\w";
+				reducedSet = reducedSet.without(WORD_IU);
+			}
+		} else {
+			if (isSupersetOf(reducedSet, WORD)) {
+				reducedPrefix += "\\w";
+				reducedSet = reducedSet.without(WORD);
+			}
+		}
+		if (isSupersetOf(reducedSet, DIGIT)) {
+			reducedPrefix += "\\d";
+			reducedSet = reducedSet.without(DIGIT);
+		}
+
+		if (set === reducedSet) {
+			// couldn't be reduced
+			return simpleCreator(set);
+		} else {
+			return [
+				...simpleCreator(set),
+				...factorStrings([reducedPrefix], simpleCreator(reducedSet))
+			];
+		}
+	};
+	const moveDashCreator: CandidateCreator = set => {
+		// If the set contains a dash ("-"), then it might be a good idea to move the dash to the start of the set, so
+		// we don't have to escape it.
+		if (set.has(45 /* === "-".charCodeAt(0) */)) {
+			const withoutDash = set.without([{ min: 45, max: 45 }]);
+			return [
+				...reducedCreator(set),
+				...factorStrings(["-"], reducedCreator(withoutDash))
+			];
+		} else {
+			return reducedCreator(set);
+		}
+	};
+	const moveCaretCreator: CandidateCreator = set => {
+		// Similar idea to move dash but for the caret ("^")
+		if (set.has(94 /* === "^".charCodeAt(0) */) && set.size > 1) {
+			const withoutDash = set.without([{ min: 94, max: 94 }]);
+			return [
+				...moveDashCreator(set),
+				...factorStrings(moveDashCreator(withoutDash), ["^"])
+			];
+		} else {
+			return moveDashCreator(set);
+		}
+	};
+
+	return getShortest(moveCaretCreator(set));
 }
 
 function printCharacters(chars: CharSet, flags: Flags): string {
