@@ -499,6 +499,25 @@ export class DFA implements ReadonlyDFA {
 		this.nodes.removeUnreachable();
 	}
 
+	/**
+	 * Modifies this DFA such that all prefixes of all accepted words are also accepted.
+	 *
+	 * If the language of this DFA is empty, then it will remain empty.
+	 *
+	 * Unreachable states will be removed by this operation.
+	 */
+	prefixes(): void {
+		this.nodes.removeUnreachable();
+
+		if (this.isEmpty) {
+			return;
+		}
+
+		for (const node of this.nodes) {
+			this.nodes.finals.add(node);
+		}
+	}
+
 
 	/**
 	 * Returns a new DFA which is equivalent to the intersection of the two given FA.

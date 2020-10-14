@@ -3,6 +3,8 @@ import { assert } from "chai";
 import { literalToString, literalToDFA, removeIndentation } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, EMPTY_LITERALS, NON_EMPTY_LITERALS } from "./helper/regexp-literals";
 import { Literal } from "../src/js";
+import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
+import { prefixes } from "./helper/util";
 
 
 describe("DFA", function () {
@@ -733,6 +735,52 @@ describe("DFA", function () {
 			assert.isFalse(DFA.all({ maxCharacter: 0xFFFF }).isFinite);
 		});
 
+	});
+
+	describe("prefixes", function () {
+
+		test([
+			{
+				words: [],
+			},
+			{
+				words: [""],
+			},
+			{
+				words: ["", "a"],
+			},
+			{
+				words: ["", "a", "aa", "aaa"],
+			},
+			{
+				words: ["foobar", "foo", "bar"],
+			},
+			{
+				words: ["bet", "let", "street", "sheet", "diet"],
+			},
+			{
+				words: ["bet", "bat", "boot", "boat"],
+			},
+		]);
+
+		interface TestCase {
+			words: readonly string[];
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { words } of cases) {
+				const title = words.map(w => JSON.stringify(w)).join(", ");
+				it(`${title}`, function () {
+					const chars = words.map(w => fromStringToUnicode(w));
+					const nfa = DFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					nfa.prefixes();
+
+					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
+					const expected = [...prefixes(words)];
+					assert.sameMembers(acutal, expected);
+				});
+			}
+		}
 	});
 
 });
