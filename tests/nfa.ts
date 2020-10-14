@@ -1,11 +1,12 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
-import { literalToString, literalToNFA, removeIndentation, reachableFinalStates } from "./helper/fa";
+import { literalToString, literalToNFA, removeIndentation, reachableFinalStates, literalToDFA } from "./helper/fa";
 import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
-import { Literal, Parser } from "../src/js";
+import { Literal, Parser, toLiteral } from "../src/js";
 import { RegExpParser } from "regexpp";
 import { prefixes, suffixes } from "./helper/util";
+import { DFA } from "../src/dfa";
 
 
 describe("NFA", function () {
@@ -1085,8 +1086,7 @@ describe("NFA", function () {
 				});
 			}
 		}
-
-	})
+	});
 
 	describe("suffixes", function () {
 
@@ -1132,8 +1132,143 @@ describe("NFA", function () {
 				});
 			}
 		}
+	});
 
-	})
+	describe("reverse (words)", function () {
+
+		test([
+			{
+				words: [],
+			},
+			{
+				words: [""],
+			},
+			{
+				words: ["", "a"],
+			},
+			{
+				words: ["", "a", "aa", "aaa"],
+			},
+			{
+				words: ["foobar", "foo", "bar"],
+			},
+			{
+				words: ["bet", "let", "street", "sheet", "diet"],
+			},
+			{
+				words: ["bet", "bat", "boot", "boat"],
+			},
+		]);
+
+		interface TestCase {
+			words: readonly string[];
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { words } of cases) {
+				const title = words.map(w => JSON.stringify(w)).join(", ");
+				it(`${title}`, function () {
+					const chars = words.map(w => fromStringToUnicode(w));
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					nfa.reverse();
+					const nfaR = NFA.fromWords(chars.map(x => x.reverse()), { maxCharacter: 0x10FFFF });
+
+					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
+					const expected = [...new Set([...nfaR.words()].map(fromUnicodeToString))];
+					assert.sameMembers(acutal, expected);
+				});
+			}
+		}
+	});
+
+	describe("reverse", function () {
+
+		test([
+			{
+				literal: /(?:)/,
+				expected: /(?:)/
+			},
+			{
+				literal: /[^\s\S]/,
+				expected: /[^\s\S]/
+			},
+			{
+				literal: /a/,
+				expected: /a/
+			},
+			{
+				literal: /foo|bar/,
+				expected: /rab|oof/
+			},
+			{
+				literal: /a?/,
+				expected: /a?/
+			},
+			{
+				literal: /a?b?/,
+				expected: /b?a?/
+			},
+			{
+				literal: /a+/,
+				expected: /a+/
+			},
+			{
+				literal: /a*b*c*/,
+				expected: /c*b*a*/
+			},
+			{
+				literal: /a+b*c*/,
+				expected: /c*b*a+/
+			},
+			{
+				literal: /a*b+c*/,
+				expected: /c*b+a*/
+			},
+			{
+				literal: /a*b*c+/,
+				expected: /c+b*a*/
+			},
+			{
+				literal: /a+b+c*/,
+				expected: /c*b+a+/
+			},
+			{
+				literal: /a+b*c+/,
+				expected: /c+b*a+/
+			},
+			{
+				literal: /a*b+c+/,
+				expected: /c+b+a*/
+			},
+			{
+				literal: /a+b+c+/,
+				expected: /c+b+a+/
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			expected: Literal;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, expected } of cases) {
+				it(`reverse(${literalToString(literal)}) == ${literalToString(expected)}`, function () {
+					const aNfa = literalToNFA(literal);
+					aNfa.reverse();
+					const a = DFA.fromFA(aNfa);
+					a.minimize();
+
+					const e = literalToDFA(expected);
+					e.minimize();
+
+					const actualRE = toLiteral(aNfa.toRegex());
+					assert.isTrue(a.structurallyEqual(e), "Not equal.\n\n"
+						+ `Actual: reverse(${literalToString(literal)}) == ${literalToString(actualRE)}`);
+				});
+			}
+		}
+	});
 
 	it("issue #5", function () {
 		const ast = new RegExpParser().parseLiteral(/<[=>]?|>=?|=>?|:=|\/=?|\*\*?|[&+-]/.toString());

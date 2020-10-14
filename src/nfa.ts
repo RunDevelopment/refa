@@ -543,6 +543,18 @@ export class NFA implements ReadonlyNFA {
 		this.nodes.finals.add(initial);
 	}
 
+	/**
+	 * Modifies this NFA such that it accepts the reverse of all words it currently accepts.
+	 *
+	 * If the language of this NFA is empty, then it will remain empty.
+	 *
+	 * Unreachable states will be removed by this operation.
+	 */
+	reverse(): void {
+		this.nodes.removeUnreachable();
+		baseReverse(this.nodes, this.nodes);
+	}
+
 
 	/**
 	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
@@ -1381,4 +1393,59 @@ function baseMakeEmpty(nodeList: NodeList, base: SubList): void {
 		nodeList.unlinkNodes(base.initial, out);
 	}
 	base.finals.clear();
+}
+
+function baseReverse(nodeList: NodeList, base: SubList): void {
+	const { initial, finals } = base;
+
+	if (finals.size === 0 || finals.size === 1 && finals.has(initial)) {
+		// either no finals (= empty language)
+		// or only the initial state is final (= language with only the empty word)
+		return;
+	}
+
+	// reverse the direction of all transitions
+	const allNodes = [...faIterateStates({
+		initial: base.initial,
+		getOut: n => n.out.keys(),
+		isFinal: n => base.finals.has(n)
+	})];
+	for (const node of allNodes) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const mutableNode = node as any;
+		const temp = mutableNode.out;
+		mutableNode.out = mutableNode.in;
+		mutableNode.in = temp;
+	}
+
+	// replace the former initial with a new node and make it final
+	// this will make the initial "free" (no in/out transitions)
+	const mainFinal = nodeList.createNode();
+	initial.in.forEach((trans, from) => {
+		nodeList.unlinkNodes(from, initial);
+		nodeList.linkNodes(from, mainFinal, trans);
+	});
+
+	const newFinals = new Set<NFANode>([mainFinal]);
+	if (finals.has(initial)) {
+		finals.delete(initial);
+		newFinals.add(initial);
+	}
+
+	// make the former initial the new initial
+	for (const f of finals) {
+		f.out.forEach((trans, to) => {
+			nodeList.linkNodes(initial, to, trans);
+		});
+		if (f.in.size === 0) {
+			// remove f
+			f.out.forEach((_, to) => {
+				nodeList.unlinkNodes(f, to);
+			});
+		}
+	}
+
+	// transfer finals
+	finals.clear();
+	newFinals.forEach(f => finals.add(f));
 }
