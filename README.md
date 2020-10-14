@@ -27,8 +27,8 @@ __At this point in time, the library is still in development and partially incom
   * Construction from other FA, the intersection of two FA, or a finite set of words
   * Print internal representation in a human-readable form
   * Test whether a word is accepted
-  * Test whether the language of an FA is the empty set
-  * Test whether the language of an FA is a finite set
+  * Test whether the language of an FA is the empty set/a finite set
+  * Accept all prefixes of a language
 
 - DFA specific operations
 
@@ -40,6 +40,8 @@ __At this point in time, the library is still in development and partially incom
 
   * Union and Concatenation with other FA
   * Quantification
+  * Reverse
+  * Accept all suffixes of a language
 
 - Javascript RegExp
 
