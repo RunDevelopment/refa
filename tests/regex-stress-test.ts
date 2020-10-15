@@ -43,7 +43,7 @@ describe("Regex stress test", function () {
 			const dfa = DFA.fromFA(nfa);
 			dfa.minimize();
 
-			const re = nfa.toRegex();
+			const re = nfa.toRegex({ maximumNodes: Infinity });
 
 			if (CHECK_RE_LANGUAGE) {
 				equalLanguage(dfa, re, maxCharacter);

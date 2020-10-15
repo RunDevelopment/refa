@@ -1,5 +1,5 @@
 import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } from "./util";
-import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError, TransitionIterable, TransitionIterableFA } from "./finite-automaton";
+import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError, ToRegexOptions, TransitionIterable, TransitionIterableFA } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
@@ -324,8 +324,8 @@ export class DFA implements ReadonlyDFA {
 		return faWithCharSetsToString(this.transitionIterator());
 	}
 
-	toRegex(): Simple<Expression> {
-		return faToRegex(this.transitionIterator());
+	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
+		return faToRegex(this.transitionIterator(), options);
 	}
 
 	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean {

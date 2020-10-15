@@ -106,4 +106,24 @@ describe("toRegex", function () {
 
 	});
 
+	it("should limit the number of AST nodes", function () {
+		// eslint-disable-next-line max-len
+		const a = literalToNFA(/\\.|\$\{(?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^\s\S])*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*?\}/);
+		const b = a.copy();
+		b.quantify(2, Infinity);
+
+		// This intersection has about 1500 states but it seems to be some kind of worst case of the state elimination
+		// method that powers toRegex.
+		const i = NFA.fromIntersection(a, b);
+
+		assert.throws(() => i.toRegex()); // safe by default
+		assert.throws(() => i.toRegex({ maximumNodes: 10_000 })); // default value
+		assert.throws(() => i.toRegex({ maximumNodes: 100_000 }));
+		assert.throws(() => i.toRegex({ maximumNodes: 1_000_000 }));
+		// disabled so tests run faster
+		// assert.throws(() => i.toRegex({ maximumNodes: 10_000_000 }));
+
+		// increasing my another order of magnitude causes Node to crash and my computer
+	});
+
 });

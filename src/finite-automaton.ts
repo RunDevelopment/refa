@@ -51,7 +51,28 @@ export interface FiniteAutomaton {
 	 * Returns a string representation of this FA.
 	 */
 	toString(): string;
-	toRegex(): Simple<Expression>;
+	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression>;
+}
+
+export interface ToRegexOptions {
+	/**
+	 * The maximum number of RE AST nodes the implementation is allowed to create.
+	 *
+	 * If the implementation has to create more nodes to create the RE, a `TooManyNodesError` will be thrown. This
+	 * maximum will be check before any optimization passes.
+	 *
+	 * By default, this value is set to `10000`.
+	 */
+	maximumNodes?: number;
+	/**
+	 * The maximum number of optimization passes that will be done after the initial RE AST was created.
+	 *
+	 * The initial AST is usually a lot more complex than necessary. Optimizations are then applied in order to minimize
+	 * the AST until this limit is reached or the AST can be optimized no further.
+	 *
+	 * By default, this value is set to `Infinity`.
+	 */
+	maximumOptimizationPasses?: number;
 }
 
 export interface TransitionIterable {

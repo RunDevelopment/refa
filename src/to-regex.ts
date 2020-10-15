@@ -2,6 +2,7 @@ import { Simple, Expression, Node, Parent, Concatenation, Alternation, Character
 import { CharSet } from "./char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "./util";
 import { FAIterator } from "./fa-iterator";
+import { ToRegexOptions, TooManyNodesError } from "./finite-automaton";
 
 
 type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
@@ -52,17 +53,134 @@ class NodeList {
 
 }
 
-function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeList | null {
+class TransitionCreator {
+	private _counter: number = 0;
+	constructor(public readonly max: number) { }
+
+	private _incrementCounter(): void {
+		if (++this._counter > this.max) {
+			throw new TooManyNodesError(`Too many RE AST nodes. Reached maximum of ${this.max}.`);
+		}
+	}
+
+	concat(elements: Simple<Concatenation>["elements"]): Simple<Concatenation> {
+		this._incrementCounter();
+
+		return {
+			type: "Concatenation",
+			elements
+		};
+	}
+	emptyConcat(): Simple<Concatenation> {
+		this._incrementCounter();
+
+		return {
+			type: "Concatenation",
+			elements: []
+		};
+	}
+
+	alter(alternatives: Simple<Alternation>["alternatives"]): Simple<Alternation> {
+		this._incrementCounter();
+
+		return {
+			type: "Alternation",
+			alternatives
+		};
+	}
+	emptyAlter(): Simple<Alternation> {
+		this._incrementCounter();
+
+		return {
+			type: "Alternation",
+			alternatives: []
+		};
+	}
+
+	expression(alternatives: Simple<Expression>["alternatives"]): Simple<Expression> {
+		this._incrementCounter();
+
+		return {
+			type: "Expression",
+			alternatives
+		};
+	}
+	emptyExpression(): Simple<Expression> {
+		this._incrementCounter();
+
+		return {
+			type: "Expression",
+			alternatives: []
+		};
+	}
+
+	char(characters: CharSet): Simple<CharacterClass> {
+		this._incrementCounter();
+
+		return {
+			type: "CharacterClass",
+			characters
+		};
+	}
+
+	quant(alternatives: Simple<Quantifier>["alternatives"], min: number, max: number): Simple<Quantifier> {
+		this._incrementCounter();
+
+		return {
+			type: "Quantifier",
+			alternatives,
+			min,
+			max
+		};
+	}
+	quantStar(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
+		this._incrementCounter();
+
+		return {
+			type: "Quantifier",
+			alternatives,
+			min: 0,
+			max: Infinity
+		};
+	}
+	quantPlus(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
+		this._incrementCounter();
+
+		return {
+			type: "Quantifier",
+			alternatives,
+			min: 1,
+			max: Infinity
+		};
+	}
+
+	copy(t: Simple<Concatenation>): Simple<Concatenation>;
+	copy(t: RegexFANodeTransition): RegexFANodeTransition;
+	copy(t: RegexFANodeTransition): RegexFANodeTransition {
+		switch (t.type) {
+			case "Alternation":
+				return this.alter(t.alternatives.map(a => this.copy(a)));
+			case "Concatenation":
+				return this.concat(t.elements.map(e => this.copy(e as RegexFANodeTransition) as Simple<Element>));
+			case "CharacterClass":
+				return this.char(t.characters);
+			case "Quantifier":
+				return this.quant(t.alternatives.map(a => this.copy(a)), t.min, t.max);
+
+			default:
+				throw assertNever(t);
+		}
+	}
+}
+
+function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: TransitionCreator): NodeList | null {
 
 	const nodeList = new NodeList();
 
 	// the state elimination method requires that the initial state isn't final, so we add a temp state
 	// the transition [initial] -> [tempInitial] is an epsilon transition
 	const tempInitial = nodeList.createNode();
-	nodeList.linkNodes(nodeList.initial, tempInitial, {
-		type: "Concatenation",
-		elements: []
-	});
+	nodeList.linkNodes(nodeList.initial, tempInitial, tc.emptyConcat());
 
 	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
 	translate.cache.set(iter.initial, tempInitial);
@@ -88,10 +206,7 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeLis
 		});
 
 		out.forEach(([outNode, charSet]) => {
-			nodeList.linkNodes(translate(n), translate(outNode), {
-				type: "CharacterClass",
-				characters: charSet
-			})
+			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet))
 		});
 
 		return out.map(x => x[0]);
@@ -106,10 +221,7 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeLis
 	const tempFinal = nodeList.createNode();
 	nodeList.finals.forEach(n => {
 		// add epsilon transition
-		nodeList.linkNodes(n, tempFinal, {
-			type: "Concatenation",
-			elements: []
-		});
+		nodeList.linkNodes(n, tempFinal, tc.emptyConcat());
 	});
 	nodeList.finals.clear();
 	nodeList.finals.add(tempFinal);
@@ -140,7 +252,7 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): NodeLis
 
 	return nodeList;
 }
-function eliminateStates(nodeList: NodeList): void {
+function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 	const initial = nodeList.initial;
 	const final = firstOf(nodeList.finals)!;
 
@@ -192,10 +304,7 @@ function eliminateStates(nodeList: NodeList): void {
 		if (b.type === "Alternation") {
 			factorOutCommonPreAndSuffix(b);
 		}
-		const newConcat: Simple<Concatenation> = {
-			type: "Concatenation",
-			elements: [a, b]
-		};
+		const newConcat = tc.concat([a, b]);
 		inlineConcat(newConcat);
 		return newConcat;
 	}
@@ -203,10 +312,7 @@ function eliminateStates(nodeList: NodeList): void {
 		if (a.type === "Concatenation") {
 			return a;
 		} else {
-			return {
-				type: "Concatenation",
-				elements: [a]
-			};
+			return tc.concat([a]);
 		}
 	}
 	function union(a: RegexFANodeTransition, b: RegexFANodeTransition): RegexFANodeTransition {
@@ -255,10 +361,7 @@ function eliminateStates(nodeList: NodeList): void {
 			return b;
 		}
 
-		return {
-			type: "Alternation",
-			alternatives: [asConcatenation(a), asConcatenation(b)]
-		};
+		return tc.alter([asConcatenation(a), asConcatenation(b)]);
 
 		function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): void {
 			for (const alt of alternation.alternatives) {
@@ -276,49 +379,29 @@ function eliminateStates(nodeList: NodeList): void {
 	function star(a: RegexFANodeTransition): RegexFANodeTransition {
 		switch (a.type) {
 			case "Quantifier":
-				if (a.max === 0) return { type: "Concatenation", elements: [] };
+				if (a.max === 0) return tc.emptyConcat();
 				if (a.min === 0 || a.min === 1) {
 					a.min = 0;
 					a.max = Infinity;
 					return a;
 				}
-				return {
-					type: "Quantifier",
-					min: 0,
-					max: Infinity,
-					alternatives: [asConcatenation(a)]
-				};
+				return tc.quantStar([asConcatenation(a)]);
 
 			case "Alternation":
-				return {
-					type: "Quantifier",
-					min: 0,
-					max: Infinity,
-					alternatives: a.alternatives
-				};
+				return tc.quantStar(a.alternatives);
 
 			case "Concatenation":
 				if (a.elements.length === 0) return a;
-				return {
-					type: "Quantifier",
-					min: 0,
-					max: Infinity,
-					alternatives: [a]
-				};
+				return tc.quantStar([a]);
 
 			default:
-				return {
-					type: "Quantifier",
-					min: 0,
-					max: Infinity,
-					alternatives: [asConcatenation(a)]
-				};
+				return tc.quantStar([asConcatenation(a)]);
 		}
 	}
 	function plus(a: RegexFANodeTransition): RegexFANodeTransition {
 		switch (a.type) {
 			case "Quantifier":
-				if (a.max === 0) return { type: "Concatenation", elements: [] };
+				if (a.max === 0) return tc.emptyConcat();
 				if (a.min === 0) {
 					a.min = 0;
 					a.max = Infinity;
@@ -328,66 +411,17 @@ function eliminateStates(nodeList: NodeList): void {
 					a.max = Infinity;
 					return a;
 				}
-				return {
-					type: "Quantifier",
-					min: 1,
-					max: Infinity,
-					alternatives: [asConcatenation(a)]
-				};
+				return tc.quantPlus([asConcatenation(a)]);
 
 			case "Alternation":
-				return {
-					type: "Quantifier",
-					min: 1,
-					max: Infinity,
-					alternatives: a.alternatives
-				};
+				return tc.quantPlus(a.alternatives);
 
 			case "Concatenation":
 				if (a.elements.length === 0) return a;
-				return {
-					type: "Quantifier",
-					min: 1,
-					max: Infinity,
-					alternatives: [a]
-				};
+				return tc.quantPlus([a]);
 
 			default:
-				return {
-					type: "Quantifier",
-					min: 1,
-					max: Infinity,
-					alternatives: [asConcatenation(a)]
-				};
-		}
-	}
-	function copy(t: RegexFANodeTransition): RegexFANodeTransition {
-		switch (t.type) {
-			case "Alternation":
-				return {
-					type: "Alternation",
-					alternatives: t.alternatives.map(a => copy(a) as Simple<Concatenation>)
-				};
-			case "Concatenation":
-				return {
-					type: "Concatenation",
-					elements: t.elements.map(e => copy(e as RegexFANodeTransition) as Simple<Element>)
-				};
-			case "CharacterClass":
-				return {
-					type: "CharacterClass",
-					characters: t.characters
-				};
-			case "Quantifier":
-				return {
-					type: "Quantifier",
-					alternatives: t.alternatives.map(a => copy(a) as Simple<Concatenation>),
-					max: t.max,
-					min: t.min,
-				};
-
-			default:
-				throw assertNever(t);
+				return tc.quantPlus([asConcatenation(a)]);
 		}
 	}
 
@@ -490,13 +524,17 @@ function eliminateStates(nodeList: NodeList): void {
 			const refStar = star(refTrans);
 			state.in.forEach((inTrans, inState) => {
 				state.out.forEach((outTrans, outState) => {
-					linkWithUnion(inState, outState, concat(copy(inTrans), concat(copy(refStar), copy(outTrans))));
+					linkWithUnion(
+						inState,
+						outState,
+						concat(tc.copy(inTrans), concat(tc.copy(refStar), tc.copy(outTrans)))
+					);
 				});
 			});
 		} else {
 			state.in.forEach((inTrans, inState) => {
 				state.out.forEach((outTrans, outState) => {
-					linkWithUnion(inState, outState, concat(copy(inTrans), copy(outTrans)));
+					linkWithUnion(inState, outState, concat(tc.copy(inTrans), tc.copy(outTrans)));
 				});
 			});
 		}
@@ -548,17 +586,15 @@ function eliminateStates(nodeList: NodeList): void {
 	}
 }
 
-function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simple<Expression> {
+function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAstNodes: number): Simple<Expression> {
+	const tc = new TransitionCreator(maxAstNodes);
 
-	const nodeList = createNodeList(iter);
+	const nodeList = createNodeList(iter, tc);
 	if (nodeList == null) {
-		return {
-			type: "Expression",
-			alternatives: []
-		};
+		return tc.emptyExpression();
 	}
 
-	eliminateStates(nodeList);
+	eliminateStates(nodeList, tc);
 
 	const [finalState] = [...nodeList.finals];
 	if (finalState.in.size !== 1 || !finalState.in.has(nodeList.initial)) {
@@ -569,27 +605,11 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simpl
 
 	switch (transition.type) {
 		case "Alternation":
-			return {
-				type: "Expression",
-				alternatives: transition.alternatives
-			};
-
+			return tc.expression(transition.alternatives);
 		case "Concatenation":
-			return {
-				type: "Expression",
-				alternatives: [transition]
-			};
-
+			return tc.expression([transition]);
 		default:
-			return {
-				type: "Expression",
-				alternatives: [
-					{
-						type: "Concatenation",
-						elements: [transition]
-					}
-				]
-			};
+			return tc.expression([tc.concat([transition])]);
 	}
 }
 
@@ -954,8 +974,19 @@ function optimize(expr: Simple<Expression>): boolean {
 	return optimized;
 }
 
-export function faToRegex<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Simple<Expression> {
-	const expression = stateElimination(iter);
-	while (optimize(expression));
+export function faToRegex<T>(
+	iter: FAIterator<T, Iterable<[T, CharSet]>>,
+	options?: Readonly<ToRegexOptions>
+): Simple<Expression> {
+	const maxAstNodes = options?.maximumNodes ?? 10000;
+	let optimizationPasses = options?.maximumOptimizationPasses ?? Infinity;
+
+	const expression = stateElimination(iter, maxAstNodes);
+
+	// optimize
+	while (optimizationPasses > 0 && optimize(expression)) {
+		optimizationPasses--;
+	}
+
 	return expression;
 }

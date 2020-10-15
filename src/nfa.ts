@@ -1,7 +1,7 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
-import { FiniteAutomaton, TransitionIterable, ReadonlyIntersectionOptions, TransitionIterableFA } from "./finite-automaton";
+import { FiniteAutomaton, TransitionIterable, ReadonlyIntersectionOptions, TransitionIterableFA, ToRegexOptions } from "./finite-automaton";
 import { faIterateStates, FAIterator, faCanReachFinal, faMarkPureOut, faMapOut, faTraverse, faLanguageIsFinite } from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
 import { faToRegex } from "./to-regex";
@@ -377,8 +377,8 @@ export class NFA implements ReadonlyNFA {
 		return faWithCharSetsToString(this.transitionIterator());
 	}
 
-	toRegex(): Simple<Expression> {
-		return faToRegex(this.transitionIterator());
+	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
+		return faToRegex(this.transitionIterator(), options);
 	}
 
 
