@@ -196,4 +196,60 @@ describe("CharSet", function () {
 		});
 	}
 
+	describe("Combinations", function () {
+
+		const sets: readonly [CharSet, string][] = [
+			// eslint-disable-next-line no-empty-character-class
+			/[]/,
+			/[\s\S]/,
+			/a/,
+			/a/i,
+			/\d/,
+			/\w/,
+			/,/,
+			/[\0-\xF7]/,
+			/[a-z]/,
+			/[,a]/,
+		].map(x => [charSetOf(x), String(x)]);
+
+		for (let i = 0; i < sets.length; i++) {
+			for (let j = 0; j < sets.length; j++) {
+				const [left, leftString] = sets[i];
+				const [right, rightString] = sets[j];
+
+				it(`${leftString} and ${rightString}`, function () {
+					// symmetry
+					assert.equal(left.equals(right), right.equals(left));
+
+					assert.isTrue(left.intersect(right).equals(right.intersect(left)));
+					assert.isTrue(left.union(right).equals(right.union(left)));
+
+					assert.equal(left.isDisjointWith(right), right.isDisjointWith(left));
+
+					// correctness
+					assert.equal(left.isDisjointWith(right), left.intersect(right).isEmpty);
+
+					assert.equal(left.isSupersetOf(right), right.without(left).isEmpty);
+					assert.equal(left.isSubsetOf(right), left.without(right).isEmpty);
+
+					assert.isTrue(left.without(right).isDisjointWith(right));
+
+					const cc = left.commonCharacter(right);
+					assert.equal(left.isDisjointWith(right), cc === undefined);
+					if (cc !== undefined) {
+						assert.isTrue(left.intersect(right).has(cc));
+					}
+
+					for (const r of right.ranges) {
+						const cc = left.commonCharacter(r);
+						assert.equal(left.isDisjointWith(r), cc === undefined);
+						if (cc !== undefined) {
+							assert.isTrue(left.intersect([r]).has(cc));
+						}
+					}
+				});
+			}
+		}
+	});
+
 });

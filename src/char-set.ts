@@ -419,8 +419,19 @@ export class CharSet {
 	 * @param other
 	 */
 	isDisjointWith(other: CharSet | CharRange): boolean {
+		return this.commonCharacter(other) === undefined;
+	}
+
+	/**
+	 * Returns any one of the common characters of this set and the given set or range.
+	 *
+	 * If this character set is disjoint with the given character set/range, then `undefined` will be returned.
+	 *
+	 * @param other
+	 */
+	commonCharacter(other: CharSet | CharRange): number | undefined {
 		if (!(other instanceof CharSet)) {
-			return !hasSomeOfRange(this.ranges, other);
+			return commonCharacterOfRange(this.ranges, other);
 		}
 
 		// runs in O(this.ranges.length + other.ranges.length)
@@ -440,13 +451,12 @@ export class CharSet {
 				thisItem = thisRanges[++i];
 			} else {
 				// thisItem and otherItem have at least one character in common
-				return false;
+				return Math.max(thisItem.min, otherItem.min);
 			}
 		}
 
-		return true;
+		return undefined;
 	}
-
 }
 
 function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolean {
@@ -487,7 +497,8 @@ function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolea
 
 	return false;
 }
-function hasSomeOfRange(ranges: readonly CharRange[], range: CharRange): boolean {
+
+function commonCharacterOfRange(ranges: readonly CharRange[], range: CharRange): number | undefined {
 	// runs in O(log(ranges.length))
 
 	const l = ranges.length;
@@ -495,11 +506,11 @@ function hasSomeOfRange(ranges: readonly CharRange[], range: CharRange): boolean
 
 	// this is empty
 	if (l == 0)
-		return false;
+		return undefined;
 
 	// out of range
 	if (max < ranges[0].min || min > ranges[l - 1].max)
-		return false;
+		return undefined;
 
 	let low = 0; // inclusive
 	let high = l; // exclusive
@@ -509,17 +520,17 @@ function hasSomeOfRange(ranges: readonly CharRange[], range: CharRange): boolean
 		const mMin = mRange.min;
 
 		if (mMin == min) {
-			return true; // range.min is in this set
+			return min; // range.min is in this set
 		} else if (mMin < min) {
 			if (min <= mRange.max)
-				return true;
+				return min;
 			low = m + 1;
 		} else /* if (mMin > min) */ {
 			if (mMin <= max)
-				return true;
+				return mMin;
 			high = m;
 		}
 	}
 
-	return false;
+	return undefined;
 }
