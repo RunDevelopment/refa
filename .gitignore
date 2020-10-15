@@ -3,3 +3,5 @@ dist/
 .vscode/
 src/debug.ts
 /**/tempCodeRunnerFile.*
+.nyc_output/
+coverage/
