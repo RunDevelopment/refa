@@ -52,149 +52,153 @@ describe("CharSet", function () {
 		});
 	});
 
-	interface TestCase {
-		title: string;
-		set: CharSet;
-		content: string;
-	}
+	describe("Basic functionality", function () {
+		interface TestCase {
+			title: string;
+			set: CharSet;
+			content: string;
+		}
 
-	const testCases: TestCase[] = [
-		{
-			title: "Empty set",
-			set: CharSet.empty(0xFFFF),
-			content: "[]"
-		},
-		{
-			title: "[abc]",
-			// some are intentionally include twice
-			set: CharSet.empty(0xFFFF).union(toRanges("ccbbaa".split(""))),
-			content: "[['a','c']]"
-		},
-		{
-			title: "[^abc]",
-			// some are intentionally include twice
-			set: CharSet.empty(0xFFFF).union(toRanges("ccbbaa".split(""))).negate(),
-			content: "[[0,96],['d',65535]]"
-		},
-		{
-			title: "White spaces",
-			set: CharSet.empty(0xFFFF).union(toRanges("\n\r\f\t\v \xA0 \n\r".split(""))),
-			content: "[[9,13],32,160]"
-		},
-		{
-			title: "Not white spaces",
-			set: CharSet.empty(0xFFFF).union(toRanges("\n\r\f\t\v \xA0 \n\r".split(""))).negate(),
-			content: "[[0,8],[14,31],[33,159],[161,65535]]"
-		},
-		{
-			title: "[abc123] & [cdf321]",
-			set: CharSet.empty(0xFFFF).union(toRanges("abc123".split(""))).intersect(toRanges("cdf123".split(""))),
-			content: "[['1','3'],'c']"
-		},
-	];
+		const testCases: TestCase[] = [
+			{
+				title: "Empty set",
+				set: CharSet.empty(0xFFFF),
+				content: "[]"
+			},
+			{
+				title: "[abc]",
+				// some are intentionally include twice
+				set: CharSet.empty(0xFFFF).union(toRanges("ccbbaa".split(""))),
+				content: "[['a','c']]"
+			},
+			{
+				title: "[^abc]",
+				// some are intentionally include twice
+				set: CharSet.empty(0xFFFF).union(toRanges("ccbbaa".split(""))).negate(),
+				content: "[[0,96],['d',65535]]"
+			},
+			{
+				title: "White spaces",
+				set: CharSet.empty(0xFFFF).union(toRanges("\n\r\f\t\v \xA0 \n\r".split(""))),
+				content: "[[9,13],32,160]"
+			},
+			{
+				title: "Not white spaces",
+				set: CharSet.empty(0xFFFF).union(toRanges("\n\r\f\t\v \xA0 \n\r".split(""))).negate(),
+				content: "[[0,8],[14,31],[33,159],[161,65535]]"
+			},
+			{
+				title: "[abc123] & [cdf321]",
+				set: CharSet.empty(0xFFFF).union(toRanges("abc123".split(""))).intersect(toRanges("cdf123".split(""))),
+				content: "[['1','3'],'c']"
+			},
+		];
 
-	for (const test of testCases) {
-		it(test.title, function () {
-			assert.equal(readableIntervalString(test.set), test.content);
-		});
-	}
+		for (const test of testCases) {
+			it(test.title, function () {
+				assert.equal(readableIntervalString(test.set), test.content);
+			});
+		}
+	});
 
-	interface PredicateTestCase {
-		name: string;
-		cases: (() => boolean)[];
-	}
+	describe("Function tests", function () {
+		interface PredicateTestCase {
+			name: string;
+			cases: (() => boolean)[];
+		}
 
-	const charSetOf = charsFromRegex;
-	const predicateTests: PredicateTestCase[] = [
-		{
-			name: "size",
-			cases: [
-				// eslint-disable-next-line no-empty-character-class
-				() => charSetOf(/[]/).size == 0,
-				() => charSetOf(/[^\s\S]/).size == 0,
-				() => charSetOf(/a/).size == 1,
-				() => charSetOf(/a/i).size == 2,
-				() => charSetOf(/\d/).size == 10,
-				() => charSetOf(/\w/).size == 10 + 26 + 26 + 1,
-			]
-		},
-		{
-			name: CharSet.prototype.has.name,
-			cases: [
-				() => charSetOf(/a/).has("a".charCodeAt(0)),
-				() => !charSetOf(/b/).has("a".charCodeAt(0)),
-				() => charSetOf(/\w/).has("a".charCodeAt(0)),
-				() => !charSetOf(/\W/).has("a".charCodeAt(0)),
-			]
-		},
-		{
-			name: CharSet.prototype.isSupersetOf.name,
-			cases: [
-				() => charSetOf(/a/).isSupersetOf(charSetOf(/a/)),
-				() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/a/)),
-				() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/[a-z]/)),
-				() => charSetOf(/\w/).isSupersetOf(charSetOf(/[a-z]/)),
-				() => charSetOf(/\w/).isSupersetOf(charSetOf(/\d/)),
-				() => charSetOf(/\w/).isSupersetOf(charSetOf(/\w/)),
-				() => charSetOf(/\W/).isSupersetOf(charSetOf(/\W/)),
+		const charSetOf = charsFromRegex;
+		const predicateTests: PredicateTestCase[] = [
+			{
+				name: "size",
+				cases: [
+					// eslint-disable-next-line no-empty-character-class
+					() => charSetOf(/[]/).size == 0,
+					() => charSetOf(/[^\s\S]/).size == 0,
+					() => charSetOf(/a/).size == 1,
+					() => charSetOf(/a/i).size == 2,
+					() => charSetOf(/\d/).size == 10,
+					() => charSetOf(/\w/).size == 10 + 26 + 26 + 1,
+				]
+			},
+			{
+				name: CharSet.prototype.has.name,
+				cases: [
+					() => charSetOf(/a/).has("a".charCodeAt(0)),
+					() => !charSetOf(/b/).has("a".charCodeAt(0)),
+					() => charSetOf(/\w/).has("a".charCodeAt(0)),
+					() => !charSetOf(/\W/).has("a".charCodeAt(0)),
+				]
+			},
+			{
+				name: CharSet.prototype.isSupersetOf.name,
+				cases: [
+					() => charSetOf(/a/).isSupersetOf(charSetOf(/a/)),
+					() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/a/)),
+					() => charSetOf(/[a-z]/).isSupersetOf(charSetOf(/[a-z]/)),
+					() => charSetOf(/\w/).isSupersetOf(charSetOf(/[a-z]/)),
+					() => charSetOf(/\w/).isSupersetOf(charSetOf(/\d/)),
+					() => charSetOf(/\w/).isSupersetOf(charSetOf(/\w/)),
+					() => charSetOf(/\W/).isSupersetOf(charSetOf(/\W/)),
 
-				() => !charSetOf(/\w/).isSupersetOf(charSetOf(/,/)),
-				() => !charSetOf(/\w/).isSupersetOf(charSetOf(/[,a]/)),
+					() => !charSetOf(/\w/).isSupersetOf(charSetOf(/,/)),
+					() => !charSetOf(/\w/).isSupersetOf(charSetOf(/[,a]/)),
 
-				() => !charSetOf(/\d/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => charSetOf(/[a-z]/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => charSetOf(/\w/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-			]
-		},
-		{
-			name: CharSet.prototype.isSubsetOf.name,
-			cases: [
-				() => charSetOf(/a/).isSubsetOf(charSetOf(/a/)),
-				() => charSetOf(/a/).isSubsetOf(charSetOf(/[a-z]/)),
-				() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/[a-z]/)),
-				() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/\w/)),
-				() => charSetOf(/\d/).isSubsetOf(charSetOf(/\w/)),
-				() => charSetOf(/\w/).isSubsetOf(charSetOf(/\w/)),
-				() => charSetOf(/\W/).isSubsetOf(charSetOf(/\W/)),
+					() => !charSetOf(/\d/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => charSetOf(/[a-z]/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => charSetOf(/\w/).isSupersetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				]
+			},
+			{
+				name: CharSet.prototype.isSubsetOf.name,
+				cases: [
+					() => charSetOf(/a/).isSubsetOf(charSetOf(/a/)),
+					() => charSetOf(/a/).isSubsetOf(charSetOf(/[a-z]/)),
+					() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/[a-z]/)),
+					() => charSetOf(/[a-z]/).isSubsetOf(charSetOf(/\w/)),
+					() => charSetOf(/\d/).isSubsetOf(charSetOf(/\w/)),
+					() => charSetOf(/\w/).isSubsetOf(charSetOf(/\w/)),
+					() => charSetOf(/\W/).isSubsetOf(charSetOf(/\W/)),
 
-				() => !charSetOf(/,/).isSubsetOf(charSetOf(/\w/)),
-				() => !charSetOf(/[,a]/).isSubsetOf(charSetOf(/\w/)),
+					() => !charSetOf(/,/).isSubsetOf(charSetOf(/\w/)),
+					() => !charSetOf(/[,a]/).isSubsetOf(charSetOf(/\w/)),
 
-				() => charSetOf(/a/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => !charSetOf(/\d/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => charSetOf(/[a-z]/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => !charSetOf(/\w/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-			]
-		},
-		{
-			name: CharSet.prototype.isDisjointWith.name,
-			cases: [
-				() => charSetOf(/a/).isDisjointWith(charSetOf(/b/)),
-				() => !charSetOf(/\d/).isDisjointWith(charSetOf(/\w/)),
-				() => charSetOf(/\w/).isDisjointWith(charSetOf(/\W/)),
-				() => !charSetOf(/\W/).isDisjointWith(charSetOf(/\W/)),
+					() => charSetOf(/a/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => !charSetOf(/\d/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => charSetOf(/[a-z]/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => !charSetOf(/\w/).isSubsetOf({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				]
+			},
+			{
+				name: CharSet.prototype.isDisjointWith.name,
+				cases: [
+					() => charSetOf(/a/).isDisjointWith(charSetOf(/b/)),
+					() => !charSetOf(/\d/).isDisjointWith(charSetOf(/\w/)),
+					() => charSetOf(/\w/).isDisjointWith(charSetOf(/\W/)),
+					() => !charSetOf(/\W/).isDisjointWith(charSetOf(/\W/)),
 
-				() => charSetOf(/,/).isDisjointWith(charSetOf(/\w/)),
-				() => !charSetOf(/[,a]/).isDisjointWith(charSetOf(/\w/)),
+					() => charSetOf(/,/).isDisjointWith(charSetOf(/\w/)),
+					() => !charSetOf(/[,a]/).isDisjointWith(charSetOf(/\w/)),
 
-				() => !charSetOf(/a/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => charSetOf(/\d/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => !charSetOf(/[a-z]/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-				() => charSetOf(/\W/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
-			]
-		},
-	];
+					() => !charSetOf(/a/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => charSetOf(/\d/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => !charSetOf(/[a-z]/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+					() => charSetOf(/\W/).isDisjointWith({ min: "a".charCodeAt(0), max: "z".charCodeAt(0) }),
+				]
+			},
+		];
 
-	for (const predicateTest of predicateTests) {
-		describe(predicateTest.name, function () {
-			for (const _case of predicateTest.cases) {
-				const caseName = _case.toString().replace(/\s+/g, " ").replace(/^\s*\(\s*\)\s*=>\s*/, "");
-				it(caseName, function () {
-					assert.isTrue(_case());
-				});
-			}
-		});
-	}
+		for (const predicateTest of predicateTests) {
+			describe(predicateTest.name, function () {
+				for (const _case of predicateTest.cases) {
+					const caseName = _case.toString().replace(/\s+/g, " ").replace(/^\s*\(\s*\)\s*=>\s*/, "");
+					it(caseName, function () {
+						assert.isTrue(_case());
+					});
+				}
+			});
+		}
+	});
 
 	describe("Combinations", function () {
 
@@ -210,7 +214,7 @@ describe("CharSet", function () {
 			/[\0-\xF7]/,
 			/[a-z]/,
 			/[,a]/,
-		].map(x => [charSetOf(x), String(x)]);
+		].map(x => [charsFromRegex(x), String(x)]);
 
 		for (let i = 0; i < sets.length; i++) {
 			for (let j = 0; j < sets.length; j++) {
@@ -250,6 +254,31 @@ describe("CharSet", function () {
 				});
 			}
 		}
+	});
+
+	it("should throw for incompatible sets", function () {
+		const a = CharSet.empty(0xFF);
+		const b = CharSet.empty(0xFFFF);
+
+		// should throw
+		assert.throws(() => a.union(b));
+		assert.throws(() => b.union(a));
+		assert.throws(() => a.intersect(b));
+		assert.throws(() => b.intersect(a));
+		assert.throws(() => a.without(b));
+		assert.throws(() => b.without(a));
+
+		// should not throw
+		assert.doesNotThrow(() => a.equals(b));
+		assert.doesNotThrow(() => b.equals(a));
+		assert.doesNotThrow(() => a.compare(b));
+		assert.doesNotThrow(() => b.compare(a));
+		assert.doesNotThrow(() => a.isDisjointWith(b));
+		assert.doesNotThrow(() => b.isDisjointWith(a));
+		assert.doesNotThrow(() => a.isSubsetOf(b));
+		assert.doesNotThrow(() => b.isSubsetOf(a));
+		assert.doesNotThrow(() => a.isSupersetOf(b));
+		assert.doesNotThrow(() => b.isSupersetOf(a));
 	});
 
 });

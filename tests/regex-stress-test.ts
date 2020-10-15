@@ -4,6 +4,7 @@ import { PrismRegexes } from "./helper/prism-regex-data";
 import { NFA } from "../src/nfa";
 import { DFA, ReadonlyDFA } from "../src/dfa";
 import { Expression, Simple } from "../src/ast";
+import { TooManyNodesError } from "../src/finite-automaton";
 
 /**
  * Setting this to `true` will enable the check that verifies that the language of the generated RE from `toRegex` is
@@ -40,13 +41,31 @@ describe("Regex stress test", function () {
 			const nfa = NFA.fromRegex(expression, { maxCharacter }, {
 				disableLookarounds: true
 			});
+			nfa.nodes.count();
+
 			const dfa = DFA.fromFA(nfa);
+			const dfaOriginalCount = dfa.nodes.count();
 			dfa.minimize();
+			assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
 
-			const re = nfa.toRegex({ maximumNodes: Infinity });
 
+			const re1 = nfa.toRegex({ maximumNodes: Infinity });
 			if (CHECK_RE_LANGUAGE) {
-				equalLanguage(dfa, re, maxCharacter);
+				equalLanguage(dfa, re1, maxCharacter);
+			}
+
+			let re2;
+			try {
+				re2 = dfa.toRegex({ maximumNodes: 100_000 });
+			} catch (e) {
+				if (!(e instanceof TooManyNodesError)) {
+					throw e;
+				}
+			}
+			if (CHECK_RE_LANGUAGE) {
+				if (re2) {
+					equalLanguage(dfa, re2, maxCharacter);
+				}
 			}
 		});
 	});

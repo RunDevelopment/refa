@@ -162,66 +162,9 @@ const LATIN_LOWER: CharRange = { min: 0x61, max: 0x7A };
 const LATIN_UPPER: CharRange = { min: 0x41, max: 0x5A };
 const LATIN_DIGIT: CharRange = { min: 0x30, max: 0x39 };
 const LATIN_UNDERSCORE = 0x5F;
-const ASCII_SPACE = 0x5F;
-const ASCII_NEWLINE = 0xA;
-const ASCII_WITHOUT_SPACE_AND_CONTROL: CharRange = { min: 0x21, max: 0x7E };
-
 const READABLE_CHARACTERS = CharSet.empty(0x10FFFF).union([
 	LATIN_LOWER, LATIN_UPPER, LATIN_DIGIT, { min: LATIN_UNDERSCORE, max: LATIN_UNDERSCORE }
 ]);
-
-/**
- * Returns a readable character from the given character set.
- *
- * There are no guarantees as to what character will be returned.
- *
- * @param charset
- * @throws If the given character set is empty.
- */
-export function getReadableCharacter(charset: CharSet): number {
-	if (charset.isEmpty) {
-		throw new Error("Cannot get a character from an empty character set.");
-	}
-
-	// trivial case
-	if (charset.ranges.length == 1 && charset.ranges[0].min == charset.ranges[0].max) {
-		return charset.ranges[0].min;
-	}
-
-	// check \w characters
-	if (!charset.isDisjointWith(LATIN_UPPER)) {
-		return charset.intersect([LATIN_UPPER]).ranges[0].min;
-	}
-	if (!charset.isDisjointWith(LATIN_LOWER)) {
-		return charset.intersect([LATIN_LOWER]).ranges[0].min;
-	}
-	if (!charset.isDisjointWith(LATIN_DIGIT)) {
-		return charset.intersect([LATIN_DIGIT]).ranges[0].min;
-	}
-	if (charset.has(LATIN_UNDERSCORE)) {
-		return LATIN_UNDERSCORE;
-	}
-
-	// I'm sorry for all non-english languages, but I don't want this function to be too complex.
-	// More efficient approaches are welcome of course.
-
-	// check non-space characters
-	if (!charset.isDisjointWith(ASCII_WITHOUT_SPACE_AND_CONTROL)) {
-		return charset.intersect([ASCII_WITHOUT_SPACE_AND_CONTROL]).ranges[0].min;
-	}
-
-	// space
-	if (charset.has(ASCII_SPACE)) {
-		return ASCII_SPACE;
-	}
-	if (charset.has(ASCII_NEWLINE)) {
-		return ASCII_NEWLINE;
-	}
-
-	// just anything
-	const { min, max } = charset.ranges[charset.ranges.length >> 3];
-	return min + ((max - min) >> 3); // unicode can be quite empty, so try get lower code points
-}
 
 /**
  * Returns a string representation of the given character ranges.

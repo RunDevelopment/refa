@@ -56,15 +56,6 @@ export function iterToArray<T>(iter: Iterable<T>): readonly T[] {
 export function iterToSet<T>(iter: Iterable<T>): ReadonlySet<T> {
 	return iter instanceof Set ? iter : new Set(iter);
 }
-export function iterToStableIter<T>(iter: Iterable<T>): Iterable<T> {
-	if (Array.isArray(iter)) {
-		return iter;
-	} else if (iter instanceof Set) {
-		return iter;
-	} else {
-		return [...iter];
-	}
-}
 
 export function firstOf<T>(iter: Iterable<T>): T | undefined {
 	for (const value of iter) {
@@ -86,54 +77,6 @@ export function intersectSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 		if (s2.has(x)) s.add(x);
 	}
 	return s;
-}
-
-
-export function* BFSIterate<S, T>(rootElement: S,
-	next: (element: S) => Iterable<T>,
-	hit: (element: S) => boolean,
-	select: (item: T) => S): Iterable<T[]> {
-
-	interface BFSNode<T> {
-		parent: BFSNode<T> | undefined;
-		element: T;
-	}
-
-	const visited = new Set<S>();
-	let toVisit: BFSNode<T>[] = iterToArray(next(rootElement)).map(x => ({ parent: undefined, element: x }));
-
-	while (toVisit.length > 0) {
-		const newToVisit: BFSNode<T>[] = [];
-
-		for (let i = 0, l = toVisit.length; i < l; i++) {
-			const node = toVisit[i];
-			const element = select(node.element);
-
-			if (!visited.has(element)) {
-				visited.add(element);
-
-				if (hit(element)) {
-					const path: T[] = [];
-					let n: BFSNode<T> | undefined = node;
-					while (n) {
-						path.push(n.element);
-						n = n.parent;
-					}
-					path.reverse();
-					yield path;
-				}
-
-				for (const child of next(element)) {
-					newToVisit.push({
-						parent: node,
-						element: child
-					});
-				}
-			}
-		}
-
-		toVisit = newToVisit;
-	}
 }
 
 

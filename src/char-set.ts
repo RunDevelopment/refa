@@ -376,7 +376,7 @@ export class CharSet {
 		// runs in O(this.ranges.length + other.ranges.length)
 
 		const thisRanges = this.ranges;
-		const otherRanges = this.toRanges(other);
+		const otherRanges = other.ranges;
 
 		let i = 0, j = 0;
 		let thisItem = thisRanges[i], otherItem = otherRanges[j];
@@ -437,7 +437,7 @@ export class CharSet {
 		// runs in O(this.ranges.length + other.ranges.length)
 
 		const thisRanges = this.ranges;
-		const otherRanges = this.toRanges(other);
+		const otherRanges = other.ranges;
 
 		let i = 0, j = 0;
 		let thisItem = thisRanges[i], otherItem = otherRanges[j];
