@@ -11,12 +11,10 @@ import { lazyIntersection, TransitionMapBuilder } from "./intersection";
 
 
 export interface ReadonlyDFANode {
-	readonly id: number;
 	readonly list: ReadonlyNodeList;
 	readonly out: ReadonlyCharMap<ReadonlyDFANode>;
 }
 export interface DFANode extends ReadonlyDFANode {
-	readonly id: number;
 	readonly list: NodeList;
 	readonly out: CharMap<DFANode>;
 }
@@ -44,7 +42,7 @@ class NodeList implements ReadonlyNodeList {
 	}
 
 	createNode(): DFANode {
-		const node: DFANode = {
+		const node: DFANode & { id: number } = {
 			id: this._nodeCounter++, // for debugging
 			list: this,
 			out: new CharMap<DFANode>()

@@ -25,13 +25,11 @@ import { lazyIntersection, TransitionMapBuilder } from "./intersection";
 
 
 export interface ReadonlyNFANode {
-	readonly id: number;
 	readonly list: ReadonlyNodeList;
 	readonly out: ReadonlyMap<ReadonlyNFANode, CharSet>;
 	readonly in: ReadonlyMap<ReadonlyNFANode, CharSet>;
 }
 export interface NFANode extends ReadonlyNFANode {
-	readonly id: number;
 	readonly list: NodeList;
 	readonly out: Map<NFANode, CharSet>;
 	readonly in: Map<NFANode, CharSet>;
@@ -72,8 +70,8 @@ class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 	 * Creates a new node associated with this node list.
 	 */
 	createNode(): NFANode {
-		const node: NFANode = {
-			id: this._nodeCounter++,
+		const node: NFANode & { id: number } = {
+			id: this._nodeCounter++, // for debugging
 			list: this,
 			out: new Map(), in: new Map()
 		};
