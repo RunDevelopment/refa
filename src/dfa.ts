@@ -33,18 +33,13 @@ interface ReadonlyNodeList extends Iterable<ReadonlyDFANode> {
 	 */
 	count(): number;
 }
-let nodeListCounter = 0;
 class NodeList implements ReadonlyNodeList {
-
-	// variables for checks and debugging
-	private readonly id: number;
 	private _nodeCounter: number = 0;
 
 	readonly initial: DFANode;
 	readonly finals: Set<DFANode> = new Set();
 
 	constructor() {
-		this.id = nodeListCounter++;
 		this.initial = this.createNode();
 	}
 

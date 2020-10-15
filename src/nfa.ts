@@ -37,7 +37,7 @@ export interface NFANode extends ReadonlyNFANode {
 	readonly in: Map<NFANode, CharSet>;
 }
 
-export interface ReadonlyNodeList extends Iterable<ReadonlyNFANode> {
+interface ReadonlyNodeList extends Iterable<ReadonlyNFANode> {
 	readonly initial: ReadonlyNFANode;
 	readonly finals: ReadonlySet<ReadonlyNFANode>;
 	/**
@@ -50,11 +50,7 @@ export interface ReadonlyNodeList extends Iterable<ReadonlyNFANode> {
 	count(): number;
 }
 
-let nodeListCounter = 0;
-export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
-
-	// variables for checks and debugging
-	private readonly id: number;
+class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 	private _nodeCounter: number = 0;
 
 	/**
@@ -69,7 +65,6 @@ export class NodeList implements ReadonlyNodeList, Iterable<NFANode> {
 	readonly finals: Set<NFANode> = new Set();
 
 	constructor() {
-		this.id = nodeListCounter++;
 		this.initial = this.createNode();
 	}
 
