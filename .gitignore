@@ -5,3 +5,4 @@ src/debug.ts
 /**/tempCodeRunnerFile.*
 .nyc_output/
 coverage/
+/index.js
