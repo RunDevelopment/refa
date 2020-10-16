@@ -5,6 +5,5 @@ export * from "./ast";
 export * from "./nfa";
 export * from "./dfa";
 
-import * as JS from "./js/index";
-import * as Words from "./words";
-export { JS, Words };
+export * as JS from "./js/index";
+export * as Words from "./words";
