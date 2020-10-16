@@ -17,25 +17,6 @@ export interface TextBoundaryAssertion {
 export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): Simple<Element> {
 	const maximum = flags.unicode ? 0x10FFFF : 0xFFFF;
 
-	const newAssertion = (negate: boolean, kind: "ahead" | "behind", characters: CharSet): Simple<Assertion> => {
-		return {
-			type: "Assertion",
-			negate,
-			kind,
-			alternatives: [
-				{
-					type: "Concatenation",
-					elements: [
-						{
-							type: "CharacterClass",
-							characters
-						}
-					]
-				}
-			]
-		};
-	};
-
 	switch (assertion.kind) {
 		case "end":
 		case "start": {
@@ -80,4 +61,23 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 		default:
 			throw assertNever(assertion, "Unknown assertion type");
 	}
+}
+
+function newAssertion(negate: boolean, kind: "ahead" | "behind", characters: CharSet): Simple<Assertion> {
+	return {
+		type: "Assertion",
+		negate,
+		kind,
+		alternatives: [
+			{
+				type: "Concatenation",
+				elements: [
+					{
+						type: "CharacterClass",
+						characters
+					}
+				]
+			}
+		]
+	};
 }
