@@ -1,7 +1,9 @@
 node_modules/
-dist/
+.out/
 .vscode/
 src/debug.ts
 /**/tempCodeRunnerFile.*
 .nyc_output/
 coverage/
+/index.js
+/index.mjs
