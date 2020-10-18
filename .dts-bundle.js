@@ -10,7 +10,7 @@ const config = {
 
 	entries: [
 		{
-			filePath: './src/index.ts',
+			filePath: './.out/index.d.ts',
 			outFile: './index.d.ts',
 			libraries: {
 				importedLibraries: [

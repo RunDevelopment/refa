@@ -7,3 +7,4 @@ src/debug.ts
 coverage/
 /index.js
 /index.mjs
+/index.d.ts

@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "description": "A library for finite automata and regular expressions in the context of JS RegExp",
   "main": "index.js",
-  "types": "dist/index.d.ts",
+  "types": "index.d.ts",
   "scripts": {
     "check": "npm run lint && npm run check-dependencies && npx tsc --noEmit && cd tests && npx tsc --noEmit && cd ../scripts && npx tsc --noEmit",
     "lint": "npx eslint --ignore-path .gitignore **/*.ts",
