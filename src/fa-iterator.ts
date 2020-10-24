@@ -1,14 +1,5 @@
+import { FAIterator } from "./finite-automaton";
 import { IterateBFS, iterToArray, traverse } from "./util";
-
-/**
- * An iterator over all states of an FA with final states.
- */
-export interface FAIterator<S, O = Iterable<S>> {
-	readonly initial: S;
-	readonly getOut: (state: S) => O;
-	readonly isFinal: (state: S) => boolean;
-}
-
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -22,7 +13,7 @@ export function faMapOut<S, O, T>(iter: FAIterator<S, O>, mapFn: (out: O) => T):
 	return {
 		initial: iter.initial,
 		getOut: state => mapFn(oldGetOut(state)),
-		isFinal: iter.isFinal
+		isFinal: iter.isFinal,
 	};
 }
 /**
@@ -45,7 +36,7 @@ export function faMapOutIter<S, O, T>(
 	return {
 		initial: iter.initial,
 		getOut,
-		isFinal: iter.isFinal
+		isFinal: iter.isFinal,
 	};
 }
 /**
@@ -54,7 +45,9 @@ export function faMapOutIter<S, O, T>(
  * @param iter
  * @param mapFn
  */
-export function faFilterOutIter<S, O>(iter: FAIterator<S, Iterable<O>>, conditionFn: (out: O) => boolean
+export function faFilterOutIter<S, O>(
+	iter: FAIterator<S, Iterable<O>>,
+	conditionFn: (out: O) => boolean
 ): FAIterator<S, Iterable<O>> {
 	const oldGetOut = iter.getOut;
 	function* getOut(state: S): IterableIterator<O> {
@@ -68,7 +61,7 @@ export function faFilterOutIter<S, O>(iter: FAIterator<S, Iterable<O>>, conditio
 	return {
 		initial: iter.initial,
 		getOut,
-		isFinal: iter.isFinal
+		isFinal: iter.isFinal,
 	};
 }
 
@@ -124,7 +117,7 @@ export function faCacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 			}
 			return cached;
 		},
-		isFinal: iter.isFinal
+		isFinal: iter.isFinal,
 	});
 }
 
@@ -186,10 +179,12 @@ export function faHasCycle<S>(iter: FAIterator<S>): boolean {
 	}
 
 	const stackElements = new Set<S>([initial]);
-	const stack: StackFrame[] = [{
-		element: initial,
-		nextIndex: -1
-	}];
+	const stack: StackFrame[] = [
+		{
+			element: initial,
+			nextIndex: -1,
+		},
+	];
 
 	while (stack.length > 0) {
 		const top = stack[stack.length - 1];
@@ -229,7 +224,7 @@ export function faHasCycle<S>(iter: FAIterator<S>): boolean {
 
 		stack.push({
 			element: nextElement,
-			nextIndex: -1
+			nextIndex: -1,
 		});
 	}
 

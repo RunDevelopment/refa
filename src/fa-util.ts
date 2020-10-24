@@ -1,9 +1,9 @@
 import { CharSet } from "./char-set";
 import { cachedFunc } from "./util";
 import { wordSetToWords } from "./words";
-import { FAIterator, faMapOut, faIterateStates, faCacheOut, faMapOutIter } from "./fa-iterator";
+import { faMapOut, faIterateStates, faCacheOut, faMapOutIter } from "./fa-iterator";
 import { rangesToString } from "./char-util";
-
+import { FAIterator } from "./finite-automaton";
 
 /**
  * Returns a human readable string representation of the given FA. The FA has to have exactly one initial state.
@@ -24,20 +24,22 @@ import { rangesToString } from "./char-util";
  * @param iter
  */
 export function faToString<T>(iter: FAIterator<T, Iterable<[T, string]>>): string {
-	const stableIter = faCacheOut(faMapOut(iter, out => {
-		return [...out].sort(([, a], [, b]) => a.localeCompare(b));
-	}));
+	const stableIter = faCacheOut(
+		faMapOut(iter, out => {
+			return [...out].sort(([, a], [, b]) => a.localeCompare(b));
+		})
+	);
 
 	// get all states
 	const states: T[] = [...faIterateStates(faMapOutIter(stableIter, ([s]) => s))];
 	if (states.length === 0) {
-		return "Empty."
+		return "Empty.";
 	}
 
 	const index = new Map<T, number>(states.map((s, i) => [s, i]));
 	const indexOf = (state: T): number => {
 		return index.get(state)!;
-	}
+	};
 
 	const labelOf = (state: T): string => {
 		if (stableIter.isFinal(state)) {
@@ -47,23 +49,27 @@ export function faToString<T>(iter: FAIterator<T, Iterable<[T, string]>>): strin
 		}
 	};
 
-	return states.map(state => {
-		const label = labelOf(state);
-		const out = stableIter.getOut(state).sort((a, b) => indexOf(a[0]) - indexOf(b[0]));
+	return states
+		.map(state => {
+			const label = labelOf(state);
+			const out = stableIter.getOut(state).sort((a, b) => indexOf(a[0]) - indexOf(b[0]));
 
-		if (out.length === 0) {
-			return `${label} -> none`;
-		} else {
-			const spaces = " ".repeat(label.length);
-			return out.map(([s, t], i) => {
-				return `${i ? spaces : label} -> ${labelOf(s)} : ${t}`;
-			}).join("\n");
-		}
-	}).join("\n\n");
+			if (out.length === 0) {
+				return `${label} -> none`;
+			} else {
+				const spaces = " ".repeat(label.length);
+				return out
+					.map(([s, t], i) => {
+						return `${i ? spaces : label} -> ${labelOf(s)} : ${t}`;
+					})
+					.join("\n");
+			}
+		})
+		.join("\n\n");
 }
 
 export function faWithCharSetsToString<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): string {
-	return faToString(faMapOutIter(iter, ([n, cs]) => [n, rangesToString(cs.ranges)]))
+	return faToString(faMapOutIter(iter, ([n, cs]) => [n, rangesToString(cs.ranges)]));
 }
 
 /**
@@ -85,7 +91,7 @@ export function* faIterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>
 	const root: BFSNode = {
 		state: initial,
 		parent: null,
-		value: null
+		value: null,
 	};
 
 	/**
@@ -178,7 +184,7 @@ export function* faIterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>
 			nextWave.push({
 				state: to,
 				parent: node,
-				value: chars
+				value: chars,
 			});
 		}
 	}

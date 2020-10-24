@@ -2,12 +2,10 @@ import { CharSet } from "./char-set";
 import { rangesToString } from "./char-util";
 import { assertNever } from "./util";
 
-
 export interface SourceLocation {
 	start: number;
 	end: number;
 }
-
 
 export interface NodeBase {
 	type: Node["type"];
@@ -24,11 +22,9 @@ interface ElementAndParentNode extends ParentNode {
 	parent: Concatenation;
 }
 
-
 export type Element = CharacterClass | Alternation | Quantifier | Assertion;
 export type Parent = Expression | Alternation | Quantifier | Assertion;
 export type Node = Expression | CharacterClass | Alternation | Quantifier | Assertion | Concatenation;
-
 
 export interface Alternation extends ElementAndParentNode {
 	type: "Alternation";
@@ -62,30 +58,22 @@ export interface Concatenation extends NodeBase {
 	elements: Element[];
 }
 
-
 type NodeIdent = { type: Node["type"] };
 
-type NoParentArray<T> = { [K in keyof T]: NoParent<T[K]>; };
-type NoParentNode<T extends NodeIdent> = { [K in keyof NoParentNodePick<T>]: NoParent<NoParentNodePick<T>[K]>; };
+type NoParentArray<T> = { [K in keyof T]: NoParent<T[K]> };
+type NoParentNode<T extends NodeIdent> = { [K in keyof NoParentNodePick<T>]: NoParent<NoParentNodePick<T>[K]> };
 type NoParentNodePick<T extends NodeIdent> = Pick<T, Exclude<keyof T, "parent">>;
-export type NoParent<T> =
-	T extends NodeIdent ? NoParentNode<T> :
-	T extends (infer U)[] ? NoParentArray<T> :
-	T;
+export type NoParent<T> = T extends NodeIdent ? NoParentNode<T> : T extends (infer U)[] ? NoParentArray<T> : T;
 
-type NoSourceArray<T> = { [K in keyof T]: NoSource<T[K]>; };
-type NoSourceNode<T extends NodeIdent> = { [K in keyof NoSourceNodePick<T>]: NoSource<NoSourceNodePick<T>[K]>; };
+type NoSourceArray<T> = { [K in keyof T]: NoSource<T[K]> };
+type NoSourceNode<T extends NodeIdent> = { [K in keyof NoSourceNodePick<T>]: NoSource<NoSourceNodePick<T>[K]> };
 type NoSourceNodePick<T extends NodeIdent> = Pick<T, Exclude<keyof T, "source">>;
-export type NoSource<T> =
-	T extends NodeIdent ? NoSourceNode<T> :
-	T extends (infer U)[] ? NoSourceArray<T> :
-	T;
+export type NoSource<T> = T extends NodeIdent ? NoSourceNode<T> : T extends (infer U)[] ? NoSourceArray<T> : T;
 
 /**
  * A view on AST nodes such that `parent` and `source` properties are hidden.
  */
 export type Simple<T> = NoParent<NoSource<T>>;
-
 
 export function setSource<T extends Node>(node: T, source: SourceLocation): T;
 export function setSource<T extends Node>(node: NoSource<T>, source: SourceLocation): T;
@@ -123,8 +111,7 @@ export function setParent<T extends Node>(node: Simple<T>, parent: T["parent"]):
 export function setParent(node: Node, parent: Node["parent"]): Node {
 	switch (node.type) {
 		case "Concatenation":
-			if (parent === null)
-				throw new Error("The parent of a concatenation cannot be null.");
+			if (parent === null) throw new Error("The parent of a concatenation cannot be null.");
 
 			switch (parent.type) {
 				case "Alternation":
@@ -148,8 +135,7 @@ export function setParent(node: Node, parent: Node["parent"]): Node {
 		case "Assertion":
 		case "CharacterClass":
 		case "Quantifier":
-			if (parent === null)
-				throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
+			if (parent === null) throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
 
 			if (parent.type === "Concatenation") {
 				node.parent = parent;
@@ -197,12 +183,11 @@ export function desimplify<T extends Node>(simple: Simple<T>, parent: T["parent"
 	return setParent(setSource(simple, source), parent);
 }
 
-
 function toPatternConcatenation(concat: Simple<Concatenation>): string {
 	let s = "";
 	const elements = concat.elements;
 	for (let i = 0, l = elements.length; i < l; i++) {
-		s += toPatternElement(elements[i])
+		s += toPatternElement(elements[i]);
 	}
 	return s;
 }
@@ -227,12 +212,12 @@ function toPatternElement(element: Simple<Element>): string {
 				} else if (element.min === 1) {
 					quant = "+";
 				} else {
-					quant = `{${element.min},}`
+					quant = `{${element.min},}`;
 				}
 			} else if (element.max === 1) {
 				if (element.min === 0) {
 					quant = "?";
-				} else /* if (element.min === 1) */ {
+				} /* if (element.min === 1) */ else {
 					quant = "{1}";
 				}
 			} else if (element.min === element.max) {
@@ -242,8 +227,11 @@ function toPatternElement(element: Simple<Element>): string {
 			}
 
 			let content: string;
-			if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1
-				&& element.alternatives[0].elements[0].type === "CharacterClass") {
+			if (
+				element.alternatives.length === 1 &&
+				element.alternatives[0].elements.length === 1 &&
+				element.alternatives[0].elements[0].type === "CharacterClass"
+			) {
 				content = toPatternConcatenation(element.alternatives[0]);
 			} else {
 				content = "(?:" + toPatternAlternatives(element.alternatives) + ")";
@@ -273,7 +261,6 @@ export function toPatternString(node: Simple<Node>): string {
 			return toPatternElement(node);
 	}
 }
-
 
 export interface VisitAstHandler {
 	onAlternationEnter?(node: Alternation): void;
@@ -337,7 +324,6 @@ export function visitAst(node: NoParent<Node>, handler: VisitNoParentAstHandler)
 export function visitAst(node: NoSource<Node>, handler: VisitNoSourceAstHandler): void;
 export function visitAst(node: Simple<Node>, handler: VisitSimpleAstHandler): void;
 export function visitAst(node: Simple<Node>, handler: Record<string, any>): void {
-
 	const enter = handler["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);

@@ -1,7 +1,6 @@
 import { CharSet } from "./char-set";
-import { faEnsurePureOut, FAIterator } from "./fa-iterator";
-import { ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
-
+import { faEnsurePureOut } from "./fa-iterator";
+import { FAIterator, ReadonlyIntersectionOptions, TooManyNodesError } from "./finite-automaton";
 
 /**
  * An FA builder has the responsibility of constructing a finite automata.
@@ -14,7 +13,6 @@ export interface FABuilder<S, T> {
 	readonly createNode: (id: number) => S;
 	readonly linkNodes: (from: S, to: S, transition: T) => void;
 }
-
 
 type TransitionMap = Map<TransitionMap, CharSet>;
 /**
@@ -35,7 +33,6 @@ export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
 		}
 	}
 }
-
 
 /**
  * A lazy intersection algorithm that will use the given FA builder to construct the intersection FA as the returned
@@ -78,7 +75,7 @@ export function lazyIntersection<S, L, R>(
 	const indexBackTranslatorMap = new Map<S, Tuple<L, R>>();
 	indexBackTranslatorMap.set(initial, [left.initial, right.initial]);
 	const indexTranslatorCache: Record<string, S | undefined> = {
-		[`${leftToIndex(left.initial)};${rightToIndex(right.initial)}`]: initial
+		[`${leftToIndex(left.initial)};${rightToIndex(right.initial)}`]: initial,
 	};
 
 	let createdNodes = 0;
@@ -140,16 +137,15 @@ export function lazyIntersection<S, L, R>(
 		},
 		isFinal(node: S): boolean {
 			return finals.has(node);
-		}
+		},
 	};
 }
 
-
-const HASH_MASK = 0xFFFF;
+const HASH_MASK = 0xffff;
 function computeHash(a: CharSet): number {
 	let hash = a.maximum & HASH_MASK;
 	a.ranges.forEach(({ min, max }) => {
-		hash = ((hash * 31 + min) ^ max * 31) & HASH_MASK;
+		hash = ((hash * 31 + min) ^ (max * 31)) & HASH_MASK;
 	});
 	return hash;
 }
@@ -220,9 +216,8 @@ function createCharSetIntersectFn(): (a: CharSet, b: CharSet) => CharSet | null 
 		}
 
 		return result;
-	}
+	};
 }
-
 
 function createIndexer<T>(): (value: T) => number {
 	const map = new Map<T, number>();

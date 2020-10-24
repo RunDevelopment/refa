@@ -1,10 +1,7 @@
 import type { Expression, Simple } from "./ast";
 import type { CharSet } from "./char-set";
-import type { FAIterator } from "./fa-iterator";
-
 
 export interface FiniteAutomaton {
-
 	/**
 	 * Returns whether this FA accepts the empty language meaning that it doesn't accept any words.
 	 */
@@ -75,6 +72,15 @@ export interface ToRegexOptions {
 	maximumOptimizationPasses?: number;
 }
 
+/**
+ * An iterator over all states of an FA with final states.
+ */
+export interface FAIterator<S, O = Iterable<S>> {
+	readonly initial: S;
+	readonly getOut: (state: S) => O;
+	readonly isFinal: (state: S) => boolean;
+}
+
 export interface TransitionIterable {
 	readonly maxCharacter: number;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,4 +123,4 @@ export interface IntersectionOptions {
 
 export type ReadonlyIntersectionOptions = Readonly<IntersectionOptions>;
 
-export class TooManyNodesError extends Error { }
+export class TooManyNodesError extends Error {}

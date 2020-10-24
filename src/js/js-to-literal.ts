@@ -119,13 +119,12 @@ function isEdgeAssertion(assertion: Simple<Assertion>, flags: Flags): boolean {
 			const e = alt.elements[0];
 			if (e.type === "CharacterClass") {
 				const chars = e.characters;
-				return flags.multiline && isNonLineTerminator(chars, flags) || !flags.multiline && chars.isAll;
+				return (flags.multiline && isNonLineTerminator(chars, flags)) || (!flags.multiline && chars.isAll);
 			}
 		}
 	}
 	return false;
 }
-
 
 function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
 	if (unicode) {
@@ -141,13 +140,13 @@ function isUnicode(value: readonly Simple<Node>[]): boolean | undefined {
 	for (const node of value) {
 		visitAst(node, {
 			onCharacterClassEnter(node) {
-				if (node.characters.maximum === 0x10FFFF) {
+				if (node.characters.maximum === 0x10ffff) {
 					if (unicode === undefined) {
 						unicode = true;
 					} else if (!unicode) {
 						throw new Error("All character sets have to have the same maximum.");
 					}
-				} else if (node.characters.maximum === 0xFFFF) {
+				} else if (node.characters.maximum === 0xffff) {
 					if (unicode === undefined) {
 						unicode = false;
 					} else if (unicode) {
@@ -156,7 +155,7 @@ function isUnicode(value: readonly Simple<Node>[]): boolean | undefined {
 				} else {
 					throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
 				}
-			}
+			},
 		});
 	}
 
@@ -173,9 +172,11 @@ function isIgnoreCase(value: Simple<Node>, unicode: boolean): boolean {
 					ignoreCase = false;
 					throw new Error();
 				}
-			}
+			},
 		});
-	} catch (e) { /* swallow error */ }
+	} catch (e) {
+		/* swallow error */
+	}
 
 	return ignoreCase;
 }
@@ -188,13 +189,13 @@ function getFlags(value: readonly Simple<Node>[]): Flags {
 	} else {
 		return {
 			unicode,
-			ignoreCase: value.every(node => isIgnoreCase(node, !!unicode))
+			ignoreCase: value.every(node => isIgnoreCase(node, !!unicode)),
 		};
 	}
 }
 
-const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(0x10FFFF).union(LINE_TERMINATOR).negate();
-const NON_LINE_TERMINATOR = CharSet.empty(0xFFFF).union(LINE_TERMINATOR).negate();
+const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(0x10ffff).union(LINE_TERMINATOR).negate();
+const NON_LINE_TERMINATOR = CharSet.empty(0xffff).union(LINE_TERMINATOR).negate();
 function isNonLineTerminator(chars: CharSet, flags: Flags): boolean {
 	if (flags.unicode) {
 		return chars.equals(UNICODE_NON_LINE_TERMINATOR);
@@ -202,7 +203,6 @@ function isNonLineTerminator(chars: CharSet, flags: Flags): boolean {
 		return chars.equals(NON_LINE_TERMINATOR);
 	}
 }
-
 
 const printableCharacters = new Map<number, string>();
 function addPrintableCharacter(char: number | string, print: string): void {
@@ -224,7 +224,6 @@ addPrintableCharacter("\r", "\\r");
 const specialJSRegExp = new Set<number>([..."()[]{}*+?|\\.^$/"].map(c => c.charCodeAt(0)));
 
 const specialJSCharset = new Set<number>([..."\\]-^"].map(c => c.charCodeAt(0)));
-
 
 function printAsHex(char: number): string {
 	if (char < 256) {
@@ -254,8 +253,8 @@ function printInCharClass(char: number): string {
 
 const printableRanges: readonly CharRange[] = [
 	{ min: 0x30, max: 0x39 }, // 0-9
-	{ min: 0x41, max: 0x5A }, // A-Z
-	{ min: 0x61, max: 0x7A }, // a-z
+	{ min: 0x41, max: 0x5a }, // A-Z
+	{ min: 0x61, max: 0x7a }, // a-z
 ];
 function printRangeImpl(range: CharRange): string {
 	if (printableRanges.some(({ min, max }) => min <= range.min && range.max <= max)) {
@@ -272,7 +271,10 @@ function printRange(range: CharRange): string {
 	const size = range.max - range.min + 1;
 	if (size <= 6) {
 		const candidates = [
-			Array.from({ length: size }).map((_, i) => i + range.min).map(printInCharClass).join(""),
+			Array.from({ length: size })
+				.map((_, i) => i + range.min)
+				.map(printInCharClass)
+				.join(""),
 			printRangeImpl(range),
 		];
 		return getShortest(candidates);
@@ -320,7 +322,7 @@ function printCharSetSimple(set: CharSet): string {
 	return s;
 }
 function printCharSetSimpleIgnoreCase(set: CharSet): string {
-	const unicode = set.maximum === 0x10FFFF;
+	const unicode = set.maximum === 0x10ffff;
 
 	let s = "";
 	while (set.ranges.length > 0) {
@@ -345,15 +347,11 @@ function factorStrings(a: readonly string[], b: readonly string[]): string[] {
 	return product;
 }
 
-
-
 function printCharSet(set: CharSet, flags: Flags): string {
 	type CandidateCreator = (set: CharSet) => string[];
 
 	const simpleCreator: CandidateCreator = set => {
-		const candidates: string[] = [
-			printCharSetSimple(set)
-		];
+		const candidates: string[] = [printCharSetSimple(set)];
 		if (flags.ignoreCase) {
 			candidates.push(printCharSetSimpleIgnoreCase(set));
 		}
@@ -389,10 +387,7 @@ function printCharSet(set: CharSet, flags: Flags): string {
 			// couldn't be reduced
 			return simpleCreator(set);
 		} else {
-			return [
-				...simpleCreator(set),
-				...factorStrings([reducedPrefix], simpleCreator(reducedSet))
-			];
+			return [...simpleCreator(set), ...factorStrings([reducedPrefix], simpleCreator(reducedSet))];
 		}
 	};
 	const moveDashCreator: CandidateCreator = set => {
@@ -400,10 +395,7 @@ function printCharSet(set: CharSet, flags: Flags): string {
 		// we don't have to escape it.
 		if (set.has(45 /* === "-".charCodeAt(0) */)) {
 			const withoutDash = set.without([{ min: 45, max: 45 }]);
-			return [
-				...reducedCreator(set),
-				...factorStrings(["-"], reducedCreator(withoutDash))
-			];
+			return [...reducedCreator(set), ...factorStrings(["-"], reducedCreator(withoutDash))];
 		} else {
 			return reducedCreator(set);
 		}
@@ -412,10 +404,7 @@ function printCharSet(set: CharSet, flags: Flags): string {
 		// Similar idea to move dash but for the caret ("^")
 		if (set.has(94 /* === "^".charCodeAt(0) */) && set.size > 1) {
 			const withoutDash = set.without([{ min: 94, max: 94 }]);
-			return [
-				...moveDashCreator(set),
-				...factorStrings(moveDashCreator(withoutDash), ["^"])
-			];
+			return [...moveDashCreator(set), ...factorStrings(moveDashCreator(withoutDash), ["^"])];
 		} else {
 			return moveDashCreator(set);
 		}
@@ -439,7 +428,6 @@ function printCharacters(chars: CharSet, flags: Flags): string {
 			return printOutsideOfCharClass(min);
 		}
 	}
-
 
 	// if the first min is 0, then it's most likely negated, so don't even bother checking non-negated char sets
 	if (chars.ranges[0].min > 0) {

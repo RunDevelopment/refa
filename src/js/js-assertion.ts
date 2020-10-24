@@ -4,7 +4,6 @@ import { assertNever } from "../util";
 import { LINE_TERMINATOR, WORD, WORD_IU } from "./js-util";
 import { Flags } from "./js-flags";
 
-
 export type BoundaryAssertion = WordBoundaryAssertion | TextBoundaryAssertion;
 export interface WordBoundaryAssertion {
 	kind: "word";
@@ -15,7 +14,7 @@ export interface TextBoundaryAssertion {
 }
 
 export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): Simple<Element> {
-	const maximum = flags.unicode ? 0x10FFFF : 0xFFFF;
+	const maximum = flags.unicode ? 0x10ffff : 0xffff;
 
 	switch (assertion.kind) {
 		case "end":
@@ -25,9 +24,9 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 			// /^/m == /(?<!.)/
 			// /^/  == /(?<![^])/
 
-			const charSet: CharSet = flags.multiline ?
-				CharSet.empty(maximum).union(LINE_TERMINATOR).negate() :
-				CharSet.all(maximum);
+			const charSet: CharSet = flags.multiline
+				? CharSet.empty(maximum).union(LINE_TERMINATOR).negate()
+				: CharSet.all(maximum);
 			return newAssertion(true, assertion.kind === "start" ? "behind" : "ahead", charSet);
 		}
 
@@ -44,18 +43,18 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 						type: "Concatenation",
 						elements: [
 							newAssertion(!assertion.negate, "behind", charSet),
-							newAssertion(false, "ahead", charSet)
-						]
+							newAssertion(false, "ahead", charSet),
+						],
 					},
 					{
 						type: "Concatenation",
 						elements: [
 							newAssertion(assertion.negate, "behind", charSet),
-							newAssertion(true, "ahead", charSet)
-						]
-					}
-				]
-			}
+							newAssertion(true, "ahead", charSet),
+						],
+					},
+				],
+			};
 		}
 
 		default:
@@ -74,10 +73,10 @@ function newAssertion(negate: boolean, kind: "ahead" | "behind", characters: Cha
 				elements: [
 					{
 						type: "CharacterClass",
-						characters
-					}
-				]
-			}
-		]
+						characters,
+					},
+				],
+			},
+		],
 	};
 }

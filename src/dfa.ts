@@ -1,14 +1,28 @@
 import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } from "./util";
-import { FiniteAutomaton, ReadonlyIntersectionOptions, TooManyNodesError, ToRegexOptions, TransitionIterable, TransitionIterableFA } from "./finite-automaton";
+import {
+	FAIterator,
+	FiniteAutomaton,
+	ReadonlyIntersectionOptions,
+	TooManyNodesError,
+	ToRegexOptions,
+	TransitionIterable,
+	TransitionIterableFA,
+} from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
-import { FAIterator, faIterateStates, faCanReachFinal, faEnsurePureOut, faLanguageIsFinite, faMapOut, faTraverse } from "./fa-iterator";
+import {
+	faIterateStates,
+	faCanReachFinal,
+	faEnsurePureOut,
+	faLanguageIsFinite,
+	faMapOut,
+	faTraverse,
+} from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
 import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
 import { lazyIntersection, TransitionMapBuilder } from "./intersection";
-
 
 export interface ReadonlyDFA extends TransitionIterableFA {
 	readonly nodes: DFA.ReadonlyNodeList;
@@ -31,7 +45,6 @@ export interface ReadonlyDFA extends TransitionIterableFA {
 	structurallyEqual(other: ReadonlyDFA): boolean;
 }
 export class DFA implements ReadonlyDFA {
-
 	readonly nodes: DFA.NodeList;
 	readonly maxCharacter: number;
 
@@ -61,7 +74,7 @@ export class DFA implements ReadonlyDFA {
 		return {
 			initial: this.nodes.initial,
 			getOut: n => invertCharMap(n.out, maximum),
-			isFinal: n => finals.has(n)
+			isFinal: n => finals.has(n),
 		};
 	}
 
@@ -258,7 +271,7 @@ export class DFA implements ReadonlyDFA {
 		// Link all gaps to the trap state
 		traverse(this.nodes.initial, node => {
 			const outNodes = new Set(node.out.values());
-			node.out.mapRange(all, (nodeOrUndef => nodeOrUndef ?? trap));
+			node.out.mapRange(all, nodeOrUndef => nodeOrUndef ?? trap);
 			return outNodes;
 		});
 
@@ -290,7 +303,6 @@ export class DFA implements ReadonlyDFA {
 		}
 	}
 
-
 	/**
 	 * Returns a new DFA which is equivalent to the intersection of the two given FA.
 	 *
@@ -307,12 +319,7 @@ export class DFA implements ReadonlyDFA {
 
 		const nodeList = new DFA.NodeList();
 
-		const iter = lazyIntersection(
-			nodeList,
-			left.transitionIterator(),
-			right.transitionIterator(),
-			options
-		);
+		const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 		// traverse the whole iterator to create our NodeList
 		faTraverse(faMapOut(iter, n => n.out.values()));
@@ -397,7 +404,7 @@ export class DFA implements ReadonlyDFA {
 	static fromTransitionIterator<InputNode>(
 		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
 		options: Readonly<DFA.Options>,
-		creationOptions?: Readonly<DFA.CreationOptions>,
+		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		iter = faEnsurePureOut(iter);
 
@@ -509,12 +516,10 @@ export class DFA implements ReadonlyDFA {
 
 		return new DFA(nodeList, options.maxCharacter);
 	}
-
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DFA {
-
 	export interface ReadonlyNode {
 		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyCharMap<ReadonlyNode>;
@@ -550,7 +555,7 @@ export namespace DFA {
 			const node: Node & { id: number } = {
 				id: this._nodeCounter++, // for debugging
 				list: this,
-				out: new CharMap<Node>()
+				out: new CharMap<Node>(),
 			};
 			return node;
 		}
@@ -702,11 +707,7 @@ export namespace DFA {
 	}
 }
 
-
-function checkCompatibility(
-	a: FiniteAutomaton | TransitionIterable,
-	b: FiniteAutomaton | TransitionIterable
-): void {
+function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
 	if (a.maxCharacter !== b.maxCharacter) {
 		throw new RangeError("Both NFAs have to have the same max character.");
 	}
@@ -720,7 +721,7 @@ function iterStates(list: DFA.ReadonlyNodeList): FAIterator<DFA.ReadonlyNode> {
 			n.out.forEach(n => out.add(n));
 			return out;
 		},
-		isFinal: n => list.finals.has(n)
+		isFinal: n => list.finals.has(n),
 	};
 }
 function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
@@ -731,7 +732,7 @@ function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
 			n.out.forEach(n => out.add(n));
 			return out;
 		},
-		isFinal: n => list.finals.has(n)
+		isFinal: n => list.finals.has(n),
 	};
 }
 
@@ -799,7 +800,6 @@ function findEquivalenceClasses(
 		return inArray;
 	});
 
-
 	const P = new Set<ReadonlySet<DFA.ReadonlyNode>>([nodeList.finals]);
 	if (allNodes.length > nodeList.finals.size) {
 		P.add(withoutSet(allNodes, nodeList.finals));
@@ -855,4 +855,3 @@ function findEquivalenceClasses(
 function rangeEqual(r1: CharRange, r2: CharRange): boolean {
 	return r1.min === r2.min && r1.max === r2.max;
 }
-

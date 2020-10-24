@@ -2,9 +2,7 @@ import { assert } from "chai";
 import { CharMap } from "../src/char-map";
 import { CharRange } from "../src/char-set";
 
-
 describe("CharMap", function () {
-
 	it("single element operations", function () {
 		const map = new CharMap<string>();
 		map.set(1, "a");
@@ -81,7 +79,6 @@ describe("CharMap", function () {
 			[{ min: 5, max: 16 }, "b"],
 		]);
 
-
 		assert.throws(() => {
 			map.setEvery({ min: -1, max: 1 }, "e");
 		});
@@ -119,7 +116,6 @@ describe("CharMap", function () {
 		assert.throws(() => {
 			map.deleteEvery({ min: -Infinity, max: 1 });
 		});
-
 	});
 
 	it("merge adjacent", function () {
@@ -128,9 +124,7 @@ describe("CharMap", function () {
 		map.set(1, 0);
 		map.set(2, 0);
 
-		assertEqual(map, [
-			[{ min: 1, max: 2 }, 0],
-		]);
+		assertEqual(map, [[{ min: 1, max: 2 }, 0]]);
 
 		map.setEvery({ min: 4, max: 9 }, 0);
 
@@ -141,15 +135,10 @@ describe("CharMap", function () {
 
 		map.set(3, 0);
 
-		assertEqual(map, [
-			[{ min: 1, max: 9 }, 0],
-		]);
-
+		assertEqual(map, [[{ min: 1, max: 9 }, 0]]);
 	});
-
 
 	function assertEqual<T>(charMap: CharMap<T>, expected: Iterable<[CharRange, T]>): void {
 		assert.deepEqual([...charMap], [...expected]);
 	}
-
 });

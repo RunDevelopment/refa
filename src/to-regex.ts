@@ -1,9 +1,19 @@
-import { Simple, Expression, Node, Parent, Concatenation, Alternation, CharacterClass, Quantifier, Element, Assertion, visitAst } from "./ast";
+import {
+	Simple,
+	Expression,
+	Node,
+	Parent,
+	Concatenation,
+	Alternation,
+	CharacterClass,
+	Quantifier,
+	Element,
+	Assertion,
+	visitAst,
+} from "./ast";
 import { CharSet } from "./char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "./util";
-import { FAIterator } from "./fa-iterator";
-import { ToRegexOptions, TooManyNodesError } from "./finite-automaton";
-
+import { ToRegexOptions, TooManyNodesError, FAIterator } from "./finite-automaton";
 
 type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
 interface RegexFANode {
@@ -22,7 +32,7 @@ class NodeList {
 	createNode(): RegexFANode {
 		return {
 			in: new Map(),
-			out: new Map()
+			out: new Map(),
 		};
 	}
 
@@ -50,12 +60,11 @@ class NodeList {
 		from.out.set(to, newTransition);
 		to.in.set(from, newTransition);
 	}
-
 }
 
 class TransitionCreator {
 	private _counter: number = 0;
-	constructor(public readonly max: number) { }
+	constructor(public readonly max: number) {}
 
 	private _incrementCounter(): void {
 		if (++this._counter > this.max) {
@@ -68,7 +77,7 @@ class TransitionCreator {
 
 		return {
 			type: "Concatenation",
-			elements
+			elements,
 		};
 	}
 	emptyConcat(): Simple<Concatenation> {
@@ -76,7 +85,7 @@ class TransitionCreator {
 
 		return {
 			type: "Concatenation",
-			elements: []
+			elements: [],
 		};
 	}
 
@@ -85,7 +94,7 @@ class TransitionCreator {
 
 		return {
 			type: "Alternation",
-			alternatives
+			alternatives,
 		};
 	}
 	emptyAlter(): Simple<Alternation> {
@@ -93,7 +102,7 @@ class TransitionCreator {
 
 		return {
 			type: "Alternation",
-			alternatives: []
+			alternatives: [],
 		};
 	}
 
@@ -102,7 +111,7 @@ class TransitionCreator {
 
 		return {
 			type: "Expression",
-			alternatives
+			alternatives,
 		};
 	}
 	emptyExpression(): Simple<Expression> {
@@ -110,7 +119,7 @@ class TransitionCreator {
 
 		return {
 			type: "Expression",
-			alternatives: []
+			alternatives: [],
 		};
 	}
 
@@ -119,7 +128,7 @@ class TransitionCreator {
 
 		return {
 			type: "CharacterClass",
-			characters
+			characters,
 		};
 	}
 
@@ -130,7 +139,7 @@ class TransitionCreator {
 			type: "Quantifier",
 			alternatives,
 			min,
-			max
+			max,
 		};
 	}
 	quantStar(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
@@ -140,7 +149,7 @@ class TransitionCreator {
 			type: "Quantifier",
 			alternatives,
 			min: 0,
-			max: Infinity
+			max: Infinity,
 		};
 	}
 	quantPlus(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
@@ -150,7 +159,7 @@ class TransitionCreator {
 			type: "Quantifier",
 			alternatives,
 			min: 1,
-			max: Infinity
+			max: Infinity,
 		};
 	}
 
@@ -165,7 +174,11 @@ class TransitionCreator {
 			case "CharacterClass":
 				return this.char(t.characters);
 			case "Quantifier":
-				return this.quant(t.alternatives.map(a => this.copy(a)), t.min, t.max);
+				return this.quant(
+					t.alternatives.map(a => this.copy(a)),
+					t.min,
+					t.max
+				);
 
 			default:
 				throw assertNever(t);
@@ -174,7 +187,6 @@ class TransitionCreator {
 }
 
 function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: TransitionCreator): NodeList | null {
-
 	const nodeList = new NodeList();
 
 	// the state elimination method requires that the initial state isn't final, so we add a temp state
@@ -206,7 +218,7 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: Tran
 		});
 
 		out.forEach(([outNode, charSet]) => {
-			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet))
+			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet));
 		});
 
 		return out.map(x => x[0]);
@@ -248,7 +260,7 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: Tran
 		n.in.forEach((_, inNode) => {
 			nodeList.unlinkNodes(inNode, n);
 		});
-	})
+	});
 
 	return nodeList;
 }
@@ -450,7 +462,6 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 						nodeList.relinkNodes(state, outState, concat(star(refTrans), outTrans));
 					}
 				}
-
 			} else if (state.out.size === 2) {
 				// (A1) -[a1]-v                     (A1) -[a1]-v
 				// (A2) -[a2]-> (B) -[b]-> (C)  ==  (A2) -[a2]-> (B) -[c*b]-> (C)
@@ -464,7 +475,6 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 				} else {
 					nodeList.relinkNodes(state, outState, concat(star(refTrans), outTrans));
 				}
-
 			} else if (state.in.size === 2) {
 				//                /[b1]-> (C1)                       /[b1]-> (C1)
 				// (A) -[a]-> (B) -[b2]-> (C2)  ==  (A) -[ac*]-> (B) -[b2]-> (C2)
@@ -480,7 +490,6 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 				}
 			}
 		}
-
 	}
 	function removeTrivialConcat(state: RegexFANode): null | RegexFANode[] {
 		if (state.in.size === 1 && state.out.size === 1) {
@@ -622,8 +631,7 @@ function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element
 		}
 		case "Assertion": {
 			const other = b as Simple<Assertion>;
-			if (a.kind !== other.kind || a.negate !== other.negate)
-				return false;
+			if (a.kind !== other.kind || a.negate !== other.negate) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		case "CharacterClass": {
@@ -636,8 +644,7 @@ function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element
 		}
 		case "Quantifier": {
 			const other = b as Simple<Quantifier>;
-			if (a.min !== other.min || a.max !== other.max)
-				return false;
+			if (a.min !== other.min || a.max !== other.max) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		default:
@@ -646,12 +653,12 @@ function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element
 }
 function structurallyEqualAlternatives(
 	a: readonly Simple<Concatenation>[],
-	b: readonly Simple<Concatenation>[]): boolean {
+	b: readonly Simple<Concatenation>[]
+): boolean {
 	const l = a.length;
 	if (l !== b.length) return false;
 	for (let i = 0; i < l; i++) {
-		if (!structurallyEqualConcatenation(a[i], b[i]))
-			return false;
+		if (!structurallyEqualConcatenation(a[i], b[i])) return false;
 	}
 	return true;
 }
@@ -659,8 +666,7 @@ function structurallyEqualConcatenation(a: Simple<Concatenation>, b: Simple<Conc
 	const l = a.elements.length;
 	if (l !== b.elements.length) return false;
 	for (let i = 0; i < l; i++) {
-		if (!structurallyEqual(a.elements[i], b.elements[i]))
-			return false;
+		if (!structurallyEqual(a.elements[i], b.elements[i])) return false;
 	}
 	return true;
 }
@@ -795,17 +801,19 @@ function optimizeEmptyString(parent: Simple<Parent>): boolean {
 
 			if (!changed) {
 				// make a new quantifier
-				parent.alternatives = [{
-					type: "Concatenation",
-					elements: [
-						{
-							type: "Quantifier",
-							min: 0,
-							max: 1,
-							alternatives: parent.alternatives
-						}
-					]
-				}];
+				parent.alternatives = [
+					{
+						type: "Concatenation",
+						elements: [
+							{
+								type: "Quantifier",
+								min: 0,
+								max: 1,
+								alternatives: parent.alternatives,
+							},
+						],
+					},
+				];
 			}
 		}
 	}
@@ -852,17 +860,19 @@ function factorOutCommonPreAndSuffix(parent: Simple<Parent>): boolean {
 				alt.elements.splice(alt.elements.length - suffixLength, suffixLength);
 			}
 
-			parent.alternatives = [{
-				type: "Concatenation",
-				elements: [
-					...prefix,
-					{
-						type: "Alternation",
-						alternatives
-					},
-					...suffix,
-				]
-			}];
+			parent.alternatives = [
+				{
+					type: "Concatenation",
+					elements: [
+						...prefix,
+						{
+							type: "Alternation",
+							alternatives,
+						},
+						...suffix,
+					],
+				},
+			];
 		}
 	}
 
@@ -880,7 +890,7 @@ function inlineConcat(concat: Simple<Concatenation>): boolean {
 			if (canInline) {
 				concat.elements[i] = e = {
 					type: "Alternation",
-					alternatives: e.alternatives
+					alternatives: e.alternatives,
 				};
 				inlined = true;
 			}
@@ -968,7 +978,7 @@ function optimize(expr: Simple<Expression>): boolean {
 					optimized = true;
 				}
 			}
-		}
+		},
 	});
 
 	return optimized;

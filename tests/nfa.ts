@@ -8,18 +8,15 @@ import { RegExpParser } from "regexpp";
 import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
 
-
 describe("NFA", function () {
-
 	describe("fromRegex", function () {
-
 		test([
 			{
 				literal: /a+/,
 				expected: `
 					(0) -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a|b)+c/,
@@ -29,7 +26,7 @@ describe("NFA", function () {
 					(1) -> (1) : 61..62
 					    -> [2] : 63
 
-					[2] -> none`
+					[2] -> none`,
 			},
 			{
 				literal: /a*b*c*/,
@@ -45,7 +42,7 @@ describe("NFA", function () {
 					[2] -> [2] : 62
 					    -> [3] : 63
 
-					[3] -> [3] : 63`
+					[3] -> [3] : 63`,
 			},
 			{
 				literal: /a{4}/,
@@ -58,7 +55,7 @@ describe("NFA", function () {
 
 					(3) -> [4] : 61
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /(a|){4}/,
@@ -71,7 +68,7 @@ describe("NFA", function () {
 
 					[3] -> [4] : 61
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /a{2,4}/,
@@ -84,7 +81,7 @@ describe("NFA", function () {
 
 					[3] -> [4] : 61
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /a{2,6}/,
@@ -101,7 +98,7 @@ describe("NFA", function () {
 
 					[5] -> [6] : 61
 
-					[6] -> none`
+					[6] -> none`,
 			},
 			{
 				literal: /(ab){0,3}/,
@@ -118,68 +115,68 @@ describe("NFA", function () {
 
 					(5) -> [6] : 62
 
-					[6] -> none`
+					[6] -> none`,
 			},
 			{
 				literal: /(){100,1000}/,
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
 				literal: /a+|/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /a*/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a|)+/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a*)+/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a*){4}/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a+|){4}/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a+)+/,
 				expected: `
 					(0) -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a+|){0,4}/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a+){4}/,
@@ -192,21 +189,21 @@ describe("NFA", function () {
 
 					(3) -> [4] : 61
 
-					[4] -> [4] : 61`
+					[4] -> [4] : 61`,
 			},
 			{
 				literal: /(a*){4,}/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /((a*)+)?/,
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /(a|b)?c/,
@@ -216,7 +213,7 @@ describe("NFA", function () {
 
 					(1) -> [2] : 63
 
-					[2] -> none`
+					[2] -> none`,
 			},
 			{
 				literal: /(a+|b+)*/,
@@ -228,17 +225,17 @@ describe("NFA", function () {
 					    -> [2] : 62
 
 					[2] -> [1] : 61
-					    -> [2] : 62`
+					    -> [2] : 62`,
 			},
 			{
 				literal: /()*/,
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
 				literal: /([^\s\S])*/,
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
 				literal: /a*|b*/,
@@ -248,7 +245,7 @@ describe("NFA", function () {
 
 					[1] -> [1] : 61
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 			{
 				literal: /a+|b+|c+/,
@@ -261,7 +258,7 @@ describe("NFA", function () {
 
 					[2] -> [2] : 62
 
-					[3] -> [3] : 63`
+					[3] -> [3] : 63`,
 			},
 			{
 				literal: /(a*|b*)+/,
@@ -273,17 +270,17 @@ describe("NFA", function () {
 					    -> [2] : 62
 
 					[2] -> [1] : 61
-					    -> [2] : 62`
+					    -> [2] : 62`,
 			},
 			{
 				literal: /[^\s\S]/,
 				expected: `
-					(0) -> none`
+					(0) -> none`,
 			},
 			{
 				literal: /ab[^\s\S]ba/,
 				expected: `
-					(0) -> none`
+					(0) -> none`,
 			},
 			{
 				literal: /([^\s\S]|a|[^\s\S]|b[^\s\S]b|[^\s\S])a/,
@@ -292,22 +289,22 @@ describe("NFA", function () {
 
 					(1) -> [2] : 61
 
-					[2] -> none`
+					[2] -> none`,
 			},
 			{
 				literal: /[^\s\S]+/,
 				expected: `
-					(0) -> none`
+					(0) -> none`,
 			},
 			{
 				literal: /[^\s\S]*/,
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
 				literal: /[^\s\S]?/,
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
 				literal: /a+|aaab/,
@@ -323,7 +320,7 @@ describe("NFA", function () {
 
 					(4) -> [5] : 62
 
-					[5] -> none`
+					[5] -> none`,
 			},
 			{
 				literal: /(?:a+){2,}/,
@@ -332,7 +329,7 @@ describe("NFA", function () {
 
 					(1) -> [2] : 61
 
-					[2] -> [2] : 61`
+					[2] -> [2] : 61`,
 			},
 			{
 				literal: /abc|ab|abd|abcd/,
@@ -347,7 +344,7 @@ describe("NFA", function () {
 
 					[3] -> none
 
-					(4) -> [3] : 64`
+					(4) -> [3] : 64`,
 			},
 			{
 				literal: /abc?|abd|abcd/,
@@ -364,7 +361,7 @@ describe("NFA", function () {
 
 					(4) -> [5] : 64
 
-					[5] -> none`
+					[5] -> none`,
 			},
 			{
 				literal: /food|fool|foot/,
@@ -377,7 +374,7 @@ describe("NFA", function () {
 
 					(3) -> [4] : 64, 6c, 74
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /fo(od|ol|ot)/,
@@ -390,7 +387,7 @@ describe("NFA", function () {
 
 					(3) -> [4] : 64, 6c, 74
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /bet|get|pet|set/,
@@ -401,7 +398,7 @@ describe("NFA", function () {
 
 					(2) -> [3] : 74
 
-					[3] -> none`
+					[3] -> none`,
 			},
 			{
 				literal: /bet|bat|bit/,
@@ -412,7 +409,7 @@ describe("NFA", function () {
 
 					(2) -> [3] : 74
 
-					[3] -> none`
+					[3] -> none`,
 			},
 			{
 				literal: /a(?:bc)?|dbc/,
@@ -426,7 +423,7 @@ describe("NFA", function () {
 
 					(3) -> [4] : 63
 
-					[4] -> none`
+					[4] -> none`,
 			},
 			{
 				literal: /\d+(?:\.\d+)?(?:e[+-]?\d+)?/i,
@@ -447,7 +444,7 @@ describe("NFA", function () {
 
 					(5) -> [6] : 30..39
 
-					[6] -> [6] : 30..39`
+					[6] -> [6] : 30..39`,
 			},
 			{
 				literal: /<[=>]?|>=?|=>?|:=|\/=?/,
@@ -465,7 +462,7 @@ describe("NFA", function () {
 
 					[4] -> [5] : 3e
 
-					[5] -> none`
+					[5] -> none`,
 			},
 		]);
 
@@ -483,27 +480,25 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("fromWords", function () {
-
 		test([
 			{
 				words: [],
 				expected: `
-					(0) -> none`
+					(0) -> none`,
 			},
 			{
-				words: []
+				words: [],
 			},
 			{
 				words: "",
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 			{
-				words: ""
+				words: "",
 			},
 			{
 				words: "foo bar foo bar baz food",
@@ -521,18 +516,18 @@ describe("NFA", function () {
 
 					[5] -> none
 
-					[6] -> [5] : 64`
+					[6] -> [5] : 64`,
 			},
 			{
-				words: "foo bar foo bar baz food"
-			},
-			{
-				// the space at the beginning will include the empty word
-				words: " a b c d e f g"
+				words: "foo bar foo bar baz food",
 			},
 			{
 				// the space at the beginning will include the empty word
-				words: "a b ab ba aa bb aaa aab aba abb baa bab bba bbb"
+				words: " a b c d e f g",
+			},
+			{
+				// the space at the beginning will include the empty word
+				words: "a b ab ba aa bb aaa aab aba abb baa bab bba bbb",
 			},
 		]);
 
@@ -547,7 +542,7 @@ describe("NFA", function () {
 				const title = persistentWords.map(w => JSON.stringify(w)).join(", ");
 				const chars = persistentWords.map(w => fromStringToUnicode(w));
 				it(title, function () {
-					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10ffff });
 					if (expected === undefined) {
 						const unique = [...new Set<string>(persistentWords)];
 						assert.sameMembers(getWords(nfa), unique);
@@ -557,11 +552,9 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("union", function () {
-
 		test([
 			{
 				literal: /a/,
@@ -569,7 +562,7 @@ describe("NFA", function () {
 				expected: `
 					(0) -> [1] : 61..62
 
-					[1] -> none`
+					[1] -> none`,
 			},
 			{
 				literal: /ab|ba/,
@@ -579,7 +572,7 @@ describe("NFA", function () {
 
 					(1) -> [2] : 61..62
 
-					[2] -> none`
+					[2] -> none`,
 			},
 			{
 				literal: /a/,
@@ -587,7 +580,7 @@ describe("NFA", function () {
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> none`
+					[1] -> none`,
 			},
 			{
 				literal: /a/,
@@ -598,7 +591,7 @@ describe("NFA", function () {
 
 					[1] -> none
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 			{
 				literal: /a+/,
@@ -609,7 +602,7 @@ describe("NFA", function () {
 
 					[1] -> [1] : 61
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 			{
 				literal: /a+/,
@@ -617,7 +610,7 @@ describe("NFA", function () {
 				expected: `
 					[0] -> [1] : 61
 
-					[1] -> [1] : 61`
+					[1] -> [1] : 61`,
 			},
 			{
 				literal: /a|b|c{2}/,
@@ -634,7 +627,7 @@ describe("NFA", function () {
 
 					(3) -> [2] : 62
 
-					(4) -> [2] : 63`
+					(4) -> [2] : 63`,
 			},
 		]);
 
@@ -655,11 +648,9 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("append", function () {
-
 		test([
 			{
 				left: /foo/,
@@ -677,7 +668,7 @@ describe("NFA", function () {
 
 					(5) -> [6] : 72
 
-					[6] -> none`
+					[6] -> none`,
 			},
 			{
 				left: /a*/,
@@ -689,7 +680,7 @@ describe("NFA", function () {
 					[1] -> [1] : 61
 					    -> [2] : 62
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 			{
 				left: /a+/,
@@ -700,7 +691,7 @@ describe("NFA", function () {
 					[1] -> [1] : 61
 					    -> [2] : 62
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 			{
 				left: /a*/,
@@ -712,7 +703,7 @@ describe("NFA", function () {
 					(1) -> (1) : 61
 					    -> [2] : 62
 
-					[2] -> [2] : 62`
+					[2] -> [2] : 62`,
 			},
 		]);
 
@@ -737,11 +728,9 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("prepend", function () {
-
 		test([
 			{
 				left: /foo/,
@@ -759,7 +748,7 @@ describe("NFA", function () {
 
 					(5) -> [6] : 6f
 
-					[6] -> none`
+					[6] -> none`,
 			},
 			{
 				left: /a*/,
@@ -771,7 +760,7 @@ describe("NFA", function () {
 					[1] -> [1] : 61
 
 					[2] -> [1] : 61
-					    -> [2] : 62`
+					    -> [2] : 62`,
 			},
 			{
 				left: /a+/,
@@ -783,7 +772,7 @@ describe("NFA", function () {
 					[1] -> [1] : 61
 
 					(2) -> [1] : 61
-					    -> (2) : 62`
+					    -> (2) : 62`,
 			},
 			{
 				left: /a*/,
@@ -794,7 +783,7 @@ describe("NFA", function () {
 					[1] -> [1] : 62
 					    -> [2] : 61
 
-					[2] -> [2] : 61`
+					[2] -> [2] : 61`,
 			},
 		]);
 
@@ -819,17 +808,15 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("intersect", function () {
-
 		test([
 			{
 				left: /a/,
 				right: /b/,
 				expected: `
-					(0) -> none`
+					(0) -> none`,
 			},
 			{
 				left: /a*/,
@@ -837,7 +824,7 @@ describe("NFA", function () {
 				expected: `
 					(0) -> [1] : 61
 
-					[1] -> none`
+					[1] -> none`,
 			},
 			{
 				left: /b*(ab+)*a/,
@@ -858,7 +845,7 @@ describe("NFA", function () {
 					(4) -> [2] : 61
 					    -> (5) : 61
 
-					(5) -> (4) : 62`
+					(5) -> (4) : 62`,
 			},
 			{
 				left: /a+/,
@@ -869,14 +856,14 @@ describe("NFA", function () {
 
 					(1) -> [2] : 61
 
-					[2] -> [2] : 61`
+					[2] -> [2] : 61`,
 			},
 			{
 				left: /a*/,
 				right: /b*/,
 				// expected == /(?:)/
 				expected: `
-					[0] -> none`
+					[0] -> none`,
 			},
 		]);
 
@@ -889,7 +876,6 @@ describe("NFA", function () {
 		function test(cases: TestCase[]): void {
 			for (const { left, right, expected } of cases) {
 				it(`${literalToString(left)} ∩ ${literalToString(right)}`, function () {
-
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
 					const actual = NFA.fromIntersection(nfaLeft, nfaRight).toString();
@@ -897,32 +883,30 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("intersectionWordSets", function () {
-
 		test([
 			{
 				left: /a/,
-				right: /b/
+				right: /b/,
 			},
 			{
 				left: /a*/,
-				right: /a/
+				right: /a/,
 			},
 			{
 				left: /b*(ab+)*a/,
-				right: /a*(ba+)*/
+				right: /a*(ba+)*/,
 			},
 			{
 				left: /a+/,
-				right: /(?:a+){2,}/
+				right: /(?:a+){2,}/,
 			},
 			{
 				left: /(?:[^>"'[\]]|"[^"]*"|'[^']*')/,
-				right: /(?:[^>"'[\]]|"[^"]*"|'[^']*'){2,}/
-			}
+				right: /(?:[^>"'[\]]|"[^"]*"|'[^']*'){2,}/,
+			},
 		]);
 
 		interface TestCase {
@@ -957,8 +941,11 @@ describe("NFA", function () {
 					for (let i = 0; i < actual.length; i++) {
 						const actualWordSet = actual[i];
 						const expectedWordSet = expected[i];
-						assert.strictEqual(actualWordSet.length, expectedWordSet.length,
-							`Number of characters of word set ${i}.`);
+						assert.strictEqual(
+							actualWordSet.length,
+							expectedWordSet.length,
+							`Number of characters of word set ${i}.`
+						);
 
 						for (let j = 0; j < actualWordSet.length; j++) {
 							const actualCharSet = actualWordSet[j];
@@ -969,19 +956,17 @@ describe("NFA", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("isEmpty", function () {
-
 		it("constructed from 0 words", function () {
 			// empty language
-			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFF }).isEmpty);
-			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xFFFF }).isEmpty);
+			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xff }).isEmpty);
+			assert.isTrue(NFA.fromWords([], { maxCharacter: 0xffff }).isEmpty);
 
 			// language containing the empty word
-			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xFF }).isEmpty);
-			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xFFFF }).isEmpty);
+			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xff }).isEmpty);
+			assert.isFalse(NFA.fromWords([[]], { maxCharacter: 0xffff }).isEmpty);
 		});
 
 		describe("true", function () {
@@ -999,11 +984,9 @@ describe("NFA", function () {
 				});
 			}
 		});
-
 	});
 
 	describe("isFinite", function () {
-
 		describe("true", function () {
 			for (const literal of FINITE_LITERALS) {
 				it(`${literalToString(literal)}`, function () {
@@ -1019,31 +1002,27 @@ describe("NFA", function () {
 				});
 			}
 		});
-
 	});
 
 	describe("empty() & all()", function () {
-
 		it("empty()", function () {
-			assert.isTrue(NFA.empty({ maxCharacter: 0xFF }).isEmpty);
-			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isEmpty);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xff }).isEmpty);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xffff }).isEmpty);
 
-			assert.isTrue(NFA.empty({ maxCharacter: 0xFF }).isFinite);
-			assert.isTrue(NFA.empty({ maxCharacter: 0xFFFF }).isFinite);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xff }).isFinite);
+			assert.isTrue(NFA.empty({ maxCharacter: 0xffff }).isFinite);
 		});
 
 		it("all()", function () {
-			assert.isFalse(NFA.all({ maxCharacter: 0xFF }).isEmpty);
-			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isEmpty);
+			assert.isFalse(NFA.all({ maxCharacter: 0xff }).isEmpty);
+			assert.isFalse(NFA.all({ maxCharacter: 0xffff }).isEmpty);
 
-			assert.isFalse(NFA.all({ maxCharacter: 0xFF }).isFinite);
-			assert.isFalse(NFA.all({ maxCharacter: 0xFFFF }).isFinite);
+			assert.isFalse(NFA.all({ maxCharacter: 0xff }).isFinite);
+			assert.isFalse(NFA.all({ maxCharacter: 0xffff }).isFinite);
 		});
-
 	});
 
 	describe("prefixes", function () {
-
 		test([
 			{
 				words: [],
@@ -1077,7 +1056,7 @@ describe("NFA", function () {
 				const title = words.map(w => JSON.stringify(w)).join(", ");
 				it(`${title}`, function () {
 					const chars = words.map(w => fromStringToUnicode(w));
-					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10ffff });
 					nfa.prefixes();
 
 					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
@@ -1089,7 +1068,6 @@ describe("NFA", function () {
 	});
 
 	describe("suffixes", function () {
-
 		test([
 			{
 				words: [],
@@ -1123,7 +1101,7 @@ describe("NFA", function () {
 				const title = words.map(w => JSON.stringify(w)).join(", ");
 				it(`${title}`, function () {
 					const chars = words.map(w => fromStringToUnicode(w));
-					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10ffff });
 					nfa.suffixes();
 
 					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
@@ -1135,7 +1113,6 @@ describe("NFA", function () {
 	});
 
 	describe("reverse (words)", function () {
-
 		test([
 			{
 				words: [],
@@ -1169,9 +1146,12 @@ describe("NFA", function () {
 				const title = words.map(w => JSON.stringify(w)).join(", ");
 				it(`${title}`, function () {
 					const chars = words.map(w => fromStringToUnicode(w));
-					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10FFFF });
+					const nfa = NFA.fromWords(chars, { maxCharacter: 0x10ffff });
 					nfa.reverse();
-					const nfaR = NFA.fromWords(chars.map(x => x.reverse()), { maxCharacter: 0x10FFFF });
+					const nfaR = NFA.fromWords(
+						chars.map(x => x.reverse()),
+						{ maxCharacter: 0x10ffff }
+					);
 
 					const acutal = [...new Set([...nfa.words()].map(fromUnicodeToString))];
 					const expected = [...new Set([...nfaR.words()].map(fromUnicodeToString))];
@@ -1182,67 +1162,66 @@ describe("NFA", function () {
 	});
 
 	describe("reverse", function () {
-
 		test([
 			{
 				literal: /(?:)/,
-				expected: /(?:)/
+				expected: /(?:)/,
 			},
 			{
 				literal: /[^\s\S]/,
-				expected: /[^\s\S]/
+				expected: /[^\s\S]/,
 			},
 			{
 				literal: /a/,
-				expected: /a/
+				expected: /a/,
 			},
 			{
 				literal: /foo|bar/,
-				expected: /rab|oof/
+				expected: /rab|oof/,
 			},
 			{
 				literal: /a?/,
-				expected: /a?/
+				expected: /a?/,
 			},
 			{
 				literal: /a?b?/,
-				expected: /b?a?/
+				expected: /b?a?/,
 			},
 			{
 				literal: /a+/,
-				expected: /a+/
+				expected: /a+/,
 			},
 			{
 				literal: /a*b*c*/,
-				expected: /c*b*a*/
+				expected: /c*b*a*/,
 			},
 			{
 				literal: /a+b*c*/,
-				expected: /c*b*a+/
+				expected: /c*b*a+/,
 			},
 			{
 				literal: /a*b+c*/,
-				expected: /c*b+a*/
+				expected: /c*b+a*/,
 			},
 			{
 				literal: /a*b*c+/,
-				expected: /c+b*a*/
+				expected: /c+b*a*/,
 			},
 			{
 				literal: /a+b+c*/,
-				expected: /c*b+a+/
+				expected: /c*b+a+/,
 			},
 			{
 				literal: /a+b*c+/,
-				expected: /c+b*a+/
+				expected: /c+b*a+/,
 			},
 			{
 				literal: /a*b+c+/,
-				expected: /c+b+a*/
+				expected: /c+b+a*/,
 			},
 			{
 				literal: /a+b+c+/,
-				expected: /c+b+a+/
+				expected: /c+b+a+/,
 			},
 		]);
 
@@ -1263,8 +1242,11 @@ describe("NFA", function () {
 					e.minimize();
 
 					const actualRE = toLiteral(aNfa.toRegex());
-					assert.isTrue(a.structurallyEqual(e), "Not equal.\n\n"
-						+ `Actual: reverse(${literalToString(literal)}) == ${literalToString(actualRE)}`);
+					assert.isTrue(
+						a.structurallyEqual(e),
+						"Not equal.\n\n" +
+							`Actual: reverse(${literalToString(literal)}) == ${literalToString(actualRE)}`
+					);
 				});
 			}
 		}
@@ -1276,7 +1258,7 @@ describe("NFA", function () {
 
 		let total: NFA | undefined = undefined;
 		for (const alt of ast.pattern.alternatives) {
-			const nfa = NFA.fromRegex(parser.parseElement(alt).expression, { maxCharacter: 0xFFFF });
+			const nfa = NFA.fromRegex(parser.parseElement(alt).expression, { maxCharacter: 0xffff });
 			nfa.withoutEmptyWord();
 
 			if (!total) {
@@ -1290,7 +1272,6 @@ describe("NFA", function () {
 			}
 		}
 	});
-
 });
 
 function getWords(nfa: NFA): string[] {

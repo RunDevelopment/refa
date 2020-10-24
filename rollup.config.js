@@ -1,8 +1,5 @@
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { terser } from "rollup-plugin-terser";
-import Package from "./package.json";
-
-const banner = `/*! refa v${Package.version} */`;
 
 export default /** @type {import('rollup').RollupOptions[]} */ ([
 	{
@@ -11,7 +8,6 @@ export default /** @type {import('rollup').RollupOptions[]} */ ([
 		output: {
 			file: "index.js",
 			format: "cjs",
-			banner,
 		},
 		plugins: [nodeResolve(), terser()],
 	},
@@ -21,7 +17,6 @@ export default /** @type {import('rollup').RollupOptions[]} */ ([
 		output: {
 			file: "index.mjs",
 			format: "es",
-			banner,
 		},
 		plugins: [nodeResolve(), terser()],
 	},

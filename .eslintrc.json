@@ -6,11 +6,13 @@
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/eslint-recommended",
-		"plugin:@typescript-eslint/recommended"
+		"plugin:@typescript-eslint/recommended",
+		"plugin:prettier/recommended"
 	],
 	"parser": "@typescript-eslint/parser",
 	"plugins": [
-		"@typescript-eslint"
+		"@typescript-eslint",
+		"prettier"
 	],
 	"parserOptions": {
 		"ecmaVersion": 2018,
@@ -70,5 +72,11 @@
 				"@typescript-eslint/no-var-requires": "off"
 			}
 		}
+	],
+	"ignorePatterns": [
+		"scripts/**",
+		"*.js",
+		"index.d.ts",
+		"src/js/unicode/**"
 	]
 }

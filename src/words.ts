@@ -25,10 +25,10 @@ export function fromStringToUnicode(string: string): number[] {
 
 	for (let i = 0, l = string.length; i < l; i++) {
 		const c1 = string.charCodeAt(i);
-		if (c1 >= 0xD800 && c1 < 0xDC00 && i + 1 < l) {
+		if (c1 >= 0xd800 && c1 < 0xdc00 && i + 1 < l) {
 			const c2 = string.charCodeAt(i + 1);
-			if (c2 >= 0xDC00 && c2 < 0xE000) {
-				word.push(0x10000 + ((c1 - 0xD800) << 10) + (c2 - 0xDC00));
+			if (c2 >= 0xdc00 && c2 < 0xe000) {
+				word.push(0x10000 + ((c1 - 0xd800) << 10) + (c2 - 0xdc00));
 				i++;
 				continue;
 			}
@@ -99,28 +99,27 @@ function* nestedIteration<T>(arrays: T[][]): IterableIterator<T[]> {
 	} while (hasNext());
 }
 
-
 const READABILITY_ASCII_PRIORITY: readonly CharRange[] = [
 	// A-Z
-	{ min: 0x41, max: 0x5A },
+	{ min: 0x41, max: 0x5a },
 	// a-z
-	{ min: 0x61, max: 0x7A },
+	{ min: 0x61, max: 0x7a },
 	// 0-9
 	{ min: 0x30, max: 0x39 },
 	// -
-	{ min: 0x2D, max: 0x2D },
+	{ min: 0x2d, max: 0x2d },
 	// _
-	{ min: 0x5F, max: 0x5F },
+	{ min: 0x5f, max: 0x5f },
 	// space
 	{ min: 0x20, max: 0x20 },
 	// printable ASCII
-	{ min: 0x20, max: 0x7E },
+	{ min: 0x20, max: 0x7e },
 	// tab
 	{ min: 0x09, max: 0x09 },
 	// \n
-	{ min: 0x0A, max: 0x0A },
+	{ min: 0x0a, max: 0x0a },
 	// \r
-	{ min: 0x0D, max: 0x0D },
+	{ min: 0x0d, max: 0x0d },
 ];
 /**
  * Returns the most humanly readable character in the given character set. Which character is picked is entirely
