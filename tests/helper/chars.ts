@@ -2,7 +2,6 @@ import { assert } from "chai";
 import { CharSet } from "../../src/char-set";
 import { Parser, Literal } from "../../src/js";
 
-
 export function readableIntervalString(chars: CharSet): string {
 	const makeReadable = (c: number): string | number => {
 		if (/^[\w]$/.test(String.fromCodePoint(c))) {
@@ -12,13 +11,15 @@ export function readableIntervalString(chars: CharSet): string {
 		}
 	};
 
-	return JSON.stringify(chars.ranges.map(({ min, max }) => {
-		if (min === max) {
-			return makeReadable(min);
-		} else {
-			return [makeReadable(min), makeReadable(max)]
-		}
-	})).replace(/"/g, "'");
+	return JSON.stringify(
+		chars.ranges.map(({ min, max }) => {
+			if (min === max) {
+				return makeReadable(min);
+			} else {
+				return [makeReadable(min), makeReadable(max)];
+			}
+		})
+	).replace(/"/g, "'");
 }
 
 export function charsFromRegex(literal: Literal): CharSet {

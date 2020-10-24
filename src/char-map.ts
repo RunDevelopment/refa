@@ -1,6 +1,5 @@
 import { CharRange } from "./char-set";
 
-
 function checkRange(range: CharRange): void {
 	const { min, max } = range;
 
@@ -22,7 +21,6 @@ function checkChar(char: number): void {
 function strictEqualFn<T>(a: T, b: T): boolean {
 	return a === b;
 }
-
 
 export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	isEmpty: boolean;
@@ -79,7 +77,6 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
  * operator (`===`).
  */
 export class CharMap<T> implements ReadonlyCharMap<T> {
-
 	private tree: AVLTree<T>;
 
 	constructor(equalFn?: (a: T, b: T) => boolean) {
@@ -102,8 +99,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		const minNode = this.tree.nodeOf(min);
 		const maxNode = this.tree.nodeOf(max);
 
-		if (minNode === null || maxNode === null)
-			return false;
+		if (minNode === null || maxNode === null) return false;
 
 		// iterate all nodes from min to max and look for gaps
 		let node: Node<T> = minNode;
@@ -111,8 +107,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 			// this cannot be null because maxNode
 			const next = rightNeighbor(node)!;
 
-			if (node.key.max + 1 !== next.key.min)
-				return false; // a gap
+			if (node.key.max + 1 !== next.key.min) return false; // a gap
 
 			node = next;
 		}
@@ -193,7 +188,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		rec(this.tree.root);
 	}
 	*keys(): IterableIterator<CharRange> {
-		for (const [key,] of this.entries()) {
+		for (const [key] of this.entries()) {
 			yield key;
 		}
 	}
@@ -231,7 +226,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 					if (right !== null) {
 						stack.push({ leftDone: false, node: right });
 					}
-				} else /* if (!leftDone && node.left !== null) */ {
+				} /* if (!leftDone && node.left !== null) */ else {
 					stack.push({ leftDone: true, node });
 					stack.push({ leftDone: false, node: node.left });
 				}
@@ -242,7 +237,6 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		return this.entries();
 	}
 }
-
 
 interface ReadonlyNode<T> {
 	readonly key: CharRange;
@@ -408,7 +402,6 @@ function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T
 	}
 }
 
-
 function areAdjacent<T>(left: ReadonlyNode<T>, right: ReadonlyNode<T>): boolean {
 	return left.key.max + 1 === right.key.min;
 }
@@ -425,10 +418,9 @@ function unionAdjacentRanges(left: CharRange, right: CharRange): CharRange {
 // (without the merging of adjacent nodes).
 
 class AVLTree<T> {
-
 	root: Node<T> | null = null;
 
-	constructor(public readonly equalFn: (a: T, b: T) => boolean) { }
+	constructor(public readonly equalFn: (a: T, b: T) => boolean) {}
 
 	validateTree(at: string): void {
 		const prefix = `Invalid tree: ${at}`;
@@ -451,12 +443,12 @@ class AVLTree<T> {
 				const leftHeight = rec(node.left);
 				const rightHeight = rec(node.right);
 				if (Math.abs(leftHeight - rightHeight) >= 2) {
-					throw new Error(prefix + ": The tree in unbalanced.")
+					throw new Error(prefix + ": The tree in unbalanced.");
 				}
 
 				const actualHeight = 1 + Math.max(leftHeight, rightHeight);
 				if (node.height !== actualHeight) {
-					throw new Error(prefix + ": Stored height is incorrect.")
+					throw new Error(prefix + ": Stored height is incorrect.");
 				}
 				return actualHeight;
 			} else {
@@ -526,7 +518,6 @@ class AVLTree<T> {
 	rightmostNodeInRange(range: CharRange): Node<T> | null {
 		return rightmostNodeInRange(this.root, range);
 	}
-
 
 	private mergeAdjacentLeft(key: CharRange, rightNode: Node<T>): void {
 		if (!areAdjacentRanges(key, rightNode.key)) {
@@ -613,7 +604,8 @@ class AVLTree<T> {
 		}
 
 		const n = newNode(key, value, parent);
-		if (parent === null) { //newly added node is root
+		if (parent === null) {
+			//newly added node is root
 			this.root = n;
 			return;
 		} else if (n.key.max < parent.key.min) {
@@ -632,20 +624,23 @@ class AVLTree<T> {
 				break;
 			}
 
-			if (balanceFactor(x) <= -2 || balanceFactor(x) >= 2) {//grandparent is unbalanced
+			if (balanceFactor(x) <= -2 || balanceFactor(x) >= 2) {
+				//grandparent is unbalanced
 				if (parent === x.left) {
-					if (z === x.left.left) {//case 1
+					if (z === x.left.left) {
+						//case 1
 						rotateRight(this, x);
-
-					} else if (z === x.left.right) {//case 3
+					} else if (z === x.left.right) {
+						//case 3
 						rotateLeft(this, parent);
 						rotateRight(this, x);
 					}
 				} else if (parent === x.right) {
-					if (z === x.right.right) { //case 2
+					if (z === x.right.right) {
+						//case 2
 						rotateLeft(this, x);
-
-					} else if (z === x.right.left) {//case 4
+					} else if (z === x.right.left) {
+						//case 4
 						rotateRight(this, parent);
 						rotateLeft(this, x);
 					}
@@ -658,11 +653,14 @@ class AVLTree<T> {
 	}
 
 	private transplant(u: Node<T>, v: Node<T> | null): void {
-		if (u.parent === null) { //u is root
+		if (u.parent === null) {
+			//u is root
 			this.root = v;
-		} else if (u === u.parent.left) {//u is left child
+		} else if (u === u.parent.left) {
+			//u is left child
 			u.parent.left = v;
-		} else {//u is right child
+		} else {
+			//u is right child
 			u.parent.right = v;
 		}
 
@@ -676,7 +674,8 @@ class AVLTree<T> {
 		while (p !== null) {
 			updateHeight(p);
 
-			if (balanceFactor(p) <= -2 || balanceFactor(p) >= 2) { //grandparent is unbalanced
+			if (balanceFactor(p) <= -2 || balanceFactor(p) >= 2) {
+				//grandparent is unbalanced
 				const x = p;
 				let y: Node<T>, z: Node<T>;
 
@@ -692,7 +691,8 @@ class AVLTree<T> {
 					z = y.left!;
 				} else if (height(y.left) < height(y.right)) {
 					z = y.right!;
-				} else { //same height, go for single rotation
+				} else {
+					//same height, go for single rotation
 					if (y === x.left) {
 						z = y.left!;
 					} else {
@@ -701,16 +701,20 @@ class AVLTree<T> {
 				}
 
 				if (y === x.left) {
-					if (z === x.left.left) { //case 1
+					if (z === x.left.left) {
+						//case 1
 						rotateRight(this, x);
-					} else if (z === x.left.right) {//case 3
+					} else if (z === x.left.right) {
+						//case 3
 						rotateLeft(this, y);
 						rotateRight(this, x);
 					}
 				} else if (y === x.right) {
-					if (z === x.right.right) {//case 2
+					if (z === x.right.right) {
+						//case 2
 						rotateLeft(this, x);
-					} else if (z === x.right.left) {//case 4
+					} else if (z === x.right.left) {
+						//case 4
 						rotateRight(this, y);
 						rotateLeft(this, x);
 					}
@@ -842,7 +846,7 @@ class AVLTree<T> {
 			if (max > rMax) {
 				// [rMin <min rMax] max>
 				rightEdge.key = { min: rMax + 1, max: rightEdge.key.max };
-			} else /* if (max === rMax) */ {
+			} /* if (max === rMax) */ else {
 				// [rMin [min rMax/max]]
 				this.detachNode(rightEdge);
 				rightEdge = null;
@@ -956,7 +960,6 @@ class AVLTree<T> {
 			if (mapRes !== undefined) {
 				this.insert(range, mapRes);
 			}
-
 		} else if (leftmost.key.min <= range.min && range.max <= leftmost.key.max) {
 			// [leftmost.min ... [range] ... leftmost.max]
 			const oldRange = leftmost.key;
@@ -976,11 +979,10 @@ class AVLTree<T> {
 				if (range.max < oldRange.max) {
 					this.insert({ min: range.max + 1, max: oldRange.max }, oldValue);
 				}
-			} else /* if (oldRange.min === range.min && range.max < oldRange.max) */ {
+			} /* if (oldRange.min === range.min && range.max < oldRange.max) */ else {
 				leftmost.key = { min: range.max + 1, max: oldRange.max };
 				this.insert(range, mapRes);
 			}
-
 		} else {
 			const del: Node<T>[] = [];
 			const mod: [Node<T>, T][] = [];
@@ -1010,7 +1012,6 @@ class AVLTree<T> {
 			};
 
 			const rightmost = this.rightmostNodeInRange(range);
-
 
 			if (range.min < leftmost.key.min) {
 				// there is a gap between the leftmost node and the start of the given range
@@ -1057,11 +1058,14 @@ class AVLTree<T> {
 	}
 }
 
-
 function newNode<T>(key: CharRange, value: T, parent: Node<T> | null): Node<T> {
 	return {
-		key, value, parent,
-		height: 1, left: null, right: null
+		key,
+		value,
+		parent,
+		height: 1,
+		left: null,
+		right: null,
 	};
 }
 function height<T>(n: ReadonlyNode<T> | null): number {
@@ -1080,11 +1084,14 @@ function rotateLeft<T>(tree: AVLTree<T>, x: Node<T>): void {
 		y.left.parent = x;
 	}
 	y.parent = x.parent;
-	if (x.parent === null) { //x is root
+	if (x.parent === null) {
+		//x is root
 		tree.root = y;
-	} else if (x === x.parent.left) { //x is left child
+	} else if (x === x.parent.left) {
+		//x is left child
 		x.parent.left = y;
-	} else { //x is right child
+	} else {
+		//x is right child
 		x.parent.right = y;
 	}
 	y.left = x;
@@ -1100,11 +1107,14 @@ function rotateRight<T>(tree: AVLTree<T>, x: Node<T>): void {
 		y.right.parent = x;
 	}
 	y.parent = x.parent;
-	if (x.parent === null) { //x is root
+	if (x.parent === null) {
+		//x is root
 		tree.root = y;
-	} else if (x === x.parent.right) { //x is left child
+	} else if (x === x.parent.right) {
+		//x is left child
 		x.parent.right = y;
-	} else { //x is right child
+	} else {
+		//x is right child
 		x.parent.left = y;
 	}
 	y.right = x;

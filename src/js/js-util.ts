@@ -4,7 +4,6 @@ import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { AST } from "regexpp";
 import { Expression, Alternation, Quantifier } from "../ast";
 
-
 /**
  * Returns a character set which includes all characters of the given character set and all their case variations.
  *
@@ -42,9 +41,8 @@ export function withCaseVaryingCharacters(
 	return cs.union(runEncodeCharacters(caseVariationArray));
 }
 
-
 export const DIGIT: readonly CharRange[] = [
-	{ min: 0x30, max: 0x39 } // 0-9
+	{ min: 0x30, max: 0x39 }, // 0-9
 ];
 export const SPACE: readonly CharRange[] = [
 	{ min: 0x09, max: 0x0d }, // \t \n \v \f \r
@@ -60,18 +58,20 @@ export const SPACE: readonly CharRange[] = [
 ];
 export const WORD: readonly CharRange[] = [
 	{ min: 0x30, max: 0x39 }, // 0-9
-	{ min: 0x41, max: 0x5A }, // A-Z
+	{ min: 0x41, max: 0x5a }, // A-Z
 	{ min: 0x5f, max: 0x5f }, // _
-	{ min: 0x61, max: 0x7A }, // a-z
+	{ min: 0x61, max: 0x7a }, // a-z
 ];
 export const LINE_TERMINATOR: readonly CharRange[] = [
 	{ min: 0x0a, max: 0x0a }, // \n
 	{ min: 0x0d, max: 0x0d }, // \r
 	{ min: 0x2028, max: 0x2029 },
 ];
-export const WORD_IU: readonly CharRange[] =
-	withCaseVaryingCharacters(CharSet.empty(0x10FFFF).union(WORD), UnicodeCaseFolding, UnicodeCaseVarying).ranges;
-
+export const WORD_IU: readonly CharRange[] = withCaseVaryingCharacters(
+	CharSet.empty(0x10ffff).union(WORD),
+	UnicodeCaseFolding,
+	UnicodeCaseVarying
+).ranges;
 
 /**
  * Returns whether any of the descendants of the given node fulfill the given condition.
@@ -104,13 +104,11 @@ export function hasSomeDescendant(node: AST.Node, conditionFn: (node: AST.Node) 
 		case "CharacterClass":
 			return node.elements.some(e => hasSomeDescendant(e, conditionFn));
 		case "CharacterClassRange":
-			return hasSomeDescendant(node.min, conditionFn) ||
-				hasSomeDescendant(node.max, conditionFn);
+			return hasSomeDescendant(node.min, conditionFn) || hasSomeDescendant(node.max, conditionFn);
 		case "Quantifier":
 			return hasSomeDescendant(node.element, conditionFn);
 		case "RegExpLiteral":
-			return hasSomeDescendant(node.pattern, conditionFn) ||
-				hasSomeDescendant(node.flags, conditionFn);
+			return hasSomeDescendant(node.pattern, conditionFn) || hasSomeDescendant(node.flags, conditionFn);
 	}
 	return false;
 }
@@ -285,7 +283,6 @@ export function backreferenceAlwaysAfterGroup(backreference: AST.Backreference):
 
 	return findBackreference(group);
 }
-
 
 export function removeLeadingLookbehinds(element: Expression | Alternation | Quantifier): void {
 	for (const alt of element.alternatives) {

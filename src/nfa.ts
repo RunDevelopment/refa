@@ -1,12 +1,25 @@
 import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
-import { FiniteAutomaton, TransitionIterable, ReadonlyIntersectionOptions, TransitionIterableFA, ToRegexOptions } from "./finite-automaton";
-import { faIterateStates, FAIterator, faCanReachFinal, faMarkPureOut, faMapOut, faTraverse, faLanguageIsFinite } from "./fa-iterator";
+import {
+	FiniteAutomaton,
+	TransitionIterable,
+	ReadonlyIntersectionOptions,
+	TransitionIterableFA,
+	ToRegexOptions,
+	FAIterator,
+} from "./finite-automaton";
+import {
+	faIterateStates,
+	faCanReachFinal,
+	faMarkPureOut,
+	faMapOut,
+	faTraverse,
+	faLanguageIsFinite,
+} from "./fa-iterator";
 import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
 import { faToRegex } from "./to-regex";
 import { lazyIntersection, TransitionMapBuilder } from "./intersection";
-
 
 /*
  * ####################################################################################################################
@@ -23,7 +36,6 @@ import { lazyIntersection, TransitionMapBuilder } from "./intersection";
  * ALL of the below operations assume that every given (sub) node list is normalized.
  */
 
-
 export interface ReadonlyNFA extends TransitionIterableFA {
 	readonly nodes: NFA.ReadonlyNodeList;
 	readonly options: Readonly<NFA.Options>;
@@ -38,7 +50,6 @@ export interface ReadonlyNFA extends TransitionIterableFA {
 }
 
 export class NFA implements ReadonlyNFA {
-
 	readonly nodes: NFA.NodeList;
 	readonly maxCharacter: number;
 
@@ -64,7 +75,7 @@ export class NFA implements ReadonlyNFA {
 		return faMarkPureOut({
 			initial,
 			getOut: n => n.out.keys(),
-			isFinal: n => finals.has(n)
+			isFinal: n => finals.has(n),
 		});
 	}
 	transitionIterator(): FAIterator<NFA.ReadonlyNode, ReadonlyMap<NFA.ReadonlyNode, CharSet>> {
@@ -73,7 +84,7 @@ export class NFA implements ReadonlyNFA {
 		return faMarkPureOut({
 			initial,
 			getOut: n => n.out,
-			isFinal: n => finals.has(n)
+			isFinal: n => finals.has(n),
 		});
 	}
 
@@ -86,8 +97,7 @@ export class NFA implements ReadonlyNFA {
 		const characters = [...word];
 
 		function match(index: number, node: NFA.Node): boolean {
-			if (index >= characters.length)
-				return nodes.finals.has(node);
+			if (index >= characters.length) return nodes.finals.has(node);
 
 			const cp = characters[index];
 
@@ -118,7 +128,6 @@ export class NFA implements ReadonlyNFA {
 	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
 		return faToRegex(this.transitionIterator(), options);
 	}
-
 
 	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean {
 		checkCompatibility(this, other);
@@ -263,7 +272,7 @@ export class NFA implements ReadonlyNFA {
 				} else {
 					total = total.union(set);
 				}
-			})
+			});
 
 			if (total === undefined) {
 				throw new Error("The node doesn't have incoming transitions.");
@@ -293,7 +302,6 @@ export class NFA implements ReadonlyNFA {
 		baseReverse(this.nodes, this.nodes);
 	}
 
-
 	/**
 	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
 	 *
@@ -310,12 +318,7 @@ export class NFA implements ReadonlyNFA {
 
 		const nodeList = new NFA.NodeList();
 
-		const iter = lazyIntersection(
-			nodeList,
-			left.transitionIterator(),
-			right.transitionIterator(),
-			options
-		);
+		const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 		// traverse the whole iterator to create our NodeList
 		faTraverse(faMapOut(iter, n => n.out.keys()));
@@ -361,19 +364,23 @@ export class NFA implements ReadonlyNFA {
 
 	static fromRegex(
 		concat: Simple<Concatenation>,
-		options: Readonly<NFA.Options>, creationOptions?: Readonly<NFA.FromRegexOptions>
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
 		expression: Simple<Expression>,
-		options: Readonly<NFA.Options>, creationOptions?: Readonly<NFA.FromRegexOptions>
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
 		alternatives: readonly Simple<Concatenation>[],
-		options: Readonly<NFA.Options>, creationOptions?: Readonly<NFA.FromRegexOptions>
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
 		value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
-		options: Readonly<NFA.Options>, creationOptions?: Readonly<NFA.FromRegexOptions>
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA {
 		let nodeList: NFA.NodeList;
 		if (Array.isArray(value)) {
@@ -468,13 +475,10 @@ export class NFA implements ReadonlyNFA {
 
 		return new NFA(nodeList, maxCharacter);
 	}
-
 }
-
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NFA {
-
 	export interface ReadonlyNode {
 		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyMap<ReadonlyNode, CharSet>;
@@ -523,7 +527,8 @@ export namespace NFA {
 			const node: Node & { id: number } = {
 				id: this._nodeCounter++, // for debugging
 				list: this,
-				out: new Map(), in: new Map()
+				out: new Map(),
+				in: new Map(),
 			};
 			return node;
 		}
@@ -585,7 +590,7 @@ export namespace NFA {
 				this.finals.clear();
 				this.initial.in.clear();
 				this.initial.out.clear();
-			}
+			};
 
 			if (this.finals.size === 0) {
 				makeEmpty();
@@ -667,10 +672,9 @@ export namespace NFA {
 			return faIterateStates({
 				initial: this.initial,
 				getOut: state => state.out.keys(),
-				isFinal: state => this.finals.has(state)
+				isFinal: state => this.finals.has(state),
 			})[Symbol.iterator]();
 		}
-
 	}
 
 	export interface Options {
@@ -700,7 +704,6 @@ export namespace NFA {
 	}
 }
 
-
 /**
  * The actual implementation of the linkNodes function.
  *
@@ -716,7 +719,6 @@ function linkNodesAddImpl(map: Map<NFA.Node, CharSet>, to: NFA.Node, characters:
 		map.set(to, current.union(characters));
 	}
 }
-
 
 interface SubList {
 	readonly initial: NFA.Node;
@@ -738,7 +740,6 @@ function createNodeList(
 
 	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 	return nodeList;
-
 
 	// All sub lists guarantee that the initial node has no incoming edges.
 
@@ -842,18 +843,13 @@ function createNodeList(
 				throw assertNever(element);
 		}
 	}
-
 }
 
-function checkCompatibility(
-	a: FiniteAutomaton | TransitionIterable,
-	b: FiniteAutomaton | TransitionIterable
-): void {
+function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
 	if (a.maxCharacter !== b.maxCharacter) {
 		throw new RangeError("Both NFAs have to have the same max character.");
 	}
 }
-
 
 /**
  * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
@@ -865,7 +861,7 @@ function localCopy(nodeList: NFA.NodeList, toCopy: ReadonlySubList): SubList {
 	return localCopyOfIterator(nodeList, {
 		initial: toCopy.initial,
 		getOut: n => n.out,
-		isFinal: n => toCopy.finals.has(n)
+		isFinal: n => toCopy.finals.has(n),
 	});
 }
 function localCopyOfIterator<T>(nodeList: NFA.NodeList, iter: FAIterator<T, ReadonlyMap<T, CharSet>>): SubList {
@@ -1007,7 +1003,7 @@ function basePrepend(nodeList: NFA.NodeList, base: SubList, before: SubList): vo
 			} else {
 				base.finals.add(n);
 			}
-		})
+		});
 	}
 }
 
@@ -1206,7 +1202,6 @@ function baseRepeat(nodeList: NFA.NodeList, base: SubList, times: number): void 
 		}
 		// use the original copy
 		baseAppend(nodeList, base, copy);
-
 	} else {
 		// We could use the above approach here as well but this would generate O(n^2) unnecessary transitions.
 		// To get rid of these unnecessary transitions, we remove the initial states from the set of final states
@@ -1390,18 +1385,20 @@ function baseMakeEmpty(nodeList: NFA.NodeList, base: SubList): void {
 function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
 	const { initial, finals } = base;
 
-	if (finals.size === 0 || finals.size === 1 && finals.has(initial)) {
+	if (finals.size === 0 || (finals.size === 1 && finals.has(initial))) {
 		// either no finals (= empty language)
 		// or only the initial state is final (= language with only the empty word)
 		return;
 	}
 
 	// reverse the direction of all transitions
-	const allNodes = [...faIterateStates({
-		initial: base.initial,
-		getOut: n => n.out.keys(),
-		isFinal: n => base.finals.has(n)
-	})];
+	const allNodes = [
+		...faIterateStates({
+			initial: base.initial,
+			getOut: n => n.out.keys(),
+			isFinal: n => base.finals.has(n),
+		}),
+	];
 	for (const node of allNodes) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const mutableNode = node as any;

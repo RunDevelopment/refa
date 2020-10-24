@@ -7,7 +7,7 @@ export function cachedFunc<S, T>(func: (value: S) => T): CachedFunc<S, T> {
 	function wrapper(value: S): T {
 		let cached = wrapper.cache.get(value);
 		if (cached === undefined) {
-			wrapper.cache.set(value, cached = func(value));
+			wrapper.cache.set(value, (cached = func(value)));
 		}
 		return cached;
 	}
@@ -15,7 +15,6 @@ export function cachedFunc<S, T>(func: (value: S) => T): CachedFunc<S, T> {
 
 	return wrapper;
 }
-
 
 /**
  * This is functionally equivalent to `Array.prototype.filter` but it mutates the given array.
@@ -35,7 +34,6 @@ export function filterMut<T>(array: T[], filter: (arg: T, prev: T | undefined) =
 	}
 	array.splice(array.length - deleteCount, deleteCount);
 }
-
 
 export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | undefined {
 	let min: T | undefined = undefined;
@@ -79,7 +77,6 @@ export function intersectSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	return s;
 }
 
-
 const searchResult = Symbol();
 export interface SearchResult<T> {
 	[searchResult]: T;
@@ -104,8 +101,8 @@ export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | Se
 export function DFS<S, T>(
 	rootElement: S,
 	next: (element: S) => Iterable<S> | SearchResult<T>,
-	defaultValue?: T): T | undefined {
-
+	defaultValue?: T
+): T | undefined {
 	// It's important that this is implemented iteratively.
 	// A recursive implementation might cause a stack overflow.
 
@@ -117,10 +114,12 @@ export function DFS<S, T>(
 		nextIndex: number;
 	}
 
-	const stack: StackFrame[] = [{
-		element: rootElement,
-		nextIndex: -1
-	}];
+	const stack: StackFrame[] = [
+		{
+			element: rootElement,
+			nextIndex: -1,
+		},
+	];
 
 	while (stack.length > 0) {
 		const top = stack[stack.length - 1];
@@ -160,7 +159,7 @@ export function DFS<S, T>(
 
 		stack.push({
 			element: nextElement,
-			nextIndex: -1
+			nextIndex: -1,
 		});
 	}
 
@@ -174,8 +173,8 @@ export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | Se
 export function BFS<S, T>(
 	rootElement: S,
 	next: (element: S) => Iterable<S> | SearchResult<T>,
-	defaultValue?: T): T | undefined {
-
+	defaultValue?: T
+): T | undefined {
 	// It's important that this is implemented iteratively.
 	// A recursive implementation might cause a stack overflow.
 
@@ -232,7 +231,6 @@ export function* IterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
 		visitNext.length = 0;
 	}
 }
-
 
 /**
  * Traverses the given graph in any order. All elements will be visited exactly once.

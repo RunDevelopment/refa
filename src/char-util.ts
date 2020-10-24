@@ -2,7 +2,6 @@ import { CharRange, CharSet } from "./char-set";
 import { ReadonlyCharMap } from "./char-map";
 import { iterToSet } from "./util";
 
-
 /**
  * Converts the given iterable of sorted unique numbers to a optimal iterable of character ranges.
  *
@@ -29,7 +28,6 @@ export function* runEncodeCharacters(chars: Iterable<number>): Iterable<CharRang
 		yield { min: start, max: start + length - 1 };
 	}
 }
-
 
 /**
  * Returns an array of disjoint non-empty sets that can used to construct all given sets.
@@ -114,7 +112,7 @@ function rangesToKey(ranges: readonly CharRange[]): string {
 	let key = "";
 	for (let i = 0, l = ranges.length; i < l; i++) {
 		const { min, max } = ranges[i];
-		key += min.toString(16) + "," + max.toString(16) + ";"
+		key += min.toString(16) + "," + max.toString(16) + ";";
 	}
 	return key;
 }
@@ -138,14 +136,13 @@ export function decomposeIntoBaseSets(set: CharSet, baseSets: readonly CharSet[]
 	return res;
 }
 
-
 export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: number): Map<T, CharSet> {
 	const rangeMap = new Map<T, CharRange[]>();
 
 	charMap.forEach((value, range) => {
 		let array = rangeMap.get(value);
 		if (array === undefined) {
-			rangeMap.set(value, array = []);
+			rangeMap.set(value, (array = []));
 		}
 		array.push(range);
 	});
@@ -157,13 +154,15 @@ export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: number): 
 	return map;
 }
 
-
-const LATIN_LOWER: CharRange = { min: 0x61, max: 0x7A };
-const LATIN_UPPER: CharRange = { min: 0x41, max: 0x5A };
+const LATIN_LOWER: CharRange = { min: 0x61, max: 0x7a };
+const LATIN_UPPER: CharRange = { min: 0x41, max: 0x5a };
 const LATIN_DIGIT: CharRange = { min: 0x30, max: 0x39 };
-const LATIN_UNDERSCORE = 0x5F;
-const READABLE_CHARACTERS = CharSet.empty(0x10FFFF).union([
-	LATIN_LOWER, LATIN_UPPER, LATIN_DIGIT, { min: LATIN_UNDERSCORE, max: LATIN_UNDERSCORE }
+const LATIN_UNDERSCORE = 0x5f;
+const READABLE_CHARACTERS = CharSet.empty(0x10ffff).union([
+	LATIN_LOWER,
+	LATIN_UPPER,
+	LATIN_DIGIT,
+	{ min: LATIN_UNDERSCORE, max: LATIN_UNDERSCORE },
 ]);
 
 /**
@@ -201,13 +200,16 @@ export function rangesFromString(string: string): CharRange[] {
 		return parseInt(s, 16);
 	}
 
-	return string.trim().split(/\s*,\s*/g).map(r => {
-		const [min, max] = r.split("..");
-		if (max === undefined) {
-			const parsed = parse(min);
-			return { min: parsed, max: parsed };
-		} else {
-			return { min: parse(min), max: parse(max) };
-		}
-	});
+	return string
+		.trim()
+		.split(/\s*,\s*/g)
+		.map(r => {
+			const [min, max] = r.split("..");
+			if (max === undefined) {
+				const parsed = parse(min);
+				return { min: parsed, max: parsed };
+			} else {
+				return { min: parse(min), max: parse(max) };
+			}
+		});
 }

@@ -45,7 +45,7 @@ export function reachableFinalStates(nfa: ReadonlyNFA): number {
 		},
 		isFinal(node) {
 			return nfa.nodes.finals.has(node);
-		}
+		},
 	});
 
 	let count = 0;

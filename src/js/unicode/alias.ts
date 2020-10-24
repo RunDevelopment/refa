@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable */
 
 // All of the following tables were extracted for the links associated with the variable.
 

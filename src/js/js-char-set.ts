@@ -1,18 +1,26 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
-import { CharRange, CharSet, negateRanges } from "../char-set";
+import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./js-flags";
 import { DIGIT, LINE_TERMINATOR, SPACE, WORD, WORD_IU, withCaseVaryingCharacters } from "./js-util";
 import {
-	Alias, Binary_Property, General_Category, Script, Script_Extensions,
-	UnicodeCaseVarying, UnicodeCaseFolding
+	Alias,
+	Binary_Property,
+	General_Category,
+	Script,
+	Script_Extensions,
+	UnicodeCaseVarying,
+	UnicodeCaseFolding,
 } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
 
-
 export type PredefinedCharacterSet =
-	AnyCharacterSet | DigitCharacterSet | PropertyCharacterSet | SpaceCharacterSet | WordCharacterSet;
+	| AnyCharacterSet
+	| DigitCharacterSet
+	| PropertyCharacterSet
+	| SpaceCharacterSet
+	| WordCharacterSet;
 export interface AnyCharacterSet {
 	kind: "any";
 }
@@ -35,12 +43,15 @@ export interface WordCharacterSet {
 	negate: boolean;
 }
 
+const DOT_UNICODE = CharSet.empty(0x10ffff).union(LINE_TERMINATOR).negate();
+const DOT_UTF16 = CharSet.empty(0xffff).union(LINE_TERMINATOR).negate();
+
 /**
-* Creates a new character set with the characters equivalent to a JavaScript regular expression character set.
-*
-* @param chars The characters in the set.
-* @param flags The flags of the pattern.
-*/
+ * Creates a new character set with the characters equivalent to a JavaScript regular expression character set.
+ *
+ * @param chars The characters in the set.
+ * @param flags The flags of the pattern.
+ */
 export function createCharSet(
 	chars: Iterable<number | CharRange | Readonly<PredefinedCharacterSet>>,
 	flags: Readonly<Flags>
@@ -52,7 +63,7 @@ export function createCharSet(
 	// If ignoreCase and the ranges might vary in case, the case variations of all characters will be added.
 
 	const { unicode, ignoreCase, dotAll } = flags;
-	const maximum = unicode ? 0x10FFFF : 0xFFFF;
+	const maximum = unicode ? 0x10ffff : 0xffff;
 
 	const caseFolding: Readonly<Record<number, readonly number[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
 	const caseVarying: CharSet = unicode ? UnicodeCaseVarying : UTF16CaseVarying;
@@ -90,11 +101,13 @@ export function createCharSet(
 			return;
 		}
 
-		if (ignoreCase && !fullCaseCheck
+		if (
+			ignoreCase &&
+			!fullCaseCheck &&
 			// the given range do not include all case-varying characters
-			&& !(range.min <= caseVaryingMin && range.max >= caseVaryingMax)
+			!(range.min <= caseVaryingMin && range.max >= caseVaryingMax) &&
 			// the given range contains case-varying characters
-			&& !caseVarying.isDisjointWith(range)
+			!caseVarying.isDisjointWith(range)
 		) {
 			fullCaseCheck = true;
 		}
@@ -121,7 +134,7 @@ export function createCharSet(
 						// since all character sets and ranges are combined using union, we can stop here
 						return CharSet.all(maximum);
 					} else {
-						ranges.push(...negateRanges(LINE_TERMINATOR, maximum));
+						ranges.push(...(unicode ? DOT_UNICODE : DOT_UTF16).ranges);
 					}
 					break;
 				}
@@ -191,6 +204,9 @@ export function createCharSet(
 	return withCaseVaryingCharacters(cs, caseFolding, caseVarying);
 }
 
+function negateRanges(ranges: readonly CharRange[], maximum: number): readonly CharRange[] {
+	return CharSet.empty(maximum).union(ranges).negate().ranges;
+}
 
 function getProperty(key: string, value: string | null): readonly CharRange[] {
 	if (value == null) {

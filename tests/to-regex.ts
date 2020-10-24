@@ -3,31 +3,28 @@ import { literalToString, literalToNFA, nfaEqual } from "./helper/fa";
 import { Literal, toLiteral } from "../src/js";
 import { NFA } from "../src/nfa";
 
-
 describe("toRegex", function () {
-
 	describe("Literals", function () {
-
 		test([
 			{
 				literal: /a+/,
-				expected: String.raw`/a+/`
+				expected: String.raw`/a+/`,
 			},
 			{
 				literal: /a+a+a*/,
-				expected: String.raw`/a{2,}/`
+				expected: String.raw`/a{2,}/`,
 			},
 			{
 				literal: /a+ba+/,
-				expected: String.raw`/a+ba+/`
+				expected: String.raw`/a+ba+/`,
 			},
 			{
 				literal: /a{2,}b*a{2,}/,
-				expected: String.raw`/a{2,}b*a{2,}/`
+				expected: String.raw`/a{2,}b*a{2,}/`,
 			},
 			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
-				expected: String.raw`/\d+(?:\.\d*|(?:\.\d*)?E[-+]\d+)?/i`
+				expected: String.raw`/\d+(?:\.\d*|(?:\.\d*)?E[-+]\d+)?/i`,
 			},
 		]);
 
@@ -47,39 +44,25 @@ describe("toRegex", function () {
 				});
 			}
 		}
-
 	});
 
 	describe("Intersections", function () {
-
 		test([
 			{
-				literals: [
-					/a+/,
-					/a*/,
-				],
-				expected: String.raw`/a+/`
+				literals: [/a+/, /a*/],
+				expected: String.raw`/a+/`,
 			},
 			{
-				literals: [
-					/a+ba*|cbc/,
-					/a*ba+/,
-				],
-				expected: String.raw`/a+ba+/`
+				literals: [/a+ba*|cbc/, /a*ba+/],
+				expected: String.raw`/a+ba+/`,
 			},
 			{
-				literals: [
-					/\s\.\s|[a.]*\.[a.]+/,
-					/[a.]+\.[a.]*/,
-				],
-				expected: String.raw`/\.[.a]*\.[.a]*|[.a]+\.(?:(?:[.a]*\.)?[.a]+|[.a]*\.[.a]*)/`
+				literals: [/\s\.\s|[a.]*\.[a.]+/, /[a.]+\.[a.]*/],
+				expected: String.raw`/\.[.a]*\.[.a]*|[.a]+\.(?:(?:[.a]*\.)?[.a]+|[.a]*\.[.a]*)/`,
 			},
 			{
-				literals: [
-					/[&.]*\.[&.]+/,
-					/[&.]+\.[&.]*/,
-				],
-				expected: String.raw`/[&.]+\.(?:[&.]*\.)?[&.]+|[&.]*\.[&.]*\.[&.]*/i`
+				literals: [/[&.]*\.[&.]+/, /[&.]+\.[&.]*/],
+				expected: String.raw`/[&.]+\.(?:[&.]*\.)?[&.]+|[&.]*\.[&.]*\.[&.]*/i`,
 			},
 		]);
 
@@ -93,7 +76,7 @@ describe("toRegex", function () {
 				it(literals.map(literalToString).join(" ∩ "), function () {
 					let inter = literalToNFA(literals[0]);
 					for (let i = 1; i < literals.length; i++) {
-						inter = NFA.fromIntersection(inter, literalToNFA(literals[i]))
+						inter = NFA.fromIntersection(inter, literalToNFA(literals[i]));
 					}
 
 					const re = inter.toRegex();
@@ -103,14 +86,15 @@ describe("toRegex", function () {
 				});
 			}
 		}
-
 	});
 
 	it("should limit the number of AST nodes", function () {
-		this.slow(1000)
+		this.slow(1000);
 
-		// eslint-disable-next-line max-len
-		const a = literalToNFA(/\\.|\$\{(?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^\s\S])*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*?\}/);
+		const a = literalToNFA(
+			// eslint-disable-next-line max-len
+			/\\.|\$\{(?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^<()"']|\((?:[^\s\S])*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*\)|<#--(?:[^-])*-->|"(?:[^\\"]|\\.)*"|'(?:[^\\']|\\.)*')*?\}/
+		);
 		const b = a.copy();
 		b.quantify(2, Infinity);
 
@@ -127,5 +111,4 @@ describe("toRegex", function () {
 
 		// increasing my another order of magnitude causes Node to crash and my computer
 	});
-
 });
