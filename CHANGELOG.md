@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.5.0 (2020-10-26)
+
+### Breaking changes
+
+- Remove `NFA.fromDFA` and `NFA.fromNFA`. Use `{DFA,NFA}.fromFA` instead.
+- Renamed `NFA#removeEmptyWord` to `NFA#withoutEmptyWord`.
+- All `NFA`/`DFA`-specific interfaces/classes now live in the `NFA`/`DFA` namespace.
+
+### Added
+
+- New `FAIterator` interface.
+- New options for `#toRegex` functions.
+- `NFA#reverse` will reverse the accepted language.
+- `CharSet#commonCharacter` can used to return any character two sets have in common.
+- New `Words` methods to pick as-readable-as-possible words or characters from a set of words or characters.
+
+### Changed
+
+- Unified `DFA`/`NFA` API. This gives `DFA` a lot of functionality to used to be `NFA`-exclusive.
+- `JS.toLiteral` will now print smaller character classes.
+- New build system.
+
+### Fixed
+
+- A few minor bug fixes.
+
+
 ## 0.4.1 (2020-08-29)
 
 ### Changed
