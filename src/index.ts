@@ -1,4 +1,4 @@
-export { CharRange, CharSet } from "./char-set";
+export * from "./char-set";
 export * from "./char-map";
 export * from "./finite-automaton";
 export * from "./ast";

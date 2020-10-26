@@ -12,44 +12,43 @@ export interface NodeBase {
 	parent: Node["parent"];
 	source: SourceLocation;
 }
-interface ParentNode extends NodeBase {
-	alternatives: Concatenation[];
-}
-interface ElementNode extends NodeBase {
-	parent: Concatenation;
-}
-interface ElementAndParentNode extends ParentNode {
-	parent: Concatenation;
-}
 
 export type Element = CharacterClass | Alternation | Quantifier | Assertion;
 export type Parent = Expression | Alternation | Quantifier | Assertion;
 export type Node = Expression | CharacterClass | Alternation | Quantifier | Assertion | Concatenation;
 
-export interface Alternation extends ElementAndParentNode {
+export interface Alternation extends NodeBase {
 	type: "Alternation";
+	parent: Concatenation;
+	alternatives: Concatenation[];
 }
 
-export interface Assertion extends ElementAndParentNode {
+export interface Assertion extends NodeBase {
 	type: "Assertion";
+	parent: Concatenation;
+	alternatives: Concatenation[];
 	kind: "ahead" | "behind";
 	negate: boolean;
 }
 
-export interface Quantifier extends ElementAndParentNode {
+export interface Quantifier extends NodeBase {
 	type: "Quantifier";
+	parent: Concatenation;
+	alternatives: Concatenation[];
 	min: number;
 	max: number;
 }
 
-export interface CharacterClass extends ElementNode {
+export interface CharacterClass extends NodeBase {
 	type: "CharacterClass";
+	parent: Concatenation;
 	characters: CharSet;
 }
 
-export interface Expression extends ParentNode {
-	parent: null;
+export interface Expression extends NodeBase {
 	type: "Expression";
+	parent: null;
+	alternatives: Concatenation[];
 }
 
 export interface Concatenation extends NodeBase {
