@@ -11,14 +11,5 @@ export default /** @type {import('rollup').RollupOptions[]} */ ([
 		},
 		plugins: [nodeResolve(), terser()],
 	},
-	{
-		input: ".out/index.js",
-		external: ["regexpp"],
-		output: {
-			file: "index.mjs",
-			format: "es",
-		},
-		plugins: [nodeResolve(), terser()],
-	},
 ]);
 
