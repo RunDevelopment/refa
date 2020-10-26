@@ -10,11 +10,12 @@
     "test": "cd tests && mocha -r ts-node/register '**/*.ts'",
     "test:fast": "mocha -r ts-node/register 'tests/**/*.ts' --exclude tests/regex-stress-test.ts",
     "build": "npx rimraf ./index.* .out/** && npx tsc && rollup -c && npm run build:dts",
-    "build:dts": "dts-bundle --main ./.out/index.d.ts --name refa --out ../index.d.ts && prettier index.d.ts --write",
+    "build:dts": "dts-bundle --main ./.out/index.d.ts --name refa --out ../index.d.ts && npm run scripts:flat-dts && prettier --write ./index.d.ts",
     "coverage": "npx nyc --reporter=html --reporter=text npm run test",
     "scripts:create-case-folding": "npx ts-node --project scripts/tsconfig.json scripts/create-case-folding.ts",
     "scripts:create-unicode": "npx ts-node --project scripts/tsconfig.json scripts/create-unicode.ts",
     "scripts:debug": "npx ts-node --project scripts/tsconfig.json scripts/debug.ts",
+    "scripts:flat-dts": "npx ts-node --project scripts/tsconfig.json scripts/flat-dts.ts",
     "scripts:perf": "npx ts-node --project scripts/tsconfig.json scripts/perf.ts",
     "prepublishOnly": "npm run build"
   },
