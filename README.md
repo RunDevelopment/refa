@@ -1,6 +1,7 @@
 # Regular Expressions and Finite Automata (refa)
 
 [![Actions Status](https://github.com/RunDevelopment/refa/workflows/Node.js%20CI/badge.svg)](https://github.com/RunDevelopment/refa/actions)
+[![npm](https://img.shields.io/npm/v/refa)](https://www.npmjs.com/package/refa)
 
 A library for regular expressions (RE) and finite automata (FA) in the context of [Javascript RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp).
 
