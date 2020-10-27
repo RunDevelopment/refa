@@ -18,7 +18,7 @@
 
 ### Changed
 
-- Unified `DFA`/`NFA` API. This gives `DFA` a lot of functionality to used to be `NFA`-exclusive.
+- Unified `DFA`/`NFA` API. This gives `DFA` a lot of functionality that used to be `NFA`-exclusive.
 - `JS.toLiteral` will now print smaller character classes.
 - New build system.
 
