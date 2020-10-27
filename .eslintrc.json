@@ -23,6 +23,12 @@
 		}
 	},
 	"rules": {
+		"no-constant-condition": [
+			"error",
+			{
+				"checkLoops": false
+			}
+		],
 		"@typescript-eslint/no-inferrable-types": [
 			"error",
 			{
