@@ -1252,6 +1252,36 @@ describe("NFA", function () {
 		}
 	});
 
+	describe("Safe creation", function () {
+		const testNfa = literalToNFA(/a{1000}/);
+
+		it(NFA.fromFA.name, function () {
+			assert.throws(() => {
+				NFA.fromFA(testNfa, { maxNodes: 100 });
+			});
+		});
+		it(NFA.fromIntersection.name, function () {
+			assert.throws(() => {
+				NFA.fromIntersection(testNfa, testNfa, { maxNodes: 100 });
+			});
+		});
+		it(NFA.fromRegex.name, function () {
+			assert.throws(() => {
+				NFA.fromRegex(testNfa.toRegex(), testNfa.options, { maxNodes: 100 });
+			});
+		});
+		it(NFA.fromTransitionIterator.name, function () {
+			assert.throws(() => {
+				NFA.fromTransitionIterator(testNfa.transitionIterator(), testNfa.options, { maxNodes: 100 });
+			});
+		});
+		it(NFA.fromWords.name, function () {
+			assert.throws(() => {
+				NFA.fromWords(testNfa.words(), testNfa.options, { maxNodes: 100 });
+			});
+		});
+	});
+
 	it("issue #5", function () {
 		const ast = new RegExpParser().parseLiteral(/<[=>]?|>=?|=>?|:=|\/=?|\*\*?|[&+-]/.toString());
 		const parser = Parser.fromAst(ast);

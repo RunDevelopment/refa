@@ -754,6 +754,31 @@ describe("DFA", function () {
 			}
 		}
 	});
+
+	describe("Safe creation", function () {
+		const testDfa = literalToDFA(/a{1000}/);
+
+		it(DFA.fromFA.name, function () {
+			assert.throws(() => {
+				DFA.fromFA(testDfa, { maxNodes: 100 });
+			});
+		});
+		it(DFA.fromIntersection.name, function () {
+			assert.throws(() => {
+				DFA.fromIntersection(testDfa, testDfa, { maxNodes: 100 });
+			});
+		});
+		it(DFA.fromTransitionIterator.name, function () {
+			assert.throws(() => {
+				DFA.fromTransitionIterator(testDfa.transitionIterator(), testDfa.options, { maxNodes: 100 });
+			});
+		});
+		it(DFA.fromWords.name, function () {
+			assert.throws(() => {
+				DFA.fromWords(testDfa.words(), testDfa.options, { maxNodes: 100 });
+			});
+		});
+	});
 });
 
 function getWords(dfa: DFA): string[] {

@@ -99,15 +99,15 @@ export interface TransitionIterableFA extends FiniteAutomaton, TransitionIterabl
 	 * @param other
 	 * @param options
 	 */
-	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean;
+	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean;
 	/**
 	 * This is equivalent to `NFA.fromIntersection(this, other).wordSets()` but implemented more efficiently.
 	 */
-	intersectionWordSets(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<CharSet[]>;
+	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]>;
 	/**
 	 * This is equivalent to `NFA.fromIntersection(this, other).words()` but implemented more efficiently.
 	 */
-	intersectionWords(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<number[]>;
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]>;
 }
 
 export interface IntersectionOptions {
@@ -120,7 +120,5 @@ export interface IntersectionOptions {
 	 */
 	maxNodes?: number;
 }
-
-export type ReadonlyIntersectionOptions = Readonly<IntersectionOptions>;
 
 export class TooManyNodesError extends Error {}
