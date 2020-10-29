@@ -1,7 +1,7 @@
 import { Element, Assertion, Simple } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
-import { LINE_TERMINATOR, WORD, WORD_IU } from "./js-util";
+import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./js-util";
 import { Flags } from "./js-flags";
 
 export type BoundaryAssertion = WordBoundaryAssertion | TextBoundaryAssertion;
@@ -14,7 +14,7 @@ export interface TextBoundaryAssertion {
 }
 
 export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): Simple<Element> {
-	const maximum = flags.unicode ? 0x10ffff : 0xffff;
+	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
 	switch (assertion.kind) {
 		case "end":

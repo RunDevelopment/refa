@@ -1,34 +1,63 @@
-import { Simple, Node, Expression, Concatenation, visitAst, Element, Assertion } from "../ast";
+import { Simple, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
-import { DIGIT, WORD, SPACE, LINE_TERMINATOR, withCaseVaryingCharacters, WORD_IU } from "./js-util";
+import {
+	DIGIT,
+	WORD,
+	SPACE,
+	LINE_TERMINATOR,
+	withCaseVaryingCharacters,
+	WORD_IU,
+	UNICODE_MAXIMUM,
+	UTF16_MAXIMUM,
+} from "./js-util";
 import { Flags } from "./js-flags";
 import { UnicodeCaseVarying, UnicodeCaseFolding } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
 import { Literal } from "./parser";
 
-export function toLiteral(concat: Simple<Concatenation>): Literal;
-export function toLiteral(expression: Simple<Expression>): Literal;
-export function toLiteral(alternatives: readonly Simple<Concatenation>[]): Literal;
+export interface ToLiteralOptions {
+	/**
+	 * An optional template for the flags of the JavaScript RegExp literal to be created.
+	 *
+	 * All flags that are set to `false` are guaranteed to be disabled in the created literal. Likewise, all flags that
+	 * are set to `true` are guaranteed to be enabled in the created literal.
+	 *
+	 * Flags that are undefined will be enabled/disabled depending on the implementation. While no guarantees are given,
+	 * the implementation will generally try to choose flags such that it can create literal that is as small as
+	 * possible.
+	 *
+	 * If the constraints on the flags defined here make it impossible to create a literal, an error will be thrown.
+	 */
+	flags?: Flags;
+}
+
+export function toLiteral(concat: Simple<Concatenation>, options?: Readonly<ToLiteralOptions>): Literal;
+export function toLiteral(expression: Simple<Expression>, options?: Readonly<ToLiteralOptions>): Literal;
 export function toLiteral(
-	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[]
+	alternatives: readonly Simple<Concatenation>[],
+	options?: Readonly<ToLiteralOptions>
+): Literal;
+export function toLiteral(
+	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
+	options?: Readonly<ToLiteralOptions>
 ): Literal {
 	let flags;
 	if (Array.isArray(value)) {
 		const alternatives: readonly Simple<Concatenation>[] = value;
-		flags = getFlags(alternatives);
+		flags = getFlags(alternatives, options);
 	} else {
 		const node = value as Simple<Expression> | Simple<Concatenation>;
-		flags = getFlags([node]);
+		flags = getFlags([node], options);
 	}
 
 	let flagsString = "";
-	if (flags.ignoreCase) {
-		flagsString += "i";
-	}
-	if (flags.unicode) {
-		flagsString += "u";
-	}
+	if (flags.global) flagsString += "g";
+	if (flags.ignoreCase) flagsString += "i";
+	if (flags.multiline) flagsString += "m";
+	if (flags.dotAll) flagsString += "s";
+	if (flags.unicode) flagsString += "u";
+	if (flags.sticky) flagsString += "y";
 
 	return {
 		source: toSource(value, flags),
@@ -64,6 +93,11 @@ function toSource(
 function elementToSource(element: Simple<Element>, flags: Flags): string {
 	switch (element.type) {
 		case "Alternation": {
+			const assertion = isBoundaryAssertion(element, flags);
+			if (assertion) {
+				return assertion;
+			}
+
 			return "(?:" + toSource(element.alternatives, flags) + ")";
 		}
 		case "Assertion": {
@@ -113,17 +147,80 @@ function elementToSource(element: Simple<Element>, flags: Flags): string {
 	}
 }
 function isEdgeAssertion(assertion: Simple<Assertion>, flags: Flags): boolean {
-	if (assertion.negate && assertion.alternatives.length === 1) {
+	if (assertion.negate) {
+		const chars = getSingleCharSetInAssertion(assertion);
+		if (chars) {
+			return (flags.multiline && isNonLineTerminator(chars, flags.unicode)) || (!flags.multiline && chars.isAll);
+		}
+	}
+	return false;
+}
+function isBoundaryAssertion(alternation: Simple<Alternation>, flags: Flags): "\\b" | "\\B" | false {
+	// \b == (?<!\w)(?=\w)|(?<=\w)(?!\w)
+	// \B == (?<=\w)(?=\w)|(?<!\w)(?!\w)
+
+	if (alternation.alternatives.length !== 2) {
+		return false;
+	}
+	const alt0 = alternation.alternatives[0];
+	const alt1 = alternation.alternatives[1];
+	if (alt0.elements.length !== 2 || alt1.elements.length !== 2) {
+		return false;
+	}
+
+	const e00 = alt0.elements[0];
+	const e01 = alt0.elements[1];
+	const e10 = alt1.elements[0];
+	const e11 = alt1.elements[1];
+	if (e00.type !== "Assertion" || e01.type !== "Assertion" || e10.type !== "Assertion" || e11.type !== "Assertion") {
+		return false;
+	}
+	if (e00.kind === e01.kind || e10.kind === e11.kind) {
+		// we need a lookahead-lookbehind pair in both alternatives
+		return false;
+	}
+
+	const c00 = getSingleCharSetInAssertion(e00);
+	const c01 = getSingleCharSetInAssertion(e01);
+	const c10 = getSingleCharSetInAssertion(e10);
+	const c11 = getSingleCharSetInAssertion(e11);
+	if (!c00 || !c01 || !c10 || !c11) {
+		return false;
+	}
+
+	const word = flags.unicode && flags.ignoreCase ? WORD_IU : WORD;
+	if (
+		!rangeEqual(c00.ranges, word) ||
+		!rangeEqual(c01.ranges, word) ||
+		!rangeEqual(c10.ranges, word) ||
+		!rangeEqual(c11.ranges, word)
+	) {
+		return false;
+	}
+
+	if (e00.negate === e01.negate && e10.negate === e11.negate && e00.negate !== e10.negate) {
+		return "\\B";
+	}
+	if (
+		e00.negate !== e01.negate &&
+		e10.negate !== e11.negate &&
+		(e00.kind === e10.kind) !== (e00.negate === e10.negate)
+	) {
+		return "\\b";
+	}
+	return false;
+}
+function getSingleCharSetInAssertion(assertion: Simple<Assertion>): CharSet | undefined {
+	if (assertion.alternatives.length === 1) {
 		const alt = assertion.alternatives[0];
 		if (alt.elements.length === 1) {
 			const e = alt.elements[0];
 			if (e.type === "CharacterClass") {
-				const chars = e.characters;
-				return (flags.multiline && isNonLineTerminator(chars, flags)) || (!flags.multiline && chars.isAll);
+				return e.characters;
 			}
 		}
 	}
-	return false;
+	return undefined;
 }
 
 function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
@@ -134,19 +231,18 @@ function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
 	}
 }
 
-function isUnicode(value: readonly Simple<Node>[]): boolean | undefined {
+function getUnicodeFlag(value: readonly Simple<Node>[]): boolean | undefined {
 	let unicode: boolean | undefined = undefined;
-
 	for (const node of value) {
 		visitAst(node, {
 			onCharacterClassEnter(node) {
-				if (node.characters.maximum === 0x10ffff) {
+				if (node.characters.maximum === UNICODE_MAXIMUM) {
 					if (unicode === undefined) {
 						unicode = true;
 					} else if (!unicode) {
 						throw new Error("All character sets have to have the same maximum.");
 					}
-				} else if (node.characters.maximum === 0xffff) {
+				} else if (node.characters.maximum === UTF16_MAXIMUM) {
 					if (unicode === undefined) {
 						unicode = false;
 					} else if (unicode) {
@@ -161,62 +257,129 @@ function isUnicode(value: readonly Simple<Node>[]): boolean | undefined {
 
 	return unicode;
 }
-function isIgnoreCase(value: Simple<Node>, unicode: boolean): boolean {
-	let ignoreCase = true;
+function getIgnoreCaseFlag(value: readonly Simple<Node>[], unicode: boolean): false | undefined {
+	let ignoreCase: false | undefined = undefined;
 
 	try {
-		visitAst(value, {
-			onCharacterClassEnter(node) {
-				const cs = node.characters;
-				if (!cs.equals(makeIgnoreCase(cs, unicode))) {
-					ignoreCase = false;
-					throw new Error();
-				}
-			},
-		});
+		for (const node of value) {
+			visitAst(node, {
+				onCharacterClassEnter(node) {
+					const cs = node.characters;
+					if (!cs.equals(makeIgnoreCase(cs, unicode))) {
+						ignoreCase = false;
+						throw new Error();
+					}
+				},
+			});
+		}
 	} catch (e) {
 		/* swallow error */
 	}
 
 	return ignoreCase;
 }
-function getFlags(value: readonly Simple<Node>[]): Flags {
-	const unicode = isUnicode(value);
+function getMultilineFlag(value: readonly Simple<Node>[], unicode: boolean): boolean | undefined {
+	let stringStartAssertion = false;
+	let stringEndAssertion = false;
+	let lineStartAssertion = false;
+	let lineEndAssertion = false;
 
-	if (unicode === undefined) {
-		// for some reason, the array of nodes doesn't contain any characters
-		return {};
-	} else {
-		return {
-			unicode,
-			ignoreCase: value.every(node => isIgnoreCase(node, !!unicode)),
-		};
+	for (const node of value) {
+		visitAst(node, {
+			onAssertionEnter(assertion) {
+				if (assertion.negate && assertion.alternatives.length === 1) {
+					const alt = assertion.alternatives[0];
+					if (alt.elements.length === 1) {
+						const e = alt.elements[0];
+						if (e.type === "CharacterClass") {
+							const chars = e.characters;
+							if (chars.isAll) {
+								if (assertion.kind === "ahead") {
+									stringEndAssertion = true;
+								} else {
+									stringStartAssertion = true;
+								}
+							} else if (isNonLineTerminator(chars, unicode)) {
+								if (assertion.kind === "ahead") {
+									lineEndAssertion = true;
+								} else {
+									lineStartAssertion = true;
+								}
+							}
+						}
+					}
+				}
+			},
+		});
 	}
+
+	// try to avoid lookbehinds
+	if (lineStartAssertion) {
+		return true;
+	}
+	if (stringStartAssertion) {
+		return false;
+	}
+
+	// try to avoid (?!.), so we can enable the s flag
+	if (lineEndAssertion) {
+		return true;
+	}
+	if (stringEndAssertion) {
+		return false;
+	}
+
+	return undefined;
+}
+function getFlags(value: readonly Simple<Node>[], options: Readonly<ToLiteralOptions> | undefined): Flags {
+	const template = options?.flags;
+
+	const templateUnicode = template?.unicode;
+	const unicode = getUnicodeFlag(value) ?? templateUnicode;
+	if ((templateUnicode ?? unicode) !== unicode) {
+		throw new Error(
+			`Incompatible flags: The u flag is ${unicode ? "required" : "forbidden"} to create a literal but ${
+				templateUnicode ? "required" : "forbidden"
+			} by the options.`
+		);
+	}
+
+	const templateIgnoreCase = template?.ignoreCase;
+	const ignoreCase: boolean | undefined = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
+	if ((templateIgnoreCase ?? ignoreCase) !== ignoreCase) {
+		throw new Error(
+			`Incompatible flags: The i flag is ${ignoreCase ? "required" : "forbidden"} to create a literal but ${
+				templateIgnoreCase ? "required" : "forbidden"
+			} by the options.`
+		);
+	}
+
+	return {
+		dotAll: template?.dotAll,
+		global: template?.global,
+		ignoreCase: ignoreCase ?? true,
+		multiline: template?.multiline ?? getMultilineFlag(value, !!unicode),
+		sticky: template?.sticky,
+		unicode,
+	};
 }
 
-const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(0x10ffff).union(LINE_TERMINATOR).negate();
-const NON_LINE_TERMINATOR = CharSet.empty(0xffff).union(LINE_TERMINATOR).negate();
-function isNonLineTerminator(chars: CharSet, flags: Flags): boolean {
-	if (flags.unicode) {
+const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate();
+const NON_LINE_TERMINATOR = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate();
+function isNonLineTerminator(chars: CharSet, unicode: boolean | undefined): boolean {
+	if (unicode) {
 		return chars.equals(UNICODE_NON_LINE_TERMINATOR);
 	} else {
 		return chars.equals(NON_LINE_TERMINATOR);
 	}
 }
 
-const printableCharacters = new Map<number, string>();
-function addPrintableCharacter(char: number | string, print: string): void {
-	if (typeof char === "number") {
-		printableCharacters.set(char, print);
-	} else {
-		printableCharacters.set(char.codePointAt(0)!, print);
-	}
-}
-addPrintableCharacter(0, "\\0");
-addPrintableCharacter("\n", "\\n");
-addPrintableCharacter("\f", "\\f");
-addPrintableCharacter("\t", "\\t");
-addPrintableCharacter("\r", "\\r");
+const printableCharacters = new Map<number, string>([
+	["\n".charCodeAt(0), "\\n"],
+	["\f".charCodeAt(0), "\\f"],
+	["\t".charCodeAt(0), "\\t"],
+	["\r".charCodeAt(0), "\\r"],
+]);
 
 /**
  * A set of special characters which cannot be used unescaped in RegExp patterns.
@@ -226,13 +389,15 @@ const specialJSRegExp = new Set<number>([..."()[]{}*+?|\\.^$/"].map(c => c.charC
 const specialJSCharset = new Set<number>([..."\\]-^"].map(c => c.charCodeAt(0)));
 
 function printAsHex(char: number): string {
-	if (char < 256) {
+	if (char === 0) {
+		return "\\0";
+	} else if (char < 256) {
 		return "\\x" + char.toString(16).padStart(2, "0");
-	}
-	if (char < 65536) {
+	} else if (char < 65536) {
 		return "\\u" + char.toString(16).padStart(4, "0");
+	} else {
+		return "\\u{" + char.toString(16) + "}";
 	}
-	return "\\u{" + char.toString(16) + "}";
 }
 
 function printInCharClass(char: number): string {
@@ -322,7 +487,7 @@ function printCharSetSimple(set: CharSet): string {
 	return s;
 }
 function printCharSetSimpleIgnoreCase(set: CharSet): string {
-	const unicode = set.maximum === 0x10ffff;
+	const unicode = set.maximum === UNICODE_MAXIMUM;
 
 	let s = "";
 	while (set.ranges.length > 0) {
@@ -414,6 +579,7 @@ function printCharSet(set: CharSet, flags: Flags): string {
 }
 
 function printCharacters(chars: CharSet, flags: Flags): string {
+	// print
 	if (chars.isAll) return flags.dotAll ? "." : "[\\s\\S]";
 	if (chars.isEmpty) return "[^\\s\\S]";
 

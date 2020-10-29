@@ -4,6 +4,9 @@ import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { AST } from "regexpp";
 import { Expression, Alternation, Quantifier } from "../ast";
 
+export const UNICODE_MAXIMUM = 0x10ffff;
+export const UTF16_MAXIMUM = 0xffff;
+
 /**
  * Returns a character set which includes all characters of the given character set and all their case variations.
  *
@@ -68,7 +71,7 @@ export const LINE_TERMINATOR: readonly CharRange[] = [
 	{ min: 0x2028, max: 0x2029 },
 ];
 export const WORD_IU: readonly CharRange[] = withCaseVaryingCharacters(
-	CharSet.empty(0x10ffff).union(WORD),
+	CharSet.empty(UNICODE_MAXIMUM).union(WORD),
 	UnicodeCaseFolding,
 	UnicodeCaseVarying
 ).ranges;

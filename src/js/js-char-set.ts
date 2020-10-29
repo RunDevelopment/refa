@@ -3,7 +3,16 @@
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./js-flags";
-import { DIGIT, LINE_TERMINATOR, SPACE, WORD, WORD_IU, withCaseVaryingCharacters } from "./js-util";
+import {
+	DIGIT,
+	LINE_TERMINATOR,
+	SPACE,
+	WORD,
+	WORD_IU,
+	withCaseVaryingCharacters,
+	UNICODE_MAXIMUM,
+	UTF16_MAXIMUM,
+} from "./js-util";
 import {
 	Alias,
 	Binary_Property,
@@ -43,8 +52,8 @@ export interface WordCharacterSet {
 	negate: boolean;
 }
 
-const DOT_UNICODE = CharSet.empty(0x10ffff).union(LINE_TERMINATOR).negate();
-const DOT_UTF16 = CharSet.empty(0xffff).union(LINE_TERMINATOR).negate();
+const DOT_UNICODE = CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate();
+const DOT_UTF16 = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate();
 
 /**
  * Creates a new character set with the characters equivalent to a JavaScript regular expression character set.
@@ -63,7 +72,7 @@ export function createCharSet(
 	// If ignoreCase and the ranges might vary in case, the case variations of all characters will be added.
 
 	const { unicode, ignoreCase, dotAll } = flags;
-	const maximum = unicode ? 0x10ffff : 0xffff;
+	const maximum = unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
 	const caseFolding: Readonly<Record<number, readonly number[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
 	const caseVarying: CharSet = unicode ? UnicodeCaseVarying : UTF16CaseVarying;

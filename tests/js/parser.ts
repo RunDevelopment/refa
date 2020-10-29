@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { Parser, ParseOptions } from "../../src/js";
 import { toPatternString } from "../../src/ast";
 
-describe("JS Regex", function () {
+describe("JS.Parser", function () {
 	interface TestCase {
 		literal: { source: string; flags: string };
 		options?: ParseOptions;
