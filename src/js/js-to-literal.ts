@@ -30,6 +30,14 @@ export interface ToLiteralOptions {
 	 * If the constraints on the flags defined here make it impossible to create a literal, an error will be thrown.
 	 */
 	flags?: Flags;
+
+	/**
+	 * This will use cause the function to convert `CharSet`s as fast as possible.
+	 *
+	 * Literal will usually be created about 10x faster if this option is enabled but the result is usually not humanly
+	 * readable.
+	 */
+	fastCharacters?: boolean;
 }
 
 export function toLiteral(concat: Simple<Concatenation>, options?: Readonly<ToLiteralOptions>): Literal;
@@ -42,13 +50,15 @@ export function toLiteral(
 	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
 	options?: Readonly<ToLiteralOptions>
 ): Literal {
+	const fastCharacters = options?.fastCharacters ?? false;
+
 	let flags;
 	if (Array.isArray(value)) {
 		const alternatives: readonly Simple<Concatenation>[] = value;
-		flags = getFlags(alternatives, options);
+		flags = getFlags(alternatives, options, fastCharacters);
 	} else {
 		const node = value as Simple<Expression> | Simple<Concatenation>;
-		flags = getFlags([node], options);
+		flags = getFlags([node], options, fastCharacters);
 	}
 
 	let flagsString = "";
@@ -59,38 +69,51 @@ export function toLiteral(
 	if (flags.unicode) flagsString += "u";
 	if (flags.sticky) flagsString += "y";
 
+	const printOptions: PrintOptions = {
+		fastCharacters,
+		predefinedCS: getPredefinedCharacterSets(flags),
+	};
+
 	return {
-		source: toSource(value, flags),
+		source: toSource(value, flags, printOptions),
 		flags: flagsString,
 	};
 }
 
+interface PrintOptions {
+	readonly fastCharacters: boolean;
+	readonly predefinedCS: PredefinedCharacterSets;
+}
+
 function toSource(
 	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
-	flags: Flags
+	flags: Flags,
+	options: PrintOptions
 ): string {
 	if (Array.isArray(value)) {
 		const alternatives: readonly Simple<Concatenation>[] = value;
 
 		if (alternatives.length === 0) {
-			return "[^\\s\\S]";
+			return "[]";
 		} else {
-			return alternatives.map(c => toSource(c, flags)).join("|");
+			return alternatives.map(c => toSource(c, flags, options)).join("|");
 		}
 	} else {
 		const node = value as Simple<Expression> | Simple<Concatenation>;
 		if (node.type === "Concatenation") {
 			let s = "";
 			for (const element of node.elements) {
-				s += elementToSource(element, flags);
+				s += elementToSource(element, flags, options);
 			}
 			return s;
 		} else {
-			return toSource(node.alternatives, flags);
+			return toSource(node.alternatives, flags, options);
 		}
 	}
 }
-function elementToSource(element: Simple<Element>, flags: Flags): string {
+function elementToSource(element: Simple<Element>, flags: Flags, options: PrintOptions): string {
+	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+
 	switch (element.type) {
 		case "Alternation": {
 			const assertion = isBoundaryAssertion(element, flags);
@@ -98,7 +121,7 @@ function elementToSource(element: Simple<Element>, flags: Flags): string {
 				return assertion;
 			}
 
-			return "(?:" + toSource(element.alternatives, flags) + ")";
+			return "(?:" + toSource(element.alternatives, flags, options) + ")";
 		}
 		case "Assertion": {
 			if (isEdgeAssertion(element, flags)) {
@@ -107,24 +130,32 @@ function elementToSource(element: Simple<Element>, flags: Flags): string {
 			let s = "(?";
 			if (element.kind === "behind") s += "<";
 			s += element.negate ? "!" : "=";
-			s += toSource(element.alternatives, flags);
+			s += toSource(element.alternatives, flags, options);
 			s += ")";
 			return s;
 		}
 		case "CharacterClass": {
-			return printCharacters(element.characters, flags);
+			if (element.characters.maximum !== maximum) {
+				throw new Error(`All characters were expected to have a maximum of ${maximum}.`);
+			}
+
+			if (options.fastCharacters) {
+				return printCharactersFast(element.characters);
+			} else {
+				return printCharacters(element.characters, flags, options.predefinedCS);
+			}
 		}
 		case "Quantifier": {
 			let s;
 			if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1) {
 				const e = element.alternatives[0].elements[0];
 				if (e.type === "Alternation" || e.type === "CharacterClass") {
-					s = toSource(element.alternatives[0], flags);
+					s = toSource(element.alternatives[0], flags, options);
 				} else {
-					s = "(?:" + toSource(element.alternatives, flags) + ")";
+					s = "(?:" + toSource(element.alternatives, flags, options) + ")";
 				}
 			} else {
-				s = "(?:" + toSource(element.alternatives, flags) + ")";
+				s = "(?:" + toSource(element.alternatives, flags, options) + ")";
 			}
 
 			if (element.min === 0 && element.max === Infinity) {
@@ -230,32 +261,39 @@ function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
 		return withCaseVaryingCharacters(cs, UTF16CaseFolding, UTF16CaseVarying);
 	}
 }
+function makeIgnoreCaseSingleChar(char: number, unicode: boolean): CharSet | null {
+	const caseFoldingMap = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
+	const folding: undefined | readonly number[] = caseFoldingMap[char];
+	if (folding) {
+		return CharSet.empty(unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM).union(folding.map(c => ({ min: c, max: c })));
+	} else {
+		return null;
+	}
+}
 
 function getUnicodeFlag(value: readonly Simple<Node>[]): boolean | undefined {
-	let unicode: boolean | undefined = undefined;
-	for (const node of value) {
-		visitAst(node, {
-			onCharacterClassEnter(node) {
-				if (node.characters.maximum === UNICODE_MAXIMUM) {
-					if (unicode === undefined) {
-						unicode = true;
-					} else if (!unicode) {
-						throw new Error("All character sets have to have the same maximum.");
+	try {
+		for (const node of value) {
+			visitAst(node, {
+				onCharacterClassEnter(node) {
+					if (node.characters.maximum === UNICODE_MAXIMUM) {
+						throw true;
+					} else if (node.characters.maximum === UTF16_MAXIMUM) {
+						throw false;
+					} else {
+						throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
 					}
-				} else if (node.characters.maximum === UTF16_MAXIMUM) {
-					if (unicode === undefined) {
-						unicode = false;
-					} else if (unicode) {
-						throw new Error("All character sets have to have the same maximum.");
-					}
-				} else {
-					throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
-				}
-			},
-		});
+				},
+			});
+		}
+	} catch (e) {
+		if (typeof e === "boolean") {
+			return e;
+		}
+		throw e;
 	}
 
-	return unicode;
+	return undefined; // no characters
 }
 function getIgnoreCaseFlag(value: readonly Simple<Node>[], unicode: boolean): false | undefined {
 	let ignoreCase: false | undefined = undefined;
@@ -313,7 +351,7 @@ function getMultilineFlag(value: readonly Simple<Node>[], unicode: boolean): boo
 		});
 	}
 
-	// try to avoid lookbehinds
+	// try to avoid lookbehinds (browser support for them isn't great)
 	if (lineStartAssertion) {
 		return true;
 	}
@@ -331,21 +369,22 @@ function getMultilineFlag(value: readonly Simple<Node>[], unicode: boolean): boo
 
 	return undefined;
 }
-function getFlags(value: readonly Simple<Node>[], options: Readonly<ToLiteralOptions> | undefined): Flags {
+function getFlags(
+	value: readonly Simple<Node>[],
+	options: Readonly<ToLiteralOptions> | undefined,
+	fastCharacters: boolean
+): Flags {
 	const template = options?.flags;
 
-	const templateUnicode = template?.unicode;
-	const unicode = getUnicodeFlag(value) ?? templateUnicode;
-	if ((templateUnicode ?? unicode) !== unicode) {
-		throw new Error(
-			`Incompatible flags: The u flag is ${unicode ? "required" : "forbidden"} to create a literal but ${
-				templateUnicode ? "required" : "forbidden"
-			} by the options.`
-		);
-	}
+	const unicode = template?.unicode ?? getUnicodeFlag(value);
 
 	const templateIgnoreCase = template?.ignoreCase;
-	const ignoreCase: boolean | undefined = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
+	let ignoreCase: boolean | undefined;
+	if (fastCharacters && !templateIgnoreCase) {
+		ignoreCase = false;
+	} else {
+		ignoreCase = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
+	}
 	if ((templateIgnoreCase ?? ignoreCase) !== ignoreCase) {
 		throw new Error(
 			`Incompatible flags: The i flag is ${ignoreCase ? "required" : "forbidden"} to create a literal but ${
@@ -364,6 +403,58 @@ function getFlags(value: readonly Simple<Node>[], options: Readonly<ToLiteralOpt
 	};
 }
 
+interface PredefinedCharacterSets {
+	readonly digit: CharSet;
+	readonly notDigit: CharSet;
+	readonly space: CharSet;
+	readonly notSpace: CharSet;
+	readonly word: CharSet;
+	readonly notWord: CharSet;
+	readonly lineTerminator: CharSet;
+	readonly notLineTerminator: CharSet;
+}
+const PREDEFINED_CS_UTF16: PredefinedCharacterSets = {
+	digit: CharSet.empty(UTF16_MAXIMUM).union(DIGIT),
+	notDigit: CharSet.empty(UTF16_MAXIMUM).union(DIGIT).negate(),
+	space: CharSet.empty(UTF16_MAXIMUM).union(SPACE),
+	notSpace: CharSet.empty(UTF16_MAXIMUM).union(SPACE).negate(),
+	word: CharSet.empty(UTF16_MAXIMUM).union(WORD),
+	notWord: CharSet.empty(UTF16_MAXIMUM).union(WORD).negate(),
+	lineTerminator: CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR),
+	notLineTerminator: CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate(),
+};
+const PREDEFINED_CS_UNICODE_CASE_SENSITIVE: PredefinedCharacterSets = {
+	digit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT),
+	notDigit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT).negate(),
+	space: CharSet.empty(UNICODE_MAXIMUM).union(SPACE),
+	notSpace: CharSet.empty(UNICODE_MAXIMUM).union(SPACE).negate(),
+	word: CharSet.empty(UNICODE_MAXIMUM).union(WORD),
+	notWord: CharSet.empty(UNICODE_MAXIMUM).union(WORD).negate(),
+	lineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR),
+	notLineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate(),
+};
+const PREDEFINED_CS_UNICODE_IGNORE_CASE: PredefinedCharacterSets = {
+	digit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT),
+	notDigit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT).negate(),
+	space: CharSet.empty(UNICODE_MAXIMUM).union(SPACE),
+	notSpace: CharSet.empty(UNICODE_MAXIMUM).union(SPACE).negate(),
+	word: CharSet.empty(UNICODE_MAXIMUM).union(WORD_IU),
+	notWord: CharSet.empty(UNICODE_MAXIMUM).union(WORD_IU).negate(),
+	lineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR),
+	notLineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate(),
+};
+function getPredefinedCharacterSets(flags: Flags): PredefinedCharacterSets {
+	if (flags.unicode) {
+		if (flags.ignoreCase) {
+			return PREDEFINED_CS_UNICODE_IGNORE_CASE;
+		} else {
+			return PREDEFINED_CS_UNICODE_CASE_SENSITIVE;
+		}
+	} else {
+		return PREDEFINED_CS_UTF16;
+	}
+}
+
 const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate();
 const NON_LINE_TERMINATOR = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate();
 function isNonLineTerminator(chars: CharSet, unicode: boolean | undefined): boolean {
@@ -374,39 +465,40 @@ function isNonLineTerminator(chars: CharSet, unicode: boolean | undefined): bool
 	}
 }
 
-const printableCharacters = new Map<number, string>([
+const PRINTABLE_CONTROL_CHARACTERS = new Map<number, string>([
 	["\n".charCodeAt(0), "\\n"],
 	["\f".charCodeAt(0), "\\f"],
 	["\t".charCodeAt(0), "\\t"],
 	["\r".charCodeAt(0), "\\r"],
 ]);
 
-/**
- * A set of special characters which cannot be used unescaped in RegExp patterns.
- */
-const specialJSRegExp = new Set<number>([..."()[]{}*+?|\\.^$/"].map(c => c.charCodeAt(0)));
-
-const specialJSCharset = new Set<number>([..."\\]-^"].map(c => c.charCodeAt(0)));
-
 function printAsHex(char: number): string {
 	if (char === 0) {
 		return "\\0";
+	} else if (char < 16) {
+		return "\\x0" + char.toString(16);
 	} else if (char < 256) {
-		return "\\x" + char.toString(16).padStart(2, "0");
+		return "\\x" + char.toString(16);
+	} else if (char < 4096) {
+		return "\\u0" + char.toString(16);
 	} else if (char < 65536) {
-		return "\\u" + char.toString(16).padStart(4, "0");
+		return "\\u" + char.toString(16);
 	} else {
 		return "\\u{" + char.toString(16) + "}";
 	}
 }
 
+const SPECIAL_IN_CHAR_CLASS = new Set<number>([..."\\]-^"].map(c => c.charCodeAt(0)));
 function printInCharClass(char: number): string {
 	// special characters
-	const isSpecial = specialJSCharset.has(char);
-	if (isSpecial) return "\\" + String.fromCharCode(char);
+	if (SPECIAL_IN_CHAR_CLASS.has(char)) {
+		return "\\" + String.fromCharCode(char);
+	}
 
-	const specialPrintable = printableCharacters.get(char);
-	if (specialPrintable) return specialPrintable;
+	const specialPrintable = PRINTABLE_CONTROL_CHARACTERS.get(char);
+	if (specialPrintable) {
+		return specialPrintable;
+	}
 
 	if (char >= 32 && char < 127) {
 		// printable ASCII chars
@@ -416,45 +508,56 @@ function printInCharClass(char: number): string {
 	return printAsHex(char);
 }
 
-const printableRanges: readonly CharRange[] = [
+const PRINTABLE_RANGES: readonly CharRange[] = [
 	{ min: 0x30, max: 0x39 }, // 0-9
 	{ min: 0x41, max: 0x5a }, // A-Z
 	{ min: 0x61, max: 0x7a }, // a-z
 ];
-function printRangeImpl(range: CharRange): string {
-	if (printableRanges.some(({ min, max }) => min <= range.min && range.max <= max)) {
+const PRINTABLE_RANGES_MIN = Math.min(...PRINTABLE_RANGES.map(r => r.min));
+const PRINTABLE_RANGES_MAX = Math.max(...PRINTABLE_RANGES.map(r => r.max));
+function printAsRange(range: CharRange): string {
+	if (
+		PRINTABLE_RANGES_MIN <= range.min &&
+		range.max <= PRINTABLE_RANGES_MAX &&
+		PRINTABLE_RANGES.some(({ min, max }) => min <= range.min && range.max <= max)
+	) {
 		// printable ASCII char range
 		return String.fromCharCode(range.min) + "-" + String.fromCharCode(range.max);
 	} else {
 		return printAsHex(range.min) + "-" + printAsHex(range.max);
 	}
 }
-function printRange(range: CharRange): string {
-	if (range.min === range.max) return printInCharClass(range.min);
-	if (range.min === range.max - 1) return printInCharClass(range.min) + printInCharClass(range.max);
+function printCharRange(range: CharRange): string {
+	if (range.min === range.max) {
+		return printInCharClass(range.min);
+	}
+	if (range.min === range.max - 1) {
+		return printInCharClass(range.min) + printInCharClass(range.max);
+	}
 
 	const size = range.max - range.min + 1;
 	if (size <= 6) {
-		const candidates = [
-			Array.from({ length: size })
-				.map((_, i) => i + range.min)
-				.map(printInCharClass)
-				.join(""),
-			printRangeImpl(range),
-		];
-		return getShortest(candidates);
+		let s = "";
+		for (let i = range.min; i <= range.max; i++) {
+			s += printInCharClass(i);
+		}
+
+		return shortest(s, printAsRange(range));
 	} else {
-		return printRangeImpl(range);
+		return printAsRange(range);
 	}
 }
 
+const SPECIAL_OUTSIDE_CHAR_CLASS = new Set<number>([..."()[]{}*+?|\\.^$/"].map(c => c.charCodeAt(0)));
 function printOutsideOfCharClass(char: number): string {
-	if (specialJSRegExp.has(char)) {
+	if (SPECIAL_OUTSIDE_CHAR_CLASS.has(char)) {
 		return "\\" + String.fromCharCode(char);
 	}
 
-	const specialPrint = printableCharacters.get(char);
-	if (specialPrint) return specialPrint;
+	const specialPrint = PRINTABLE_CONTROL_CHARACTERS.get(char);
+	if (specialPrint) {
+		return specialPrint;
+	}
 
 	if (char >= 32 && char < 127) {
 		// printable ASCII chars
@@ -475,52 +578,40 @@ function rangeEqual(a: readonly CharRange[], b: readonly CharRange[]): boolean {
 	return true;
 }
 
-function isSupersetOf(set: CharSet, ranges: readonly CharRange[]): boolean {
-	return ranges.every(r => set.isSupersetOf(r));
-}
-
-function printCharSetSimple(set: CharSet): string {
+function printCharClassContentSimple(set: CharSet): string {
 	let s = "";
 	for (const range of set.ranges) {
-		s += printRange(range);
+		s += printCharRange(range);
 	}
 	return s;
 }
-function printCharSetSimpleIgnoreCase(set: CharSet): string {
+function printCharClassContentSimpleIgnoreCase(set: CharSet): string {
 	const unicode = set.maximum === UNICODE_MAXIMUM;
+	let hasAlready = CharSet.empty(set.maximum);
 
 	let s = "";
-	while (set.ranges.length > 0) {
-		const range = set.ranges[0];
-		s += printRange(range);
-		set = set.without(makeIgnoreCase(CharSet.empty(set.maximum).union([range]), unicode));
+	for (const range of set.ranges) {
+		if (!hasAlready.isSupersetOf(range)) {
+			s += printCharRange(range);
+			hasAlready = hasAlready.union(makeIgnoreCase(CharSet.empty(set.maximum).union([range]), unicode));
+		}
 	}
 	return s;
 }
 
-function getShortest(values: string[]): string {
-	return values.sort((a, b) => a.length - b.length)[0];
+function shortest(a: string, b: string): string {
+	return a.length <= b.length ? a : b;
 }
 
-function factorStrings(a: readonly string[], b: readonly string[]): string[] {
-	const product: string[] = [];
-	for (const aItem of a) {
-		for (const bItem of b) {
-			product.push(aItem + bItem);
-		}
-	}
-	return product;
-}
-
-function printCharSet(set: CharSet, flags: Flags): string {
-	type CandidateCreator = (set: CharSet) => string[];
+function printCharClassContent(set: CharSet, flags: Flags, predefinedCS: PredefinedCharacterSets): string {
+	type CandidateCreator = (set: CharSet) => string;
 
 	const simpleCreator: CandidateCreator = set => {
-		const candidates: string[] = [printCharSetSimple(set)];
+		let s = printCharClassContentSimple(set);
 		if (flags.ignoreCase) {
-			candidates.push(printCharSetSimpleIgnoreCase(set));
+			s = shortest(s, printCharClassContentSimpleIgnoreCase(set));
 		}
-		return candidates;
+		return s;
 	};
 	const reducedCreator: CandidateCreator = set => {
 		// The simplest approach would be to print all ranges but the resulting character class might not be minimal or
@@ -528,100 +619,91 @@ function printCharSet(set: CharSet, flags: Flags): string {
 
 		let reducedSet = set;
 		let reducedPrefix = "";
-		if (isSupersetOf(reducedSet, SPACE)) {
+		if (reducedSet.isSupersetOf(predefinedCS.space)) {
 			reducedPrefix += "\\s";
-			reducedSet = reducedSet.without(SPACE);
+			reducedSet = reducedSet.without(predefinedCS.space);
 		}
-		if (flags.ignoreCase && flags.unicode) {
-			if (isSupersetOf(reducedSet, WORD_IU)) {
-				reducedPrefix += "\\w";
-				reducedSet = reducedSet.without(WORD_IU);
-			}
-		} else {
-			if (isSupersetOf(reducedSet, WORD)) {
-				reducedPrefix += "\\w";
-				reducedSet = reducedSet.without(WORD);
-			}
+		if (reducedSet.isSupersetOf(predefinedCS.word)) {
+			reducedPrefix += "\\w";
+			reducedSet = reducedSet.without(predefinedCS.word);
 		}
-		if (isSupersetOf(reducedSet, DIGIT)) {
+		if (reducedSet.isSupersetOf(predefinedCS.digit)) {
 			reducedPrefix += "\\d";
-			reducedSet = reducedSet.without(DIGIT);
+			reducedSet = reducedSet.without(predefinedCS.digit);
 		}
 
-		if (set === reducedSet) {
-			// couldn't be reduced
+		if (set === reducedSet || reducedSet.ranges.length < set.ranges.length * 2 + 2) {
+			// couldn't be reduced or the reduced set is significantly more complex than the original set.
 			return simpleCreator(set);
 		} else {
-			return [...simpleCreator(set), ...factorStrings([reducedPrefix], simpleCreator(reducedSet))];
+			return shortest(simpleCreator(set), reducedPrefix + simpleCreator(reducedSet));
 		}
 	};
 	const moveDashCreator: CandidateCreator = set => {
 		// If the set contains a dash ("-"), then it might be a good idea to move the dash to the start of the set, so
 		// we don't have to escape it.
-		if (set.has(45 /* === "-".charCodeAt(0) */)) {
+		if (set.has(45 /* === "-".charCodeAt(0) */) && !set.has(46) /* "-" has to be at the end of a range */) {
 			const withoutDash = set.without([{ min: 45, max: 45 }]);
-			return [...reducedCreator(set), ...factorStrings(["-"], reducedCreator(withoutDash))];
+			return shortest(reducedCreator(set), "-" + reducedCreator(withoutDash));
 		} else {
 			return reducedCreator(set);
 		}
 	};
 	const moveCaretCreator: CandidateCreator = set => {
 		// Similar idea to move dash but for the caret ("^")
-		if (set.has(94 /* === "^".charCodeAt(0) */) && set.size > 1) {
-			const withoutDash = set.without([{ min: 94, max: 94 }]);
-			return [...moveDashCreator(set), ...factorStrings(moveDashCreator(withoutDash), ["^"])];
+		if (
+			set.ranges.length > 1 /* there have to be at least 2 ranges for this */ &&
+			set.has(94 /* === "^".charCodeAt(0) */) &&
+			!set.has(93) /* "^" has to be at the start of a range */
+		) {
+			const withoutCaret = set.without([{ min: 94, max: 94 }]);
+			return shortest(moveDashCreator(set), moveDashCreator(withoutCaret) + "^");
 		} else {
 			return moveDashCreator(set);
 		}
 	};
 
-	return getShortest(moveCaretCreator(set));
+	return moveCaretCreator(set);
 }
 
-function printCharacters(chars: CharSet, flags: Flags): string {
+function printCharacters(chars: CharSet, flags: Flags, predefinedCS: PredefinedCharacterSets): string {
 	// print
-	if (chars.isAll) return flags.dotAll ? "." : "[\\s\\S]";
-	if (chars.isEmpty) return "[^\\s\\S]";
+	if (chars.isAll) return flags.dotAll ? "." : "[^]";
+	if (chars.isEmpty) return "[]";
 
-	const min = chars.ranges[0].min;
+	const min: number = chars.ranges[0].min;
 	if (chars.ranges.length === 1 && min === chars.ranges[0].max) {
 		// a single character
 		return printOutsideOfCharClass(min);
 	} else if (flags.ignoreCase) {
-		const single = makeIgnoreCase(CharSet.empty(chars.maximum).union([{ min: min, max: min }]), !!flags.unicode);
-		if (single.equals(chars)) {
-			// a single character because of we ignore case
+		const minIgnoreCase = makeIgnoreCaseSingleChar(min, !!flags.unicode);
+		if (minIgnoreCase && minIgnoreCase.equals(chars)) {
+			// single character because
 			return printOutsideOfCharClass(min);
 		}
 	}
 
 	// if the first min is 0, then it's most likely negated, so don't even bother checking non-negated char sets
-	if (chars.ranges[0].min > 0) {
-		if (rangeEqual(chars.ranges, DIGIT)) return "\\d";
-		if (rangeEqual(chars.ranges, SPACE)) return "\\s";
-		if (flags.ignoreCase && flags.unicode) {
-			if (rangeEqual(chars.ranges, WORD_IU)) return "\\w";
-		} else {
-			if (rangeEqual(chars.ranges, WORD)) return "\\w";
-		}
-	}
-
-	const negated = chars.negate();
-	if (!flags.dotAll && rangeEqual(negated.ranges, LINE_TERMINATOR)) return ".";
-	if (rangeEqual(negated.ranges, DIGIT)) return "\\D";
-	if (rangeEqual(negated.ranges, SPACE)) return "\\S";
-	if (flags.ignoreCase && flags.unicode) {
-		if (rangeEqual(negated.ranges, WORD_IU)) return "\\W";
+	if (min !== 0) {
+		if (rangeEqual(chars.ranges, predefinedCS.digit.ranges)) return "\\d";
+		if (rangeEqual(chars.ranges, predefinedCS.space.ranges)) return "\\s";
+		if (rangeEqual(chars.ranges, predefinedCS.word.ranges)) return "\\w";
 	} else {
-		if (rangeEqual(negated.ranges, WORD)) return "\\W";
+		if (rangeEqual(chars.ranges, predefinedCS.notDigit.ranges)) return "\\D";
+		if (rangeEqual(chars.ranges, predefinedCS.notSpace.ranges)) return "\\S";
+		if (rangeEqual(chars.ranges, predefinedCS.notWord.ranges)) return "\\W";
+		if (!flags.dotAll && rangeEqual(chars.ranges, predefinedCS.notLineTerminator.ranges)) return ".";
 	}
 
-	const source = printCharSet(chars, flags);
-	const negatedSource = printCharSet(negated, flags);
+	const source = printCharClassContent(chars, flags, predefinedCS);
+	const negatedSource = printCharClassContent(chars.negate(), flags, predefinedCS);
 
 	if (source.length <= negatedSource.length) {
 		return `[${source}]`;
 	} else {
 		return `[^${negatedSource}]`;
 	}
+}
+function printCharactersFast(chars: CharSet): string {
+	return `[${printCharClassContentSimple(chars)}]`;
 }

@@ -1,8 +1,35 @@
+/* eslint-disable no-control-regex */
 import { assert } from "chai";
 import { Parser, toLiteral, ToLiteralOptions, Literal } from "../../src/js";
 import { literalToString } from "../helper/fa";
 
 describe("JS.toLiteral", function () {
+	interface TestCase {
+		literal: Literal;
+		options?: ToLiteralOptions;
+		expected: Literal | typeof Error;
+	}
+
+	function test(cases: TestCase[]): void {
+		for (const { literal, options, expected } of cases) {
+			it(`${literalToString(literal)} ${options ? `\t(${JSON.stringify(options)})` : ""}`, function () {
+				const { expression } = Parser.fromLiteral(literal).parse({ disableOptimizations: true });
+				try {
+					const actual = toLiteral(expression, options);
+					if ("source" in expected && "flags" in expected) {
+						assert.equal(literalToString(actual), literalToString(expected));
+					} else {
+						assert.fail("Expected it to fail.");
+					}
+				} catch (error) {
+					if (expected !== Error) {
+						throw error;
+					}
+				}
+			});
+		}
+	}
+
 	describe("general", function () {
 		test([
 			{
@@ -14,14 +41,61 @@ describe("JS.toLiteral", function () {
 				expected: /ABC/i,
 			},
 			{
-				literal: /a{0,1}b{1}c{0,}d{1,}e{0}/,
-				expected: /a?b{1}c*d+e{0}/,
+				literal: /-\//i,
+				expected: /-\//i,
+			},
+			{
+				literal: /[-][^-][a\- ][\^.][\^-]/,
+				expected: /-[^-][- a][.^][-^]/,
+			},
+			{
+				literal: /[a][ab][abc][abcd][abcde]/,
+				expected: /a[ab][abc][a-d][a-e]/,
+			},
+			{
+				literal: /[!][!"][!"#][!"#$][!"#$%][!"#$%&][!"#$%&'][!"#$%&'(][!"#$%&'()]/,
+				expected: /![!"][!"#][!"#$][!"#$%][!"#$%&][\x21-\x27][\x21-\x28][\x21-\x29]/i,
+			},
+			{
+				literal: /\n\r\f\t[\n\r\f\t]/,
+				expected: /\n\r\f\t[\t\n\f\r]/i,
+			},
+			{
+				literal: /\s\d\w\S\D\W./,
+				expected: /\s\d\w\S\D\W./i,
+			},
+			{
+				literal: /\s\d\w\S\D\W./iu,
+				expected: /\s\d\w\S\D\W./iu,
+			},
+			{
+				literal: /a{0,1}b{1}c{0,}d{1,}e{0}f{3,6} (){2}/,
+				expected: /a?b{1}c*d+e{0}f{3,6} (?:){2}/,
 			},
 			{
 				literal: /[^\s\S][^\0-\uFFFF]/,
-				expected: /[^\s\S][^\s\S]/i,
+				// eslint-disable-next-line no-empty-character-class
+				expected: /[][]/i,
 			},
 
+			{
+				literal: /\0/,
+				expected: /\0/i,
+			},
+			{
+				literal: /\p{ASCII}/u,
+				expected: /[\0-\x7f]/u,
+			},
+			{
+				literal: /\p{Cc}/u,
+				// eslint-disable-next-line no-control-regex
+				expected: /[\0-\x1f\x7f-\x9f]/iu,
+			},
+		]);
+	});
+
+	describe("assertions", function () {
+		test([
 			{
 				literal: /^$ (?<![\s\S])(?![\s\S])/,
 				expected: /^$ ^$/i,
@@ -34,9 +108,10 @@ describe("JS.toLiteral", function () {
 				literal: /^$ (?<!.)(?!.)/m,
 				expected: /^$ ^$/im,
 			},
+
 			{
 				literal: /^$ (?!.)/ms,
-				expected: /^$ (?![\s\S])/im,
+				expected: /^$ (?![^])/im,
 			},
 			{
 				literal: /(?<!.)(?!.) $/ms,
@@ -48,6 +123,32 @@ describe("JS.toLiteral", function () {
 				expected: /^$ (?![^\n\r\u2028\u2029])/is,
 			},
 
+			{
+				literal: /\b\B/,
+				expected: /\b\B/i,
+			},
+			{
+				literal: /\b\B/iu,
+				expected: /\b\B/iu,
+			},
+
+			{
+				literal: /(?<=a) (?<!a) (?=a) (?!a)/,
+				expected: /(?<=a) (?<!a) (?=a) (?!a)/,
+			},
+			{
+				literal: /(?<=a) (?<!a) (?=a) (?!a)/u,
+				expected: /(?<=a) (?<!a) (?=a) (?!a)/u,
+			},
+			{
+				literal: /((?=a))?/,
+				expected: /(?:(?=a))?/,
+			},
+		]);
+	});
+
+	describe("forced flags", function () {
+		test([
 			{
 				literal: /\d/,
 				options: { flags: { unicode: true } },
@@ -172,55 +273,31 @@ describe("JS.toLiteral", function () {
 				options: { flags: { dotAll: true, multiline: true, sticky: true } },
 				expected: /\w/msuy,
 			},
+		]);
+	});
 
+	describe("fast", function () {
+		test([
 			{
-				literal: /\0/,
-				expected: /\0/i,
+				literal: /abc/,
+				options: { fastCharacters: true },
+				expected: /[a][b][c]/,
 			},
 			{
-				literal: /\p{ASCII}/u,
-				expected: /[\0-\x7f]/u,
+				literal: /abc/i,
+				options: { fastCharacters: true },
+				expected: /[Aa][Bb][Cc]/,
 			},
 			{
-				literal: /\p{Cc}/u,
-				// eslint-disable-next-line no-control-regex
-				expected: /[\0-\x1f\x7f-\x9f]/iu,
-			},
-
-			{
-				literal: /\b\B/,
-				expected: /\b\B/i,
+				literal: /\w\d\s/i,
+				options: { fastCharacters: true },
+				expected: /[0-9A-Z_a-z][0-9][\x09-\x0d \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/,
 			},
 			{
-				literal: /\b\B/iu,
-				expected: /\b\B/iu,
+				literal: /./,
+				options: { fastCharacters: true },
+				expected: /[\0-\x09\x0b\f\x0e-\u2027\u202a-\uffff]/,
 			},
 		]);
-
-		interface TestCase {
-			literal: Literal;
-			options?: ToLiteralOptions;
-			expected: Literal | typeof Error;
-		}
-
-		function test(cases: TestCase[]): void {
-			for (const { literal, options, expected } of cases) {
-				it(`${literalToString(literal)} ${options ? `\t(${JSON.stringify(options)})` : ""}`, function () {
-					const { expression } = Parser.fromLiteral(literal).parse({ disableOptimizations: true });
-					try {
-						const actual = toLiteral(expression, options);
-						if ("source" in expected && "flags" in expected) {
-							assert.equal(literalToString(actual), literalToString(expected));
-						} else {
-							assert.fail("Expected it to fail.");
-						}
-					} catch (error) {
-						if (expected !== Error) {
-							throw error;
-						}
-					}
-				});
-			}
-		}
 	});
 });
