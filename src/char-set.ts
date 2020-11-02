@@ -1,84 +1,21 @@
+/**
+ * An immutable interval of characters with inclusive ends.
+ *
+ * Each interval contains all values `x` for `min <= x <= max`. Both ends have to be safe integers and `min <= max`.
+ */
 export interface CharRange {
 	readonly min: number;
 	readonly max: number;
 }
 
-/**
- * This optimizes the given ranges in O(n) time.
- *
- * @param ranges
- */
-function optimizeSortedRanges(ranges: CharRange[]): void {
-	let deleteCount = 0;
-	for (let i = 0, max = ranges.length - 1; i < max; i++) {
-		const current = ranges[i - deleteCount];
-		const next = ranges[i + 1];
-
-		if (current.max >= next.max) {
-			// current completely contains next.
-			deleteCount++;
-		} else if (next.min <= current.max + 1) {
-			// overlapping or adjacent.
-			ranges[i - deleteCount] = { min: current.min, max: next.max };
-			deleteCount++;
-		} else {
-			ranges[i - deleteCount + 1] = next;
-		}
-	}
-
-	if (deleteCount) {
-		ranges.length = ranges.length - deleteCount;
-	}
-}
-
-/**
- * Given an array of character ranges, it will remove any duplicates and join overlapping and adjacent ranges.
- *
- * While the array itself will be modified, the range objects in the array will not.
- *
- * @param ranges
- */
-function optimizeRanges(ranges: CharRange[]): void {
-	// runs in O(n * log(n)), n = ranges.length
-
-	ranges.sort((a, b) => a.min - b.min);
-	optimizeSortedRanges(ranges);
-}
-
-/**
- * Given an array of optimized character ranges, it will return an iterable of character ranges that matches the
- * complete of the given ranges.
- *
- * @param ranges
- * @param maximum
- */
-function* negateRanges(ranges: readonly CharRange[], maximum: number): Iterable<CharRange> {
-	// runs in O(ranges.length)
-
-	if (ranges.length === 0) {
-		yield { min: 0, max: maximum };
-	} else {
-		const first = ranges[0],
-			last = ranges[ranges.length - 1];
-		if (first.min > 0) {
-			yield { min: 0, max: first.min - 1 };
-		}
-		for (let i = 1; i < ranges.length; i++) {
-			yield { min: ranges[i - 1].max + 1, max: ranges[i].min - 1 };
-		}
-		if (last.max < maximum) {
-			yield { min: last.max + 1, max: maximum };
-		}
-	}
-}
-
+// caches for empty/full char sets of different sizes.
 const emptyCache = new Map<number, CharSet>();
 const allCache = new Map<number, CharSet>();
 
 /**
- * An immutable set of characters.
+ * An immutable set of characters represented as a sorted set of disjoint non-adjacent intervals.
  *
- * All characters in the set have to be between 0 (inclusive) and the maximum (inclusive).
+ * All characters in the set have to be between 0 (inclusive) and the maximum of the set (inclusive).
  */
 export class CharSet {
 	/**
@@ -236,14 +173,18 @@ export class CharSet {
 	}
 
 	negate(): CharSet {
-		return new CharSet(this.maximum, [...negateRanges(this.ranges, this.maximum)]);
+		return new CharSet(this.maximum, negateRanges(this.ranges, this.maximum));
 	}
 
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
 		if (data.length === 1 && first instanceof CharSet) {
 			this.checkCompatibility(first);
-			return this.unionOtherRanges(first.ranges);
+			if (first.ranges.length === 0) {
+				return this;
+			} else {
+				return new CharSet(this.maximum, unionRanges(this.ranges, first.ranges));
+			}
 		}
 
 		const newRanges: CharRange[] = this.ranges.slice();
@@ -254,50 +195,6 @@ export class CharSet {
 		}
 
 		optimizeRanges(newRanges);
-		return new CharSet(this.maximum, newRanges);
-	}
-
-	/**
-	 * This will create the union of this char set and the given ranges.
-	 *
-	 * __Note:__ The ranges are assumed to be optimized and compatible with this set.
-	 *
-	 * @param otherRanges
-	 */
-	private unionOtherRanges(otherRanges: readonly CharRange[]): CharSet {
-		if (otherRanges.length === 0) {
-			return this;
-		}
-
-		// merge the sorted ranges in O(n)
-		const newRanges: CharRange[] = [];
-
-		const thisRanges = this.ranges;
-		let thisIndex = 0,
-			otherIndex = 0;
-		let thisR = thisRanges[thisIndex],
-			otherR = otherRanges[otherIndex];
-		while (thisR && otherR) {
-			if (thisR.min <= otherR.min) {
-				newRanges.push(thisR);
-				thisR = thisRanges[++thisIndex];
-			} /* if (otherR.min < thisR.min) */ else {
-				newRanges.push(otherR);
-				otherR = otherRanges[++otherIndex];
-			}
-		}
-
-		// append rest
-		for (; thisR; thisR = thisRanges[thisIndex++]) {
-			newRanges.push(thisR);
-		}
-		for (; otherR; otherR = otherRanges[otherIndex++]) {
-			newRanges.push(otherR);
-		}
-
-		// optimize
-		optimizeSortedRanges(newRanges);
-
 		return new CharSet(this.maximum, newRanges);
 	}
 
@@ -313,55 +210,33 @@ export class CharSet {
 			other = CharSet.empty(this.maximum).union(data);
 		}
 
-		const newRanges: CharRange[] = [];
-
-		// intersection done in O(n)
-
-		const thisRanges = this.ranges,
-			otherRanges = other.ranges;
-		let thisIndex = 0,
-			otherIndex = 0;
-		let thisR = thisRanges[thisIndex],
-			otherR = otherRanges[otherIndex];
-		while (thisR && otherR) {
-			// skip if thisR and otherR are disjoint
-			if (thisR.max < otherR.min) {
-				thisR = thisRanges[++thisIndex];
-				continue;
-			}
-			if (otherR.max < thisR.min) {
-				otherR = otherRanges[++otherIndex];
-				continue;
-			}
-
-			// thisR and otherR overlap in at least one character
-
-			// add intersection
-			newRanges.push({ min: Math.max(thisR.min, otherR.min), max: Math.min(thisR.max, otherR.max) });
-
-			// advance one the one with the lower max or both if their max is the same
-			if (thisR.max < otherR.max) {
-				thisR = thisRanges[++thisIndex];
-			} else if (otherR.max < thisR.max) {
-				otherR = otherRanges[++otherIndex];
-			} else {
-				thisR = thisRanges[++thisIndex];
-				otherR = otherRanges[++otherIndex];
-			}
-		}
+		const newRanges = intersectRanges(this.ranges, other.ranges);
 
 		if (newRanges.length === 0) {
 			return CharSet.empty(this.maximum);
+		} else {
+			return new CharSet(this.maximum, newRanges);
 		}
-
-		return new CharSet(this.maximum, newRanges);
 	}
 
 	without(set: CharSet): CharSet;
 	without(ranges: Iterable<CharRange>): CharSet;
 	without(data: Iterable<CharRange> | CharSet): CharSet {
-		const set = data instanceof CharSet ? data : CharSet.empty(this.maximum).union(data);
-		return this.intersect(set.negate());
+		let other;
+		if (data instanceof CharSet) {
+			this.checkCompatibility(data);
+			other = data;
+		} else {
+			other = CharSet.empty(this.maximum).union(data);
+		}
+
+		const newRanges = withoutRanges(this.ranges, other.ranges);
+
+		if (newRanges.length === 0) {
+			return CharSet.empty(this.maximum);
+		} else {
+			return new CharSet(this.maximum, newRanges);
+		}
 	}
 
 	has(character: number): boolean {
@@ -378,10 +253,10 @@ export class CharSet {
 		const thisRanges = this.ranges;
 		const otherRanges = other.ranges;
 
-		let i = 0,
-			j = 0;
-		let thisItem = thisRanges[i],
-			otherItem = otherRanges[j];
+		let i = 0;
+		let j = 0;
+		let thisItem = thisRanges[i];
+		let otherItem = otherRanges[j];
 
 		// try to disprove that other this the smaller set
 		// we search for any character in other which is not in this
@@ -441,10 +316,10 @@ export class CharSet {
 		const thisRanges = this.ranges;
 		const otherRanges = other.ranges;
 
-		let i = 0,
-			j = 0;
-		let thisItem = thisRanges[i],
-			otherItem = otherRanges[j];
+		let i = 0;
+		let j = 0;
+		let thisItem = thisRanges[i];
+		let otherItem = otherRanges[j];
 
 		while (thisItem && otherItem) {
 			if (otherItem.max < thisItem.min) {
@@ -529,4 +404,198 @@ function commonCharacterOfRange(ranges: readonly CharRange[], range: CharRange):
 	}
 
 	return undefined;
+}
+
+function intersectRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRange[] {
+	// intersection done in O(n+m)
+	const newRanges: CharRange[] = [];
+
+	let aIndex = 0;
+	let bIndex = 0;
+	let aRange: CharRange | undefined = a[aIndex];
+	let bRange: CharRange | undefined = b[bIndex];
+	while (aRange && bRange) {
+		// skip if thisR and otherR are disjoint
+		if (aRange.max < bRange.min) {
+			aRange = a[++aIndex];
+			continue;
+		}
+		if (bRange.max < aRange.min) {
+			bRange = b[++bIndex];
+			continue;
+		}
+
+		// thisR and otherR overlap in at least one character
+
+		// add intersection
+		newRanges.push({ min: Math.max(aRange.min, bRange.min), max: Math.min(aRange.max, bRange.max) });
+
+		// advance one the one with the lower max or both if their max is the same
+		if (aRange.max < bRange.max) {
+			aRange = a[++aIndex];
+		} else if (bRange.max < aRange.max) {
+			bRange = b[++bIndex];
+		} else {
+			aRange = a[++aIndex];
+			bRange = b[++bIndex];
+		}
+	}
+
+	return newRanges;
+}
+
+function unionRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRange[] {
+	// merge the sorted ranges in O(n+m)
+	const newRanges: CharRange[] = [];
+
+	let aIndex = 0;
+	let bIndex = 0;
+	let aRange: CharRange | undefined = a[aIndex];
+	let bRange: CharRange | undefined = b[bIndex];
+	while (aRange && bRange) {
+		if (aRange.min <= bRange.min) {
+			newRanges.push(aRange);
+			aRange = a[++aIndex];
+		} /* if (otherR.min < thisR.min) */ else {
+			newRanges.push(bRange);
+			bRange = b[++bIndex];
+		}
+	}
+
+	// append rest
+	for (; aRange; aRange = a[++aIndex]) {
+		newRanges.push(aRange);
+	}
+	for (; bRange; bRange = b[++bIndex]) {
+		newRanges.push(bRange);
+	}
+
+	// optimize
+	optimizeSortedRanges(newRanges);
+
+	return newRanges;
+}
+
+function withoutRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRange[] {
+	// a without b in O(n+m)
+	const newRanges: CharRange[] = [];
+
+	let aIndex = 0;
+	let bIndex = 0;
+	let aRange: CharRange | undefined = a[aIndex];
+	let bRange: CharRange | undefined = b[bIndex];
+	while (aRange && bRange) {
+		if (aRange.max < bRange.min) {
+			// disjoint and aRange is before bRange
+			newRanges.push(aRange);
+			aRange = a[++aIndex];
+		} else if (bRange.max < aRange.min) {
+			// disjoint and bRange is before aRange
+			bRange = b[++bIndex];
+		} else {
+			// they overlap
+			if (aRange.min < bRange.min) {
+				newRanges.push({ min: aRange.min, max: bRange.min - 1 });
+				if (bRange.max < aRange.max) {
+					// [aRange.min ...[bRange]... aRange.max]
+					aRange = { min: bRange.max + 1, max: aRange.max };
+					bRange = b[++bIndex];
+				} else {
+					// [aRange.min ...{bRange.min ... aRange.max] bRange.max}
+					aRange = a[++aIndex];
+				}
+			} else {
+				if (aRange.max > bRange.max) {
+					// [bRange.min ...{aRange.min ... bRange.max] aRange.max}
+					aRange = { min: bRange.max + 1, max: aRange.max };
+					bRange = b[++bIndex];
+				} else {
+					// [bRange.min ...[aRange]... bRange.max]
+					aRange = a[++aIndex];
+				}
+			}
+		}
+	}
+
+	// append rest
+	for (; aRange; aRange = a[++aIndex]) {
+		newRanges.push(aRange);
+	}
+
+	return newRanges;
+
+	//return intersectRanges(a, negateRanges(b, maximum));
+}
+
+/**
+ * This optimizes the given ranges in O(n) time.
+ *
+ * @param ranges
+ */
+function optimizeSortedRanges(ranges: CharRange[]): void {
+	let deleteCount = 0;
+	for (let i = 0, max = ranges.length - 1; i < max; i++) {
+		const current = ranges[i - deleteCount];
+		const next = ranges[i + 1];
+
+		if (current.max >= next.max) {
+			// current completely contains next.
+			deleteCount++;
+		} else if (next.min <= current.max + 1) {
+			// overlapping or adjacent.
+			ranges[i - deleteCount] = { min: current.min, max: next.max };
+			deleteCount++;
+		} else {
+			ranges[i - deleteCount + 1] = next;
+		}
+	}
+
+	if (deleteCount) {
+		ranges.length = ranges.length - deleteCount;
+	}
+}
+
+/**
+ * Given an array of character ranges, it will remove any duplicates and join overlapping and adjacent ranges.
+ *
+ * While the array itself will be modified, the range objects in the array will not.
+ *
+ * @param ranges
+ */
+function optimizeRanges(ranges: CharRange[]): void {
+	// runs in O(n * log(n)), n = ranges.length
+
+	ranges.sort((a, b) => a.min - b.min);
+	optimizeSortedRanges(ranges);
+}
+
+/**
+ * Given an array of optimized character ranges, it will return an iterable of character ranges that matches the
+ * complete of the given ranges.
+ *
+ * @param ranges
+ * @param maximum
+ */
+function negateRanges(ranges: readonly CharRange[], maximum: number): CharRange[] {
+	// runs in O(ranges.length)
+
+	if (ranges.length === 0) {
+		return [{ min: 0, max: maximum }];
+	} else {
+		const result: CharRange[] = [];
+
+		const first = ranges[0];
+		const last = ranges[ranges.length - 1];
+		if (first.min > 0) {
+			result.push({ min: 0, max: first.min - 1 });
+		}
+		for (let i = 1; i < ranges.length; i++) {
+			result.push({ min: ranges[i - 1].max + 1, max: ranges[i].min - 1 });
+		}
+		if (last.max < maximum) {
+			result.push({ min: last.max + 1, max: maximum });
+		}
+
+		return result;
+	}
 }
