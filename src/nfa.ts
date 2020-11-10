@@ -98,7 +98,6 @@ export class NFA implements ReadonlyNFA {
 	test(word: Iterable<number>): boolean {
 		const nodes = this.nodes;
 		const characters = [...word];
-
 		function match(index: number, node: NFA.Node): boolean {
 			if (index >= characters.length) return nodes.finals.has(node);
 
@@ -115,6 +114,73 @@ export class NFA implements ReadonlyNFA {
 			return false;
 		}
 		return match(0, nodes.initial);
+	}
+
+	// Thompson simulation NFA matching from Cox article
+	match(input: string) {
+		interface ThompsonList {
+			states: Map<NFA.Node, null>; // store character leading to state
+		}
+
+		let list0 = {states: new Map<NFA.Node, null>()} // map correct?
+		let list1 = {states: new Map<NFA.Node, null>()} // map correct?
+
+		// Add outgoing possible states to list, checking for duplicates
+		function addState(list: ThompsonList, node: NFA.Node) {
+			// don't add if node doesn't exist or already added
+			if(!node || list.states.has(node)) {
+				return;
+			}
+
+			list.states.set(node, null); // add node to list of states
+		}
+
+		// Initialize new list with first node of NFA
+		function startList(nfa: NFA, list: ThompsonList): ThompsonList {
+			let allSet = CharSet.all(nfa.options.maxCharacter); // all characters (initial state)
+			addState(list, nfa.nodes.initial);
+
+			return list;
+		}
+
+		// Step over states, calculate next list of possible states
+		function step(cList: ThompsonList, nList: ThompsonList, char: number) {
+			// iterate over each node in state
+			cList.states.forEach((_, node: NFA.Node) => {
+				// check whether each output node of node contained in match set
+				node.out.forEach((set: CharSet, outNode: NFA.Node) => {
+					if(set.has(char)) { // if so, add state to next list to check
+						addState(nList, outNode);
+					}
+				})
+			})
+		}
+
+		// convert string to array of numbers for matching purposes
+		let chars = input.split("").map(c => c.charCodeAt(0));
+
+		// initialize list swapping shenanigans
+		let cList = startList(this, list0);
+		let nList = list1;
+		let temp; // temp for list swapping
+
+		// iterate over characters
+		for(const char of chars) {
+			step(cList, nList, char);
+			temp = cList; cList = nList; nList = temp;
+			nList.states.clear();
+		}
+
+		// check for match
+		// warning: might have O(n^2) time complexity because of has
+		let isMatch = false;
+		cList.states.forEach((_, node: NFA.Node) => {
+			if(this.nodes.finals.has(node)) { // O(n) time complexity?
+				isMatch = true;
+			}
+		})
+
+		return isMatch;
 	}
 
 	wordSets(): Iterable<CharSet[]> {
