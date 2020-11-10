@@ -2,7 +2,7 @@ import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } fr
 import {
 	FAIterator,
 	FiniteAutomaton,
-	ReadonlyIntersectionOptions,
+	IntersectionOptions,
 	TooManyNodesError,
 	ToRegexOptions,
 	TransitionIterable,
@@ -24,6 +24,8 @@ import { Simple, Expression } from "./ast";
 import { faToRegex } from "./to-regex";
 import { lazyIntersection, TransitionMapBuilder } from "./intersection";
 
+const DEFAULT_MAX_NODES = 10_000;
+
 export interface ReadonlyDFA extends TransitionIterableFA {
 	readonly nodes: DFA.ReadonlyNodeList;
 	readonly options: Readonly<DFA.Options>;
@@ -32,9 +34,9 @@ export interface ReadonlyDFA extends TransitionIterableFA {
 	transitionIterator(): FAIterator<DFA.ReadonlyNode, ReadonlyMap<DFA.ReadonlyNode, CharSet>>;
 
 	/**
-	 * Creates a new DFA with is equivalent to this one.
+	 * Creates a new DFA equivalent to this one.
 	 */
-	clone(): DFA;
+	copy(): DFA;
 
 	/**
 	 * Returns whether this and the given DFA are structurally equal meaning that all nodes and all transitions are
@@ -113,7 +115,7 @@ export class DFA implements ReadonlyDFA {
 		return faToRegex(this.transitionIterator(), options);
 	}
 
-	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean {
+	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 
 		const iter = lazyIntersection(
@@ -125,7 +127,7 @@ export class DFA implements ReadonlyDFA {
 
 		return !faCanReachFinal(faMapOut(iter, n => n.keys()));
 	}
-	intersectionWordSets(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<CharSet[]> {
+	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
 		checkCompatibility(this, other);
 
 		const iter = lazyIntersection(
@@ -137,29 +139,13 @@ export class DFA implements ReadonlyDFA {
 
 		return faIterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
-	clone(): DFA {
-		const nodeList = this.nodes;
+	copy(): DFA {
 		const newNodeList = new DFA.NodeList();
-
-		const translationMap = new Map<DFA.Node, DFA.Node>();
-		translationMap.set(nodeList.initial, newNodeList.initial);
-		function translate(node: DFA.Node): DFA.Node {
-			let trans = translationMap.get(node);
-			if (trans === undefined) {
-				trans = newNodeList.createNode();
-				translationMap.set(node, trans);
-				node.out.forEach((n, k) => newNodeList._uncheckedLinkNodesWithCharRange(trans!, translate(n), k));
-			}
-			return trans;
-		}
-
-		translate(nodeList.initial);
-		nodeList.finals.forEach(f => newNodeList.finals.add(translate(f)));
-
+		copyTo(this.nodes, newNodeList);
 		return new DFA(newNodeList, this.maxCharacter);
 	}
 
@@ -313,20 +299,20 @@ export class DFA implements ReadonlyDFA {
 	static fromIntersection(
 		left: TransitionIterable,
 		right: TransitionIterable,
-		options?: ReadonlyIntersectionOptions
+		options?: Readonly<IntersectionOptions>
 	): DFA {
 		checkCompatibility(left, right);
 
-		const nodeList = new DFA.NodeList();
+		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
-		const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+			// traverse the whole iterator to create our NodeList
+			faTraverse(faMapOut(iter, n => n.out.values()));
 
-		// traverse the whole iterator to create our NodeList
-		faTraverse(faMapOut(iter, n => n.out.values()));
-
-		// A cleanup still has to be performed because while all states are connected to the initial state, they might
-		// not be able to reach a final state. This will remove such trap states.
-		nodeList.removeUnreachable();
+			// A cleanup still has to be performed because while all states are connected to the initial state, they might
+			// not be able to reach a final state. This will remove such trap states.
+			nodeList.removeUnreachable();
+		});
 
 		return new DFA(nodeList, left.maxCharacter);
 	}
@@ -361,37 +347,45 @@ export class DFA implements ReadonlyDFA {
 		return new DFA(nodeList, maxCharacter);
 	}
 
-	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<DFA.Options>): DFA {
+	static fromWords(
+		words: Iterable<Iterable<number>>,
+		options: Readonly<DFA.Options>,
+		creationOptions?: Readonly<DFA.CreationOptions>
+	): DFA {
 		const { maxCharacter } = options;
-		const nodeList = new DFA.NodeList();
 
-		// build a prefix trie
-		for (const word of words) {
-			let node = nodeList.initial;
-			for (const char of word) {
-				if (char > maxCharacter) {
-					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
-				}
-				if (!Number.isInteger(char)) {
-					throw new Error(`All characters have to be integers, ${char} is not.`);
-				}
+		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			// build a prefix trie
+			for (const word of words) {
+				let node = nodeList.initial;
+				for (const char of word) {
+					if (char > maxCharacter) {
+						throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
+					}
+					if (!Number.isInteger(char)) {
+						throw new Error(`All characters have to be integers, ${char} is not.`);
+					}
 
-				let next = node.out.get(char);
-				if (next === undefined) {
-					next = nodeList.createNode();
-					nodeList._uncheckedLinkNodesWithCharacter(node, next, char);
+					let next = node.out.get(char);
+					if (next === undefined) {
+						next = nodeList.createNode();
+						nodeList._uncheckedLinkNodesWithCharacter(node, next, char);
+					}
+					node = next;
 				}
-				node = next;
+				nodeList.finals.add(node);
 			}
-			nodeList.finals.add(node);
-		}
+		});
 
 		return new DFA(nodeList, maxCharacter);
 	}
 
 	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
 		if (fa instanceof DFA) {
-			return fa.clone();
+			const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+				copyTo(fa.nodes, nodeList);
+			});
+			return new DFA(nodeList, fa.maxCharacter);
 		} else {
 			return DFA.fromTransitionIterator(
 				fa.transitionIterator(),
@@ -406,112 +400,106 @@ export class DFA implements ReadonlyDFA {
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
-		iter = faEnsurePureOut(iter);
+		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			iter = faEnsurePureOut(iter);
 
-		const maxNodes = creationOptions?.maxNodes ?? Infinity;
+			const transitionSets = new Set<CharSet>();
+			traverse(iter.initial, n => {
+				const out = iter.getOut(n);
+				out.forEach(c => transitionSets.add(c));
+				return out.keys();
+			});
 
-		const transitionSets = new Set<CharSet>();
-		traverse(iter.initial, n => {
-			const out = iter.getOut(n);
-			out.forEach(c => transitionSets.add(c));
-			return out.keys();
-		});
+			const alphabet = getBaseSets(transitionSets);
 
-		const alphabet = getBaseSets(transitionSets);
-		const nodeList = new DFA.NodeList();
-		let nodeCount = 0;
-
-		const idMap = new Map<InputNode, number>();
-		function getId(node: InputNode): number {
-			let value = idMap.get(node);
-			if (value === undefined) {
-				value = idMap.size;
-				idMap.set(node, value);
-			}
-			return value;
-		}
-
-		/**
-		 * This will use the subset method to construct the DFA.
-		 */
-
-		const inputNodesToDfaNodeMap = new Map<string, DFA.Node>();
-		const dfaNodeToInputNodesMap = new Map<DFA.Node, readonly InputNode[]>();
-		function getKey(nodes: readonly InputNode[]): string {
-			let key = "";
-			for (let i = 0, l = nodes.length; i < l; i++) {
-				key += "," + getId(nodes[i]).toString(16);
-			}
-			return key;
-		}
-		function getDfaNode(nodes: InputNode[]): DFA.Node {
-			// sort
-			nodes.sort((a, b) => getId(a) - getId(b));
-			// remove duplicates
-			filterMut(nodes, (n, prev) => n !== prev);
-
-			const key = getKey(nodes);
-			let dfaNode = inputNodesToDfaNodeMap.get(key);
-			if (dfaNode === undefined) {
-				// this will create a new node AND set it as final if it contains a final NFA state
-				dfaNode = nodeList.createNode();
-				nodeCount++;
-				if (nodeCount > maxNodes) {
-					throw new TooManyNodesError(`Number of created nodes exceeded ${maxNodes}.`);
+			const idMap = new Map<InputNode, number>();
+			function getId(node: InputNode): number {
+				let value = idMap.get(node);
+				if (value === undefined) {
+					value = idMap.size;
+					idMap.set(node, value);
 				}
-				if (nodes.some(n => iter.isFinal(n))) {
-					nodeList.finals.add(dfaNode);
+				return value;
+			}
+
+			/**
+			 * This will use the subset method to construct the DFA.
+			 */
+
+			const inputNodesToDfaNodeMap = new Map<string, DFA.Node>();
+			const dfaNodeToInputNodesMap = new Map<DFA.Node, readonly InputNode[]>();
+			function getKey(nodes: readonly InputNode[]): string {
+				let key = "";
+				for (let i = 0, l = nodes.length; i < l; i++) {
+					key += "," + getId(nodes[i]).toString(16);
 				}
-
-				inputNodesToDfaNodeMap.set(key, dfaNode);
-				dfaNodeToInputNodesMap.set(dfaNode, nodes);
+				return key;
 			}
-			return dfaNode;
-		}
-		function getInputNodes(node: DFA.Node): readonly InputNode[] {
-			const nodes = dfaNodeToInputNodesMap.get(node);
-			if (nodes === undefined) {
-				throw new Error("Unregistered DFA node.");
-			}
-			return nodes;
-		}
-		// set initial states
-		inputNodesToDfaNodeMap.set(getKey([iter.initial]), nodeList.initial);
-		dfaNodeToInputNodesMap.set(nodeList.initial, [iter.initial]);
-		if (iter.isFinal(iter.initial)) {
-			nodeList.finals.add(nodeList.initial);
-		}
+			function getDfaNode(nodes: InputNode[]): DFA.Node {
+				// sort
+				nodes.sort((a, b) => getId(a) - getId(b));
+				// remove duplicates
+				filterMut(nodes, (n, prev) => n !== prev);
 
-		function getOutNode(node: DFA.Node, baseSet: CharSet): DFA.Node | undefined {
-			const baseMin = baseSet.ranges[0].min;
-			const inputNodes = getInputNodes(node);
-			const outNodes: InputNode[] = [];
-			for (const inputNode of inputNodes) {
-				iter.getOut(inputNode).forEach((charSet, outNode) => {
-					if (charSet.has(baseMin)) {
-						outNodes.push(outNode);
+				const key = getKey(nodes);
+				let dfaNode = inputNodesToDfaNodeMap.get(key);
+				if (dfaNode === undefined) {
+					// this will create a new node AND set it as final if it contains a final NFA state
+					dfaNode = nodeList.createNode();
+					if (nodes.some(n => iter.isFinal(n))) {
+						nodeList.finals.add(dfaNode);
 					}
-				});
+
+					inputNodesToDfaNodeMap.set(key, dfaNode);
+					dfaNodeToInputNodesMap.set(dfaNode, nodes);
+				}
+				return dfaNode;
+			}
+			function getInputNodes(node: DFA.Node): readonly InputNode[] {
+				const nodes = dfaNodeToInputNodesMap.get(node);
+				if (nodes === undefined) {
+					throw new Error("Unregistered DFA node.");
+				}
+				return nodes;
+			}
+			// set initial states
+			inputNodesToDfaNodeMap.set(getKey([iter.initial]), nodeList.initial);
+			dfaNodeToInputNodesMap.set(nodeList.initial, [iter.initial]);
+			if (iter.isFinal(iter.initial)) {
+				nodeList.finals.add(nodeList.initial);
 			}
 
-			if (outNodes.length === 0) {
-				// this is the most likely event, so we save all transitions which go to trap state
-				return undefined;
-			} else {
-				return getDfaNode(outNodes);
-			}
-		}
+			function getOutNode(node: DFA.Node, baseSet: CharSet): DFA.Node | undefined {
+				const baseMin = baseSet.ranges[0].min;
+				const inputNodes = getInputNodes(node);
+				const outNodes: InputNode[] = [];
+				for (const inputNode of inputNodes) {
+					iter.getOut(inputNode).forEach((charSet, outNode) => {
+						if (charSet.has(baseMin)) {
+							outNodes.push(outNode);
+						}
+					});
+				}
 
-		traverse(nodeList.initial, state => {
-			const nodes = new Set<DFA.Node>();
-			for (const set of alphabet) {
-				const out = getOutNode(state, set);
-				if (out) {
-					nodeList._uncheckedLinkNodesWithCharSet(state, out, set);
-					nodes.add(out);
+				if (outNodes.length === 0) {
+					// this is the most likely event, so we save all transitions which go to trap state
+					return undefined;
+				} else {
+					return getDfaNode(outNodes);
 				}
 			}
-			return nodes;
+
+			traverse(nodeList.initial, state => {
+				const nodes = new Set<DFA.Node>();
+				for (const set of alphabet) {
+					const out = getOutNode(state, set);
+					if (out) {
+						nodeList._uncheckedLinkNodesWithCharSet(state, out, set);
+						nodes.add(out);
+					}
+				}
+				return nodes;
+			});
 		});
 
 		return new DFA(nodeList, options.maxCharacter);
@@ -543,6 +531,7 @@ export namespace DFA {
 	}
 	export class NodeList implements ReadonlyNodeList {
 		private _nodeCounter: number = 0;
+		private _nodeLimit: number = Infinity;
 
 		readonly initial: Node;
 		readonly finals: Set<Node> = new Set();
@@ -552,8 +541,13 @@ export namespace DFA {
 		}
 
 		createNode(): Node {
+			const id = this._nodeCounter++;
+			if (id > this._nodeLimit) {
+				throw new TooManyNodesError(`The DFA is not allowed to create more than ${this._nodeLimit} nodes.`);
+			}
+
 			const node: Node & { id: number } = {
-				id: this._nodeCounter++, // for debugging
+				id, // for debugging
 				list: this,
 				out: new CharMap<Node>(),
 			};
@@ -686,14 +680,22 @@ export namespace DFA {
 		}
 	}
 
+	/**
+	 * Options for the constraints on how a DFA will be created.
+	 */
 	export interface CreationOptions {
 		/**
 		 * The maximum number of nodes the DFA creation operation is allowed to create before throwing a
 		 * `TooManyNodesError`.
 		 *
-		 * If the maximum number of nodes is unset or set to `Infinity`, the DFA creation operation may create as many
-		 * nodes as necessary to construct the DFA. This might cause the machine to run out of memory as the conversion
-		 * from NFA to DFA may create up to 2^n many nodes.
+		 * If the maximum number of nodes is set to `Infinity`, the DFA creation operation may create as many nodes as
+		 * necessary to construct the DFA. This might cause the machine to run out of memory. I.e. the conversion from
+		 * NFA to DFA may create `O(2^n)` many nodes and an intersection may created `O(n * m)` many.
+		 *
+		 * By default, this value is set to 10K nodes.
+		 *
+		 * Note: This limit describes the maximum number of __created__ nodes. If nodes are created and subsequently
+		 * discard, they will still count toward the limit.
 		 */
 		maxNodes?: number;
 	}
@@ -705,6 +707,23 @@ export namespace DFA {
 		 */
 		maxCharacter: number;
 	}
+}
+
+/**
+ * Creates a node list that is only allowed to create a certain number of nodes during the execution of the given
+ * consumer function.
+ *
+ * After the node list is returned by this function, the limit no longer applies.
+ *
+ * @param maxNodes
+ * @param consumerFn
+ */
+function nodeListWithLimit(maxNodes: number, consumerFn: (nodeList: DFA.NodeList) => void): DFA.NodeList {
+	const nodeList = new DFA.NodeList();
+	nodeList["_nodeLimit"] = maxNodes;
+	consumerFn(nodeList);
+	nodeList["_nodeLimit"] = Infinity;
+	return nodeList;
 }
 
 function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
@@ -854,4 +873,23 @@ function findEquivalenceClasses(
 
 function rangeEqual(r1: CharRange, r2: CharRange): boolean {
 	return r1.min === r2.min && r1.max === r2.max;
+}
+
+function copyTo(fromNodeList: DFA.ReadonlyNodeList, toNodeList: DFA.NodeList): void {
+	const translate = cachedFunc<DFA.ReadonlyNode, DFA.Node>(() => toNodeList.createNode());
+	translate.cache.set(fromNodeList.initial, toNodeList.initial);
+
+	traverse(fromNodeList.initial, node => {
+		const toNode = translate(node);
+
+		const next = new Set<DFA.ReadonlyNode>();
+		node.out.forEach((n, range) => {
+			next.add(n);
+			toNode.out.setEvery(range, translate(n));
+		});
+
+		return next;
+	});
+
+	fromNodeList.finals.forEach(f => toNodeList.finals.add(translate(f)));
 }

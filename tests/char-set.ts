@@ -220,6 +220,10 @@ describe("CharSet", function () {
 			/[\s\S]/,
 			/a/,
 			/a/i,
+			/b/,
+			/B/i,
+			/c/,
+			/C/i,
 			/\d/,
 			/\w/,
 			/,/,
@@ -249,6 +253,7 @@ describe("CharSet", function () {
 					assert.equal(left.isSubsetOf(right), left.without(right).isEmpty);
 
 					assert.isTrue(left.without(right).isDisjointWith(right));
+					assert.isTrue(left.without(right).equals(left.intersect(right.negate())));
 
 					const cc = left.commonCharacter(right);
 					assert.equal(left.isDisjointWith(right), cc === undefined);

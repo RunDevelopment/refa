@@ -23,23 +23,12 @@
 		}
 	},
 	"rules": {
-		"indent": [
-			"error",
-			"tab",
-			{
-				"SwitchCase": 1
-			}
-		],
-		"max-len": [
+		"no-constant-condition": [
 			"error",
 			{
-				"code": 120,
-				"tabWidth": 4,
-				"ignoreStrings": true
+				"checkLoops": false
 			}
 		],
-		"no-constant-condition": 0,
-		"quotes": "error",
 		"@typescript-eslint/no-inferrable-types": [
 			"error",
 			{

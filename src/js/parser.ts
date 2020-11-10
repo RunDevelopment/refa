@@ -20,6 +20,8 @@ import {
 	backreferenceAlwaysAfterGroup,
 	removeLeadingLookbehinds,
 	removeTrailingLookaheads,
+	UNICODE_MAXIMUM,
+	UTF16_MAXIMUM,
 } from "./js-util";
 
 export interface ParseOptions {
@@ -142,7 +144,7 @@ export class Parser implements Literal {
 
 		return {
 			expression,
-			maxCharacter: this.ast.flags.unicode ? 0x10ffff : 0xffff,
+			maxCharacter: this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM,
 		};
 	}
 
@@ -376,7 +378,7 @@ export class Parser implements Literal {
 		if (result !== null) {
 			// add all characters of the constant word
 
-			const maxCharacter = context.flags.unicode ? 0x10ffff : 0xffff;
+			const maxCharacter = context.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 			for (const ch of result) {
 				const char: CharacterClass = {
 					type: "CharacterClass",
@@ -551,7 +553,7 @@ export class Parser implements Literal {
 		const char: CharacterClass = {
 			type: "CharacterClass",
 			parent,
-			characters: CharSet.empty(context.flags.unicode ? 0x10ffff : 0xffff),
+			characters: CharSet.empty(context.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM),
 			source: getSource(node),
 		};
 		parent.elements.push(char);

@@ -4,10 +4,11 @@ import { assertNever, cachedFunc, traverse } from "./util";
 import {
 	FiniteAutomaton,
 	TransitionIterable,
-	ReadonlyIntersectionOptions,
 	TransitionIterableFA,
 	ToRegexOptions,
 	FAIterator,
+	TooManyNodesError,
+	IntersectionOptions,
 } from "./finite-automaton";
 import {
 	faIterateStates,
@@ -35,6 +36,8 @@ import { lazyIntersection, TransitionMapBuilder } from "./intersection";
  *
  * ALL of the below operations assume that every given (sub) node list is normalized.
  */
+
+const DEFAULT_MAX_NODES = 10_000;
 
 export interface ReadonlyNFA extends TransitionIterableFA {
 	readonly nodes: NFA.ReadonlyNodeList;
@@ -129,7 +132,7 @@ export class NFA implements ReadonlyNFA {
 		return faToRegex(this.transitionIterator(), options);
 	}
 
-	isDisjointWith(other: TransitionIterable, options?: ReadonlyIntersectionOptions): boolean {
+	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 
 		const iter = lazyIntersection(
@@ -141,7 +144,7 @@ export class NFA implements ReadonlyNFA {
 
 		return !faCanReachFinal(faMapOut(iter, n => n.keys()));
 	}
-	intersectionWordSets(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<CharSet[]> {
+	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
 		checkCompatibility(this, other);
 
 		const iter = lazyIntersection(
@@ -153,7 +156,7 @@ export class NFA implements ReadonlyNFA {
 
 		return faIterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: ReadonlyIntersectionOptions): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
@@ -312,24 +315,24 @@ export class NFA implements ReadonlyNFA {
 	static fromIntersection(
 		left: TransitionIterable,
 		right: TransitionIterable,
-		options?: ReadonlyIntersectionOptions
+		options?: Readonly<IntersectionOptions & NFA.CreationOptions>
 	): NFA {
 		checkCompatibility(left, right);
 
-		const nodeList = new NFA.NodeList();
+		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
-		const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+			// traverse the whole iterator to create our NodeList
+			faTraverse(faMapOut(iter, n => n.out.keys()));
 
-		// traverse the whole iterator to create our NodeList
-		faTraverse(faMapOut(iter, n => n.out.keys()));
+			// A cleanup still has to be performed because while all states are connected to the initial state, they might
+			// not be able to reach a final state. This will remove such trap states.
+			nodeList.removeUnreachable();
 
-		// A cleanup still has to be performed because while all states are connected to the initial state, they might
-		// not be able to reach a final state. This will remove such trap states.
-		nodeList.removeUnreachable();
-
-		// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
-		// having less final states will make a lot of the NFA operations more efficient.
-		baseOptimizationReuseFinalStates(nodeList, nodeList);
+			// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
+			// having less final states will make a lot of the NFA operations more efficient.
+			baseOptimizationReuseFinalStates(nodeList, nodeList);
+		});
 
 		return new NFA(nodeList, left.maxCharacter);
 	}
@@ -402,75 +405,80 @@ export class NFA implements ReadonlyNFA {
 	 * @param words
 	 * @param options
 	 */
-	static fromWords(words: Iterable<Iterable<number>>, options: Readonly<NFA.Options>): NFA {
-		const nodeList = new NFA.NodeList();
+	static fromWords(
+		words: Iterable<Iterable<number>>,
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.CreationOptions>
+	): NFA {
 		const { maxCharacter } = options;
-
-		function getNext(node: NFA.Node, char: number): NFA.Node {
-			if (char > maxCharacter) {
-				throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
-			}
-			if (!Number.isInteger(char)) {
-				throw new Error(`All characters have to be integers, ${char} is not.`);
-			}
-
-			for (const [to, chars] of node.out) {
-				if (chars.has(char)) {
-					return to;
+		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			function getNext(node: NFA.Node, char: number): NFA.Node {
+				if (char > maxCharacter) {
+					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 				}
+				if (!Number.isInteger(char)) {
+					throw new Error(`All characters have to be integers, ${char} is not.`);
+				}
+
+				for (const [to, chars] of node.out) {
+					if (chars.has(char)) {
+						return to;
+					}
+				}
+
+				const newNode = nodeList.createNode();
+				const charSet = CharSet.empty(maxCharacter).union([{ min: char, max: char }]);
+				nodeList.linkNodes(node, newNode, charSet);
+
+				return newNode;
 			}
 
-			const newNode = nodeList.createNode();
-			const charSet = CharSet.empty(maxCharacter).union([{ min: char, max: char }]);
-			nodeList.linkNodes(node, newNode, charSet);
-
-			return newNode;
-		}
-
-		// build a prefix trie
-		for (const word of words) {
-			let node = nodeList.initial;
-			for (const charCode of word) {
-				node = getNext(node, charCode);
+			// build a prefix trie
+			for (const word of words) {
+				let node = nodeList.initial;
+				for (const charCode of word) {
+					node = getNext(node, charCode);
+				}
+				nodeList.finals.add(node);
 			}
-			nodeList.finals.add(node);
-		}
 
-		baseOptimizationReuseFinalStates(nodeList, nodeList);
-		baseOptimizationMergeSuffixes(nodeList, nodeList);
+			baseOptimizationReuseFinalStates(nodeList, nodeList);
+			baseOptimizationMergeSuffixes(nodeList, nodeList);
+		});
 
 		return new NFA(nodeList, maxCharacter);
 	}
 
-	static fromFA(fa: TransitionIterable): NFA {
-		return NFA.fromTransitionIterator(fa.transitionIterator(), { maxCharacter: fa.maxCharacter });
+	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<NFA.CreationOptions>): NFA {
+		return NFA.fromTransitionIterator(fa.transitionIterator(), { maxCharacter: fa.maxCharacter }, creationOptions);
 	}
 
 	static fromTransitionIterator<InputNode>(
 		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
-		options: Readonly<NFA.Options>
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = new NFA.NodeList();
+		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
+			translate.cache.set(iter.initial, nodeList.initial);
 
-		const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
-		translate.cache.set(iter.initial, nodeList.initial);
+			traverse(iter.initial, node => {
+				const transNode = translate(node);
 
-		traverse(iter.initial, node => {
-			const transNode = translate(node);
-
-			if (iter.isFinal(node)) {
-				nodeList.finals.add(transNode);
-			}
-
-			const out = iter.getOut(node);
-			out.forEach((charSet, outDfaNode) => {
-				if (charSet.maximum !== maxCharacter) {
-					throw new Error("Some character sets do not conform to the given maximum.");
+				if (iter.isFinal(node)) {
+					nodeList.finals.add(transNode);
 				}
-				nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
+
+				const out = iter.getOut(node);
+				out.forEach((charSet, outDfaNode) => {
+					if (charSet.maximum !== maxCharacter) {
+						throw new Error("Some character sets do not conform to the given maximum.");
+					}
+					nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
+				});
+				return out.keys();
 			});
-			return out.keys();
 		});
 
 		return new NFA(nodeList, maxCharacter);
@@ -504,6 +512,7 @@ export namespace NFA {
 	}
 	export class NodeList implements ReadonlyNodeList, Iterable<Node> {
 		private _nodeCounter: number = 0;
+		private _nodeLimit: number = Infinity;
 
 		/**
 		 * The initial state of this list.
@@ -524,8 +533,13 @@ export namespace NFA {
 		 * Creates a new node associated with this node list.
 		 */
 		createNode(): Node {
+			const id = this._nodeCounter++;
+			if (id > this._nodeLimit) {
+				throw new TooManyNodesError(`The NFA is not allowed to create more than ${this._nodeLimit} nodes.`);
+			}
+
 			const node: Node & { id: number } = {
-				id: this._nodeCounter++, // for debugging
+				id, // for debugging
 				list: this,
 				out: new Map(),
 				in: new Map(),
@@ -677,6 +691,25 @@ export namespace NFA {
 		}
 	}
 
+	/**
+	 * Options for the constraints on how a NFA will be created.
+	 */
+	export interface CreationOptions {
+		/**
+		 * The maximum number of nodes the NFA creation operation is allowed to create before throwing a
+		 * `TooManyNodesError`.
+		 *
+		 * If the maximum number of nodes is set to `Infinity`, the NFA creation operation may create as many nodes as
+		 * necessary to construct the NFA. This might cause the machine to run out of memory. I.e. some REs can only be
+		 * represented with a huge number of states (e.g `/a{123456789}/`).
+		 *
+		 * By default, this value is set to 10K nodes.
+		 *
+		 * Note: This limit describes maximum number of __created__ nodes. If nodes are created and subsequently
+		 * discard, they will still count toward the limit.
+		 */
+		maxNodes?: number;
+	}
 	export interface Options {
 		/**
 		 * The maximum numerical value any character can have.
@@ -685,7 +718,7 @@ export namespace NFA {
 		 */
 		maxCharacter: number;
 	}
-	export interface FromRegexOptions {
+	export interface FromRegexOptions extends CreationOptions {
 		/**
 		 * Whether to replace all lookarounds with an empty character class when construction the NFA.
 		 *
@@ -720,6 +753,23 @@ function linkNodesAddImpl(map: Map<NFA.Node, CharSet>, to: NFA.Node, characters:
 	}
 }
 
+/**
+ * Creates a node list that is only allowed to create a certain number of nodes during the execution of the given
+ * consumer function.
+ *
+ * After the node list is returned by this function, the limit no longer applies.
+ *
+ * @param maxNodes
+ * @param consumerFn
+ */
+function nodeListWithLimit(maxNodes: number, consumerFn: (nodeList: NFA.NodeList) => void): NFA.NodeList {
+	const nodeList = new NFA.NodeList();
+	nodeList["_nodeLimit"] = maxNodes;
+	consumerFn(nodeList);
+	nodeList["_nodeLimit"] = Infinity;
+	return nodeList;
+}
+
 interface SubList {
 	readonly initial: NFA.Node;
 	readonly finals: Set<NFA.Node>;
@@ -734,115 +784,114 @@ function createNodeList(
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>
 ): NFA.NodeList {
-	const nodeList = new NFA.NodeList();
-
 	const infinityThreshold: number = creationOptions.infinityThreshold || Infinity;
 
-	baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
-	return nodeList;
+	return nodeListWithLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 
-	// All sub lists guarantee that the initial node has no incoming edges.
+		// All sub lists guarantee that the initial node has no incoming edges.
 
-	function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
-		if (alternatives.length === 0) {
-			return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-		}
-
-		const base = handleConcatenation(alternatives[0]);
-		for (let i = 1, l = alternatives.length; i < l; i++) {
-			baseUnion(nodeList, base, handleConcatenation(alternatives[i]));
-		}
-
-		return base;
-	}
-
-	function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
-		const elements = concatenation.elements;
-
-		const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-
-		// check for trivial cases first
-		for (let i = 0, l = elements.length; i < l; i++) {
-			const element = elements[i];
-			if (element.type === "Assertion") {
-				if (creationOptions.disableLookarounds) {
-					return base;
-				} else {
-					throw new Error("Assertions are not supported yet.");
-				}
-			} else if (element.type === "CharacterClass") {
-				if (element.characters.isEmpty) {
-					return base;
-				}
-			}
-		}
-
-		base.finals.add(base.initial);
-
-		for (let i = 0, l = elements.length; i < l; i++) {
-			if (base.finals.size === 0) {
-				// Since base is the empty language, concatenation has no effect, so let's stop early
-				break;
+		function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
+			if (alternatives.length === 0) {
+				return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
 			}
 
-			handleElement(elements[i], base);
+			const base = handleConcatenation(alternatives[0]);
+			for (let i = 1, l = alternatives.length; i < l; i++) {
+				baseUnion(nodeList, base, handleConcatenation(alternatives[i]));
+			}
+
+			return base;
 		}
 
-		return base;
-	}
+		function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
+			const elements = concatenation.elements;
 
-	function handleQuantifier(quant: Simple<Quantifier>): SubList {
-		const base = handleAlternation(quant.alternatives);
-		let max = quant.max;
-		if (max >= infinityThreshold) {
-			max = Infinity;
-		}
-		baseQuantify(nodeList, base, quant.min, max);
-		return base;
-	}
+			const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
 
-	function handleElement(element: Simple<Element>, base: SubList): void {
-		switch (element.type) {
-			case "Alternation":
-				baseAppend(nodeList, base, handleAlternation(element.alternatives));
-				break;
+			// check for trivial cases first
+			for (let i = 0, l = elements.length; i < l; i++) {
+				const element = elements[i];
+				if (element.type === "Assertion") {
+					if (creationOptions.disableLookarounds) {
+						return base;
+					} else {
+						throw new Error("Assertions are not supported yet.");
+					}
+				} else if (element.type === "CharacterClass") {
+					if (element.characters.isEmpty) {
+						return base;
+					}
+				}
+			}
 
-			case "Assertion":
-				if (creationOptions.disableLookarounds) {
-					baseMakeEmpty(nodeList, base);
+			base.finals.add(base.initial);
+
+			for (let i = 0, l = elements.length; i < l; i++) {
+				if (base.finals.size === 0) {
+					// Since base is the empty language, concatenation has no effect, so let's stop early
 					break;
-				} else {
-					throw new Error("Assertions are not supported yet.");
 				}
 
-			case "CharacterClass": {
-				const chars = element.characters;
-				if (chars.maximum !== options.maxCharacter) {
-					throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
-				}
-
-				if (chars.isEmpty) {
-					// the whole concatenation can't go anywhere
-					baseMakeEmpty(nodeList, base);
-				} else {
-					// we know that base.final isn't empty, so just link all former finals to a new final node
-					const s = nodeList.createNode();
-					base.finals.forEach(f => nodeList.linkNodes(f, s, chars));
-					base.finals.clear();
-					base.finals.add(s);
-				}
-				break;
+				handleElement(elements[i], base);
 			}
-			case "Quantifier":
-				if (element.max > 0) {
-					baseAppend(nodeList, base, handleQuantifier(element));
-				}
-				break;
 
-			default:
-				throw assertNever(element);
+			return base;
 		}
-	}
+
+		function handleQuantifier(quant: Simple<Quantifier>): SubList {
+			const base = handleAlternation(quant.alternatives);
+			let max = quant.max;
+			if (max >= infinityThreshold) {
+				max = Infinity;
+			}
+			baseQuantify(nodeList, base, quant.min, max);
+			return base;
+		}
+
+		function handleElement(element: Simple<Element>, base: SubList): void {
+			switch (element.type) {
+				case "Alternation":
+					baseAppend(nodeList, base, handleAlternation(element.alternatives));
+					break;
+
+				case "Assertion":
+					if (creationOptions.disableLookarounds) {
+						baseMakeEmpty(nodeList, base);
+						break;
+					} else {
+						throw new Error("Assertions are not supported yet.");
+					}
+
+				case "CharacterClass": {
+					const chars = element.characters;
+					if (chars.maximum !== options.maxCharacter) {
+						throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
+					}
+
+					if (chars.isEmpty) {
+						// the whole concatenation can't go anywhere
+						baseMakeEmpty(nodeList, base);
+					} else {
+						// we know that base.final isn't empty, so just link all former finals to a new final node
+						const s = nodeList.createNode();
+						base.finals.forEach(f => nodeList.linkNodes(f, s, chars));
+						base.finals.clear();
+						base.finals.add(s);
+					}
+					break;
+				}
+				case "Quantifier":
+					if (element.max > 0) {
+						baseAppend(nodeList, base, handleQuantifier(element));
+					}
+					break;
+
+				default:
+					throw assertNever(element);
+			}
+		}
+	});
 }
 
 function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
