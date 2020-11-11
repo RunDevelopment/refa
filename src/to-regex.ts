@@ -771,36 +771,34 @@ function inlineAlternatives(parent: Simple<Parent>): boolean {
 function optimizeEmptyString(parent: Simple<Parent>): boolean {
 	let optimized = false;
 
-	if (parent.alternatives.length >= 2 && parent.alternatives.some(c => c.elements.length === 0)) {
-		parent.alternatives = parent.alternatives.filter(c => c.elements.length > 0);
-		optimized = true;
+	if (parent.alternatives.length >= 2) {
+		let needQuantifier = true;
+		filterMut(parent.alternatives, alt => {
+			if (alt.elements.length === 0) {
+				optimized = true;
+				return false;
+			}
 
-		if (parent.alternatives.length === 0) {
-			// can't do that
-			parent.alternatives.push({ type: "Concatenation", elements: [] });
-		} else if (parent.alternatives.some(canMatchEmptyString)) {
-			// since the empty string can be matched by at least one of the other alternatives,
-			// we don't have to do anything
-		} else {
-			// try to change a quantifier. e.g. (?:|a+|b+) -> (?:a*|b+)
-			let changed = false;
-			for (const alt of parent.alternatives) {
-				if (alt.elements.length === 1) {
-					const e = alt.elements[0];
-					if (e.type === "Quantifier" && e.min === 1) {
-						// found a suitable quantifier
-						e.min = 0;
-						changed = true;
-					}
-				}
-
-				if (changed) {
-					break;
+			if (alt.elements.length === 1) {
+				const first = alt.elements[0];
+				if (first.type === "Quantifier" && first.min === 0 && first.max > 0) {
+					optimized = true;
+					first.min = 1;
+					return true;
 				}
 			}
 
-			if (!changed) {
-				// make a new quantifier
+			if (canMatchEmptyString(alt)) {
+				needQuantifier = false;
+			}
+			return true;
+		});
+
+		if (optimized && needQuantifier) {
+			if (parent.alternatives.length === 0) {
+				// can't do that
+				parent.alternatives.push({ type: "Concatenation", elements: [] });
+			} else {
 				parent.alternatives = [
 					{
 						type: "Concatenation",
@@ -821,60 +819,203 @@ function optimizeEmptyString(parent: Simple<Parent>): boolean {
 	return optimized;
 }
 function factorOutCommonPreAndSuffix(parent: Simple<Parent>): boolean {
+	if (parent.alternatives.length < 2) {
+		return false;
+	}
+
 	let changed = false;
 
-	if (parent.alternatives.length >= 2) {
-		let prefixLength = 0;
-		let suffixLength = 0;
-		const shortest = parent.alternatives.map(c => c.elements).sort((a, b) => a.length - b.length)[0];
+	let prefixLength = 0;
+	let suffixLength = 0;
+	const shortest = parent.alternatives.map(c => c.elements).sort((a, b) => a.length - b.length)[0];
 
-		// find prefix length
-		for (let i = 0; i < shortest.length; i++) {
-			const e = shortest[i];
-			if (parent.alternatives.every(c => structurallyEqual(e, c.elements[i]))) {
-				prefixLength++;
-			} else {
-				break;
-			}
-		}
-		// find suffix length
-		for (let i = 0; i < shortest.length - prefixLength; i++) {
-			const e = shortest[shortest.length - 1 - i];
-			if (parent.alternatives.every(c => structurallyEqual(e, c.elements[c.elements.length - 1 - i]))) {
-				suffixLength++;
-			} else {
-				break;
-			}
-		}
-
-		if (prefixLength > 0 || suffixLength > 0) {
-			changed = true;
-
-			const prefix = shortest.slice(0, prefixLength);
-			const suffix = shortest.slice(shortest.length - suffixLength, shortest.length);
-
-			// remove prefix and suffix
-			const alternatives = parent.alternatives;
-			for (const alt of alternatives) {
-				alt.elements.splice(0, prefixLength);
-				alt.elements.splice(alt.elements.length - suffixLength, suffixLength);
-			}
-
-			parent.alternatives = [
-				{
-					type: "Concatenation",
-					elements: [
-						...prefix,
-						{
-							type: "Alternation",
-							alternatives,
-						},
-						...suffix,
-					],
-				},
-			];
+	// find prefix length
+	for (let i = 0; i < shortest.length; i++) {
+		const e = shortest[i];
+		if (parent.alternatives.every(c => structurallyEqual(e, c.elements[i]))) {
+			prefixLength++;
+		} else {
+			break;
 		}
 	}
+	// find suffix length
+	for (let i = 0; i < shortest.length - prefixLength; i++) {
+		const e = shortest[shortest.length - 1 - i];
+		if (parent.alternatives.every(c => structurallyEqual(e, c.elements[c.elements.length - 1 - i]))) {
+			suffixLength++;
+		} else {
+			break;
+		}
+	}
+
+	if (prefixLength > 0 || suffixLength > 0) {
+		changed = true;
+
+		const prefix = shortest.slice(0, prefixLength);
+		const suffix = shortest.slice(shortest.length - suffixLength, shortest.length);
+
+		// remove prefix and suffix
+		const alternatives = parent.alternatives;
+		for (const alt of alternatives) {
+			alt.elements.splice(0, prefixLength);
+			alt.elements.splice(alt.elements.length - suffixLength, suffixLength);
+		}
+
+		parent.alternatives = [
+			{
+				type: "Concatenation",
+				elements: [
+					...prefix,
+					{
+						type: "Alternation",
+						alternatives,
+					},
+					...suffix,
+				],
+			},
+		];
+	}
+
+	return changed;
+}
+const enum MatchingDirection {
+	LTR,
+	RTL,
+}
+function factorOutCommonFromQuantifiersPrefix(parent: Simple<Parent>, direction: MatchingDirection): boolean {
+	if (parent.alternatives.length < 2 || parent.alternatives.some(a => a.elements.length === 0)) {
+		return false;
+	}
+
+	interface Prefix {
+		readonly alternatives: readonly Simple<Concatenation>[];
+		constant: number;
+		star: boolean;
+	}
+
+	function getPrefix(alternative: Simple<Concatenation>): Prefix {
+		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
+		const first = alternative.elements[firstIndex];
+		if (first.type === "Quantifier") {
+			return {
+				alternatives: first.alternatives,
+				constant: first.min,
+				star: first.max === Infinity,
+			};
+		} else {
+			return {
+				alternatives: [{ type: "Concatenation", elements: [first] }],
+				constant: 1,
+				star: false,
+			};
+		}
+	}
+	function combinePrefix(acc: Prefix, other: Readonly<Prefix>): void {
+		if (structurallyEqualAlternatives(acc.alternatives, other.alternatives)) {
+			acc.constant = Math.min(acc.constant, other.constant);
+			acc.star = acc.star && other.star;
+		} else {
+			acc.constant = 0;
+			acc.star = false;
+		}
+	}
+	function subtractPrefix(prefix: Readonly<Prefix>, alternative: Simple<Concatenation>): void {
+		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
+		const first = alternative.elements[firstIndex];
+		if (first.type === "Quantifier") {
+			if (prefix.constant > first.min) {
+				throw new Error("Cannot subtract prefix");
+			}
+			first.min -= prefix.constant;
+			first.max -= prefix.constant;
+			if (prefix.star) {
+				if (first.max !== Infinity) {
+					throw new Error("Cannot subtract prefix");
+				}
+				first.max = first.min;
+			}
+
+			if (first.max === 0) {
+				alternative.elements.splice(firstIndex, 1);
+			}
+		} else {
+			if (prefix.constant !== 1 || prefix.star) {
+				throw new Error("Cannot subtract prefix");
+			}
+			alternative.elements.splice(firstIndex, 1);
+		}
+	}
+
+	let changed = false;
+
+	let prefix: Prefix | undefined = undefined;
+	for (const alt of parent.alternatives) {
+		if (prefix === undefined) {
+			prefix = getPrefix(alt);
+		} else {
+			combinePrefix(prefix, getPrefix(alt));
+			if (prefix.constant === 0 && prefix.star === false) {
+				break;
+			}
+		}
+	}
+
+	if (prefix && (prefix.constant > 0 || prefix.star)) {
+		changed = true;
+
+		for (const alt of parent.alternatives) {
+			subtractPrefix(prefix, alt);
+		}
+
+		const prefixElement: Simple<Quantifier> = {
+			type: "Quantifier",
+			alternatives: prefix.alternatives.map(alt => new TransitionCreator(Infinity).copy(alt)),
+			min: prefix.constant,
+			max: prefix.star ? Infinity : prefix.constant,
+		};
+		const elements: Simple<Element>[] = [
+			{
+				type: "Alternation",
+				alternatives: parent.alternatives,
+			},
+		];
+
+		if (direction === MatchingDirection.LTR) {
+			elements.unshift(prefixElement);
+		} else {
+			elements.push(prefixElement);
+		}
+
+		parent.alternatives = [{ type: "Concatenation", elements }];
+	}
+
+	return changed;
+}
+function factorOutCommonFromQuantifiers(parent: Simple<Parent>): boolean {
+	return (
+		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.LTR) ||
+		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.RTL)
+	);
+}
+function combineSingleCharacterAlternatives(parent: Simple<Parent>): boolean {
+	let changed = false;
+
+	let main: Simple<CharacterClass> | undefined = undefined;
+	filterMut(parent.alternatives, alt => {
+		if (alt.elements.length === 1) {
+			const first = alt.elements[0];
+			if (first.type === "CharacterClass") {
+				if (main === undefined) {
+					main = first;
+				} else {
+					main.characters = main.characters.union(first.characters);
+					changed = true;
+					return false;
+				}
+			}
+		}
+		return true;
+	});
 
 	return changed;
 }
@@ -909,7 +1050,46 @@ function inlineConcat(concat: Simple<Concatenation>): boolean {
 function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 	let optimized = false;
 
-	function consumeNonQuantifierLeftToRight(): void {
+	function consumeUsingInfiniteQuantifier(
+		quant: Readonly<Simple<Quantifier>>,
+		after: Simple<Element>,
+		direction: MatchingDirection
+	): void {
+		if (
+			// quant = a{n,}
+			quant.max === Infinity &&
+			// after = (a|b) or (a|b){0,1}
+			(after.type === "Alternation" || (after.type === "Quantifier" && after.max === 1))
+		) {
+			for (const alt of after.alternatives) {
+				const firstIndex = direction === MatchingDirection.LTR ? 0 : alt.elements.length - 1;
+				const first: Simple<Element> | undefined = alt.elements[firstIndex];
+				if (first) {
+					if (after.type === "Quantifier" && after.min === 0 && equalToQuantifiedElement(quant, first)) {
+						alt.elements.splice(firstIndex, 1);
+						optimized = true;
+					} else if (
+						first.type === "Quantifier" &&
+						first.max !== first.min &&
+						structurallyEqualAlternatives(quant.alternatives, first.alternatives)
+					) {
+						// we found a nested quantifier we can (partially) consume
+						first.max = first.min;
+						if (first.max === 0) {
+							// remove the quantifier
+							alt.elements.splice(firstIndex, 1);
+						}
+						optimized = true;
+					} else if (first.type === "Alternation" || (first.type === "Quantifier" && first.max === 1)) {
+						// go into
+						// e.g. /a*((a*|b)c|d)/, here we go from ((a*|b)c|d) into (a*|b)
+						consumeUsingInfiniteQuantifier(quant, first, direction);
+					}
+				}
+			}
+		}
+	}
+	function consumeNonQuantifier(direction: MatchingDirection): void {
 		// make e.g. a*a -> a+
 		filterMut(elements, (after, quant) => {
 			if (quant && quant.type === "Quantifier" && equalToQuantifiedElement(quant, after)) {
@@ -922,11 +1102,20 @@ function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 				return true;
 			}
 		});
+
+		// make e.g. a*(a+|b*)? -> a*(a|b*)
+		for (let i = 1; i < elements.length; i++) {
+			const quant = elements[i - 1];
+			const after = elements[i];
+			if (quant.type === "Quantifier") {
+				consumeUsingInfiniteQuantifier(quant, after, direction);
+			}
+		}
 	}
 
-	consumeNonQuantifierLeftToRight();
+	consumeNonQuantifier(MatchingDirection.LTR);
 	elements.reverse();
-	consumeNonQuantifierLeftToRight();
+	consumeNonQuantifier(MatchingDirection.RTL);
 	elements.reverse();
 
 	// make e.g. a*a+ -> a+
@@ -953,6 +1142,8 @@ function optimize(expr: Simple<Expression>): boolean {
 		optimized = inlineAlternatives(node) || optimized;
 		optimized = optimizeEmptyString(node) || optimized;
 		optimized = factorOutCommonPreAndSuffix(node) || optimized;
+		optimized = factorOutCommonFromQuantifiers(node) || optimized;
+		optimized = combineSingleCharacterAlternatives(node) || optimized;
 	}
 
 	visitAst(expr, {
