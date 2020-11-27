@@ -10,10 +10,10 @@ import {
 	Element,
 	Assertion,
 	visitAst,
-} from "./ast";
-import { CharSet } from "./char-set";
-import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "./util";
-import { ToRegexOptions, TooManyNodesError, FAIterator } from "./finite-automaton";
+} from "../ast";
+import { CharSet } from "../char-set";
+import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "../util";
+import { ToRegexOptions, TooManyNodesError, FAIterator } from "../finite-automaton";
 
 type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
 interface RegexFANode {
@@ -1175,7 +1175,7 @@ function optimize(expr: Simple<Expression>): boolean {
 	return optimized;
 }
 
-export function faToRegex<T>(
+export function toRegex<T>(
 	iter: FAIterator<T, Iterable<[T, CharSet]>>,
 	options?: Readonly<ToRegexOptions>
 ): Simple<Expression> {

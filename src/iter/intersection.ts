@@ -1,6 +1,6 @@
-import { CharSet } from "./char-set";
-import { faEnsurePureOut } from "./fa-iterator";
-import { FAIterator, IntersectionOptions, TooManyNodesError } from "./finite-automaton";
+import { CharSet } from "../char-set";
+import { ensurePureOut } from "./iterator";
+import { FAIterator, IntersectionOptions, TooManyNodesError } from "../finite-automaton";
 
 /**
  * An FA builder has the responsibility of constructing a finite automata.
@@ -50,14 +50,14 @@ export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
  * @param right
  * @param options
  */
-export function lazyIntersection<S, L, R>(
+export function intersection<S, L, R>(
 	builder: FABuilder<S, CharSet>,
 	left: FAIterator<L, ReadonlyMap<L, CharSet>>,
 	right: FAIterator<R, ReadonlyMap<R, CharSet>>,
 	options: undefined | Readonly<IntersectionOptions>
 ): FAIterator<S, S> {
-	left = faEnsurePureOut(left);
-	right = faEnsurePureOut(right);
+	left = ensurePureOut(left);
+	right = ensurePureOut(right);
 
 	const maxNodes = options?.maxNodes ?? Infinity;
 

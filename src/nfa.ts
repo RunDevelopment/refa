@@ -10,17 +10,8 @@ import {
 	TooManyNodesError,
 	IntersectionOptions,
 } from "./finite-automaton";
-import {
-	faIterateStates,
-	faCanReachFinal,
-	faMarkPureOut,
-	faMapOut,
-	faTraverse,
-	faLanguageIsFinite,
-} from "./fa-iterator";
-import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
-import { faToRegex } from "./to-regex";
-import { lazyIntersection, TransitionMapBuilder } from "./intersection";
+import { rangesToString, wordSetsToWords } from "./char-util";
+import * as Iter from "./iter";
 
 /*
  * ####################################################################################################################
@@ -69,13 +60,13 @@ export class NFA implements ReadonlyNFA {
 		return this.nodes.finals.size === 0;
 	}
 	get isFinite(): boolean {
-		return this.isEmpty || faLanguageIsFinite(this.stateIterator());
+		return this.isEmpty || Iter.languageIsFinite(this.stateIterator());
 	}
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode> {
 		const initial: NFA.ReadonlyNode = this.nodes.initial;
 		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
-		return faMarkPureOut({
+		return Iter.markPureOut({
 			initial,
 			getOut: n => n.out.keys(),
 			isFinal: n => finals.has(n),
@@ -84,7 +75,7 @@ export class NFA implements ReadonlyNFA {
 	transitionIterator(): FAIterator<NFA.ReadonlyNode, ReadonlyMap<NFA.ReadonlyNode, CharSet>> {
 		const initial: NFA.ReadonlyNode = this.nodes.initial;
 		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
-		return faMarkPureOut({
+		return Iter.markPureOut({
 			initial,
 			getOut: n => n.out,
 			isFinal: n => finals.has(n),
@@ -118,43 +109,43 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	wordSets(): Iterable<CharSet[]> {
-		return faIterateWordSets(this.transitionIterator());
+		return Iter.iterateWordSets(this.transitionIterator());
 	}
 	words(): Iterable<number[]> {
 		return wordSetsToWords(this.wordSets());
 	}
 
 	toString(): string {
-		return faWithCharSetsToString(this.transitionIterator());
+		return Iter.toString(this.transitionIterator(), rangesToString);
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
-		return faToRegex(this.transitionIterator(), options);
+		return Iter.toRegex(this.transitionIterator(), options);
 	}
 
 	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 
-		const iter = lazyIntersection(
-			new TransitionMapBuilder(),
+		const iter = Iter.intersection(
+			new Iter.TransitionMapBuilder(),
 			this.transitionIterator(),
 			other.transitionIterator(),
 			options
 		);
 
-		return !faCanReachFinal(faMapOut(iter, n => n.keys()));
+		return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
 	}
 	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
 		checkCompatibility(this, other);
 
-		const iter = lazyIntersection(
-			new TransitionMapBuilder(),
+		const iter = Iter.intersection(
+			new Iter.TransitionMapBuilder(),
 			this.transitionIterator(),
 			other.transitionIterator(),
 			options
 		);
 
-		return faIterateWordSets(iter);
+		return Iter.iterateWordSets(iter);
 	}
 	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
@@ -320,10 +311,10 @@ export class NFA implements ReadonlyNFA {
 		checkCompatibility(left, right);
 
 		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 			// traverse the whole iterator to create our NodeList
-			faTraverse(faMapOut(iter, n => n.out.keys()));
+			Iter.traverse(Iter.mapOut(iter, n => n.out.keys()));
 
 			// A cleanup still has to be performed because while all states are connected to the initial state, they might
 			// not be able to reach a final state. This will remove such trap states.
@@ -683,7 +674,7 @@ export namespace NFA {
 		}
 
 		[Symbol.iterator](): Iterator<Node> {
-			return faIterateStates({
+			return Iter.iterateStates({
 				initial: this.initial,
 				getOut: state => state.out.keys(),
 				isFinal: state => this.finals.has(state),
@@ -1442,7 +1433,7 @@ function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
 
 	// reverse the direction of all transitions
 	const allNodes = [
-		...faIterateStates({
+		...Iter.iterateStates({
 			initial: base.initial,
 			getOut: n => n.out.keys(),
 			isFinal: n => base.finals.has(n),
