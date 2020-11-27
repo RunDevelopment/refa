@@ -73,7 +73,7 @@ export interface ToRegexOptions {
 }
 
 /**
- * An iterator over all states of an FA with final states.
+ * A graph iterator over all states of an FA with final states.
  */
 export interface FAIterator<S, O = Iterable<S>> {
 	readonly initial: S;

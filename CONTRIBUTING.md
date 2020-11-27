@@ -28,6 +28,8 @@ refa/
 |-- scripts/
 |   `-- ...
 |-- src/
+|   |-- iter/
+|   |   `-- ...
 |   |-- js/
 |   |   `-- ...
 |   `-- ...
@@ -58,6 +60,18 @@ The most important files are:
 1. `finite-automaton.ts` defines interfaces all concrete FA implementations use.
 1. `{dfa,nfa}.ts` define the concrete implementations of an NFA and DFA.
 1. `words.ts` includes function to convert from JS strings to number arrays and vise versa among others.
+
+#### `src/iter`
+
+This directory contains functions that consume and produce graph iterators. Graph iterators are one of refa's core concepts and allow us to implement different algorithms independently from one specific graph representation.
+
+When importing those functions from outside `src/iter`, it must be done via `src/iter/index.ts`. It's recommended to import all functions like this:
+
+```js
+import * as Iter from "./iter";
+```
+
+From inside `src/iter`, functions MUST be imported directly from the file they are defined in.
 
 #### `src/js`
 

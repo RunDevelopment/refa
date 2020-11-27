@@ -1,5 +1,5 @@
-import { FAIterator } from "./finite-automaton";
-import { IterateBFS, iterToArray, traverse } from "./util";
+import { FAIterator } from "../finite-automaton";
+import { IterateBFS, iterToArray, traverse as traverseGraph } from "../util";
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -7,7 +7,7 @@ import { IterateBFS, iterToArray, traverse } from "./util";
  * @param iter
  * @param mapFn
  */
-export function faMapOut<S, O, T>(iter: FAIterator<S, O>, mapFn: (out: O) => T): FAIterator<S, T> {
+export function mapOut<S, O, T>(iter: FAIterator<S, O>, mapFn: (out: O) => T): FAIterator<S, T> {
 	const oldGetOut = iter.getOut;
 
 	return {
@@ -22,7 +22,7 @@ export function faMapOut<S, O, T>(iter: FAIterator<S, O>, mapFn: (out: O) => T):
  * @param iter
  * @param mapFn
  */
-export function faMapOutIter<S, O, T>(
+export function mapOutIter<S, O, T>(
 	iter: FAIterator<S, Iterable<O>>,
 	mapFn: (out: O) => T
 ): FAIterator<S, Iterable<T>> {
@@ -45,7 +45,7 @@ export function faMapOutIter<S, O, T>(
  * @param iter
  * @param mapFn
  */
-export function faFilterOutIter<S, O>(
+export function filterOutIter<S, O>(
 	iter: FAIterator<S, Iterable<O>>,
 	conditionFn: (out: O) => boolean
 ): FAIterator<S, Iterable<O>> {
@@ -79,22 +79,22 @@ const PURE_OUT_SYMBOL = Symbol();
  *
  * @param iter
  */
-export function faMarkPureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+export function markPureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 	// @ts-ignore
 	iter[PURE_OUT_SYMBOL] = true;
 	return iter;
 }
-function faHasPureOut<S, O>(iter: FAIterator<S, O>): boolean {
+function hasPureOut<S, O>(iter: FAIterator<S, O>): boolean {
 	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 	// @ts-ignore
 	return iter[PURE_OUT_SYMBOL] === true;
 }
-export function faEnsurePureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	if (faHasPureOut(iter)) {
+export function ensurePureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+	if (hasPureOut(iter)) {
 		return iter;
 	} else {
-		return faCacheOut(iter);
+		return cacheOut(iter);
 	}
 }
 
@@ -103,11 +103,11 @@ export function faEnsurePureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> 
  *
  * @param iter
  */
-export function faCacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+export function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	const outCache = new Map<S, O>();
 	const oldGetUncached = iter.getOut;
 
-	return faMarkPureOut({
+	return markPureOut({
 		initial: iter.initial,
 		getOut: (state: S) => {
 			let cached = outCache.get(state);
@@ -124,9 +124,11 @@ export function faCacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 /**
  * Iterates all states reachable from the initial state of the given iterator in BFS order.
  *
+ * The returned iterable cannot be empty and will always contain the initial state.
+ *
  * @param iter
  */
-export function faIterateStates<S>(iter: FAIterator<S>): Iterable<S> {
+export function iterateStates<S>(iter: FAIterator<S>): Iterable<S> {
 	const { initial, getOut } = iter;
 
 	return IterateBFS([initial], getOut);
@@ -139,8 +141,8 @@ export function faIterateStates<S>(iter: FAIterator<S>): Iterable<S> {
  *
  * @param iter
  */
-export function faTraverse<S>(iter: FAIterator<S>): void {
-	traverse(iter.initial, iter.getOut);
+export function traverse<S>(iter: FAIterator<S>): void {
+	traverseGraph(iter.initial, iter.getOut);
 }
 
 /**
@@ -148,10 +150,10 @@ export function faTraverse<S>(iter: FAIterator<S>): void {
  *
  * @param iter
  */
-export function faCanReachFinal<S>(iter: FAIterator<S>): boolean {
+export function canReachFinal<S>(iter: FAIterator<S>): boolean {
 	const { isFinal } = iter;
 
-	for (const state of faIterateStates(iter)) {
+	for (const state of iterateStates(iter)) {
 		if (isFinal(state)) {
 			return true;
 		}
@@ -164,7 +166,7 @@ export function faCanReachFinal<S>(iter: FAIterator<S>): boolean {
  *
  * @param iter
  */
-export function faHasCycle<S>(iter: FAIterator<S>): boolean {
+export function hasCycle<S>(iter: FAIterator<S>): boolean {
 	const { initial, getOut } = iter;
 
 	// It's important that this is implemented iteratively.
@@ -237,15 +239,15 @@ export function faHasCycle<S>(iter: FAIterator<S>): boolean {
  *
  * @param iter
  */
-export function faLanguageIsFinite<T>(iter: FAIterator<T>): boolean {
+export function languageIsFinite<T>(iter: FAIterator<T>): boolean {
 	/**
 	 * The goal is to find a cycle from which we can reach any final state. If we can find such a cycle, we can pump as
 	 * many words as we like making the language infinite.
 	 */
 
-	iter = faCacheOut(faMapOut(iter, i => [...i]));
+	iter = cacheOut(mapOut(iter, i => [...i]));
 
-	const states = [...faIterateStates(iter)];
+	const states = [...iterateStates(iter)];
 	const finals = states.filter(iter.isFinal);
 	const inMap = createInTransitionMap(states, iter.getOut);
 
@@ -253,11 +255,11 @@ export function faLanguageIsFinite<T>(iter: FAIterator<T>): boolean {
 	const statesToFinal = new Set(IterateBFS(finals, s => inMap.get(s)!));
 
 	// an iter where each state can reach a final state
-	const iterToFinal = faFilterOutIter(iter, s => statesToFinal.has(s));
+	const iterToFinal = filterOutIter(iter, s => statesToFinal.has(s));
 
 	// If this iter has a cycle, then this cycle will be reachable from the initial state and any node in that cycle can
 	// reach a final state.
-	return !faHasCycle(iterToFinal);
+	return !hasCycle(iterToFinal);
 }
 function createInTransitionMap<T>(
 	states: ReadonlySet<T> | readonly T[],

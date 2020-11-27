@@ -1,76 +1,6 @@
-import { CharSet } from "./char-set";
-import { cachedFunc } from "./util";
-import { wordSetToWords } from "./words";
-import { faMapOut, faIterateStates, faCacheOut, faMapOutIter } from "./fa-iterator";
-import { rangesToString } from "./char-util";
-import { FAIterator } from "./finite-automaton";
-
-/**
- * Returns a human readable string representation of the given FA. The FA has to have exactly one initial state.
- *
- * Example output: for `a*d|bb*`
- * ```txt
- * (0) -> (1) : 'a'
- *     -> [2] : 'd'
- *     -> [3] : 'b'
- *
- * (1) -> [2] : ['d']
- *
- * [2] -> none
- *
- * [3] -> [3] : 'b'
- * ```
- *
- * @param iter
- */
-export function faToString<T>(iter: FAIterator<T, Iterable<[T, string]>>): string {
-	const stableIter = faCacheOut(
-		faMapOut(iter, out => {
-			return [...out].sort(([, a], [, b]) => a.localeCompare(b));
-		})
-	);
-
-	// get all states
-	const states: T[] = [...faIterateStates(faMapOutIter(stableIter, ([s]) => s))];
-	if (states.length === 0) {
-		return "Empty.";
-	}
-
-	const index = new Map<T, number>(states.map((s, i) => [s, i]));
-	const indexOf = (state: T): number => {
-		return index.get(state)!;
-	};
-
-	const labelOf = (state: T): string => {
-		if (stableIter.isFinal(state)) {
-			return `[${indexOf(state)}]`;
-		} else {
-			return `(${indexOf(state)})`;
-		}
-	};
-
-	return states
-		.map(state => {
-			const label = labelOf(state);
-			const out = stableIter.getOut(state).sort((a, b) => indexOf(a[0]) - indexOf(b[0]));
-
-			if (out.length === 0) {
-				return `${label} -> none`;
-			} else {
-				const spaces = " ".repeat(label.length);
-				return out
-					.map(([s, t], i) => {
-						return `${i ? spaces : label} -> ${labelOf(s)} : ${t}`;
-					})
-					.join("\n");
-			}
-		})
-		.join("\n\n");
-}
-
-export function faWithCharSetsToString<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): string {
-	return faToString(faMapOutIter(iter, ([n, cs]) => [n, rangesToString(cs.ranges)]));
-}
+import { CharSet } from "../char-set";
+import { FAIterator } from "../finite-automaton";
+import { cachedFunc } from "../util";
 
 /**
  * Iterates all word sets of the given FA.
@@ -79,7 +9,7 @@ export function faWithCharSetsToString<T>(iter: FAIterator<T, Iterable<[T, CharS
  *
  * @param iter
  */
-export function* faIterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Iterable<CharSet[]> {
+export function* iterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Iterable<CharSet[]> {
 	const { initial, getOut, isFinal } = iter;
 
 	interface BFSNode {
@@ -197,11 +127,5 @@ export function* faIterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>
 		}
 
 		createNextWaveOf(current);
-	}
-}
-
-export function* wordSetsToWords(wordSets: Iterable<CharSet[]>): IterableIterator<number[]> {
-	for (const wordSet of wordSets) {
-		yield* wordSetToWords(wordSet);
 	}
 }

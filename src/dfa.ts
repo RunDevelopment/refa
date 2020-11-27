@@ -10,19 +10,9 @@ import {
 } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
-import { invertCharMap, getBaseSets, decomposeIntoBaseSets } from "./char-util";
-import {
-	faIterateStates,
-	faCanReachFinal,
-	faEnsurePureOut,
-	faLanguageIsFinite,
-	faMapOut,
-	faTraverse,
-} from "./fa-iterator";
-import { faIterateWordSets, wordSetsToWords, faWithCharSetsToString } from "./fa-util";
+import { invertCharMap, getBaseSets, decomposeIntoBaseSets, rangesToString, wordSetsToWords } from "./char-util";
 import { Simple, Expression } from "./ast";
-import { faToRegex } from "./to-regex";
-import { lazyIntersection, TransitionMapBuilder } from "./intersection";
+import * as Iter from "./iter";
 
 const DEFAULT_MAX_NODES = 10_000;
 
@@ -63,7 +53,7 @@ export class DFA implements ReadonlyDFA {
 		return this.nodes.finals.size === 0;
 	}
 	get isFinite(): boolean {
-		return faLanguageIsFinite(this.stateIterator());
+		return Iter.languageIsFinite(this.stateIterator());
 	}
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode> {
@@ -100,7 +90,7 @@ export class DFA implements ReadonlyDFA {
 			return [];
 		}
 
-		return faIterateWordSets(this.transitionIterator());
+		return Iter.iterateWordSets(this.transitionIterator());
 	}
 
 	words(): Iterable<number[]> {
@@ -108,36 +98,36 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	toString(): string {
-		return faWithCharSetsToString(this.transitionIterator());
+		return Iter.toString(this.transitionIterator(), rangesToString);
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
-		return faToRegex(this.transitionIterator(), options);
+		return Iter.toRegex(this.transitionIterator(), options);
 	}
 
 	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 
-		const iter = lazyIntersection(
-			new TransitionMapBuilder(),
+		const iter = Iter.intersection(
+			new Iter.TransitionMapBuilder(),
 			this.transitionIterator(),
 			other.transitionIterator(),
 			options
 		);
 
-		return !faCanReachFinal(faMapOut(iter, n => n.keys()));
+		return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
 	}
 	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
 		checkCompatibility(this, other);
 
-		const iter = lazyIntersection(
-			new TransitionMapBuilder(),
+		const iter = Iter.intersection(
+			new Iter.TransitionMapBuilder(),
 			this.transitionIterator(),
 			other.transitionIterator(),
 			options
 		);
 
-		return faIterateWordSets(iter);
+		return Iter.iterateWordSets(iter);
 	}
 	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
@@ -262,7 +252,7 @@ export class DFA implements ReadonlyDFA {
 		});
 
 		// Complement the set of final states.
-		const nonFinal = withoutSet(faIterateStates(iterStatesMut(this.nodes)), this.nodes.finals);
+		const nonFinal = withoutSet(Iter.iterateStates(iterStatesMut(this.nodes)), this.nodes.finals);
 		this.nodes.finals.clear();
 		nonFinal.forEach(n => this.nodes.finals.add(n));
 
@@ -304,10 +294,10 @@ export class DFA implements ReadonlyDFA {
 		checkCompatibility(left, right);
 
 		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			const iter = lazyIntersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 			// traverse the whole iterator to create our NodeList
-			faTraverse(faMapOut(iter, n => n.out.values()));
+			Iter.traverse(Iter.mapOut(iter, n => n.out.values()));
 
 			// A cleanup still has to be performed because while all states are connected to the initial state, they might
 			// not be able to reach a final state. This will remove such trap states.
@@ -401,7 +391,7 @@ export class DFA implements ReadonlyDFA {
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			iter = faEnsurePureOut(iter);
+			iter = Iter.ensurePureOut(iter);
 
 			const transitionSets = new Set<CharSet>();
 			traverse(iter.initial, n => {

@@ -65,6 +65,18 @@ module.exports = {
       }
     },
     {
+      name: 'not-to-iter-files',
+      comment:
+        "(FA) iterator function should only be accessed via the `src/iter/index.ts` file.",
+      severity: 'error',
+      from: {
+        path: '^(src/(?!iter/))'
+      },
+      to: {
+        path: '^(src/iter/(?!index))'
+      }
+    },
+    {
       name: 'base-to-JS',
       comment:
         "Files from the base library should not reference the JS-specific part.",
