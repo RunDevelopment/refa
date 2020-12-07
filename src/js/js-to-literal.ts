@@ -1,4 +1,4 @@
-import { Simple, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
+import { NoParent, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
 import {
@@ -40,24 +40,24 @@ export interface ToLiteralOptions {
 	fastCharacters?: boolean;
 }
 
-export function toLiteral(concat: Simple<Concatenation>, options?: Readonly<ToLiteralOptions>): Literal;
-export function toLiteral(expression: Simple<Expression>, options?: Readonly<ToLiteralOptions>): Literal;
+export function toLiteral(concat: NoParent<Concatenation>, options?: Readonly<ToLiteralOptions>): Literal;
+export function toLiteral(expression: NoParent<Expression>, options?: Readonly<ToLiteralOptions>): Literal;
 export function toLiteral(
-	alternatives: readonly Simple<Concatenation>[],
+	alternatives: readonly NoParent<Concatenation>[],
 	options?: Readonly<ToLiteralOptions>
 ): Literal;
 export function toLiteral(
-	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
+	value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
 	options?: Readonly<ToLiteralOptions>
 ): Literal {
 	const fastCharacters = options?.fastCharacters ?? false;
 
 	let flags;
 	if (Array.isArray(value)) {
-		const alternatives: readonly Simple<Concatenation>[] = value;
+		const alternatives: readonly NoParent<Concatenation>[] = value;
 		flags = getFlags(alternatives, options, fastCharacters);
 	} else {
-		const node = value as Simple<Expression> | Simple<Concatenation>;
+		const node = value as NoParent<Expression> | NoParent<Concatenation>;
 		flags = getFlags([node], options, fastCharacters);
 	}
 
@@ -86,12 +86,12 @@ interface PrintOptions {
 }
 
 function toSource(
-	value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
+	value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
 	flags: Flags,
 	options: PrintOptions
 ): string {
 	if (Array.isArray(value)) {
-		const alternatives: readonly Simple<Concatenation>[] = value;
+		const alternatives: readonly NoParent<Concatenation>[] = value;
 
 		if (alternatives.length === 0) {
 			return "[]";
@@ -99,7 +99,7 @@ function toSource(
 			return alternatives.map(c => toSource(c, flags, options)).join("|");
 		}
 	} else {
-		const node = value as Simple<Expression> | Simple<Concatenation>;
+		const node = value as NoParent<Expression> | NoParent<Concatenation>;
 		if (node.type === "Concatenation") {
 			let s = "";
 			for (const element of node.elements) {
@@ -111,7 +111,7 @@ function toSource(
 		}
 	}
 }
-function elementToSource(element: Simple<Element>, flags: Flags, options: PrintOptions): string {
+function elementToSource(element: NoParent<Element>, flags: Flags, options: PrintOptions): string {
 	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
 	switch (element.type) {
@@ -177,7 +177,7 @@ function elementToSource(element: Simple<Element>, flags: Flags, options: PrintO
 			throw assertNever(element);
 	}
 }
-function isEdgeAssertion(assertion: Simple<Assertion>, flags: Flags): boolean {
+function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags): boolean {
 	if (assertion.negate) {
 		const chars = getSingleCharSetInAssertion(assertion);
 		if (chars) {
@@ -186,7 +186,7 @@ function isEdgeAssertion(assertion: Simple<Assertion>, flags: Flags): boolean {
 	}
 	return false;
 }
-function isBoundaryAssertion(alternation: Simple<Alternation>, flags: Flags): "\\b" | "\\B" | false {
+function isBoundaryAssertion(alternation: NoParent<Alternation>, flags: Flags): "\\b" | "\\B" | false {
 	// \b == (?<!\w)(?=\w)|(?<=\w)(?!\w)
 	// \B == (?<=\w)(?=\w)|(?<!\w)(?!\w)
 
@@ -241,7 +241,7 @@ function isBoundaryAssertion(alternation: Simple<Alternation>, flags: Flags): "\
 	}
 	return false;
 }
-function getSingleCharSetInAssertion(assertion: Simple<Assertion>): CharSet | undefined {
+function getSingleCharSetInAssertion(assertion: NoParent<Assertion>): CharSet | undefined {
 	if (assertion.alternatives.length === 1) {
 		const alt = assertion.alternatives[0];
 		if (alt.elements.length === 1) {
@@ -271,7 +271,7 @@ function makeIgnoreCaseSingleChar(char: number, unicode: boolean): CharSet | nul
 	}
 }
 
-function getUnicodeFlag(value: readonly Simple<Node>[]): boolean | undefined {
+function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 	try {
 		for (const node of value) {
 			visitAst(node, {
@@ -295,7 +295,7 @@ function getUnicodeFlag(value: readonly Simple<Node>[]): boolean | undefined {
 
 	return undefined; // no characters
 }
-function getIgnoreCaseFlag(value: readonly Simple<Node>[], unicode: boolean): false | undefined {
+function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): false | undefined {
 	let ignoreCase: false | undefined = undefined;
 
 	try {
@@ -316,7 +316,7 @@ function getIgnoreCaseFlag(value: readonly Simple<Node>[], unicode: boolean): fa
 
 	return ignoreCase;
 }
-function getMultilineFlag(value: readonly Simple<Node>[], unicode: boolean): boolean | undefined {
+function getMultilineFlag(value: readonly NoParent<Node>[], unicode: boolean): boolean | undefined {
 	let stringStartAssertion = false;
 	let stringEndAssertion = false;
 	let lineStartAssertion = false;
@@ -370,7 +370,7 @@ function getMultilineFlag(value: readonly Simple<Node>[], unicode: boolean): boo
 	return undefined;
 }
 function getFlags(
-	value: readonly Simple<Node>[],
+	value: readonly NoParent<Node>[],
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
 ): Flags {
