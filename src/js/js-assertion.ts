@@ -1,4 +1,4 @@
-import { Element, Assertion, Simple } from "../ast";
+import { Element, Assertion, NoParent } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./js-util";
@@ -13,7 +13,7 @@ export interface TextBoundaryAssertion {
 	kind: "end" | "start";
 }
 
-export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): Simple<Element> {
+export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): NoParent<Element> {
 	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
 	switch (assertion.kind) {
@@ -62,7 +62,7 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 	}
 }
 
-function newAssertion(negate: boolean, kind: "ahead" | "behind", characters: CharSet): Simple<Assertion> {
+function newAssertion(negate: boolean, kind: "ahead" | "behind", characters: CharSet): NoParent<Assertion> {
 	return {
 		type: "Assertion",
 		negate,

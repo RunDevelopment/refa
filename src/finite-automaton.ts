@@ -1,4 +1,4 @@
-import type { Expression, Simple } from "./ast";
+import type { Expression, NoParent } from "./ast";
 import type { CharSet } from "./char-set";
 
 export interface FiniteAutomaton {
@@ -48,7 +48,7 @@ export interface FiniteAutomaton {
 	 * Returns a string representation of this FA.
 	 */
 	toString(): string;
-	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression>;
+	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression>;
 }
 
 export interface ToRegexOptions {

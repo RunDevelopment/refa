@@ -11,7 +11,7 @@ import {
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { invertCharMap, getBaseSets, decomposeIntoBaseSets, rangesToString, wordSetsToWords } from "./char-util";
-import { Simple, Expression } from "./ast";
+import { NoParent, Expression } from "./ast";
 import * as Iter from "./iter";
 
 const DEFAULT_MAX_NODES = 10_000;
@@ -101,7 +101,7 @@ export class DFA implements ReadonlyDFA {
 		return Iter.toString(this.transitionIterator(), rangesToString);
 	}
 
-	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
+	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
 		return Iter.toRegex(this.transitionIterator(), options);
 	}
 

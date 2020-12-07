@@ -9,7 +9,8 @@ import {
 	SourceLocation,
 	Quantifier,
 	CharacterClass,
-	desimplify,
+	setSource,
+	setParent,
 } from "../ast";
 import { RegExpParser, AST } from "regexpp";
 import { assertNever } from "../util";
@@ -206,11 +207,11 @@ export class Parser implements Literal {
 				type: "Concatenation",
 				parent,
 				elements,
-				source: getSource(parent.source),
+				source: getSource(parent.source!),
 			};
 			parent.alternatives.push(concat);
 
-			this.addEmptyCharacterClass(concat.source, concat, context);
+			this.addEmptyCharacterClass(concat.source!, concat, context);
 		}
 	}
 
@@ -340,8 +341,9 @@ export class Parser implements Literal {
 
 				// "parse" is the default
 
-				const simpleAssertion = createAssertion(element, context.flags);
-				const assertion = desimplify(simpleAssertion, parent, getSource(element));
+				const assertion = createAssertion(element, context.flags);
+				setSource(assertion, getSource(element));
+				setParent<Element>(assertion, parent);
 				parent.elements.push(assertion);
 				break;
 			}

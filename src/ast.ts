@@ -10,7 +10,7 @@ export interface SourceLocation {
 export interface NodeBase {
 	type: Node["type"];
 	parent: Node["parent"];
-	source: SourceLocation;
+	source?: SourceLocation;
 }
 
 export type Element = CharacterClass | Alternation | Quantifier | Assertion;
@@ -62,52 +62,21 @@ type NodeIdent = { type: Node["type"] };
 type NoParentArray<T> = { [K in keyof T]: NoParent<T[K]> };
 type NoParentNode<T extends NodeIdent> = { [K in keyof NoParentNodePick<T>]: NoParent<NoParentNodePick<T>[K]> };
 type NoParentNodePick<T extends NodeIdent> = Pick<T, Exclude<keyof T, "parent">>;
+/**
+ * A view of an AST node that hides the `parent` property.
+ */
 export type NoParent<T> = T extends NodeIdent ? NoParentNode<T> : T extends (infer U)[] ? NoParentArray<T> : T;
 
-type NoSourceArray<T> = { [K in keyof T]: NoSource<T[K]> };
-type NoSourceNode<T extends NodeIdent> = { [K in keyof NoSourceNodePick<T>]: NoSource<NoSourceNodePick<T>[K]> };
-type NoSourceNodePick<T extends NodeIdent> = Pick<T, Exclude<keyof T, "source">>;
-export type NoSource<T> = T extends NodeIdent ? NoSourceNode<T> : T extends (infer U)[] ? NoSourceArray<T> : T;
-
 /**
- * A view on AST nodes such that `parent` and `source` properties are hidden.
+ * Sets the `parent` properties of the given node and all of its child nodes.
+ *
+ * @param node
+ * @param parent The parent of `node`.
  */
-export type Simple<T> = NoParent<NoSource<T>>;
-
-export function setSource<T extends Node>(node: T, source: SourceLocation): T;
-export function setSource<T extends Node>(node: NoSource<T>, source: SourceLocation): T;
-export function setSource<T extends Node>(node: NoParent<T>, source: SourceLocation): NoParent<T>;
-export function setSource<T extends Node>(node: Simple<T>, source: SourceLocation): NoParent<T>;
-export function setSource(node: Node, source: SourceLocation): Node {
-	node.source = { start: source.start, end: source.end };
-
-	switch (node.type) {
-		case "Concatenation":
-			node.elements.forEach(e => setSource(e, source));
-			break;
-
-		case "Alternation":
-		case "Assertion":
-		case "Expression":
-		case "Quantifier":
-			node.alternatives.forEach(c => setSource(c, source));
-			break;
-
-		case "CharacterClass":
-			// no children
-			break;
-
-		default:
-			throw assertNever(node);
-	}
-
-	return node;
+export function setParent<T extends Node>(node: T | NoParent<T>, parent: T["parent"]): asserts node is T {
+	setParentImpl(node as Node, parent as Node["parent"]);
 }
-export function setParent<T extends Node>(node: T, parent: T["parent"]): T;
-export function setParent<T extends Node>(node: NoParent<T>, parent: T["parent"]): T;
-export function setParent<T extends Node>(node: NoSource<T>, parent: T["parent"]): NoSource<T>;
-export function setParent<T extends Node>(node: Simple<T>, parent: T["parent"]): NoSource<T>;
-export function setParent(node: Node, parent: Node["parent"]): Node {
+function setParentImpl(node: Node, parent: Node["parent"]): void {
 	switch (node.type) {
 		case "Concatenation":
 			if (parent === null) throw new Error("The parent of a concatenation cannot be null.");
@@ -159,30 +128,60 @@ export function setParent(node: Node, parent: Node["parent"]): Node {
 		default:
 			throw assertNever(node);
 	}
-
-	return node;
 }
 
 /**
- * Sets the source location and parent for every expression in the whole expression subtree.
+ * Sets the `source` property of the given node and all of its child nodes.
  *
- * The source location of all nodes will be set to the same given location.
- *
- * This will __NOT__ create new nodes. The returned node is the given one.
+ * If `source` is not a function, then the source object will be copied for all `source` properties to be set. The
+ * object will be copied using the `start` and `end` properties alone, other properties will not be copied.
  *
  * @param node
- * @param parent
  * @param source
+ * @param overwrite
  */
-export function desimplify(simple: Simple<Concatenation>, parent: Parent, source: SourceLocation): Concatenation;
-export function desimplify(simple: Simple<Expression>, parent: null, source: SourceLocation): Expression;
-export function desimplify(simple: Simple<Element>, parent: Concatenation, source: SourceLocation): Element;
-export function desimplify<T extends Node>(simple: Simple<T>, parent: T["parent"], source: SourceLocation): T;
-export function desimplify<T extends Node>(simple: Simple<T>, parent: T["parent"], source: SourceLocation): T {
-	return setParent(setSource(simple, source), parent);
+export function setSource(
+	node: NoParent<Node>,
+	source: SourceLocation | (() => SourceLocation),
+	overwrite?: boolean
+): void {
+	if (typeof source !== "function") {
+		const { start, end } = source;
+		source = () => ({ start, end });
+	}
+
+	setSourceImpl(node, source, overwrite);
+}
+function setSourceImpl(node: NoParent<Node>, getSource: () => SourceLocation, overwrite?: boolean): void {
+	if (overwrite || !node.source) {
+		node.source = getSource();
+	} else {
+		const { start, end } = node.source;
+		getSource = () => ({ start, end });
+	}
+
+	switch (node.type) {
+		case "Concatenation":
+			node.elements.forEach(e => setSource(e, getSource, overwrite));
+			break;
+
+		case "Alternation":
+		case "Assertion":
+		case "Expression":
+		case "Quantifier":
+			node.alternatives.forEach(c => setSource(c, getSource, overwrite));
+			break;
+
+		case "CharacterClass":
+			// no children
+			break;
+
+		default:
+			throw assertNever(node);
+	}
 }
 
-function toPatternConcatenation(concat: Simple<Concatenation>): string {
+function toPatternConcatenation(concat: NoParent<Concatenation>): string {
 	let s = "";
 	const elements = concat.elements;
 	for (let i = 0, l = elements.length; i < l; i++) {
@@ -190,7 +189,7 @@ function toPatternConcatenation(concat: Simple<Concatenation>): string {
 	}
 	return s;
 }
-function toPatternElement(element: Simple<Element>): string {
+function toPatternElement(element: NoParent<Element>): string {
 	switch (element.type) {
 		case "Alternation": {
 			return "(?:" + toPatternAlternatives(element.alternatives) + ")";
@@ -246,11 +245,11 @@ function toPatternElement(element: Simple<Element>): string {
 			throw assertNever(element, "Invalid element");
 	}
 }
-function toPatternAlternatives(expressions: readonly Simple<Concatenation>[]): string {
+function toPatternAlternatives(expressions: readonly NoParent<Concatenation>[]): string {
 	return expressions.map(toPatternConcatenation).join("|");
 }
 
-export function toPatternString(node: Simple<Node>): string {
+export function toPatternString(node: NoParent<Node>): string {
 	switch (node.type) {
 		case "Expression":
 			return toPatternAlternatives(node.alternatives);
@@ -289,40 +288,9 @@ export interface VisitNoParentAstHandler {
 	onQuantifierEnter?(node: NoParent<Quantifier>): void;
 	onQuantifierLeave?(node: NoParent<Quantifier>): void;
 }
-export interface VisitNoSourceAstHandler {
-	onAlternationEnter?(node: NoSource<Alternation>): void;
-	onAlternationLeave?(node: NoSource<Alternation>): void;
-	onAssertionEnter?(node: NoSource<Assertion>): void;
-	onAssertionLeave?(node: NoSource<Assertion>): void;
-	onCharacterClassEnter?(node: NoSource<CharacterClass>): void;
-	onCharacterClassLeave?(node: NoSource<CharacterClass>): void;
-	onConcatenationEnter?(node: NoSource<Concatenation>): void;
-	onConcatenationLeave?(node: NoSource<Concatenation>): void;
-	onExpressionEnter?(node: NoSource<Expression>): void;
-	onExpressionLeave?(node: NoSource<Expression>): void;
-	onQuantifierEnter?(node: NoSource<Quantifier>): void;
-	onQuantifierLeave?(node: NoSource<Quantifier>): void;
-}
-export interface VisitSimpleAstHandler {
-	onAlternationEnter?(node: Simple<Alternation>): void;
-	onAlternationLeave?(node: Simple<Alternation>): void;
-	onAssertionEnter?(node: Simple<Assertion>): void;
-	onAssertionLeave?(node: Simple<Assertion>): void;
-	onCharacterClassEnter?(node: Simple<CharacterClass>): void;
-	onCharacterClassLeave?(node: Simple<CharacterClass>): void;
-	onConcatenationEnter?(node: Simple<Concatenation>): void;
-	onConcatenationLeave?(node: Simple<Concatenation>): void;
-	onExpressionEnter?(node: Simple<Expression>): void;
-	onExpressionLeave?(node: Simple<Expression>): void;
-	onQuantifierEnter?(node: Simple<Quantifier>): void;
-	onQuantifierLeave?(node: Simple<Quantifier>): void;
-}
-
 export function visitAst(node: Node, handler: VisitAstHandler): void;
 export function visitAst(node: NoParent<Node>, handler: VisitNoParentAstHandler): void;
-export function visitAst(node: NoSource<Node>, handler: VisitNoSourceAstHandler): void;
-export function visitAst(node: Simple<Node>, handler: VisitSimpleAstHandler): void;
-export function visitAst(node: Simple<Node>, handler: Record<string, any>): void {
+export function visitAst(node: NoParent<Node>, handler: Record<string, any>): void {
 	const enter = handler["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);

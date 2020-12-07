@@ -1,4 +1,4 @@
-import { Concatenation, Quantifier, Element, Simple, Expression } from "./ast";
+import { Concatenation, Quantifier, Element, NoParent, Expression } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
 import {
@@ -119,7 +119,7 @@ export class NFA implements ReadonlyNFA {
 		return Iter.toString(this.transitionIterator(), rangesToString);
 	}
 
-	toRegex(options?: Readonly<ToRegexOptions>): Simple<Expression> {
+	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
 		return Iter.toRegex(this.transitionIterator(), options);
 	}
 
@@ -357,30 +357,30 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	static fromRegex(
-		concat: Simple<Concatenation>,
+		concat: NoParent<Concatenation>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
-		expression: Simple<Expression>,
+		expression: NoParent<Expression>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
-		alternatives: readonly Simple<Concatenation>[],
+		alternatives: readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
-		value: Simple<Concatenation> | Simple<Expression> | readonly Simple<Concatenation>[],
+		value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA {
 		let nodeList: NFA.NodeList;
 		if (Array.isArray(value)) {
-			nodeList = createNodeList(value as readonly Simple<Concatenation>[], options, creationOptions || {});
+			nodeList = createNodeList(value as readonly NoParent<Concatenation>[], options, creationOptions || {});
 		} else {
-			const node = value as Simple<Expression> | Simple<Concatenation>;
+			const node = value as NoParent<Expression> | NoParent<Concatenation>;
 			if (node.type === "Concatenation") {
 				nodeList = createNodeList([node], options, creationOptions || {});
 			} else {
@@ -771,7 +771,7 @@ interface ReadonlySubList {
 }
 
 function createNodeList(
-	expression: readonly Simple<Concatenation>[],
+	expression: readonly NoParent<Concatenation>[],
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>
 ): NFA.NodeList {
@@ -782,7 +782,7 @@ function createNodeList(
 
 		// All sub lists guarantee that the initial node has no incoming edges.
 
-		function handleAlternation(alternatives: readonly Simple<Concatenation>[]): SubList {
+		function handleAlternation(alternatives: readonly NoParent<Concatenation>[]): SubList {
 			if (alternatives.length === 0) {
 				return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
 			}
@@ -795,7 +795,7 @@ function createNodeList(
 			return base;
 		}
 
-		function handleConcatenation(concatenation: Simple<Concatenation>): SubList {
+		function handleConcatenation(concatenation: NoParent<Concatenation>): SubList {
 			const elements = concatenation.elements;
 
 			const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
@@ -830,7 +830,7 @@ function createNodeList(
 			return base;
 		}
 
-		function handleQuantifier(quant: Simple<Quantifier>): SubList {
+		function handleQuantifier(quant: NoParent<Quantifier>): SubList {
 			const base = handleAlternation(quant.alternatives);
 			let max = quant.max;
 			if (max >= infinityThreshold) {
@@ -840,7 +840,7 @@ function createNodeList(
 			return base;
 		}
 
-		function handleElement(element: Simple<Element>, base: SubList): void {
+		function handleElement(element: NoParent<Element>, base: SubList): void {
 			switch (element.type) {
 				case "Alternation":
 					baseAppend(nodeList, base, handleAlternation(element.alternatives));

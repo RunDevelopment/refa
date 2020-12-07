@@ -1,5 +1,5 @@
 import {
-	Simple,
+	NoParent,
 	Expression,
 	Node,
 	Parent,
@@ -15,7 +15,7 @@ import { CharSet } from "../char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "../util";
 import { ToRegexOptions, TooManyNodesError, FAIterator } from "../finite-automaton";
 
-type RegexFANodeTransition = Simple<Concatenation | Alternation | CharacterClass | Quantifier>;
+type RegexFANodeTransition = NoParent<Concatenation | Alternation | CharacterClass | Quantifier>;
 interface RegexFANode {
 	out: Map<RegexFANode, RegexFANodeTransition>;
 	in: Map<RegexFANode, RegexFANodeTransition>;
@@ -72,7 +72,7 @@ class TransitionCreator {
 		}
 	}
 
-	concat(elements: Simple<Concatenation>["elements"]): Simple<Concatenation> {
+	concat(elements: NoParent<Concatenation>["elements"]): NoParent<Concatenation> {
 		this._incrementCounter();
 
 		return {
@@ -80,7 +80,7 @@ class TransitionCreator {
 			elements,
 		};
 	}
-	emptyConcat(): Simple<Concatenation> {
+	emptyConcat(): NoParent<Concatenation> {
 		this._incrementCounter();
 
 		return {
@@ -89,7 +89,7 @@ class TransitionCreator {
 		};
 	}
 
-	alter(alternatives: Simple<Alternation>["alternatives"]): Simple<Alternation> {
+	alter(alternatives: NoParent<Alternation>["alternatives"]): NoParent<Alternation> {
 		this._incrementCounter();
 
 		return {
@@ -97,7 +97,7 @@ class TransitionCreator {
 			alternatives,
 		};
 	}
-	emptyAlter(): Simple<Alternation> {
+	emptyAlter(): NoParent<Alternation> {
 		this._incrementCounter();
 
 		return {
@@ -106,7 +106,7 @@ class TransitionCreator {
 		};
 	}
 
-	expression(alternatives: Simple<Expression>["alternatives"]): Simple<Expression> {
+	expression(alternatives: NoParent<Expression>["alternatives"]): NoParent<Expression> {
 		this._incrementCounter();
 
 		return {
@@ -114,7 +114,7 @@ class TransitionCreator {
 			alternatives,
 		};
 	}
-	emptyExpression(): Simple<Expression> {
+	emptyExpression(): NoParent<Expression> {
 		this._incrementCounter();
 
 		return {
@@ -123,7 +123,7 @@ class TransitionCreator {
 		};
 	}
 
-	char(characters: CharSet): Simple<CharacterClass> {
+	char(characters: CharSet): NoParent<CharacterClass> {
 		this._incrementCounter();
 
 		return {
@@ -132,7 +132,7 @@ class TransitionCreator {
 		};
 	}
 
-	quant(alternatives: Simple<Quantifier>["alternatives"], min: number, max: number): Simple<Quantifier> {
+	quant(alternatives: NoParent<Quantifier>["alternatives"], min: number, max: number): NoParent<Quantifier> {
 		this._incrementCounter();
 
 		return {
@@ -142,7 +142,7 @@ class TransitionCreator {
 			max,
 		};
 	}
-	quantStar(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
+	quantStar(alternatives: NoParent<Quantifier>["alternatives"]): NoParent<Quantifier> {
 		this._incrementCounter();
 
 		return {
@@ -152,7 +152,7 @@ class TransitionCreator {
 			max: Infinity,
 		};
 	}
-	quantPlus(alternatives: Simple<Quantifier>["alternatives"]): Simple<Quantifier> {
+	quantPlus(alternatives: NoParent<Quantifier>["alternatives"]): NoParent<Quantifier> {
 		this._incrementCounter();
 
 		return {
@@ -163,14 +163,14 @@ class TransitionCreator {
 		};
 	}
 
-	copy(t: Simple<Concatenation>): Simple<Concatenation>;
+	copy(t: NoParent<Concatenation>): NoParent<Concatenation>;
 	copy(t: RegexFANodeTransition): RegexFANodeTransition;
 	copy(t: RegexFANodeTransition): RegexFANodeTransition {
 		switch (t.type) {
 			case "Alternation":
 				return this.alter(t.alternatives.map(a => this.copy(a)));
 			case "Concatenation":
-				return this.concat(t.elements.map(e => this.copy(e as RegexFANodeTransition) as Simple<Element>));
+				return this.concat(t.elements.map(e => this.copy(e as RegexFANodeTransition) as NoParent<Element>));
 			case "CharacterClass":
 				return this.char(t.characters);
 			case "Quantifier":
@@ -320,7 +320,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 		inlineConcat(newConcat);
 		return newConcat;
 	}
-	function asConcatenation(a: Simple<Element | Concatenation>): Simple<Concatenation> {
+	function asConcatenation(a: NoParent<Element | Concatenation>): NoParent<Concatenation> {
 		if (a.type === "Concatenation") {
 			return a;
 		} else {
@@ -375,7 +375,10 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 
 		return tc.alter([asConcatenation(a), asConcatenation(b)]);
 
-		function unionAlternationAndCharClass(alternation: Simple<Alternation>, char: Simple<CharacterClass>): void {
+		function unionAlternationAndCharClass(
+			alternation: NoParent<Alternation>,
+			char: NoParent<CharacterClass>
+		): void {
 			for (const alt of alternation.alternatives) {
 				if (alt.elements.length === 1) {
 					const first = alt.elements[0];
@@ -595,7 +598,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 	}
 }
 
-function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAstNodes: number): Simple<Expression> {
+function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAstNodes: number): NoParent<Expression> {
 	const tc = new TransitionCreator(maxAstNodes);
 
 	const nodeList = createNodeList(iter, tc);
@@ -622,28 +625,28 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAst
 	}
 }
 
-function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element | Concatenation>): boolean {
+function structurallyEqual(a: NoParent<Element | Concatenation>, b: NoParent<Element | Concatenation>): boolean {
 	if (a.type !== b.type) return false;
 	switch (a.type) {
 		case "Alternation": {
-			const other = b as Simple<Alternation>;
+			const other = b as NoParent<Alternation>;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		case "Assertion": {
-			const other = b as Simple<Assertion>;
+			const other = b as NoParent<Assertion>;
 			if (a.kind !== other.kind || a.negate !== other.negate) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		case "CharacterClass": {
-			const other = b as Simple<CharacterClass>;
+			const other = b as NoParent<CharacterClass>;
 			return a.characters.equals(other.characters);
 		}
 		case "Concatenation": {
-			const other = b as Simple<Concatenation>;
+			const other = b as NoParent<Concatenation>;
 			return structurallyEqualConcatenation(a, other);
 		}
 		case "Quantifier": {
-			const other = b as Simple<Quantifier>;
+			const other = b as NoParent<Quantifier>;
 			if (a.min !== other.min || a.max !== other.max) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
@@ -652,8 +655,8 @@ function structurallyEqual(a: Simple<Element | Concatenation>, b: Simple<Element
 	}
 }
 function structurallyEqualAlternatives(
-	a: readonly Simple<Concatenation>[],
-	b: readonly Simple<Concatenation>[]
+	a: readonly NoParent<Concatenation>[],
+	b: readonly NoParent<Concatenation>[]
 ): boolean {
 	const l = a.length;
 	if (l !== b.length) return false;
@@ -662,7 +665,7 @@ function structurallyEqualAlternatives(
 	}
 	return true;
 }
-function structurallyEqualConcatenation(a: Simple<Concatenation>, b: Simple<Concatenation>): boolean {
+function structurallyEqualConcatenation(a: NoParent<Concatenation>, b: NoParent<Concatenation>): boolean {
 	const l = a.elements.length;
 	if (l !== b.elements.length) return false;
 	for (let i = 0; i < l; i++) {
@@ -689,22 +692,22 @@ type OfType<N, T> = N extends { type: T } ? N : never;
 type NodeOfType<T extends Node["type"]> = OfType<Node, T>;
 
 function getSingleElement<T extends Element["type"]>(
-	parent: Simple<Parent>,
+	parent: NoParent<Parent>,
 	type: T
-): undefined | Simple<NodeOfType<T>> {
+): undefined | NoParent<NodeOfType<T>> {
 	if (parent.alternatives.length === 1) {
 		const alt = parent.alternatives[0];
 		if (alt.elements.length === 1) {
 			const e = alt.elements[0];
 			if (e.type === type) {
-				return e as Simple<NodeOfType<T>>;
+				return e as NoParent<NodeOfType<T>>;
 			}
 		}
 	}
 	return undefined;
 }
 
-function canMatchEmptyString(value: Simple<Node>): boolean {
+function canMatchEmptyString(value: NoParent<Node>): boolean {
 	switch (value.type) {
 		case "Assertion":
 		case "CharacterClass":
@@ -726,8 +729,8 @@ function canMatchEmptyString(value: Simple<Node>): boolean {
 }
 
 function equalToQuantifiedElement(
-	quant: Simple<Quantifier>,
-	element: Simple<Element> | Simple<Concatenation>
+	quant: NoParent<Quantifier>,
+	element: NoParent<Element> | NoParent<Concatenation>
 ): boolean {
 	if (element.type === "Alternation") {
 		return structurallyEqualAlternatives(quant.alternatives, element.alternatives);
@@ -751,7 +754,7 @@ function equalToQuantifiedElement(
 	}
 }
 
-function inlineAlternatives(parent: Simple<Parent>): boolean {
+function inlineAlternatives(parent: NoParent<Parent>): boolean {
 	let inlined = false;
 
 	for (let i = 0; i < parent.alternatives.length; i++) {
@@ -768,7 +771,7 @@ function inlineAlternatives(parent: Simple<Parent>): boolean {
 
 	return inlined;
 }
-function optimizeEmptyString(parent: Simple<Parent>): boolean {
+function optimizeEmptyString(parent: NoParent<Parent>): boolean {
 	let optimized = false;
 
 	if (parent.alternatives.length >= 2) {
@@ -818,7 +821,7 @@ function optimizeEmptyString(parent: Simple<Parent>): boolean {
 
 	return optimized;
 }
-function factorOutCommonPreAndSuffix(parent: Simple<Parent>): boolean {
+function factorOutCommonPreAndSuffix(parent: NoParent<Parent>): boolean {
 	if (parent.alternatives.length < 2) {
 		return false;
 	}
@@ -882,18 +885,18 @@ const enum MatchingDirection {
 	LTR,
 	RTL,
 }
-function factorOutCommonFromQuantifiersPrefix(parent: Simple<Parent>, direction: MatchingDirection): boolean {
+function factorOutCommonFromQuantifiersPrefix(parent: NoParent<Parent>, direction: MatchingDirection): boolean {
 	if (parent.alternatives.length < 2 || parent.alternatives.some(a => a.elements.length === 0)) {
 		return false;
 	}
 
 	interface Prefix {
-		readonly alternatives: readonly Simple<Concatenation>[];
+		readonly alternatives: readonly NoParent<Concatenation>[];
 		constant: number;
 		star: boolean;
 	}
 
-	function getPrefix(alternative: Simple<Concatenation>): Prefix {
+	function getPrefix(alternative: NoParent<Concatenation>): Prefix {
 		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
 		const first = alternative.elements[firstIndex];
 		if (first.type === "Quantifier") {
@@ -919,7 +922,7 @@ function factorOutCommonFromQuantifiersPrefix(parent: Simple<Parent>, direction:
 			acc.star = false;
 		}
 	}
-	function subtractPrefix(prefix: Readonly<Prefix>, alternative: Simple<Concatenation>): void {
+	function subtractPrefix(prefix: Readonly<Prefix>, alternative: NoParent<Concatenation>): void {
 		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
 		const first = alternative.elements[firstIndex];
 		if (first.type === "Quantifier") {
@@ -967,13 +970,13 @@ function factorOutCommonFromQuantifiersPrefix(parent: Simple<Parent>, direction:
 			subtractPrefix(prefix, alt);
 		}
 
-		const prefixElement: Simple<Quantifier> = {
+		const prefixElement: NoParent<Quantifier> = {
 			type: "Quantifier",
 			alternatives: prefix.alternatives.map(alt => new TransitionCreator(Infinity).copy(alt)),
 			min: prefix.constant,
 			max: prefix.star ? Infinity : prefix.constant,
 		};
-		const elements: Simple<Element>[] = [
+		const elements: NoParent<Element>[] = [
 			{
 				type: "Alternation",
 				alternatives: parent.alternatives,
@@ -991,16 +994,16 @@ function factorOutCommonFromQuantifiersPrefix(parent: Simple<Parent>, direction:
 
 	return changed;
 }
-function factorOutCommonFromQuantifiers(parent: Simple<Parent>): boolean {
+function factorOutCommonFromQuantifiers(parent: NoParent<Parent>): boolean {
 	return (
 		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.LTR) ||
 		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.RTL)
 	);
 }
-function combineSingleCharacterAlternatives(parent: Simple<Parent>): boolean {
+function combineSingleCharacterAlternatives(parent: NoParent<Parent>): boolean {
 	let changed = false;
 
-	let main: Simple<CharacterClass> | undefined = undefined;
+	let main: NoParent<CharacterClass> | undefined = undefined;
 	filterMut(parent.alternatives, alt => {
 		if (alt.elements.length === 1) {
 			const first = alt.elements[0];
@@ -1019,7 +1022,7 @@ function combineSingleCharacterAlternatives(parent: Simple<Parent>): boolean {
 
 	return changed;
 }
-function inlineConcat(concat: Simple<Concatenation>): boolean {
+function inlineConcat(concat: NoParent<Concatenation>): boolean {
 	let inlined = false;
 
 	for (let i = 0; i < concat.elements.length; i++) {
@@ -1047,12 +1050,12 @@ function inlineConcat(concat: Simple<Concatenation>): boolean {
 
 	return inlined;
 }
-function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
+function letQuantifiersConsumeNeighbors(elements: NoParent<Element>[]): boolean {
 	let optimized = false;
 
 	function consumeUsingInfiniteQuantifier(
-		quant: Readonly<Simple<Quantifier>>,
-		after: Simple<Element>,
+		quant: Readonly<NoParent<Quantifier>>,
+		after: NoParent<Element>,
 		direction: MatchingDirection
 	): void {
 		if (
@@ -1063,7 +1066,7 @@ function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 		) {
 			for (const alt of after.alternatives) {
 				const firstIndex = direction === MatchingDirection.LTR ? 0 : alt.elements.length - 1;
-				const first: Simple<Element> | undefined = alt.elements[firstIndex];
+				const first: NoParent<Element> | undefined = alt.elements[firstIndex];
 				if (first) {
 					if (after.type === "Quantifier" && after.min === 0 && equalToQuantifiedElement(quant, first)) {
 						alt.elements.splice(firstIndex, 1);
@@ -1135,10 +1138,10 @@ function letQuantifiersConsumeNeighbors(elements: Simple<Element>[]): boolean {
 	return optimized;
 }
 
-function optimize(expr: Simple<Expression>): boolean {
+function optimize(expr: NoParent<Expression>): boolean {
 	let optimized = false;
 
-	function onNodeWithAlternatives(node: Simple<Alternation | Assertion | Expression | Quantifier>): void {
+	function onNodeWithAlternatives(node: NoParent<Alternation | Assertion | Expression | Quantifier>): void {
 		optimized = inlineAlternatives(node) || optimized;
 		optimized = optimizeEmptyString(node) || optimized;
 		optimized = factorOutCommonPreAndSuffix(node) || optimized;
@@ -1178,7 +1181,7 @@ function optimize(expr: Simple<Expression>): boolean {
 export function toRegex<T>(
 	iter: FAIterator<T, Iterable<[T, CharSet]>>,
 	options?: Readonly<ToRegexOptions>
-): Simple<Expression> {
+): NoParent<Expression> {
 	const maxAstNodes = options?.maximumNodes ?? 10000;
 	let optimizationPasses = options?.maximumOptimizationPasses ?? Infinity;
 
