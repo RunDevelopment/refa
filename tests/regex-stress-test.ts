@@ -3,7 +3,7 @@ import { Parser } from "../src/js";
 import { PrismRegexes } from "./helper/prism-regex-data";
 import { NFA } from "../src/nfa";
 import { DFA, ReadonlyDFA } from "../src/dfa";
-import { Expression, Simple } from "../src/ast";
+import { Expression, NoParent } from "../src/ast";
 import { TooManyNodesError } from "../src/finite-automaton";
 
 /**
@@ -18,7 +18,7 @@ import { TooManyNodesError } from "../src/finite-automaton";
  */
 const CHECK_RE_LANGUAGE = false;
 
-function equalLanguage(expected: ReadonlyDFA, re: Simple<Expression>, maxCharacter: number): void {
+function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
 	const nfa = NFA.fromRegex(re, { maxCharacter }, { disableLookarounds: true });
 	const dfa = DFA.fromFA(nfa, { maxNodes: 100000 });
 	dfa.minimize();
