@@ -1,21 +1,36 @@
-import {
-	NoParent,
-	Expression,
-	Node,
-	Parent,
-	Concatenation,
-	Alternation,
-	CharacterClass,
-	Quantifier,
-	Element,
-	Assertion,
-	visitAst,
-} from "../ast";
+import { NoParent, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element } from "../ast";
 import { CharSet } from "../char-set";
-import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "../util";
+import { cachedFunc, DFS, firstOf, minOf, assertNever } from "../util";
 import { ToRegexOptions, TooManyNodesError, FAIterator } from "../finite-automaton";
+import { structurallyEqual } from "../ast-analysis";
+import { combineTransformers, CreationOptions, TransformContext } from "../ast-transform/transformer";
+import { mergeWithQuantifier } from "../ast-transform/transformers/merge-with-quantifier";
+import { factorOut } from "../ast-transform/transformers/factor-out";
+import { moveUpEmpty } from "../ast-transform/transformers/move-up-empty";
+import { inline } from "../ast-transform/transformers/inline";
+import { unionCharacters } from "../ast-transform/transformers/union-characters";
+import { nestedQuantifiers } from "../ast-transform/transformers/nested-quantifiers";
+import { transform } from "../ast-transform/transform";
 
-type RegexFANodeTransition = NoParent<Concatenation | Alternation | CharacterClass | Quantifier>;
+const TRANSFORMER_CREATION_OPTIONS: CreationOptions = { ignoreAmbiguity: true, ignoreOrder: true };
+const CONCAT_TRANSFORMER = combineTransformers([mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS)]);
+const UNION_TRANSFORMER = combineTransformers([
+	unionCharacters(TRANSFORMER_CREATION_OPTIONS),
+	factorOut(TRANSFORMER_CREATION_OPTIONS),
+	moveUpEmpty(TRANSFORMER_CREATION_OPTIONS),
+	inline(TRANSFORMER_CREATION_OPTIONS),
+]);
+const QUANTIFIER_TRANSFORMER = combineTransformers([nestedQuantifiers(TRANSFORMER_CREATION_OPTIONS)]);
+const FULL_OPTIMIZE_TRANSFORMER = combineTransformers([
+	inline(TRANSFORMER_CREATION_OPTIONS),
+	unionCharacters(TRANSFORMER_CREATION_OPTIONS),
+	factorOut(TRANSFORMER_CREATION_OPTIONS),
+	moveUpEmpty(TRANSFORMER_CREATION_OPTIONS),
+	nestedQuantifiers(TRANSFORMER_CREATION_OPTIONS),
+	mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS),
+]);
+
+type RegexFANodeTransition = NoParent<Concatenation | Element>;
 interface RegexFANode {
 	out: Map<RegexFANode, RegexFANodeTransition>;
 	in: Map<RegexFANode, RegexFANodeTransition>;
@@ -179,6 +194,8 @@ class TransitionCreator {
 					t.min,
 					t.max
 				);
+			case "Assertion":
+				throw new Error("Assertions should not have been part of the created regex.");
 
 			default:
 				throw assertNever(t);
@@ -186,7 +203,10 @@ class TransitionCreator {
 	}
 }
 
-function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: TransitionCreator): NodeList | null {
+function createNodeList<T>(
+	iter: FAIterator<T, Iterable<[T, CharSet]>>,
+	tc: TransitionCreator
+): { nodeList: NodeList; maximumCharacter: number } | null {
 	const nodeList = new NodeList();
 
 	// the state elimination method requires that the initial state isn't final, so we add a temp state
@@ -196,6 +216,8 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: Tran
 
 	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
 	translate.cache.set(iter.initial, tempInitial);
+
+	let maximumCharacter: number | undefined = undefined;
 
 	DFS(iter.initial, n => {
 		// set final
@@ -218,6 +240,11 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: Tran
 		});
 
 		out.forEach(([outNode, charSet]) => {
+			if (maximumCharacter === undefined) {
+				maximumCharacter = charSet.maximum;
+			} else if (charSet.maximum !== maximumCharacter) {
+				throw new Error("All character sets have to have to same maximum.");
+			}
 			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet));
 		});
 
@@ -262,9 +289,9 @@ function createNodeList<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, tc: Tran
 		});
 	});
 
-	return nodeList;
+	return { nodeList, maximumCharacter: maximumCharacter ?? 0 };
 }
-function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
+function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumCharacter: number): void {
 	const initial = nodeList.initial;
 	const final = firstOf(nodeList.finals)!;
 
@@ -276,6 +303,13 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 		return n.out.keys();
 	});
 
+	const transformContext: TransformContext = {
+		maxCharacter: maximumCharacter,
+		signalMutation: () => {
+			/* noop */
+		},
+	};
+
 	function linkWithUnion(from: RegexFANode, to: RegexFANode, trans: RegexFANodeTransition): void {
 		const currentTrans = nodeList.unlinkNodes(from, to);
 		if (currentTrans) {
@@ -284,45 +318,52 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 		nodeList.linkNodes(from, to, trans);
 	}
 
+	function unwrap(a: RegexFANodeTransition): RegexFANodeTransition {
+		if (a.type === "Concatenation") {
+			if (a.elements.length === 1) {
+				return unwrap(a.elements[0]);
+			} else {
+				return a;
+			}
+		} else if (a.type === "Alternation") {
+			if (a.alternatives.length === 1) {
+				return unwrap(a.alternatives[0]);
+			} else {
+				return a;
+			}
+		} else {
+			return a;
+		}
+	}
 	function concat(a: RegexFANodeTransition, b: RegexFANodeTransition): RegexFANodeTransition {
+		let result: NoParent<Concatenation>;
+
 		if (a.type === "Concatenation") {
 			if (a.elements.length === 0) return b;
 			if (b.type === "Concatenation") {
 				a.elements.push(...b.elements);
-			} else if (b.type === "Alternation") {
-				factorOutCommonPreAndSuffix(b);
-				a.elements.push(b);
 			} else {
 				a.elements.push(b);
 			}
-			inlineConcat(a);
-			return a;
-		}
-		if (b.type === "Concatenation") {
+			result = a;
+		} else if (b.type === "Concatenation") {
 			if (b.elements.length === 0) return a;
-			if (a.type === "Alternation") {
-				factorOutCommonPreAndSuffix(a);
-				b.elements.unshift(a);
-			} else {
-				b.elements.unshift(a);
-			}
-			inlineConcat(b);
-			return b;
+			b.elements.unshift(a);
+			result = b;
+		} else {
+			result = tc.concat([a, b]);
 		}
 
-		if (a.type === "Alternation") {
-			factorOutCommonPreAndSuffix(a);
-		}
-		if (b.type === "Alternation") {
-			factorOutCommonPreAndSuffix(b);
-		}
-		const newConcat = tc.concat([a, b]);
-		inlineConcat(newConcat);
-		return newConcat;
+		// optimize quantifiers
+		CONCAT_TRANSFORMER.onConcatenation!({ node: result }, transformContext);
+
+		return unwrap(result);
 	}
-	function asConcatenation(a: NoParent<Element | Concatenation>): NoParent<Concatenation> {
+	function toConcatenation(a: NoParent<Element | Concatenation>): NoParent<Concatenation> {
 		if (a.type === "Concatenation") {
 			return a;
+		} else if (a.type === "Alternation" && a.alternatives.length === 1) {
+			return a.alternatives[0];
 		} else {
 			return tc.concat([a]);
 		}
@@ -333,111 +374,97 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 			return a;
 		}
 
+		let result: NoParent<Alternation>;
 		if (a.type === "Alternation") {
 			if (a.alternatives.length === 0) return b;
 
 			if (b.type === "Alternation") {
 				if (b.alternatives.length === 0) return a;
-
-				for (const alt of b.alternatives) {
-					if (alt.elements.length === 1) {
-						const e = alt.elements[0];
-						if (e.type === "CharacterClass") {
-							unionAlternationAndCharClass(a, e);
-							continue;
-						}
-					}
-					a.alternatives.push(alt);
-				}
-
-				return a;
+				a.alternatives.push(...b.alternatives);
+			} else {
+				a.alternatives.push(toConcatenation(b));
 			}
-
-			if (b.type === "CharacterClass") {
-				unionAlternationAndCharClass(a, b);
-				return a;
-			}
-
-			a.alternatives.push(asConcatenation(b));
-			return a;
-		}
-		if (b.type === "Alternation") {
+			result = a;
+		} else if (b.type === "Alternation") {
 			if (b.alternatives.length === 0) return a;
 
-			if (a.type === "CharacterClass") {
-				unionAlternationAndCharClass(b, a);
-				return b;
-			}
-
-			b.alternatives.push(asConcatenation(a));
-			return b;
+			b.alternatives.push(toConcatenation(a));
+			result = b;
+		} else {
+			result = tc.alter([toConcatenation(a), toConcatenation(b)]);
 		}
 
-		return tc.alter([asConcatenation(a), asConcatenation(b)]);
+		// optimize
+		UNION_TRANSFORMER.onAlternation!({ node: result }, transformContext);
 
-		function unionAlternationAndCharClass(
-			alternation: NoParent<Alternation>,
-			char: NoParent<CharacterClass>
-		): void {
-			for (const alt of alternation.alternatives) {
-				if (alt.elements.length === 1) {
-					const first = alt.elements[0];
-					if (first.type === "CharacterClass") {
-						first.characters = first.characters.union(char.characters);
-						return;
-					}
-				}
-			}
-			alternation.alternatives.push(asConcatenation(char));
-		}
+		return unwrap(result);
 	}
 	function star(a: RegexFANodeTransition): RegexFANodeTransition {
+		let result: NoParent<Quantifier>;
+
 		switch (a.type) {
-			case "Quantifier":
+			case "Quantifier": {
 				if (a.max === 0) return tc.emptyConcat();
 				if (a.min === 0 || a.min === 1) {
 					a.min = 0;
 					a.max = Infinity;
 					return a;
 				}
-				return tc.quantStar([asConcatenation(a)]);
-
-			case "Alternation":
-				return tc.quantStar(a.alternatives);
-
-			case "Concatenation":
+				result = tc.quantStar([toConcatenation(a)]);
+				break;
+			}
+			case "Alternation": {
+				result = tc.quantStar(a.alternatives);
+				break;
+			}
+			case "Concatenation": {
 				if (a.elements.length === 0) return a;
-				return tc.quantStar([a]);
-
-			default:
-				return tc.quantStar([asConcatenation(a)]);
+				result = tc.quantStar([a]);
+				break;
+			}
+			default: {
+				result = tc.quantStar([toConcatenation(a)]);
+				break;
+			}
 		}
+
+		// optimize
+		QUANTIFIER_TRANSFORMER.onQuantifier!({ node: result }, transformContext);
+
+		return unwrap(result);
 	}
 	function plus(a: RegexFANodeTransition): RegexFANodeTransition {
+		let result: NoParent<Quantifier>;
+
 		switch (a.type) {
-			case "Quantifier":
+			case "Quantifier": {
 				if (a.max === 0) return tc.emptyConcat();
-				if (a.min === 0) {
-					a.min = 0;
+				if (a.min === 0 || a.min === 1) {
 					a.max = Infinity;
 					return a;
 				}
-				if (a.min === 1) {
-					a.max = Infinity;
-					return a;
-				}
-				return tc.quantPlus([asConcatenation(a)]);
-
-			case "Alternation":
-				return tc.quantPlus(a.alternatives);
-
-			case "Concatenation":
+				result = tc.quantPlus([toConcatenation(a)]);
+				break;
+			}
+			case "Alternation": {
+				result = tc.quantPlus(a.alternatives);
+				break;
+			}
+			case "Concatenation": {
 				if (a.elements.length === 0) return a;
-				return tc.quantPlus([a]);
-
-			default:
-				return tc.quantPlus([asConcatenation(a)]);
+				result = tc.quantPlus([a]);
+				break;
+			}
+			default: {
+				result = tc.quantPlus([toConcatenation(a)]);
+				break;
+			}
 		}
+
+		// optimize
+		QUANTIFIER_TRANSFORMER.onQuantifier!({ node: result }, transformContext);
+
+		return unwrap(result);
 	}
 
 	function removeTrivialReflexiveTransition(state: RegexFANode): void {
@@ -601,12 +628,13 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator): void {
 function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAstNodes: number): NoParent<Expression> {
 	const tc = new TransitionCreator(maxAstNodes);
 
-	const nodeList = createNodeList(iter, tc);
-	if (nodeList == null) {
+	const result = createNodeList(iter, tc);
+	if (result == null) {
 		return tc.emptyExpression();
 	}
 
-	eliminateStates(nodeList, tc);
+	const { nodeList, maximumCharacter } = result;
+	eliminateStates(nodeList, tc, maximumCharacter);
 
 	const [finalState] = [...nodeList.finals];
 	if (finalState.in.size !== 1 || !finalState.in.has(nodeList.initial)) {
@@ -625,572 +653,17 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAst
 	}
 }
 
-function structurallyEqual(a: NoParent<Element | Concatenation>, b: NoParent<Element | Concatenation>): boolean {
-	if (a.type !== b.type) return false;
-	switch (a.type) {
-		case "Alternation": {
-			const other = b as NoParent<Alternation>;
-			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
-		}
-		case "Assertion": {
-			const other = b as NoParent<Assertion>;
-			if (a.kind !== other.kind || a.negate !== other.negate) return false;
-			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
-		}
-		case "CharacterClass": {
-			const other = b as NoParent<CharacterClass>;
-			return a.characters.equals(other.characters);
-		}
-		case "Concatenation": {
-			const other = b as NoParent<Concatenation>;
-			return structurallyEqualConcatenation(a, other);
-		}
-		case "Quantifier": {
-			const other = b as NoParent<Quantifier>;
-			if (a.min !== other.min || a.max !== other.max) return false;
-			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
-		}
-		default:
-			throw assertNever(a);
-	}
-}
-function structurallyEqualAlternatives(
-	a: readonly NoParent<Concatenation>[],
-	b: readonly NoParent<Concatenation>[]
-): boolean {
-	const l = a.length;
-	if (l !== b.length) return false;
-	for (let i = 0; i < l; i++) {
-		if (!structurallyEqualConcatenation(a[i], b[i])) return false;
-	}
-	return true;
-}
-function structurallyEqualConcatenation(a: NoParent<Concatenation>, b: NoParent<Concatenation>): boolean {
-	const l = a.elements.length;
-	if (l !== b.elements.length) return false;
-	for (let i = 0; i < l; i++) {
-		if (!structurallyEqual(a.elements[i], b.elements[i])) return false;
-	}
-	return true;
-}
-
-/**
- * Multiplies `a` and `b`. This is guaranteed to return `0` if either or both values are `0`.
- *
- * @param a
- * @param b
- */
-function safeMultiply(a: number, b: number): number {
-	if (a === 0 || b === 0) {
-		return 0;
-	} else {
-		return a * b;
-	}
-}
-
-type OfType<N, T> = N extends { type: T } ? N : never;
-type NodeOfType<T extends Node["type"]> = OfType<Node, T>;
-
-function getSingleElement<T extends Element["type"]>(
-	parent: NoParent<Parent>,
-	type: T
-): undefined | NoParent<NodeOfType<T>> {
-	if (parent.alternatives.length === 1) {
-		const alt = parent.alternatives[0];
-		if (alt.elements.length === 1) {
-			const e = alt.elements[0];
-			if (e.type === type) {
-				return e as NoParent<NodeOfType<T>>;
-			}
-		}
-	}
-	return undefined;
-}
-
-function canMatchEmptyString(value: NoParent<Node>): boolean {
-	switch (value.type) {
-		case "Assertion":
-		case "CharacterClass":
-			return false;
-
-		case "Alternation":
-		case "Expression":
-			return value.alternatives.some(canMatchEmptyString);
-
-		case "Concatenation":
-			return value.elements.every(canMatchEmptyString);
-
-		case "Quantifier":
-			return value.min === 0 || value.alternatives.some(canMatchEmptyString);
-
-		default:
-			throw assertNever(value);
-	}
-}
-
-function equalToQuantifiedElement(
-	quant: NoParent<Quantifier>,
-	element: NoParent<Element> | NoParent<Concatenation>
-): boolean {
-	if (element.type === "Alternation") {
-		return structurallyEqualAlternatives(quant.alternatives, element.alternatives);
-	} else if (element.type === "Concatenation") {
-		if (element.elements.length === 1) {
-			return equalToQuantifiedElement(quant, element.elements[0]);
-		} else {
-			return quant.alternatives.length === 1 && structurallyEqualConcatenation(quant.alternatives[0], element);
-		}
-	} else {
-		if (quant.alternatives.length === 1) {
-			const alt = quant.alternatives[0];
-			if (alt.elements.length === 1) {
-				return structurallyEqual(alt.elements[0], element);
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
-}
-
-function inlineAlternatives(parent: NoParent<Parent>): boolean {
-	let inlined = false;
-
-	for (let i = 0; i < parent.alternatives.length; i++) {
-		const concat = parent.alternatives[i];
-		if (concat.elements.length === 1) {
-			const e = concat.elements[0];
-			if (e.type === "Alternation") {
-				parent.alternatives.splice(i, 1, ...e.alternatives);
-				i--;
-				inlined = true;
-			}
-		}
-	}
-
-	return inlined;
-}
-function optimizeEmptyString(parent: NoParent<Parent>): boolean {
-	let optimized = false;
-
-	if (parent.alternatives.length >= 2) {
-		let needQuantifier = true;
-		filterMut(parent.alternatives, alt => {
-			if (alt.elements.length === 0) {
-				optimized = true;
-				return false;
-			}
-
-			if (alt.elements.length === 1) {
-				const first = alt.elements[0];
-				if (first.type === "Quantifier" && first.min === 0 && first.max > 0) {
-					optimized = true;
-					first.min = 1;
-					return true;
-				}
-			}
-
-			if (canMatchEmptyString(alt)) {
-				needQuantifier = false;
-			}
-			return true;
-		});
-
-		if (optimized && needQuantifier) {
-			if (parent.alternatives.length === 0) {
-				// can't do that
-				parent.alternatives.push({ type: "Concatenation", elements: [] });
-			} else {
-				parent.alternatives = [
-					{
-						type: "Concatenation",
-						elements: [
-							{
-								type: "Quantifier",
-								min: 0,
-								max: 1,
-								alternatives: parent.alternatives,
-							},
-						],
-					},
-				];
-			}
-		}
-	}
-
-	return optimized;
-}
-function factorOutCommonPreAndSuffix(parent: NoParent<Parent>): boolean {
-	if (parent.alternatives.length < 2) {
-		return false;
-	}
-
-	let changed = false;
-
-	let prefixLength = 0;
-	let suffixLength = 0;
-	const shortest = parent.alternatives.map(c => c.elements).sort((a, b) => a.length - b.length)[0];
-
-	// find prefix length
-	for (let i = 0; i < shortest.length; i++) {
-		const e = shortest[i];
-		if (parent.alternatives.every(c => structurallyEqual(e, c.elements[i]))) {
-			prefixLength++;
-		} else {
-			break;
-		}
-	}
-	// find suffix length
-	for (let i = 0; i < shortest.length - prefixLength; i++) {
-		const e = shortest[shortest.length - 1 - i];
-		if (parent.alternatives.every(c => structurallyEqual(e, c.elements[c.elements.length - 1 - i]))) {
-			suffixLength++;
-		} else {
-			break;
-		}
-	}
-
-	if (prefixLength > 0 || suffixLength > 0) {
-		changed = true;
-
-		const prefix = shortest.slice(0, prefixLength);
-		const suffix = shortest.slice(shortest.length - suffixLength, shortest.length);
-
-		// remove prefix and suffix
-		const alternatives = parent.alternatives;
-		for (const alt of alternatives) {
-			alt.elements.splice(0, prefixLength);
-			alt.elements.splice(alt.elements.length - suffixLength, suffixLength);
-		}
-
-		parent.alternatives = [
-			{
-				type: "Concatenation",
-				elements: [
-					...prefix,
-					{
-						type: "Alternation",
-						alternatives,
-					},
-					...suffix,
-				],
-			},
-		];
-	}
-
-	return changed;
-}
-const enum MatchingDirection {
-	LTR,
-	RTL,
-}
-function factorOutCommonFromQuantifiersPrefix(parent: NoParent<Parent>, direction: MatchingDirection): boolean {
-	if (parent.alternatives.length < 2 || parent.alternatives.some(a => a.elements.length === 0)) {
-		return false;
-	}
-
-	interface Prefix {
-		readonly alternatives: readonly NoParent<Concatenation>[];
-		constant: number;
-		star: boolean;
-	}
-
-	function getPrefix(alternative: NoParent<Concatenation>): Prefix {
-		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
-		const first = alternative.elements[firstIndex];
-		if (first.type === "Quantifier") {
-			return {
-				alternatives: first.alternatives,
-				constant: first.min,
-				star: first.max === Infinity,
-			};
-		} else {
-			return {
-				alternatives: [{ type: "Concatenation", elements: [first] }],
-				constant: 1,
-				star: false,
-			};
-		}
-	}
-	function combinePrefix(acc: Prefix, other: Readonly<Prefix>): void {
-		if (structurallyEqualAlternatives(acc.alternatives, other.alternatives)) {
-			acc.constant = Math.min(acc.constant, other.constant);
-			acc.star = acc.star && other.star;
-		} else {
-			acc.constant = 0;
-			acc.star = false;
-		}
-	}
-	function subtractPrefix(prefix: Readonly<Prefix>, alternative: NoParent<Concatenation>): void {
-		const firstIndex = direction === MatchingDirection.LTR ? 0 : alternative.elements.length - 1;
-		const first = alternative.elements[firstIndex];
-		if (first.type === "Quantifier") {
-			if (prefix.constant > first.min) {
-				throw new Error("Cannot subtract prefix");
-			}
-			first.min -= prefix.constant;
-			first.max -= prefix.constant;
-			if (prefix.star) {
-				if (first.max !== Infinity) {
-					throw new Error("Cannot subtract prefix");
-				}
-				first.max = first.min;
-			}
-
-			if (first.max === 0) {
-				alternative.elements.splice(firstIndex, 1);
-			}
-		} else {
-			if (prefix.constant !== 1 || prefix.star) {
-				throw new Error("Cannot subtract prefix");
-			}
-			alternative.elements.splice(firstIndex, 1);
-		}
-	}
-
-	let changed = false;
-
-	let prefix: Prefix | undefined = undefined;
-	for (const alt of parent.alternatives) {
-		if (prefix === undefined) {
-			prefix = getPrefix(alt);
-		} else {
-			combinePrefix(prefix, getPrefix(alt));
-			if (prefix.constant === 0 && prefix.star === false) {
-				break;
-			}
-		}
-	}
-
-	if (prefix && (prefix.constant > 0 || prefix.star)) {
-		changed = true;
-
-		for (const alt of parent.alternatives) {
-			subtractPrefix(prefix, alt);
-		}
-
-		const prefixElement: NoParent<Quantifier> = {
-			type: "Quantifier",
-			alternatives: prefix.alternatives.map(alt => new TransitionCreator(Infinity).copy(alt)),
-			min: prefix.constant,
-			max: prefix.star ? Infinity : prefix.constant,
-		};
-		const elements: NoParent<Element>[] = [
-			{
-				type: "Alternation",
-				alternatives: parent.alternatives,
-			},
-		];
-
-		if (direction === MatchingDirection.LTR) {
-			elements.unshift(prefixElement);
-		} else {
-			elements.push(prefixElement);
-		}
-
-		parent.alternatives = [{ type: "Concatenation", elements }];
-	}
-
-	return changed;
-}
-function factorOutCommonFromQuantifiers(parent: NoParent<Parent>): boolean {
-	return (
-		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.LTR) ||
-		factorOutCommonFromQuantifiersPrefix(parent, MatchingDirection.RTL)
-	);
-}
-function combineSingleCharacterAlternatives(parent: NoParent<Parent>): boolean {
-	let changed = false;
-
-	let main: NoParent<CharacterClass> | undefined = undefined;
-	filterMut(parent.alternatives, alt => {
-		if (alt.elements.length === 1) {
-			const first = alt.elements[0];
-			if (first.type === "CharacterClass") {
-				if (main === undefined) {
-					main = first;
-				} else {
-					main.characters = main.characters.union(first.characters);
-					changed = true;
-					return false;
-				}
-			}
-		}
-		return true;
-	});
-
-	return changed;
-}
-function inlineConcat(concat: NoParent<Concatenation>): boolean {
-	let inlined = false;
-
-	for (let i = 0; i < concat.elements.length; i++) {
-		let e = concat.elements[i];
-
-		// e.g. ab{1} -> ab , a(?:a*b*)? -> a(?:a*b*)
-		if (e.type === "Quantifier" && e.max === 1) {
-			const canInline = e.min === 1 || (e.min === 0 && e.alternatives.some(canMatchEmptyString));
-			if (canInline) {
-				concat.elements[i] = e = {
-					type: "Alternation",
-					alternatives: e.alternatives,
-				};
-				inlined = true;
-			}
-		}
-
-		// e.g. a(?:bc)d -> abcd
-		if (e.type === "Alternation" && e.alternatives.length === 1) {
-			concat.elements.splice(i, 1, ...e.alternatives[0].elements);
-			i--;
-			inlined = true;
-		}
-	}
-
-	return inlined;
-}
-function letQuantifiersConsumeNeighbors(elements: NoParent<Element>[]): boolean {
-	let optimized = false;
-
-	function consumeUsingInfiniteQuantifier(
-		quant: Readonly<NoParent<Quantifier>>,
-		after: NoParent<Element>,
-		direction: MatchingDirection
-	): void {
-		if (
-			// quant = a{n,}
-			quant.max === Infinity &&
-			// after = (a|b) or (a|b){0,1}
-			(after.type === "Alternation" || (after.type === "Quantifier" && after.max === 1))
-		) {
-			for (const alt of after.alternatives) {
-				const firstIndex = direction === MatchingDirection.LTR ? 0 : alt.elements.length - 1;
-				const first: NoParent<Element> | undefined = alt.elements[firstIndex];
-				if (first) {
-					if (after.type === "Quantifier" && after.min === 0 && equalToQuantifiedElement(quant, first)) {
-						alt.elements.splice(firstIndex, 1);
-						optimized = true;
-					} else if (
-						first.type === "Quantifier" &&
-						first.max !== first.min &&
-						structurallyEqualAlternatives(quant.alternatives, first.alternatives)
-					) {
-						// we found a nested quantifier we can (partially) consume
-						first.max = first.min;
-						if (first.max === 0) {
-							// remove the quantifier
-							alt.elements.splice(firstIndex, 1);
-						}
-						optimized = true;
-					} else if (first.type === "Alternation" || (first.type === "Quantifier" && first.max === 1)) {
-						// go into
-						// e.g. /a*((a*|b)c|d)/, here we go from ((a*|b)c|d) into (a*|b)
-						consumeUsingInfiniteQuantifier(quant, first, direction);
-					}
-				}
-			}
-		}
-	}
-	function consumeNonQuantifier(direction: MatchingDirection): void {
-		// make e.g. a*a -> a+
-		filterMut(elements, (after, quant) => {
-			if (quant && quant.type === "Quantifier" && equalToQuantifiedElement(quant, after)) {
-				// e.g. a*a
-				quant.min++;
-				quant.max++;
-				optimized = true;
-				return false;
-			} else {
-				return true;
-			}
-		});
-
-		// make e.g. a*(a+|b*)? -> a*(a|b*)
-		for (let i = 1; i < elements.length; i++) {
-			const quant = elements[i - 1];
-			const after = elements[i];
-			if (quant.type === "Quantifier") {
-				consumeUsingInfiniteQuantifier(quant, after, direction);
-			}
-		}
-	}
-
-	consumeNonQuantifier(MatchingDirection.LTR);
-	elements.reverse();
-	consumeNonQuantifier(MatchingDirection.RTL);
-	elements.reverse();
-
-	// make e.g. a*a+ -> a+
-	filterMut(elements, (after, quant) => {
-		if (quant && quant.type === "Quantifier" && after.type === "Quantifier") {
-			if (structurallyEqualAlternatives(quant.alternatives, after.alternatives)) {
-				// e.g. a+a* -> a+ , a{2,6}a{1,3} -> a{3,9}
-				quant.min += after.min;
-				quant.max += after.max;
-				optimized = true;
-				return false;
-			}
-		}
-		return true;
-	});
-
-	return optimized;
-}
-
-function optimize(expr: NoParent<Expression>): boolean {
-	let optimized = false;
-
-	function onNodeWithAlternatives(node: NoParent<Alternation | Assertion | Expression | Quantifier>): void {
-		optimized = inlineAlternatives(node) || optimized;
-		optimized = optimizeEmptyString(node) || optimized;
-		optimized = factorOutCommonPreAndSuffix(node) || optimized;
-		optimized = factorOutCommonFromQuantifiers(node) || optimized;
-		optimized = combineSingleCharacterAlternatives(node) || optimized;
-	}
-
-	visitAst(expr, {
-		onAlternationLeave: onNodeWithAlternatives,
-		onAssertionLeave: onNodeWithAlternatives,
-		onExpressionLeave: onNodeWithAlternatives,
-
-		onConcatenationLeave(node) {
-			optimized = inlineConcat(node) || optimized;
-			optimized = letQuantifiersConsumeNeighbors(node.elements) || optimized;
-		},
-
-		onQuantifierLeave(node) {
-			onNodeWithAlternatives(node);
-
-			// e.g. (?:a+)? -> a*
-			if (node.min === 0 || node.min === 1) {
-				const e = getSingleElement(node, "Quantifier");
-				if (e && (e.min === 0 || e.min === 1)) {
-					node.min *= e.min;
-					node.max = safeMultiply(node.max, e.max);
-					node.alternatives = e.alternatives;
-					optimized = true;
-				}
-			}
-		},
-	});
-
-	return optimized;
-}
-
 export function toRegex<T>(
 	iter: FAIterator<T, Iterable<[T, CharSet]>>,
 	options?: Readonly<ToRegexOptions>
 ): NoParent<Expression> {
 	const maxAstNodes = options?.maximumNodes ?? 10000;
-	let optimizationPasses = options?.maximumOptimizationPasses ?? Infinity;
-
 	const expression = stateElimination(iter, maxAstNodes);
 
 	// optimize
-	while (optimizationPasses > 0 && optimize(expression)) {
-		optimizationPasses--;
-	}
+	transform(FULL_OPTIMIZE_TRANSFORMER, expression, {
+		maxPasses: options?.maximumOptimizationPasses ?? Infinity,
+	});
 
 	return expression;
 }

@@ -1,0 +1,132 @@
+import { Expression, Node, NoParent, visitAst } from "../ast";
+import { NodePath, Transformer, TransformContext } from "./transformer";
+
+export interface TransformOptions {
+	/**
+	 * The maximum number of times the transformer will be applied to the AST.
+	 *
+	 * This is only a maximum. The transformer will be stopped before this number is reach if the AST isn't modified
+	 * anymore.
+	 *
+	 * @default Infinity
+	 */
+	maxPasses?: number;
+}
+
+/**
+ * Transforms the given expression according to the given transformer.
+ *
+ * This operation ignores the `parent` properties of all nodes. The `parent` properties are __not__ maintained. If the
+ * given expression is used without the `NoParent` view after this operation, the `parent` properties have to be
+ * restored with the `setParent` function.
+ *
+ * @param transformer
+ * @param ast
+ * @param options
+ */
+export function transform(
+	transformer: Transformer,
+	ast: NoParent<Expression>,
+	options?: Readonly<TransformOptions>
+): void {
+	options = options ?? {};
+	let passesLeft = options.maxPasses ?? Infinity;
+
+	const context: Context = {
+		transformer,
+		ast,
+		maxCharacter: determineMaxCharacter(ast),
+	};
+
+	for (; passesLeft >= 1; passesLeft--) {
+		if (!transformPass(context)) {
+			break;
+		}
+	}
+}
+
+/**
+ * The will return the maximum of the first charset is finds or 1 if no charset were found.
+ *
+ * @param ast
+ */
+function determineMaxCharacter(ast: NoParent<Expression>): number {
+	try {
+		visitAst(ast, {
+			onCharacterClassEnter(node) {
+				throw node.characters.maximum;
+			},
+		});
+		return 0;
+	} catch (e) {
+		if (typeof e === "number") {
+			return e;
+		}
+		throw e;
+	}
+}
+
+interface Context {
+	transformer: Transformer;
+	ast: NoParent<Expression>;
+	maxCharacter: number;
+}
+
+function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
+	let changed = false;
+	const transformerContext: TransformContext = {
+		maxCharacter,
+		signalMutation() {
+			changed = true;
+		},
+	};
+
+	let path: NodePath<any> | null = null;
+
+	function enterNode(node: NoParent<Node>): void {
+		path = new NodePathImpl<any>(node, path);
+	}
+	function leaveNode(node: NoParent<Node>): void {
+		if (path === null) {
+			throw new Error("Path cannot be null.");
+		}
+
+		const fnName = "on" + node.type;
+
+		transformer;
+		const fn = transformer[fnName as keyof Transformer];
+		if (fn) {
+			fn(path as any, transformerContext);
+		}
+
+		path = path.parent;
+	}
+
+	visitAst(ast, {
+		onAlternationLeave: leaveNode,
+		onAssertionLeave: leaveNode,
+		onCharacterClassLeave: leaveNode,
+		onConcatenationLeave: leaveNode,
+		onExpressionLeave: leaveNode,
+		onQuantifierLeave: leaveNode,
+
+		onAlternationEnter: enterNode,
+		onAssertionEnter: enterNode,
+		onCharacterClassEnter: enterNode,
+		onConcatenationEnter: enterNode,
+		onExpressionEnter: enterNode,
+		onQuantifierEnter: enterNode,
+	});
+
+	return changed;
+}
+
+class NodePathImpl<N extends Node> implements NodePath<N> {
+	node: NoParent<N>;
+	parent: NodePath<N>["parent"];
+
+	constructor(node: NoParent<N>, parent: NodePath<N>["parent"]) {
+		this.node = node;
+		this.parent = parent;
+	}
+}
