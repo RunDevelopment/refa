@@ -1,8 +1,8 @@
 import { assert } from "chai";
-import { literalToString, literalToNFA, nfaEqual } from "./helper/fa";
-import { Literal, toLiteral } from "../src/js";
-import { NFA } from "../src/nfa";
-import { ToRegexOptions } from "../src/finite-automaton";
+import { literalToString, literalToNFA, nfaEqual } from "../helper/fa";
+import { Literal, toLiteral } from "../../src/js";
+import { NFA } from "../../src/nfa";
+import { ToRegexOptions } from "../../src/finite-automaton";
 
 describe("toRegex", function () {
 	describe("Literals", function () {
