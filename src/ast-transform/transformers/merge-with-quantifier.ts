@@ -1,7 +1,7 @@
 import { Element, Quantifier, NoParent } from "../../ast";
 import { MatchingDirection, structurallyEqual, structurallyEqualToQuantifiedElement } from "../../ast-analysis";
 import { filterMut } from "../../util";
-import { CreationOptions, TransformContext, PureTransformer } from "../transformer";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 
 function consumeUsingInfiniteQuantifier(
 	quant: Readonly<NoParent<Quantifier>>,
@@ -48,7 +48,7 @@ function consumeUsingInfiniteQuantifier(
  *
  * E.g. `/a*a/` => `/a+/`, `/a*(?:a+|c)/` => `/a*(?:a|c)/`
  */
-export function mergeWithQuantifier(options?: Readonly<CreationOptions>): PureTransformer {
+export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transformer {
 	// This will preserve the order of alternatives ASSUMING that there are no greedy vs lazy quantifiers.
 	// This has to be changed as soon as lazy/greedy quantifiers are added.
 
@@ -93,7 +93,7 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): PureTr
 	}
 
 	return {
-		onConcatenation({ node }, context) {
+		onConcatenation(node, context) {
 			const elements = node.elements;
 			const { signalMutation } = context;
 

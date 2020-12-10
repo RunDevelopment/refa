@@ -1,14 +1,15 @@
-import { Assertion, Concatenation, NoParent } from "../../ast";
+import { Assertion, Concatenation, Expression, Node, NoParent, visitAst } from "../../ast";
 import {
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
 	getLengthRange,
 	hasSomeDescendant,
 	isPotentiallyEmpty,
+	stackPath,
 	toMatchingDirection,
 } from "../../ast-analysis";
-import { emptyAlternation, toPath } from "../util";
-import { NodePath, Transformer, TransformContext } from "../transformer";
+import { emptyAlternation } from "../util";
+import { Transformer, TransformContext } from "../transformer";
 
 const enum Result {
 	ACCEPT,
@@ -16,7 +17,7 @@ const enum Result {
 	DEPENDS_ON_INPUT,
 }
 function analyzeAssertion(
-	parentPath: NodePath<Concatenation>,
+	concatStack: readonly NoParent<Node>[],
 	assertion: NoParent<Assertion>,
 	maxCharacter: number
 ): Result {
@@ -36,7 +37,7 @@ function analyzeAssertion(
 		// with the first character the assertion asserts. This will filter out a lot of trivial assertions.
 
 		const direction = toMatchingDirection(assertion.kind);
-		const after = getFirstCharAfter(toPath(parentPath, assertion), direction, maxCharacter);
+		const after = getFirstCharAfter(stackPath(concatStack, assertion), direction, maxCharacter);
 		if (after.edge) {
 			return Result.DEPENDS_ON_INPUT;
 		}
@@ -72,32 +73,61 @@ function analyzeAssertion(
 	}
 }
 
+function onConcatenation(
+	node: NoParent<Concatenation>,
+	concatStack: readonly NoParent<Node>[],
+	{ signalMutation, maxCharacter }: TransformContext
+): void {
+	for (let i = 0; i < node.elements.length; i++) {
+		const current = node.elements[i];
+		if (current.type === "Assertion") {
+			const result = analyzeAssertion(concatStack, current, maxCharacter);
+			if (result === Result.ACCEPT) {
+				// remove assertion
+				node.elements.splice(i, 1);
+				signalMutation();
+				i--;
+			} else if (result === Result.REJECT) {
+				node.elements = [emptyAlternation()];
+				signalMutation();
+				break;
+			} else {
+				// do nothing
+			}
+		}
+	}
+}
+
 /**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
  */
 export function removeUnnecessaryAssertions(): Transformer {
 	return {
-		onConcatenation(path: NodePath<Concatenation>, { signalMutation, maxCharacter }: TransformContext) {
-			const { node } = path;
-
-			for (let i = 0; i < node.elements.length; i++) {
-				const current = node.elements[i];
-				if (current.type === "Assertion") {
-					const result = analyzeAssertion(path, current, maxCharacter);
-					if (result === Result.ACCEPT) {
-						// remove assertion
-						node.elements.splice(i, 1);
-						signalMutation();
-						i--;
-					} else if (result === Result.REJECT) {
-						node.elements = [emptyAlternation()];
-						signalMutation();
-						break;
-					} else {
-						// do nothing
-					}
-				}
+		onExpression(node: NoParent<Expression>, context: TransformContext): void {
+			const stack: NoParent<Node>[] = [];
+			function enter(node: never): void {
+				stack.push(node);
 			}
+			function leave(): void {
+				stack.pop();
+			}
+
+			visitAst(node, {
+				onAlternationEnter: enter,
+				onAssertionEnter: enter,
+				onConcatenationEnter: enter,
+				onExpressionEnter: enter,
+				onQuantifierEnter: enter,
+
+				onAlternationLeave: leave,
+				onAssertionLeave: leave,
+				onConcatenationLeave(node) {
+					onConcatenation(node, stack, context);
+					leave();
+				},
+				onExpressionLeave: leave,
+				onQuantifierLeave: leave,
+			});
 		},
 	};
 }

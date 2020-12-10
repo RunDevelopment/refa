@@ -1,5 +1,5 @@
 import { Expression, Node, NoParent, visitAst } from "../ast";
-import { NodePath, Transformer, TransformContext } from "./transformer";
+import { Transformer, TransformContext } from "./transformer";
 
 export interface TransformOptions {
 	/**
@@ -81,25 +81,14 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 		},
 	};
 
-	let path: NodePath<any> | null = null;
-
-	function enterNode(node: NoParent<Node>): void {
-		path = new NodePathImpl<any>(node, path);
-	}
 	function leaveNode(node: NoParent<Node>): void {
-		if (path === null) {
-			throw new Error("Path cannot be null.");
-		}
-
 		const fnName = "on" + node.type;
 
 		transformer;
 		const fn = transformer[fnName as keyof Transformer];
 		if (fn) {
-			fn(path as any, transformerContext);
+			fn(node as any, transformerContext);
 		}
-
-		path = path.parent;
 	}
 
 	visitAst(ast, {
@@ -109,24 +98,7 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 		onConcatenationLeave: leaveNode,
 		onExpressionLeave: leaveNode,
 		onQuantifierLeave: leaveNode,
-
-		onAlternationEnter: enterNode,
-		onAssertionEnter: enterNode,
-		onCharacterClassEnter: enterNode,
-		onConcatenationEnter: enterNode,
-		onExpressionEnter: enterNode,
-		onQuantifierEnter: enterNode,
 	});
 
 	return changed;
-}
-
-class NodePathImpl<N extends Node> implements NodePath<N> {
-	node: NoParent<N>;
-	parent: NodePath<N>["parent"];
-
-	constructor(node: NoParent<N>, parent: NodePath<N>["parent"]) {
-		this.node = node;
-		this.parent = parent;
-	}
 }

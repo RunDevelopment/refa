@@ -1,8 +1,8 @@
 import { Concatenation, Element, Parent, Assertion, NoParent } from "../../ast";
 import { assertNever } from "../../util";
-import { CreationOptions, TransformContext, PureTransformer, NodeObject } from "../transformer";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 
-function onConcatenation({ node }: NodeObject<Concatenation>, { signalMutation }: TransformContext): void {
+function onConcatenation(node: NoParent<Concatenation>, { signalMutation }: TransformContext): void {
 	for (let i = 0; i < node.elements.length; i++) {
 		const current = node.elements[i];
 
@@ -37,7 +37,7 @@ function onConcatenation({ node }: NodeObject<Concatenation>, { signalMutation }
 		}
 	}
 }
-function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformContext): void {
+function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
 	for (let i = 0; i < node.alternatives.length; i++) {
 		const { elements } = node.alternatives[i];
 		if (elements.length === 1) {
@@ -50,10 +50,9 @@ function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformCon
 		}
 	}
 }
-function onAssertion(path: NodeObject<Assertion>, context: TransformContext): void {
-	onParent(path, context);
+function onAssertion(node: NoParent<Assertion>, context: TransformContext): void {
+	onParent(node, context);
 
-	const { node } = path;
 	if (node.alternatives.length === 1 && node.alternatives[0].elements.length === 1) {
 		const single = node.alternatives[0].elements[0];
 		if (single.type === "Assertion") {
@@ -114,7 +113,7 @@ function onAssertion(path: NodeObject<Assertion>, context: TransformContext): vo
  * This transformer will simplify the AST by doing trivial inlining operations.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function inline(_options?: Readonly<CreationOptions>): PureTransformer {
+export function inline(_options?: Readonly<CreationOptions>): Transformer {
 	// we can safely ignore the options as order and ambiguity are guaranteed to be preserved
 	return {
 		onConcatenation,

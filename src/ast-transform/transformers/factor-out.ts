@@ -2,7 +2,7 @@ import { Element, Parent, NoParent, Concatenation } from "../../ast";
 import { MatchingDirection, structurallyEqual } from "../../ast-analysis";
 import { CharSet } from "../../char-set";
 import { minOf } from "../../util";
-import { CreationOptions, TransformContext, PureTransformer, NodeObject } from "../transformer";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 import { copySource } from "../util";
 
 function getPrefixAndSuffix(node: NoParent<Parent>): { prefix: NoParent<Element>[]; suffix: NoParent<Element>[] } {
@@ -119,6 +119,9 @@ function subtractConcatenationCharPrefix(
 
 		if (first.max === 0) {
 			alternative.elements.splice(firstIndex, 1);
+		} else if (first.min === 1 && first.max === 1) {
+			// we know that it's a single-character quantifier
+			alternative.elements[firstIndex] = first.alternatives[0].elements[0];
 		}
 	}
 }
@@ -158,7 +161,7 @@ function tryFactorOutQuantifiedCharacter(node: NoParent<Parent>, direction: Matc
 	return false;
 }
 
-function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformContext): void {
+function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
 	if (node.alternatives.length < 2) {
 		return;
 	}
@@ -212,7 +215,7 @@ function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformCon
  * E.g. `(?:abc|abc|abc)` => `(?:abc(?:||))`
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function factorOut(_options?: Readonly<CreationOptions>): PureTransformer {
+export function factorOut(_options?: Readonly<CreationOptions>): Transformer {
 	// we can safely ignore the options as order and ambiguity are guaranteed to be preserved
 	return {
 		onAlternation: onParent,

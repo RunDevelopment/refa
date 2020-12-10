@@ -1,49 +1,18 @@
-import {
-	Alternation,
-	Assertion,
-	CharacterClass,
-	Concatenation,
-	Element,
-	Expression,
-	Node,
-	Quantifier,
-	NoParent,
-} from "../ast";
+import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Quantifier, NoParent } from "../ast";
 
-export interface PureTransformer {
-	onAlternation?(path: NodeObject<Alternation>, context: TransformContext): void;
-	onAssertion?(path: NodeObject<Assertion>, context: TransformContext): void;
-	onCharacterClass?(path: NodeObject<CharacterClass>, context: TransformContext): void;
-	onConcatenation?(path: NodeObject<Concatenation>, context: TransformContext): void;
-	onExpression?(path: NodeObject<Expression>, context: TransformContext): void;
-	onQuantifier?(path: NodeObject<Quantifier>, context: TransformContext): void;
-}
 /**
  * A transform is some algorithm that takes a AST sub tree and makes any number of modifications to the given sub tree.
- * They are not allowed to modify anything outside the given sub tree.
+ * They cannot see or modify anything outside the given sub tree.
  *
  * Transformers are always applied bottom-up.
  */
-export interface Transformer extends PureTransformer {
-	onAlternation?(path: NodePath<Alternation>, context: TransformContext): void;
-	onAssertion?(path: NodePath<Assertion>, context: TransformContext): void;
-	onCharacterClass?(path: NodePath<CharacterClass>, context: TransformContext): void;
-	onConcatenation?(path: NodePath<Concatenation>, context: TransformContext): void;
-	onExpression?(path: NodePath<Expression>, context: TransformContext): void;
-	onQuantifier?(path: NodePath<Quantifier>, context: TransformContext): void;
-}
-
-export interface NodeObject<N extends Node> {
-	readonly node: NoParent<N>;
-}
-export interface NodePath<N extends Node> extends NodeObject<N> {
-	readonly parent: N extends Element
-		? NodePath<Element["parent"]>
-		: N extends Concatenation
-		? NodePath<Concatenation["parent"]>
-		: N extends Expression
-		? null
-		: never;
+export interface Transformer {
+	onAlternation?(node: NoParent<Alternation>, context: TransformContext): void;
+	onAssertion?(node: NoParent<Assertion>, context: TransformContext): void;
+	onCharacterClass?(node: NoParent<CharacterClass>, context: TransformContext): void;
+	onConcatenation?(node: NoParent<Concatenation>, context: TransformContext): void;
+	onExpression?(node: NoParent<Expression>, context: TransformContext): void;
+	onQuantifier?(node: NoParent<Quantifier>, context: TransformContext): void;
 }
 
 export interface TransformContext {
@@ -79,21 +48,19 @@ export interface CreationOptions {
  * Creates a new transformer that performs all given transformers in sequentially in order for each node.
  *
  * If only one transformer is given, the returned transformer will be functionally equivalent. If no transformers are
- * given, the returned transformer will be functionally equivalent to the noop transformer.
+ * given, the returned transformer will be equivalent to a noop transformer.
  *
- * The given iterable can be changed are reused after this function returned.
+ * The given iterable can be changed and reused after this function returns.
  *
  * @param transformers
  */
-export function combineTransformers(transformers: Iterable<PureTransformer>): PureTransformer;
-export function combineTransformers(transformers: Iterable<Transformer>): Transformer;
 export function combineTransformers(transformers: Iterable<Transformer>): Transformer {
 	const array = [...transformers].filter(t => !isNoop(t));
 	if (array.length === 0) {
 		return noop();
 	}
 
-	type OnFunction = (path: NodePath<never>, context: TransformContext) => void;
+	type OnFunction = (path: never, context: TransformContext) => void;
 
 	const functionLists: Partial<Record<keyof Transformer, OnFunction[]>> = {};
 	for (const t of array) {

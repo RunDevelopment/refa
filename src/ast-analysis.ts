@@ -150,7 +150,11 @@ export function isPotentiallyEmpty(node: NoParent<Node> | NoParent<Concatenation
  * nodes in the regular expression.
  */
 export function isTriviallyAccepting(assertion: NoParent<Assertion>): boolean {
-	return !assertion.negate && isPotentiallyEmpty(assertion.alternatives);
+	if (assertion.negate) {
+		return assertion.alternatives.length === 0;
+	} else {
+		return isPotentiallyEmpty(assertion.alternatives);
+	}
 }
 
 export type Descendants<T extends Node> = T | RealDescendants<T>;

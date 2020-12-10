@@ -1,5 +1,5 @@
-import { Assertion, Concatenation, NoParent } from "../../ast";
-import { CreationOptions, TransformContext, PureTransformer, NodeObject } from "../transformer";
+import { Assertion, NoParent } from "../../ast";
+import { CreationOptions, Transformer } from "../transformer";
 
 function compare(a: NoParent<Assertion>, b: NoParent<Assertion>): number {
 	if (a.kind !== b.kind) {
@@ -39,9 +39,9 @@ function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): boolean {
  * This is operation may be necessary for other transformers to pick up on certain patterns.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function sortAssertions(_options?: Readonly<CreationOptions>): PureTransformer {
+export function sortAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
-		onConcatenation({ node }: NodeObject<Concatenation>, { signalMutation }: TransformContext) {
+		onConcatenation(node, { signalMutation }) {
 			let runStart = 0;
 			let runLength = 0;
 			function sort(): void {

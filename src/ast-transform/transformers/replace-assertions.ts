@@ -1,4 +1,6 @@
-import { CreationOptions, PureTransformer } from "../transformer";
+import { NoParent, Parent } from "../../ast";
+import { filterMut } from "../../util";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 
 export interface RemoveAssertionsCreationOptions extends CreationOptions {
 	/**
@@ -7,28 +9,39 @@ export interface RemoveAssertionsCreationOptions extends CreationOptions {
 	replacement?: "empty-set" | "empty-word";
 }
 
+function onParent(node: NoParent<Parent>, context: TransformContext): void {
+	filterMut(node.alternatives, alternative => {
+		if (alternative.elements.some(e => e.type === "Assertion")) {
+			context.signalMutation();
+			return false;
+		}
+		return true;
+	});
+}
+
 /**
  * This transformer will all assertions with either the empty set or the empty word.
  */
-export function replaceAssertions(options?: Readonly<RemoveAssertionsCreationOptions>): PureTransformer {
+export function replaceAssertions(options?: Readonly<RemoveAssertionsCreationOptions>): Transformer {
 	const replacement = options?.replacement ?? "empty-set";
 
-	return {
-		onConcatenation({ node }, { signalMutation }) {
-			for (let i = 0; i < node.elements.length; i++) {
-				const element = node.elements[i];
-
-				if (element.type === "Assertion") {
-					signalMutation();
-					if (replacement === "empty-word") {
-						node.elements.splice(i, 1);
-						i--;
-					} else {
-						node.elements = [{ type: "Alternation", alternatives: [] }];
-						return;
+	if (replacement === "empty-word") {
+		return {
+			onConcatenation(node, { signalMutation }) {
+				filterMut(node.elements, element => {
+					if (element.type === "Assertion") {
+						signalMutation();
+						return false;
 					}
-				}
-			}
-		},
-	};
+					return true;
+				});
+			},
+		};
+	} else {
+		return {
+			onAlternation: onParent,
+			onExpression: onParent,
+			onQuantifier: onParent,
+		};
+	}
 }

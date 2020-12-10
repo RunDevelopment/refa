@@ -355,7 +355,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumChara
 		}
 
 		// optimize quantifiers
-		CONCAT_TRANSFORMER.onConcatenation!({ node: result }, transformContext);
+		CONCAT_TRANSFORMER.onConcatenation!(result, transformContext);
 
 		return unwrap(result);
 	}
@@ -395,7 +395,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumChara
 		}
 
 		// optimize
-		UNION_TRANSFORMER.onAlternation!({ node: result }, transformContext);
+		UNION_TRANSFORMER.onAlternation!(result, transformContext);
 
 		return unwrap(result);
 	}
@@ -429,7 +429,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumChara
 		}
 
 		// optimize
-		QUANTIFIER_TRANSFORMER.onQuantifier!({ node: result }, transformContext);
+		QUANTIFIER_TRANSFORMER.onQuantifier!(result, transformContext);
 
 		return unwrap(result);
 	}
@@ -462,7 +462,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumChara
 		}
 
 		// optimize
-		QUANTIFIER_TRANSFORMER.onQuantifier!({ node: result }, transformContext);
+		QUANTIFIER_TRANSFORMER.onQuantifier!(result, transformContext);
 
 		return unwrap(result);
 	}

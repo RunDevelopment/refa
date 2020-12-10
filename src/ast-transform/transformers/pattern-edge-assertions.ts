@@ -1,16 +1,7 @@
 import { Alternation, Assertion, Concatenation, NoParent, Parent } from "../../ast";
-import { CreationOptions, noop, PureTransformer, TransformContext } from "../transformer";
+import { CreationOptions, noop, Transformer, TransformContext } from "../transformer";
 import { isZeroLength } from "../../ast-analysis";
-
-function at<T>(arr: readonly T[], index: number): T {
-	if (index < 0) {
-		index += arr.length;
-	}
-	return arr[index];
-}
-function inRange(arr: ReadonlyArray<unknown>, index: number): boolean {
-	return index < arr.length && -index <= arr.length;
-}
+import { at, inRange } from "../util";
 
 export interface PatternEdgeAssertionsCreationOptions extends CreationOptions {
 	/**
@@ -37,7 +28,7 @@ export interface PatternEdgeAssertionsCreationOptions extends CreationOptions {
  *
  * If neither inlining nor removal are active, then this transformer won't do anything.
  */
-export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCreationOptions>): PureTransformer {
+export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCreationOptions>): Transformer {
 	const inline = options?.inline ?? true;
 	const remove = options?.remove ?? false;
 
@@ -108,7 +99,7 @@ export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCr
 		return noop();
 	} else {
 		return {
-			onExpression({ node }, context) {
+			onExpression(node, context) {
 				handleEdge(node, context, Edge.START);
 				handleEdge(node, context, Edge.END);
 			},

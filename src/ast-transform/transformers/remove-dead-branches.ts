@@ -1,6 +1,6 @@
 import { Concatenation, Element, Node, Parent, NoParent } from "../../ast";
 import { assertNever } from "../../util";
-import { CreationOptions, TransformContext, PureTransformer, NodeObject } from "../transformer";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 
 function isDead(node: NoParent<Node>): boolean {
 	switch (node.type) {
@@ -29,7 +29,7 @@ function isDead(node: NoParent<Node>): boolean {
 	}
 }
 
-function onConcatenation({ node }: NodeObject<Concatenation>, { signalMutation }: TransformContext): void {
+function onConcatenation(node: NoParent<Concatenation>, { signalMutation }: TransformContext): void {
 	let dead: NoParent<Element> | null = null;
 
 	for (let i = 0; i < node.elements.length && !dead; i++) {
@@ -56,7 +56,7 @@ function onConcatenation({ node }: NodeObject<Concatenation>, { signalMutation }
 		signalMutation();
 	}
 }
-function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformContext): void {
+function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
 	for (let i = 0; i < node.alternatives.length; i++) {
 		const current = node.alternatives[i];
 		if (isDead(current)) {
@@ -75,7 +75,7 @@ function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformCon
  * __Note__: This operation may produce parent nodes with 0 alternatives.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function removeDeadBranches(_options?: Readonly<CreationOptions>): PureTransformer {
+export function removeDeadBranches(_options?: Readonly<CreationOptions>): Transformer {
 	return {
 		onConcatenation,
 

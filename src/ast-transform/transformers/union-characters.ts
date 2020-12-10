@@ -1,6 +1,6 @@
 import { CharacterClass, Concatenation, Parent, NoParent } from "../../ast";
 import { filterMut } from "../../util";
-import { CreationOptions, TransformContext, PureTransformer, NodeObject } from "../transformer";
+import { CreationOptions, TransformContext, Transformer } from "../transformer";
 
 function isSingleCharacterAlternative(
 	alt: NoParent<Concatenation>
@@ -14,11 +14,11 @@ function isSingleCharacterAlternative(
  * This rule will try to combine as many character classes as possible to simplify the regular expression.
  * E.g. `a|b|c` => `[abc]`.
  */
-export function unionCharacters(options?: Readonly<CreationOptions>): PureTransformer {
+export function unionCharacters(options?: Readonly<CreationOptions>): Transformer {
 	const preserveOrder = !options?.ignoreOrder;
 	const preserveAmbiguity = !options?.ignoreAmbiguity;
 
-	function onParent({ node }: NodeObject<Parent>, { signalMutation }: TransformContext): void {
+	function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
 		const { alternatives } = node;
 		if (alternatives.length < 2) {
 			return;

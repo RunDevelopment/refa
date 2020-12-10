@@ -29,6 +29,7 @@
 				"checkLoops": false
 			}
 		],
+		"no-empty-character-class": "off",
 		"@typescript-eslint/no-inferrable-types": [
 			"error",
 			{
