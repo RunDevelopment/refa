@@ -1,0 +1,65 @@
+import { itTest } from "../../helper/transform";
+import { patternEdgeAssertions } from "../../../src/ast-transform/transformers/pattern-edge-assertions";
+
+describe("Transformers", function () {
+	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
+		itTest([
+			{
+				literal: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /(?=\w)a\w|f(?=\w)oo(?!\s*\w)(?<!\d)sb/,
+			},
+			{
+				literal: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: false }),
+				expected: /(?<!\w)(?=\w)a\w|^f(?=\w)oo(?!\s*\w)(?<!\d)sb/,
+			},
+			{
+				literal: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
+				transformer: patternEdgeAssertions({ inline: false, remove: true }),
+				expected: /(?=\w)a|f(?=\w)oo(?<!\d)/,
+			},
+			{
+				literal: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
+				transformer: patternEdgeAssertions({ inline: false, remove: false }), // noop
+				expected: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
+			},
+
+			{
+				literal: /foo(?:a(?=b)|c(?=d))/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /foo(?:ab|cd)/,
+			},
+			{
+				literal: /foo(?:a(?=b|c)|c(?=d))?/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /foo(?:a(?:b|c)|cd)?/,
+			},
+			{
+				literal: /foo(?:a(?=b)|c(?=d))+/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /foo(?:a(?=b)|c(?=d))+/,
+			},
+			{
+				literal: /(?<=abc)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /abc/,
+			},
+			{
+				literal: /(?=ab(?=c))/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /abc/,
+			},
+			{
+				literal: /\bfoo\b/,
+				transformer: patternEdgeAssertions({ inline: true, remove: false }),
+				expected: /(?:(?<!\w)(?=\w)|\w(?!\w))foo(?:(?<!\w)\w|(?<=\w)(?!\w))/,
+			},
+			{
+				literal: /\bfoo\b/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /(?:(?=\w)|\w(?!\w))foo(?:(?<!\w)\w|(?<=\w))/,
+			},
+		]);
+	});
+});

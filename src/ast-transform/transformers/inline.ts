@@ -1,6 +1,6 @@
-import { Concatenation, Element, Parent, Assertion, NoParent } from "../../ast";
-import { assertNever } from "../../util";
+import { Concatenation, Parent, Assertion, NoParent } from "../../ast";
 import { CreationOptions, TransformContext, Transformer } from "../transformer";
+import { tryInlineAssertions } from "../util";
 
 function onConcatenation(node: NoParent<Concatenation>, { signalMutation }: TransformContext): void {
 	for (let i = 0; i < node.elements.length; i++) {
@@ -67,45 +67,8 @@ function onAssertion(node: NoParent<Assertion>, context: TransformContext): void
 
 	// inline nested assertions (e.g. (?=a(?=b)) == (?=ab))
 
-	node.alternatives.forEach(tryInlineNestedAssertions);
-	function tryInlineNestedAssertions(child: NoParent<Concatenation>): void {
-		const elements = child.elements;
-		if (elements.length > 0) {
-			const index = node.kind === "ahead" ? child.elements.length - 1 : 0;
-			tryInlineNestedAssertionsElement(elements[index], elements, index);
-		}
-	}
-	function tryInlineNestedAssertionsElement(
-		child: NoParent<Element>,
-		parentElements: NoParent<Element>[],
-		index: number
-	): void {
-		switch (child.type) {
-			case "Alternation":
-				child.alternatives.forEach(tryInlineNestedAssertions);
-				break;
-			case "Assertion":
-				if (!child.negate && child.kind === node.kind) {
-					parentElements[index] = {
-						type: "Alternation",
-						alternatives: child.alternatives,
-						source: child.source,
-					};
-					context.signalMutation();
-				}
-				break;
-			case "CharacterClass":
-				// nothing to do here
-				break;
-			case "Quantifier":
-				if (child.max === 1) {
-					child.alternatives.forEach(tryInlineNestedAssertions);
-				}
-				break;
-
-			default:
-				assertNever(child);
-		}
+	if (tryInlineAssertions(node.alternatives, node.kind)) {
+		context.signalMutation();
 	}
 }
 

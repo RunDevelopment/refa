@@ -1,7 +1,51 @@
-import { Alternation, Assertion, Concatenation, NoParent, Parent } from "../../ast";
-import { CreationOptions, noop, Transformer, TransformContext } from "../transformer";
+import { Assertion, Concatenation, NoParent } from "../../ast";
+import { CreationOptions, noop, Transformer } from "../transformer";
 import { isZeroLength } from "../../ast-analysis";
-import { at, inRange } from "../util";
+import { at, inRange, tryInlineAssertions } from "../util";
+
+function tryRemoveAssertions(alternatives: NoParent<Concatenation>[], kind: Assertion["kind"]): boolean {
+	let changed = false;
+	for (const alt of alternatives) {
+		if (tryRemoveAssertionsConcat(alt, kind)) {
+			changed = true;
+		}
+	}
+	return changed;
+}
+function tryRemoveAssertionsConcat({ elements }: NoParent<Concatenation>, kind: Assertion["kind"]): boolean {
+	if (elements.length === 0) {
+		return false;
+	}
+
+	let changed = false;
+
+	const increment = kind === "behind" ? +1 : -1;
+	const startIndex = kind === "behind" ? 0 : -1;
+
+	for (let i = startIndex; inRange(elements, i); i += increment) {
+		const element = at(elements, i);
+		if (element.type === "Assertion" && element.kind === kind) {
+			changed = true;
+			elements.splice(i, 1);
+			i -= increment;
+		} else if (isZeroLength(element)) {
+			// just continue
+		} else {
+			break;
+		}
+	}
+
+	if (inRange(elements, startIndex)) {
+		const element = at(elements, startIndex);
+		if (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1)) {
+			if (tryRemoveAssertions(element.alternatives, kind)) {
+				changed = true;
+			}
+		}
+	}
+
+	return changed;
+}
 
 export interface PatternEdgeAssertionsCreationOptions extends CreationOptions {
 	/**
@@ -32,76 +76,27 @@ export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCr
 	const inline = options?.inline ?? true;
 	const remove = options?.remove ?? false;
 
-	const enum Edge {
-		START,
-		END,
-	}
-
-	function handleEdgeAssertions({ elements }: NoParent<Concatenation>, context: TransformContext, edge: Edge): void {
-		if (elements.length === 0) {
-			return;
-		}
-
-		const compatibleKind: Assertion["kind"] = edge === Edge.START ? "behind" : "ahead";
-		const increment = edge === Edge.START ? +1 : -1;
-		const startIndex = edge === Edge.START ? 0 : -1;
-
-		if (inline) {
-			let assertion: NoParent<Assertion> | undefined = undefined;
-			let assertionIndex = NaN;
-			for (let i = startIndex; inRange(elements, i); i += increment) {
-				const element = at(elements, i);
-				if (element.type === "Assertion" && !element.negate && element.kind === compatibleKind) {
-					assertion = element;
-					assertionIndex = i;
-					break;
-				} else if (!isZeroLength(element)) {
-					break;
-				}
-			}
-
-			if (assertion) {
-				context.signalMutation();
-				elements.splice(assertionIndex, 1);
-				const newAlternation: NoParent<Alternation> = {
-					type: "Alternation",
-					alternatives: assertion.alternatives,
-					source: assertion.source,
-				};
-				handleEdge(newAlternation, context, edge);
-				elements.splice(startIndex, 0, newAlternation);
-			}
-		}
-
-		if (remove) {
-			for (let i = startIndex; inRange(elements, i); i += increment) {
-				const element = at(elements, i);
-				if (element.type === "Assertion" && element.kind === compatibleKind) {
-					context.signalMutation();
-					elements.splice(i, 1);
-					i -= increment;
-				} else if (isZeroLength(element)) {
-					// just continue
-				} else if (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1)) {
-					handleEdge(element, context, edge);
-					break;
-				} else {
-					break;
-				}
-			}
-		}
-	}
-	function handleEdge(parent: NoParent<Parent>, context: TransformContext, edge: Edge): void {
-		parent.alternatives.forEach(alt => handleEdgeAssertions(alt, context, edge));
-	}
-
 	if (!inline && !remove) {
 		return noop();
 	} else {
 		return {
 			onExpression(node, context) {
-				handleEdge(node, context, Edge.START);
-				handleEdge(node, context, Edge.END);
+				if (inline) {
+					if (
+						tryInlineAssertions(node.alternatives, "ahead") ||
+						tryInlineAssertions(node.alternatives, "behind")
+					) {
+						context.signalMutation();
+					}
+				}
+				if (remove) {
+					if (
+						tryRemoveAssertions(node.alternatives, "ahead") ||
+						tryRemoveAssertions(node.alternatives, "behind")
+					) {
+						context.signalMutation();
+					}
+				}
 			},
 		};
 	}
