@@ -28,6 +28,8 @@ refa/
 |-- scripts/
 |   `-- ...
 |-- src/
+|   |-- ast-transform/
+|   |   `-- ...
 |   |-- iter/
 |   |   `-- ...
 |   |-- js/
@@ -60,6 +62,12 @@ The most important files are:
 1. `finite-automaton.ts` defines interfaces all concrete FA implementations use.
 1. `{dfa,nfa}.ts` define the concrete implementations of an NFA and DFA.
 1. `words.ts` includes function to convert from JS strings to number arrays and vise versa among others.
+
+#### `src/ast-transform`
+
+This directory contains RE AST transformers and the `transform` function itself. These tools can be used to simplify and change existing RE ASTs.
+
+All transformers can be found under `src/ast-transform/transformers`.
 
 #### `src/iter`
 
