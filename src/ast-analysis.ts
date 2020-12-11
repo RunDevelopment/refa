@@ -221,24 +221,6 @@ export interface Path<N extends Node, P = N["parent"]> {
 	 */
 	toChildPath<T extends ChildOf<N>>(child: NoParent<T>): Path<T>;
 }
-export function isExpressionPath(path: Path<Node>): path is Path<Expression> {
-	return path.node.type === "Expression";
-}
-export function isCharacterClassPath(path: Path<Node>): path is Path<CharacterClass> {
-	return path.node.type === "CharacterClass";
-}
-export function isAlternationPath(path: Path<Node>): path is Path<Alternation> {
-	return path.node.type === "Alternation";
-}
-export function isQuantifierPath(path: Path<Node>): path is Path<Quantifier> {
-	return path.node.type === "Quantifier";
-}
-export function isAssertionPath(path: Path<Node>): path is Path<Assertion> {
-	return path.node.type === "Assertion";
-}
-export function isConcatenationPath(path: Path<Node>): path is Path<Concatenation> {
-	return path.node.type === "Concatenation";
-}
 
 /**
  * Returns the natural path of the given node.
@@ -253,19 +235,19 @@ export function naturalPath<N extends Node>(node: N): Path<N> {
 class NaturalPathImpl<N extends Node, P = N["parent"]> implements Path<N, P> {
 	node: NoParent<N>;
 	constructor(node: N) {
-		this.node = node as any;
+		this.node = node as never;
 	}
 	toParentPath(): P extends Node ? Path<P> : null {
 		if (this.node.type === "Expression") {
-			return null as any;
+			return null as never;
 		} else {
-			this.node = (this.node as N).parent as any;
-			return this as any;
+			this.node = (this.node as N).parent as never;
+			return this as never;
 		}
 	}
 	toChildPath<T extends ChildOf<N>>(child: NoParent<T>): Path<T> {
-		this.node = child as any;
-		return this as any;
+		this.node = child as never;
+		return this as never;
 	}
 }
 
@@ -284,14 +266,14 @@ class StackPathImpl<N extends Node, P = N["parent"]> implements Path<N, P> {
 	toParentPath(): P extends Node ? Path<P> : null {
 		this.stack.pop();
 		if (this.stack.length === 0) {
-			return null as any;
+			return null as never;
 		} else {
-			return this as any;
+			return this as never;
 		}
 	}
 	toChildPath<T extends ChildOf<N>>(child: NoParent<T>): Path<T> {
 		this.stack.push(child);
-		return this as any;
+		return this as never;
 	}
 }
 
