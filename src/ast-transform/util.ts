@@ -1,5 +1,15 @@
-import { Alternation, Assertion, Concatenation, Element, NoParent, SourceLocation } from "../ast";
-import { isZeroLength, MatchingDirection } from "../ast-analysis";
+import { Alternation, Assertion, Concatenation, Element, NoParent, Parent, SourceLocation } from "../ast";
+import {
+	getFirstCharConsumedBy,
+	getLengthRange,
+	hasSomeDescendant,
+	isPotentiallyEmpty,
+	isZeroLength,
+	MatchingDirection,
+	toMatchingDirection,
+} from "../ast-analysis";
+import { CharSet } from "../char-set";
+import { assertNever, filterMut } from "../util";
 
 export function emptyAlternation(): NoParent<Alternation> {
 	return {
@@ -13,31 +23,6 @@ export function copySource(source: Readonly<SourceLocation> | undefined): Source
 		return { start: source.start, end: source.end };
 	} else {
 		return undefined;
-	}
-}
-
-export function findFirst<T>(
-	arr: readonly T[],
-	direction: MatchingDirection,
-	predicate?: (item: T) => boolean
-): T | undefined {
-	if (!predicate) {
-		if (arr.length === 0) {
-			return undefined;
-		} else {
-			return direction === "ltr" ? arr[0] : arr[arr.length - 1];
-		}
-	} else {
-		if (direction === "ltr") {
-			return arr.find(predicate);
-		} else {
-			for (let i = arr.length - 1; i >= 0; i--) {
-				if (predicate(arr[i])) {
-					return arr[i];
-				}
-			}
-			return undefined;
-		}
 	}
 }
 
@@ -115,4 +100,156 @@ function tryInlineAssertionsConcat({ elements }: NoParent<Concatenation>, kind: 
 			return false;
 		}
 	}
+}
+
+export function tryEliminateRejectingAssertionBranches(
+	parent: NoParent<Parent>,
+	char: CharSet,
+	direction: MatchingDirection,
+	maxCharacter: number
+): boolean {
+	let changed = false;
+
+	const enum EliminationResult {
+		REMOVE_BRANCH,
+		REMOVE_ELEMENT,
+		KEEP,
+	}
+	function eliminateElement(element: NoParent<Element>): EliminationResult {
+		switch (element.type) {
+			case "Assertion": {
+				const reject = element.negate ? EliminationResult.REMOVE_ELEMENT : EliminationResult.REMOVE_BRANCH;
+				const accept = element.negate ? EliminationResult.REMOVE_BRANCH : EliminationResult.REMOVE_ELEMENT;
+
+				if (element.alternatives.length === 0) {
+					return reject;
+				} else if (isPotentiallyEmpty(element.alternatives)) {
+					return accept;
+				}
+
+				if (toMatchingDirection(element.kind) === direction) {
+					if (
+						!element.negate &&
+						tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)
+					) {
+						changed = true;
+
+						if (element.alternatives.length === 0) {
+							return reject;
+						}
+					}
+
+					const firstOf = getFirstCharConsumedBy(element.alternatives, direction, maxCharacter);
+					if (firstOf.empty) {
+						return EliminationResult.KEEP;
+					} else if (char.isDisjointWith(firstOf.char)) {
+						return reject;
+					}
+
+					// if this contains another assertion then that might reject. It's out of our control
+					if (!hasSomeDescendant(element, d => d !== element && d.type === "Assertion")) {
+						const range = getLengthRange(element.alternatives);
+						// we only check the first character, so it's only correct if the assertion requires only one
+						// character
+						if (range && range.max === 1) {
+							// require exactness
+							if (firstOf.exact && char.isSubsetOf(firstOf.char)) {
+								return accept;
+							}
+						}
+					}
+				}
+				return EliminationResult.KEEP;
+			}
+			case "Alternation": {
+				if (tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+					changed = true;
+				}
+
+				if (element.alternatives.length === 0) {
+					return EliminationResult.REMOVE_BRANCH;
+				} else {
+					return EliminationResult.KEEP;
+				}
+			}
+			case "CharacterClass": {
+				if (element.characters.isDisjointWith(char)) {
+					return EliminationResult.REMOVE_BRANCH;
+				} else {
+					return EliminationResult.KEEP;
+				}
+			}
+			case "Quantifier": {
+				if (element.max === 0) {
+					return EliminationResult.REMOVE_ELEMENT;
+				} else if (element.max === 1) {
+					if (tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+						changed = true;
+					}
+
+					if (element.alternatives.length === 0) {
+						if (element.min === 0) {
+							return EliminationResult.REMOVE_ELEMENT;
+						} else {
+							return EliminationResult.REMOVE_BRANCH;
+						}
+					} else {
+						return EliminationResult.KEEP;
+					}
+				} else {
+					const firstChar = getFirstCharConsumedBy(element.alternatives, direction, maxCharacter);
+					if (!firstChar.empty && firstChar.char.isDisjointWith(char)) {
+						if (element.min === 0) {
+							return EliminationResult.REMOVE_ELEMENT;
+						} else {
+							return EliminationResult.REMOVE_BRANCH;
+						}
+					} else {
+						return EliminationResult.KEEP;
+					}
+				}
+			}
+			default:
+				assertNever(element);
+		}
+	}
+
+	filterMut(parent.alternatives, alt => {
+		const startIndex = direction === "ltr" ? 0 : -1;
+		const inc = direction === "ltr" ? +1 : -1;
+
+		for (let i = startIndex; inRange(alt.elements, i); i += inc) {
+			const element = at(alt.elements, i);
+			const result = eliminateElement(element);
+
+			if (result === EliminationResult.REMOVE_ELEMENT) {
+				// remove & next round
+				changed = true;
+				alt.elements.splice(i, 1);
+				i -= inc;
+			} else if (result === EliminationResult.REMOVE_BRANCH) {
+				changed = true;
+				return false;
+			} else if (element.type === "Assertion") {
+				// just move on the the next element
+			} else {
+				if (
+					(element.type === "Alternation" ||
+						(element.type === "Quantifier" && element.min === 1 && element.max === 1)) &&
+					element.alternatives.length === 1
+				) {
+					// inline & next round
+					changed = true;
+					alt.elements.splice(i, 1, ...element.alternatives[0].elements);
+					i -= inc;
+				} else {
+					return true;
+				}
+			}
+		}
+
+		return true;
+	});
+
+	return changed;
 }

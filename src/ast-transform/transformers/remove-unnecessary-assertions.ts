@@ -8,7 +8,7 @@ import {
 	stackPath,
 	toMatchingDirection,
 } from "../../ast-analysis";
-import { emptyAlternation } from "../util";
+import { emptyAlternation, tryEliminateRejectingAssertionBranches } from "../util";
 import { Transformer, TransformContext } from "../transformer";
 
 const enum Result {
@@ -19,7 +19,7 @@ const enum Result {
 function analyzeAssertion(
 	concatStack: readonly NoParent<Node>[],
 	assertion: NoParent<Assertion>,
-	maxCharacter: number
+	context: TransformContext
 ): Result {
 	// the idea here is that a negate lookaround accepts when non-negated version reject and vise versa.
 	const ACCEPT = assertion.negate ? Result.REJECT : Result.ACCEPT;
@@ -37,12 +37,24 @@ function analyzeAssertion(
 		// with the first character the assertion asserts. This will filter out a lot of trivial assertions.
 
 		const direction = toMatchingDirection(assertion.kind);
-		const after = getFirstCharAfter(stackPath(concatStack, assertion), direction, maxCharacter);
+		const after = getFirstCharAfter(stackPath(concatStack, assertion), direction, context.maxCharacter);
 		if (after.edge) {
 			return Result.DEPENDS_ON_INPUT;
 		}
 
-		const firstOf = getFirstCharConsumedBy(assertion.alternatives, direction, maxCharacter);
+		if (
+			!assertion.negate &&
+			tryEliminateRejectingAssertionBranches(assertion, after.char, direction, context.maxCharacter)
+		) {
+			context.signalMutation();
+
+			if (assertion.alternatives.length === 0) {
+				// the body of the assertion can never accept any input string
+				return REJECT;
+			}
+		}
+
+		const firstOf = getFirstCharConsumedBy(assertion.alternatives, direction, context.maxCharacter);
 		if (firstOf.empty) {
 			return Result.DEPENDS_ON_INPUT;
 		}
@@ -76,20 +88,20 @@ function analyzeAssertion(
 function onConcatenation(
 	node: NoParent<Concatenation>,
 	concatStack: readonly NoParent<Node>[],
-	{ signalMutation, maxCharacter }: TransformContext
+	context: TransformContext
 ): void {
 	for (let i = 0; i < node.elements.length; i++) {
 		const current = node.elements[i];
 		if (current.type === "Assertion") {
-			const result = analyzeAssertion(concatStack, current, maxCharacter);
+			const result = analyzeAssertion(concatStack, current, context);
 			if (result === Result.ACCEPT) {
 				// remove assertion
 				node.elements.splice(i, 1);
-				signalMutation();
+				context.signalMutation();
 				i--;
 			} else if (result === Result.REJECT) {
 				node.elements = [emptyAlternation()];
-				signalMutation();
+				context.signalMutation();
 				break;
 			} else {
 				// do nothing

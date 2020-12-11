@@ -18,10 +18,15 @@ export function itTest(cases: Iterable<TransformTestCase>): void {
 	for (const { literal, transformer, options, expected, debug } of cases) {
 		it(literalToString(literal), function () {
 			if (debug) {
+				// eslint-disable-next-line no-debugger
 				debugger;
 			}
 
-			const { expression } = Parser.fromLiteral(literal).parse();
+			const { expression } = Parser.fromLiteral(literal).parse({
+				backreferences: "throw",
+				lookarounds: "parse",
+				disableOptimizations: true,
+			});
 			transform(transformer, expression, options);
 			const actual = toLiteral(expression);
 

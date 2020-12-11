@@ -1,15 +1,7 @@
-import { Assertion, CharacterClass, Concatenation, Element, Node, NoParent, Parent, Quantifier } from "../../ast";
-import {
-	getFirstCharConsumedBy,
-	isTriviallyAccepting,
-	isZeroLength,
-	MatchingDirection,
-	toMatchingDirection,
-} from "../../ast-analysis";
+import { Assertion, CharacterClass, Concatenation, Element, Node, NoParent, Quantifier } from "../../ast";
+import { isTriviallyAccepting, isZeroLength, toMatchingDirection } from "../../ast-analysis";
 import { Transformer, TransformContext } from "../transformer";
-import { assertNever, filterMut } from "../../util";
-import { CharSet } from "../../char-set";
-import { at, copySource, findFirst, inRange } from "../util";
+import { at, copySource, inRange, tryEliminateRejectingAssertionBranches } from "../util";
 
 type SingleCharacterQuantifier = NoParent<Quantifier> & { alternatives: [{ elements: [NoParent<CharacterClass>] }] };
 function isSingleCharacterQuantifier(element: NoParent<Node>): element is SingleCharacterQuantifier {
@@ -19,106 +11,6 @@ function isSingleCharacterQuantifier(element: NoParent<Node>): element is Single
 		element.alternatives[0].elements.length === 1 &&
 		element.alternatives[0].elements[0].type === "CharacterClass"
 	);
-}
-
-function eliminateRejectingBranches(
-	parent: NoParent<Parent>,
-	char: CharSet,
-	direction: MatchingDirection,
-	context: TransformContext
-): void {
-	const enum EliminationResult {
-		REMOVE_BRANCH,
-		REMOVE_ELEMENT,
-		KEEP,
-	}
-	function eliminateElement(element: NoParent<Element>): EliminationResult {
-		switch (element.type) {
-			case "Assertion": {
-				return EliminationResult.KEEP;
-			}
-			case "Alternation": {
-				eliminateRejectingBranches(element, char, direction, context);
-
-				if (element.alternatives.length === 0) {
-					return EliminationResult.REMOVE_BRANCH;
-				} else {
-					return EliminationResult.KEEP;
-				}
-			}
-			case "CharacterClass": {
-				if (element.characters.isDisjointWith(char)) {
-					return EliminationResult.REMOVE_BRANCH;
-				} else {
-					return EliminationResult.KEEP;
-				}
-			}
-			case "Quantifier": {
-				if (element.max === 0) {
-					return EliminationResult.REMOVE_ELEMENT;
-				} else if (element.max === 1) {
-					eliminateRejectingBranches(element, char, direction, context);
-
-					if (element.alternatives.length === 0) {
-						if (element.min === 0) {
-							return EliminationResult.REMOVE_ELEMENT;
-						} else {
-							return EliminationResult.REMOVE_BRANCH;
-						}
-					} else {
-						return EliminationResult.KEEP;
-					}
-				} else {
-					const firstChar = getFirstCharConsumedBy(element.alternatives, direction, context.maxCharacter);
-					if (!firstChar.empty && firstChar.char.isDisjointWith(char)) {
-						if (element.min === 0) {
-							return EliminationResult.REMOVE_ELEMENT;
-						} else {
-							return EliminationResult.REMOVE_BRANCH;
-						}
-					} else {
-						return EliminationResult.KEEP;
-					}
-				}
-			}
-			default:
-				assertNever(element);
-		}
-	}
-
-	filterMut(parent.alternatives, alt => {
-		let firstElement;
-		while ((firstElement = findFirst(alt.elements, direction, e => e.type !== "Assertion"))) {
-			const first = firstElement;
-			const result = eliminateElement(first);
-
-			if (result === EliminationResult.REMOVE_ELEMENT) {
-				// remove & next round
-				context.signalMutation();
-				const index = alt.elements.indexOf(first);
-				alt.elements.splice(index, 1);
-				continue;
-			} else if (result === EliminationResult.REMOVE_BRANCH) {
-				context.signalMutation();
-				return false;
-			} else {
-				if (
-					(first.type === "Alternation" ||
-						(first.type === "Quantifier" && first.min === 1 && first.max === 1)) &&
-					first.alternatives.length === 1
-				) {
-					// inline & next round
-					context.signalMutation();
-					const index = alt.elements.indexOf(first);
-					alt.elements.splice(index, 1, ...first.alternatives[0].elements);
-					continue;
-				} else {
-					return true;
-				}
-			}
-		}
-		return true;
-	});
 }
 
 /**
@@ -139,7 +31,9 @@ function assertCharacter(
 	const direction = toMatchingDirection(assertion.kind);
 
 	// remove rejecting branches
-	eliminateRejectingBranches(assertion, char.characters, direction, context);
+	if (tryEliminateRejectingAssertionBranches(assertion, char.characters, direction, context.maxCharacter)) {
+		context.signalMutation();
+	}
 
 	if (assertion.negate) {
 		// In general, it's not possible to apply negated assertions without negating the language of the assertion.
