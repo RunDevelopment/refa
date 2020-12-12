@@ -102,7 +102,7 @@ function tryInlineAssertionsConcat({ elements }: NoParent<Concatenation>, kind: 
 	}
 }
 
-export function tryEliminateRejectingAssertionBranches(
+export function tryRemoveRejectingAssertionBranches(
 	parent: NoParent<Parent>,
 	char: CharSet,
 	direction: MatchingDirection,
@@ -130,7 +130,7 @@ export function tryEliminateRejectingAssertionBranches(
 				if (toMatchingDirection(element.kind) === direction) {
 					if (
 						!element.negate &&
-						tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)
+						tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)
 					) {
 						changed = true;
 
@@ -162,7 +162,7 @@ export function tryEliminateRejectingAssertionBranches(
 				return EliminationResult.KEEP;
 			}
 			case "Alternation": {
-				if (tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+				if (tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)) {
 					changed = true;
 				}
 
@@ -183,7 +183,7 @@ export function tryEliminateRejectingAssertionBranches(
 				if (element.max === 0) {
 					return EliminationResult.REMOVE_ELEMENT;
 				} else if (element.max === 1) {
-					if (tryEliminateRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+					if (tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)) {
 						changed = true;
 					}
 

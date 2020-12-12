@@ -8,7 +8,7 @@ import {
 	stackPath,
 	toMatchingDirection,
 } from "../../ast-analysis";
-import { emptyAlternation, tryEliminateRejectingAssertionBranches } from "../util";
+import { emptyAlternation, tryRemoveRejectingAssertionBranches } from "../util";
 import { Transformer, TransformContext } from "../transformer";
 
 const enum Result {
@@ -42,10 +42,7 @@ function analyzeAssertion(
 			return Result.DEPENDS_ON_INPUT;
 		}
 
-		if (
-			!assertion.negate &&
-			tryEliminateRejectingAssertionBranches(assertion, after.char, direction, context.maxCharacter)
-		) {
+		if (tryRemoveRejectingAssertionBranches(assertion, after.char, direction, context.maxCharacter)) {
 			context.signalMutation();
 
 			if (assertion.alternatives.length === 0) {

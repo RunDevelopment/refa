@@ -39,43 +39,47 @@ describe("Transformers", function () {
 				literal: /(?=\s*$|\S)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?=\s?$|\S)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?=\s$|\S)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?=(?:\s|bb)$|\S)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?=(?:\s|b*b|)$|\S)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?!b)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
 			},
 			{
 				literal: /(?!b+)a+/,
 				transformer,
 				expected: /a+/,
-				debug: true,
+			},
+
+			{
+				literal: /(?!\s*::|\d)\w+/,
+				transformer,
+				expected: /(?!\d)\w+/i,
+			},
+			{
+				literal: /(?=\s*::|\d)\w+/,
+				transformer,
+				expected: /(?=\d)\w+/i,
 			},
 		]);
 	});

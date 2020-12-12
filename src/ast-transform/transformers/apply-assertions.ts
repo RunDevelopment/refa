@@ -1,7 +1,7 @@
 import { Assertion, CharacterClass, Concatenation, Element, Node, NoParent, Quantifier } from "../../ast";
 import { isTriviallyAccepting, isZeroLength, toMatchingDirection } from "../../ast-analysis";
 import { Transformer, TransformContext } from "../transformer";
-import { at, copySource, inRange, tryEliminateRejectingAssertionBranches } from "../util";
+import { at, copySource, inRange, tryRemoveRejectingAssertionBranches } from "../util";
 
 type SingleCharacterQuantifier = NoParent<Quantifier> & { alternatives: [{ elements: [NoParent<CharacterClass>] }] };
 function isSingleCharacterQuantifier(element: NoParent<Node>): element is SingleCharacterQuantifier {
@@ -31,7 +31,7 @@ function assertCharacter(
 	const direction = toMatchingDirection(assertion.kind);
 
 	// remove rejecting branches
-	if (tryEliminateRejectingAssertionBranches(assertion, char.characters, direction, context.maxCharacter)) {
+	if (tryRemoveRejectingAssertionBranches(assertion, char.characters, direction, context.maxCharacter)) {
 		context.signalMutation();
 	}
 
