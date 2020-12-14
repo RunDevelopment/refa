@@ -20,6 +20,7 @@ import { filterMut } from "../../util";
 import { Transformer, TransformContext } from "../transformer";
 import {
 	at,
+	copyNode,
 	copySource,
 	firstIndexFor,
 	incrementFor,
@@ -40,6 +41,13 @@ function pushBack<T>(direction: MatchingDirection, arr: T[], value: T): void {
 		arr.push(value);
 	} else {
 		arr.unshift(value);
+	}
+}
+function pushFront<T>(direction: MatchingDirection, arr: T[], value: T): void {
+	if (direction === "ltr") {
+		arr.unshift(value);
+	} else {
+		arr.push(value);
 	}
 }
 
@@ -439,6 +447,74 @@ function moveCharacterIntoAlternation(
 }
 
 /**
+ * This will transform `(?!\d)(?:\w+|:|123)` => `(?:(?!\d)\w+|:|[])`.
+ */
+function moveAssertionIntoAlternation(
+	elements: NoParent<Element>[],
+	kind: Assertion["kind"],
+	context: TransformContext
+): void {
+	if (elements.length < 2) {
+		return;
+	}
+
+	const direction = toMatchingDirection(kind);
+
+	const firstIndex = firstIndexFor(direction);
+	const inc = incrementFor(direction);
+
+	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
+		const assertionIndex = i - inc;
+		const assertion = at(elements, assertionIndex);
+		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isSingleCharacterParent(assertion)) {
+			continue;
+		}
+
+		const alternationIndex = i;
+		const alternation = at(elements, alternationIndex);
+		if (alternation.type !== "Alternation") {
+			continue;
+		}
+
+		const assertionRawChar = assertion.alternatives[0].elements[0].characters;
+		const assertionChar = assertion.negate ? assertionRawChar.negate() : assertionRawChar;
+
+		const toAdd: NoParent<Concatenation>[] = [];
+		let canApply = false;
+		filterMut(alternation.alternatives, alt => {
+			const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
+			if (!firstChar.empty) {
+				if (firstChar.char.isDisjointWith(assertionChar)) {
+					// trivial reject
+					context.signalMutation();
+					return false;
+				} else if (firstChar.char.isSubsetOf(assertionChar)) {
+					// trivial accept
+					return true;
+				}
+			}
+
+			if (alt.elements.length > 0 && isCharConvertible(at(alt.elements, firstIndex))) {
+				canApply = true;
+			}
+
+			toAdd.push(alt);
+			return true;
+		});
+
+		if (toAdd.length > 0 && (toAdd.length < alternation.alternatives.length || canApply)) {
+			context.signalMutation();
+			elements.splice(assertionIndex, 1);
+
+			pushFront(direction, toAdd[0].elements, assertion);
+			for (let i = 1; i < toAdd.length; i++) {
+				pushFront(direction, toAdd[i].elements, copyNode(assertion));
+			}
+		}
+	}
+}
+
+/**
  * This transformer will apply all trivial assertion (e.g. `/(?!0)\d/` => `/[1-9]/`) and remove all branches in
  * assertions that are guaranteed to reject (e.g. `(?=\d+=|-)\w` => `(?=\d+=)\w`).
  */
@@ -446,6 +522,9 @@ export function applyAssertions(): Transformer {
 	return {
 		onConcatenation(node: NoParent<Concatenation>, context: TransformContext) {
 			const elements = node.elements;
+
+			moveAssertionIntoAlternation(elements, "ahead", context);
+			moveAssertionIntoAlternation(elements, "behind", context);
 
 			applyOneCharacter(elements, "ahead", context);
 			applyOneCharacter(elements, "behind", context);

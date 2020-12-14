@@ -99,12 +99,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?!\d)(?:\w+|:|123)/,
 				transformer,
-				expected: /(?!\d)(?:\w+|:)/i,
-			},
-			{
-				literal: /(?!\d)(?:\w+|:|123)/,
-				transformer,
-				expected: /(?!\d)(?:\w+|:)/i,
+				expected: /(?:[A-Z_]\w*|:)/i,
 			},
 			{
 				literal: /(?=\d)\s*\w+/,
@@ -186,7 +181,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
 				transformer,
-				expected: /(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
+				expected: /(?:^(?<!\w)|[^&0-9A-Z_])(?:TRUE|FALSE)/i,
 			},
 		]);
 	});

@@ -1,4 +1,4 @@
-import { Alternation, Assertion, Concatenation, Element, NoParent, Parent, SourceLocation } from "../ast";
+import { Alternation, Assertion, Concatenation, Element, Node, NoParent, Parent, SourceLocation } from "../ast";
 import {
 	getFirstCharConsumedBy,
 	getLengthRange,
@@ -23,6 +23,56 @@ export function copySource(source: Readonly<SourceLocation> | undefined): Source
 		return { start: source.start, end: source.end };
 	} else {
 		return undefined;
+	}
+}
+export function copyNode<N extends Node, T extends NoParent<N>>(node: T): NoParent<N> {
+	return copyNodeImpl(node) as NoParent<N>;
+}
+function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
+	const n = node as NoParent<Node>;
+	switch (n.type) {
+		case "Alternation":
+			return {
+				type: "Alternation",
+				source: copySource(n.source),
+				alternatives: n.alternatives.map(e => copyNode(e)),
+			};
+		case "Assertion":
+			return {
+				type: "Assertion",
+				kind: n.kind,
+				negate: n.negate,
+				source: copySource(n.source),
+				alternatives: n.alternatives.map(e => copyNode(e)),
+			};
+		case "CharacterClass":
+			return {
+				type: "CharacterClass",
+				source: copySource(n.source),
+				characters: n.characters,
+			};
+		case "Concatenation":
+			return {
+				type: "Concatenation",
+				source: copySource(n.source),
+				elements: n.elements.map(e => copyNode(e)),
+			};
+		case "Expression":
+			return {
+				type: "Expression",
+				source: copySource(n.source),
+				alternatives: n.alternatives.map(e => copyNode(e)),
+			};
+		case "Quantifier":
+			return {
+				type: "Quantifier",
+				min: n.min,
+				max: n.max,
+				source: copySource(n.source),
+				alternatives: n.alternatives.map(e => copyNode(e)),
+			};
+		default:
+			assertNever(n);
 	}
 }
 

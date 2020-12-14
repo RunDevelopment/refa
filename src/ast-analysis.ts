@@ -297,6 +297,13 @@ export function hasSomeAncestor(
 	return false;
 }
 
+interface LengthRange {
+	readonly min: number;
+	readonly max: number;
+}
+const ZERO_LENGTH_RANG: LengthRange = { min: 0, max: 0 };
+const ONE_LENGTH_RANG: LengthRange = { min: 1, max: 1 };
+
 /**
  * Returns how many characters the given element can consume at most and has to consume at least.
  *
@@ -304,9 +311,7 @@ export function hasSomeAncestor(
  *
  * This function doesn't take assertions into account.
  */
-export function getLengthRange(
-	element: NoParent<Node> | NoParent<Concatenation>[]
-): { min: number; max: number } | undefined {
+export function getLengthRange(element: NoParent<Node> | NoParent<Concatenation>[]): LengthRange | undefined {
 	if (Array.isArray(element)) {
 		let min = Infinity;
 		let max = 0;
@@ -332,10 +337,14 @@ export function getLengthRange(
 			return getLengthRange(element.alternatives);
 
 		case "Assertion":
-			return { min: 0, max: 0 };
+			return ZERO_LENGTH_RANG;
 
 		case "CharacterClass":
-			return { min: 1, max: 1 };
+			if (element.characters.isEmpty) {
+				return undefined;
+			} else {
+				return ONE_LENGTH_RANG;
+			}
 
 		case "Concatenation": {
 			let min = 0;
@@ -355,23 +364,127 @@ export function getLengthRange(
 
 		case "Quantifier": {
 			if (element.max === 0) {
-				return { min: 0, max: 0 };
+				return ZERO_LENGTH_RANG;
 			}
 			const elementRange = getLengthRange(element.alternatives);
 			if (!elementRange) {
-				return element.min === 0 ? { min: 0, max: 0 } : undefined;
+				return element.min === 0 ? ZERO_LENGTH_RANG : undefined;
+			}
+			if (elementRange.max === 0) {
+				return ZERO_LENGTH_RANG;
+			}
+			return { min: elementRange.min * element.min, max: elementRange.max * element.max };
+		}
+
+		default:
+			throw assertNever(element);
+	}
+}
+interface AssertRange extends LengthRange {
+	/**
+	 * The maximum reach of an assertion within the element.
+	 *
+	 * This will always be `>= max`.
+	 */
+	readonly assertMax: number;
+}
+const ZERO_ASSERT_RANGE: AssertRange = {
+	min: 0,
+	max: 0,
+	assertMax: 0,
+};
+const ONE_ASSERT_RANGE: AssertRange = {
+	min: 1,
+	max: 1,
+	assertMax: 1,
+};
+/**
+ * Assuming that the given elements are part of an assertion, this function returns the number of characters the result
+ * of the assertion can be affected by.
+ */
+export function getAssertRange(
+	element: NoParent<Node> | NoParent<Concatenation>[],
+	kind: Assertion["kind"]
+): AssertRange | undefined {
+	if (Array.isArray(element)) {
+		let min = Infinity;
+		let max = 0;
+		let assertMax = 0;
+
+		for (const e of element) {
+			const eRange = getAssertRange(e, kind);
+			if (eRange) {
+				min = Math.min(min, eRange.min);
+				max = Math.max(max, eRange.max);
+				assertMax = Math.max(assertMax, eRange.assertMax);
+			}
+		}
+
+		if (min > max) {
+			return undefined;
+		} else {
+			return { min, max, assertMax };
+		}
+	}
+
+	switch (element.type) {
+		case "Alternation":
+		case "Expression":
+			return getAssertRange(element.alternatives, kind);
+
+		case "Assertion":
+			if (element.kind === kind) {
+				return getAssertRange(element.alternatives, kind);
+			} else {
+				return ZERO_ASSERT_RANGE;
 			}
 
+		case "CharacterClass":
+			if (element.characters.isEmpty) {
+				return undefined;
+			} else {
+				return ONE_ASSERT_RANGE;
+			}
+
+		case "Concatenation": {
+			let min = 0;
+			let max = 0;
+			let assertMax = 0;
+
+			for (const e of element.elements) {
+				const eRange = getAssertRange(e, kind);
+				if (!eRange) {
+					return undefined;
+				}
+				assertMax = Math.max(assertMax, max + eRange.assertMax);
+				min += eRange.min;
+				max += eRange.max;
+			}
+
+			return { min, max, assertMax };
+		}
+
+		case "Quantifier": {
+			if (element.max === 0) {
+				return ZERO_ASSERT_RANGE;
+			}
+			const elementRange = getAssertRange(element.alternatives, kind);
+			if (!elementRange) {
+				return element.min === 0 ? ZERO_ASSERT_RANGE : undefined;
+			}
 			if (elementRange.max === 0) {
-				return { min: 0, max: 0 };
+				return ZERO_ASSERT_RANGE;
 			}
-			if (element.min === 0) {
-				elementRange.min = 0;
-			}
-			if (element.max === Infinity) {
-				elementRange.max = Infinity;
-			}
-			return elementRange;
+
+			const max = elementRange.max * element.max;
+			return {
+				min: elementRange.min * element.min,
+				max,
+				assertMax:
+					max + elementRange.assertMax === Infinity
+						? Infinity
+						: max + elementRange.assertMax - elementRange.max,
+			};
 		}
 
 		default:
@@ -755,7 +868,7 @@ export interface FollowOperations<S> {
 	assert?: (state: S, direction: MatchingDirection, assertion: S, assertionDirection: MatchingDirection) => S;
 
 	enter?: (element: NoParent<Element>, state: S, direction: MatchingDirection) => S;
-	leave?: (element: NoParent<Element>, state: S, direction: MatchingDirection) => S;
+	leave?: (element: NoParent<Element>, state: S, enterState: S, direction: MatchingDirection) => S;
 	endPath?: (state: S, direction: MatchingDirection, reason: "expression" | "assertion") => S;
 
 	/**
@@ -877,6 +990,7 @@ export function followPaths<S>(
 ): NonNullable<S> {
 	function opEnter(element: NoParent<Element>, state: NonNullable<S>, direction: MatchingDirection): NonNullable<S> {
 		state = operations.enter?.(element, state, direction) ?? state;
+		const enterState = state;
 
 		const continueInto = operations.continueInto?.(element, state, direction) ?? true;
 		if (continueInto) {
@@ -919,7 +1033,7 @@ export function followPaths<S>(
 			}
 		}
 
-		state = operations.leave?.(element, state, direction) ?? state;
+		state = operations.leave?.(element, state, enterState, direction) ?? state;
 		return state;
 	}
 	function enterConcatenation(

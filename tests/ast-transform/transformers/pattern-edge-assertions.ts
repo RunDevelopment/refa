@@ -60,6 +60,28 @@ describe("Transformers", function () {
 				transformer: patternEdgeAssertions({ inline: true, remove: true }),
 				expected: /(?:(?=\w)|\w(?!\w))foo(?:(?<!\w)\w|(?<=\w))/,
 			},
+
+			{
+				literal: /(?=a)\w?(?!\s)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /(?=a)\w?(?!\s)/,
+			},
+			{
+				literal: /(?=a)\w(?!\s)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /(?=a)\w/,
+			},
+			{
+				literal: /(?=a{4})\w{4}(?!\s)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				expected: /(?=a{4})\w{4}/,
+			},
+			{
+				literal: /(?=a{5})\w{4}(?!\s)/,
+				transformer: patternEdgeAssertions({ inline: true, remove: true }),
+				debug: true,
+				expected: /(?=a{5})\w{4}(?!\s)/,
+			},
 		]);
 	});
 });
