@@ -309,7 +309,7 @@ function applySingleCharacterQuantifier(
 	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const assertionIndex = i - inc;
 		const assertion = at(elements, assertionIndex);
-		if (assertion.type !== "Assertion" || !isSingleCharacterParent(assertion)) {
+		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isSingleCharacterParent(assertion)) {
 			continue;
 		}
 		const assertionRawChar = assertion.alternatives[0].elements[0].characters;

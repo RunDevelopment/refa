@@ -177,6 +177,11 @@ describe("Transformers", function () {
 				transformer,
 				expected: /(?:A[A-Z_]|FOO\w|B\w)\w*/i,
 			},
+			{
+				literal: /(?:\[)(?!\d)\w+(?=\])/i,
+				transformer,
+				expected: /(?:\[)[A-Z_]\w*(?=\])/i,
+			},
 
 			{
 				literal: /(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
