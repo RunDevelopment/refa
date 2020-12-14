@@ -78,12 +78,12 @@ describe("Transformers", function () {
 			{
 				literal: /(?=\da)\w+/,
 				transformer,
-				expected: /\d(?=a)\w*/,
+				expected: /\d(?:a\w*|(?=a))/,
 			},
 			{
 				literal: /\w+(?<=a\d)/,
 				transformer,
-				expected: /\w*(?<=a)\d/,
+				expected: /(?:\w*a|(?<=a))\d/,
 			},
 			{
 				literal: /(?!\d)\w{1,2}/,
@@ -93,7 +93,95 @@ describe("Transformers", function () {
 			{
 				literal: /(?!\d)\w*/,
 				transformer,
-				expected: /(?!\d)\w*/i,
+				expected: /(?:[A-Z_]\w*|(?!\d))/i,
+			},
+
+			{
+				literal: /(?!\d)(?:\w+|:|123)/,
+				transformer,
+				expected: /(?!\d)(?:\w+|:)/i,
+			},
+			{
+				literal: /(?!\d)(?:\w+|:|123)/,
+				transformer,
+				expected: /(?!\d)(?:\w+|:)/i,
+			},
+			{
+				literal: /(?=\d)\s*\w+/,
+				transformer,
+				expected: /\d\w*/i,
+			},
+			{
+				literal: /a$(?:a|b)/,
+				transformer,
+				expected: /a$(?:[])/,
+			},
+			{
+				literal: /a$(?:a|b)?/,
+				transformer,
+				expected: /a$/,
+			},
+			{
+				literal: /a$(?:a|b|)/,
+				transformer,
+				expected: /a$(?:)/,
+			},
+
+			{
+				literal: /(?!\s)[^]*\S/,
+				transformer,
+				expected: /(?:\S[^]*|)\S/i,
+			},
+			{
+				literal: /(?=a)[^]*/,
+				transformer,
+				expected: /(?:a[^]*|(?=a))/,
+			},
+			{
+				literal: /(?=a)[^]*b/,
+				transformer,
+				expected: /(?:a[^]*)b/,
+			},
+			{
+				literal: /(?=a)[^]*a/,
+				transformer,
+				expected: /(?:a[^]*|)a/,
+			},
+			{
+				literal: /(?=\d)[^]*\w/,
+				transformer,
+				expected: /(?:\d[^]*\w|\d)/i,
+			},
+			{
+				literal: /(?=\d)[^]*\w+/,
+				transformer,
+				expected: /(?:\d[^]*\w|\d)\w*/i,
+			},
+			{
+				literal: /(?=\d)[^]?\w+/,
+				transformer,
+				expected: /(?:\d[^]{0}\w|\d)\w*/i,
+			},
+			{
+				literal: /=begin\s[^]*^=end/m,
+				transformer,
+				expected: /=begin(?:\s[^]*[\n\r\u2028\u2029]|[\n\r\u2028\u2029])=end/,
+			},
+			{
+				literal: /-?(?<!\w)\d+(?:\.\d+)?(?:E[-+]?\d+)?/i,
+				transformer,
+				expected: /(?:-{0}-|(?<!\w))\d+(?:\.\d+)?(?:E[-+]?\d+)?/i,
+			},
+			{
+				literal: /(?:a(?!\d)|foo(?=\w)|bar(?!\w)|b)\w+/i,
+				transformer,
+				expected: /(?:A[A-Z_]|FOO\w|B\w)\w*/i,
+			},
+
+			{
+				literal: /(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
+				transformer,
+				expected: /(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
 			},
 		]);
 	});

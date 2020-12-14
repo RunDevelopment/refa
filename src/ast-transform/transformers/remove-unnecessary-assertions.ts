@@ -42,7 +42,7 @@ function analyzeAssertion(
 			return Result.DEPENDS_ON_INPUT;
 		}
 
-		if (tryRemoveRejectingAssertionBranches(assertion, after.char, direction, context.maxCharacter)) {
+		if (tryRemoveRejectingAssertionBranches(assertion, after.char, false, direction, context.maxCharacter)) {
 			context.signalMutation();
 
 			if (assertion.alternatives.length === 0) {

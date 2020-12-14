@@ -32,8 +32,23 @@ export function at<T>(arr: readonly T[], signedIndex: number): T {
 	}
 	return arr[signedIndex];
 }
+export function setAt<T>(arr: T[], signedIndex: number, value: T): void {
+	if (signedIndex < 0) {
+		signedIndex += arr.length;
+	}
+	arr[signedIndex] = value;
+}
 export function inRange(arr: ReadonlyArray<unknown>, signedIndex: number): boolean {
 	return signedIndex < arr.length && -signedIndex <= arr.length;
+}
+export function firstIndexFor(direction: MatchingDirection): 0 | -1 {
+	return direction === "ltr" ? 0 : -1;
+}
+export function lastIndexFor(direction: MatchingDirection): 0 | -1 {
+	return direction === "ltr" ? -1 : 0;
+}
+export function incrementFor(direction: MatchingDirection): 1 | -1 {
+	return direction === "ltr" ? +1 : -1;
 }
 
 export function tryInlineAssertions(alternatives: NoParent<Concatenation>[], kind: Assertion["kind"]): boolean {
@@ -105,6 +120,7 @@ function tryInlineAssertionsConcat({ elements }: NoParent<Concatenation>, kind: 
 export function tryRemoveRejectingAssertionBranches(
 	parent: NoParent<Parent>,
 	char: CharSet,
+	edge: boolean,
 	direction: MatchingDirection,
 	maxCharacter: number
 ): boolean {
@@ -118,51 +134,51 @@ export function tryRemoveRejectingAssertionBranches(
 	function eliminateElement(element: NoParent<Element>): EliminationResult {
 		switch (element.type) {
 			case "Assertion": {
-				const reject = element.negate ? EliminationResult.REMOVE_ELEMENT : EliminationResult.REMOVE_BRANCH;
-				const accept = element.negate ? EliminationResult.REMOVE_BRANCH : EliminationResult.REMOVE_ELEMENT;
+				if (!edge || !element.negate) {
+					const reject = element.negate ? EliminationResult.REMOVE_ELEMENT : EliminationResult.REMOVE_BRANCH;
+					const accept = element.negate ? EliminationResult.REMOVE_BRANCH : EliminationResult.REMOVE_ELEMENT;
 
-				if (element.alternatives.length === 0) {
-					return reject;
-				} else if (isPotentiallyEmpty(element.alternatives)) {
-					return accept;
-				}
+					if (element.alternatives.length === 0) {
+						return reject;
+					} else if (isPotentiallyEmpty(element.alternatives)) {
+						return accept;
+					}
 
-				if (toMatchingDirection(element.kind) === direction) {
-					if (
-						!element.negate &&
-						tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)
-					) {
-						changed = true;
+					if (toMatchingDirection(element.kind) === direction) {
+						if (tryRemoveRejectingAssertionBranches(element, char, edge, direction, maxCharacter)) {
+							changed = true;
 
-						if (element.alternatives.length === 0) {
+							if (element.alternatives.length === 0) {
+								return reject;
+							}
+						}
+
+						const firstOf = getFirstCharConsumedBy(element.alternatives, direction, maxCharacter);
+						if (firstOf.empty) {
+							return EliminationResult.KEEP;
+						} else if (char.isDisjointWith(firstOf.char)) {
 							return reject;
 						}
-					}
 
-					const firstOf = getFirstCharConsumedBy(element.alternatives, direction, maxCharacter);
-					if (firstOf.empty) {
-						return EliminationResult.KEEP;
-					} else if (char.isDisjointWith(firstOf.char)) {
-						return reject;
-					}
-
-					// if this contains another assertion then that might reject. It's out of our control
-					if (!hasSomeDescendant(element, d => d !== element && d.type === "Assertion")) {
-						const range = getLengthRange(element.alternatives);
-						// we only check the first character, so it's only correct if the assertion requires only one
-						// character
-						if (range && range.max === 1) {
-							// require exactness
-							if (firstOf.exact && char.isSubsetOf(firstOf.char)) {
-								return accept;
+						// if this contains another assertion then that might reject. It's out of our control
+						if (!hasSomeDescendant(element, d => d !== element && d.type === "Assertion")) {
+							const range = getLengthRange(element.alternatives);
+							// we only check the first character, so it's only correct if the assertion requires only one
+							// character
+							if (range && range.max === 1) {
+								// require exactness
+								if (firstOf.exact && char.isSubsetOf(firstOf.char)) {
+									return accept;
+								}
 							}
 						}
 					}
 				}
+
 				return EliminationResult.KEEP;
 			}
 			case "Alternation": {
-				if (tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+				if (tryRemoveRejectingAssertionBranches(element, char, edge, direction, maxCharacter)) {
 					changed = true;
 				}
 
@@ -183,7 +199,7 @@ export function tryRemoveRejectingAssertionBranches(
 				if (element.max === 0) {
 					return EliminationResult.REMOVE_ELEMENT;
 				} else if (element.max === 1) {
-					if (tryRemoveRejectingAssertionBranches(element, char, direction, maxCharacter)) {
+					if (tryRemoveRejectingAssertionBranches(element, char, edge, direction, maxCharacter)) {
 						changed = true;
 					}
 

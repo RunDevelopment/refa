@@ -57,7 +57,7 @@ export interface CreationOptions {
 export function combineTransformers(transformers: Iterable<Transformer>): Transformer {
 	const array = [...transformers].filter(t => !isNoop(t));
 	if (array.length === 0) {
-		return noop();
+		return noopTransformer();
 	}
 
 	type OnFunction = (path: never, context: TransformContext) => void;
@@ -101,7 +101,7 @@ export function combineTransformers(transformers: Iterable<Transformer>): Transf
 /**
  * Returns a transformer that does not modify the given AST sub trees.
  */
-export function noop(): Transformer {
+export function noopTransformer(): Transformer {
 	return {};
 }
 
