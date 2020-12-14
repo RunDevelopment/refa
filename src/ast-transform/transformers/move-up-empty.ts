@@ -1,7 +1,7 @@
 import { Concatenation, NoParent, Parent, SourceLocation } from "../../ast";
 import { isEmpty, isPotentiallyEmpty } from "../../ast-analysis";
 import { filterMut } from "../../util";
-import { CreationOptions, noop, TransformContext, Transformer } from "../transformer";
+import { CreationOptions, noopTransformer, TransformContext, Transformer } from "../transformer";
 import { copySource } from "../util";
 
 function makeContentOptional(
@@ -84,7 +84,7 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreOrder || !options?.ignoreAmbiguity) {
-		return noop();
+		return noopTransformer();
 	} else {
 		return {
 			onAlternation: onParent,

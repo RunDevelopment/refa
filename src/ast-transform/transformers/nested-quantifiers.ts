@@ -1,5 +1,5 @@
 import { Quantifier, NoParent } from "../../ast";
-import { CreationOptions, noop, TransformContext, Transformer } from "../transformer";
+import { CreationOptions, noopTransformer, TransformContext, Transformer } from "../transformer";
 
 function combineNestedQuantifiers(
 	parent: NoParent<Quantifier>,
@@ -98,7 +98,7 @@ function optimizeChildQuantifier(
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreAmbiguity || !options.ignoreOrder) {
 		// (almost) all changes will decrease the ambiguity of the regular expression and may change matching order
-		return noop();
+		return noopTransformer();
 	}
 
 	return {
