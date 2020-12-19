@@ -586,6 +586,11 @@ function consumeTypeAnnotation(source: SourceCode): SourceCode {
 	let start = source.pos;
 	source.consume(/:/y, "Expected ':'");
 	source.consumeSpaces();
+
+	if (source.consumeOptional(/(?:asserts\s+)?\w+\s+is\b/y)) {
+		source.consumeSpaces();
+	}
+
 	while (true) {
 		// readonly
 		while (source.consumeOptional(/readonly\b/y)) {
