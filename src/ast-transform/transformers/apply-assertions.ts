@@ -1,13 +1,4 @@
-import {
-	Alternation,
-	Assertion,
-	CharacterClass,
-	Concatenation,
-	Element,
-	NoParent,
-	Parent,
-	Quantifier,
-} from "../../ast";
+import { Alternation, Assertion, CharacterClass, Concatenation, Element, NoParent, Quantifier } from "../../ast";
 import {
 	getFirstCharConsumedBy,
 	isTriviallyAccepting,
@@ -27,6 +18,8 @@ import {
 	inRange,
 	lastIndexFor,
 	setAt,
+	SingleCharacterParent,
+	isSingleCharacterParent,
 	tryRemoveRejectingAssertionBranches,
 } from "../util";
 
@@ -49,17 +42,6 @@ function pushFront<T>(direction: MatchingDirection, arr: T[], value: T): void {
 	} else {
 		arr.push(value);
 	}
-}
-
-type SingleCharacterParent<T extends Parent> = NoParent<T> & {
-	alternatives: [{ elements: [NoParent<CharacterClass>] }];
-};
-function isSingleCharacterParent<T extends Parent>(element: NoParent<T>): element is SingleCharacterParent<T> {
-	return (
-		element.alternatives.length === 1 &&
-		element.alternatives[0].elements.length === 1 &&
-		element.alternatives[0].elements[0].type === "CharacterClass"
-	);
 }
 
 /**

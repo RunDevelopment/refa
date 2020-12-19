@@ -1,4 +1,14 @@
-import { Alternation, Assertion, Concatenation, Element, Node, NoParent, Parent, SourceLocation } from "../ast";
+import {
+	Alternation,
+	Assertion,
+	CharacterClass,
+	Concatenation,
+	Element,
+	Node,
+	NoParent,
+	Parent,
+	SourceLocation,
+} from "../ast";
 import {
 	getFirstCharConsumedBy,
 	getLengthRange,
@@ -99,6 +109,17 @@ export function lastIndexFor(direction: MatchingDirection): 0 | -1 {
 }
 export function incrementFor(direction: MatchingDirection): 1 | -1 {
 	return direction === "ltr" ? +1 : -1;
+}
+
+export type SingleCharacterParent<T extends Parent> = NoParent<T> & {
+	alternatives: [{ elements: [NoParent<CharacterClass>] }];
+};
+export function isSingleCharacterParent<T extends Parent>(element: NoParent<T>): element is SingleCharacterParent<T> {
+	return (
+		element.alternatives.length === 1 &&
+		element.alternatives[0].elements.length === 1 &&
+		element.alternatives[0].elements[0].type === "CharacterClass"
+	);
 }
 
 export function tryInlineAssertions(alternatives: NoParent<Concatenation>[], kind: Assertion["kind"]): boolean {

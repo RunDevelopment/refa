@@ -81,6 +81,59 @@ describe("Transformers", function () {
 				transformer,
 				expected: /(?=\d)\w+/i,
 			},
+
+			{
+				literal: /^^/,
+				transformer,
+				expected: /^/i,
+			},
+			{
+				literal: /$$$$$/,
+				transformer,
+				expected: /$/i,
+			},
+			{
+				literal: /(?!\w)$/,
+				transformer,
+				expected: /$/i,
+			},
+			{
+				literal: /$(?!\w)/,
+				transformer,
+				expected: /$/i,
+			},
+
+			{
+				literal: /^(?:@|(?<!\w))[A-Z_]\w*/i,
+				transformer,
+				expected: /^(?:@|)[A-Z_]\w*/i,
+			},
+			{
+				literal: /^(?:@|(?<!\w)(?!\w))/i,
+				transformer,
+				expected: /^(?:@|(?!\w))/i,
+			},
+			{
+				literal: /^(?:@|(?<!\w)(?!\w))$/i,
+				transformer,
+				expected: /^(?:@|)$/i,
+			},
+			{
+				literal: /(?:@|(?<!\w)(?!\w))$/i,
+				transformer,
+				expected: /(?:@|(?<!\w))$/i,
+			},
+
+			{
+				literal: /^\bfoo\b$/,
+				transformer,
+				expected: /^foo$/,
+			},
+			{
+				literal: /^\b(?:foo|bar)\b$/,
+				transformer,
+				expected: /^(?:foo|bar)$/,
+			},
 		]);
 	});
 });
