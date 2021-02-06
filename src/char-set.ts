@@ -138,6 +138,18 @@ export class CharSet {
 		return range;
 	}
 
+	/**
+	 * Returns whether this and the given character set are equivalent.
+	 *
+	 * Two `CharSet`s are equal if and only if:
+	 *
+	 * 1.  They have the same maximum.
+	 * 2.  They have the same number of char ranges.
+	 * 3.  For every `CharRange` in this set, there exists one `CharRange` in the other set with the same minimum and
+	 *     maximum.
+	 *
+	 * @param other
+	 */
 	equals(other: CharSet): boolean {
 		if (other === this) return true;
 		if (!(other instanceof CharSet)) return false;
@@ -151,6 +163,15 @@ export class CharSet {
 		}
 		return true;
 	}
+	/**
+	 * Compares this set with given set and returns an integer value describing their relation. Two equivalent set are
+	 * always guaranteed to return 0.
+	 *
+	 * The order defined by this function is guaranteed to be a
+	 * [total order](https://en.wikipedia.org/wiki/Total_order). Apart from this, no other guarantees are given.
+	 *
+	 * @param other
+	 */
 	compare(other: CharSet): number {
 		if (other === this) return 0;
 		if (!(other instanceof CharSet)) return -1;
@@ -172,10 +193,23 @@ export class CharSet {
 		return 0;
 	}
 
+	/**
+	 * Returns [the complement](https://en.wikipedia.org/wiki/Complement_(set_theory)) of this set.
+	 *
+	 * The returned set will have the same maximum as this set.
+	 */
 	negate(): CharSet {
 		return new CharSet(this.maximum, negateRanges(this.ranges, this.maximum));
 	}
 
+	/**
+	 * Returns [the union](https://en.wikipedia.org/wiki/Union_(set_theory)) of this set and all given sets and
+	 * character ranges.
+	 *
+	 * The returned set will have the same maximum as this set.
+	 *
+	 * @param data
+	 */
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
 		if (data.length === 1 && first instanceof CharSet) {
@@ -198,6 +232,14 @@ export class CharSet {
 		return new CharSet(this.maximum, newRanges);
 	}
 
+	/**
+	 * Returns [the intersection](https://en.wikipedia.org/wiki/Intersection_(set_theory)) of this set and the given set
+	 * and character ranges.
+	 *
+	 * The returned set will have the same maximum as this set.
+	 *
+	 * @param set
+	 */
 	intersect(set: CharSet): CharSet;
 	intersect(ranges: Iterable<CharRange>): CharSet;
 	intersect(data: Iterable<CharRange> | CharSet): CharSet {
@@ -219,6 +261,13 @@ export class CharSet {
 		}
 	}
 
+	/**
+	 * Returns a set that contains all characters of this set that are not in the given set.
+	 *
+	 * The returned set will have the same maximum as this set.
+	 *
+	 * @param set
+	 */
 	without(set: CharSet): CharSet;
 	without(ranges: Iterable<CharRange>): CharSet;
 	without(data: Iterable<CharRange> | CharSet): CharSet {
@@ -239,6 +288,11 @@ export class CharSet {
 		}
 	}
 
+	/**
+	 * Returns whether this set contains the given character.
+	 *
+	 * @param character
+	 */
 	has(character: number): boolean {
 		return hasEveryOfRange(this.ranges, { min: character, max: character });
 	}
