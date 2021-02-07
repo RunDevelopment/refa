@@ -65,7 +65,7 @@ type NoParentNodePick<T extends NodeIdent> = Pick<T, Exclude<keyof T, "parent">>
 /**
  * A view of an AST node that hides the `parent` property.
  */
-export type NoParent<T> = T extends NodeIdent ? NoParentNode<T> : T extends (infer U)[] ? NoParentArray<T> : T;
+export type NoParent<T> = T extends NodeIdent ? NoParentNode<T> : T extends unknown[] ? NoParentArray<T> : T;
 
 /**
  * Sets the `parent` properties of the given node and all of its child nodes.
@@ -290,6 +290,7 @@ export interface VisitNoParentAstHandler {
 }
 export function visitAst(node: Node, handler: VisitAstHandler): void;
 export function visitAst(node: NoParent<Node>, handler: VisitNoParentAstHandler): void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function visitAst(node: NoParent<Node>, handler: Record<string, any>): void {
 	const enter = handler["on" + node.type + "Enter"];
 	if (enter) {

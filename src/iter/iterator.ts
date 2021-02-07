@@ -80,13 +80,13 @@ const PURE_OUT_SYMBOL = Symbol();
  * @param iter
  */
 export function markPureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	iter[PURE_OUT_SYMBOL] = true;
 	return iter;
 }
 function hasPureOut<S, O>(iter: FAIterator<S, O>): boolean {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	return iter[PURE_OUT_SYMBOL] === true;
 }

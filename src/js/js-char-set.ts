@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
-
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./js-flags";

@@ -253,6 +253,7 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 
 export function assertNever(value: never, message?: string): never {
 	const error = new Error(message);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(error as any).data = value;
 	throw error;
 }
