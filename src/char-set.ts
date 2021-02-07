@@ -4,7 +4,15 @@
  * Each interval contains all values `x` for `min <= x <= max`. Both ends have to be safe integers and `min <= max`.
  */
 export interface CharRange {
+	/**
+	 * The inclusive minimum of the interval.
+	 */
 	readonly min: number;
+	/**
+	 * The inclusive maximum of the interval.
+	 *
+	 * This value has to be greater or equal to {@link min}.
+	 */
 	readonly max: number;
 }
 

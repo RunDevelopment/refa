@@ -77,6 +77,12 @@ export interface ParseOptions {
 	disableOptimizations?: boolean;
 }
 
+/**
+ * A light-weight representation of a
+ * [JavaScript RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object.
+ *
+ * This interface only requires the `source` and `flags` properties of a RegExp object.
+ */
 export interface Literal {
 	readonly source: string;
 	readonly flags: string;
@@ -99,9 +105,17 @@ interface ParserContext extends ParseOptions {
 }
 
 export class Parser implements Literal {
+	/** The source string of the literal this parser works on. */
 	readonly source: string;
+	/** The flags string of the literal this parser works on. */
 	readonly flags: string;
 
+	/**
+	 * The parsed AST of the literal this parser works on.
+	 *
+	 * While not explicitly typed that way, the parser will assume that the AST is readonly and makes optimizations
+	 * based on that assumption. It is not safe to change the AST in any way.
+	 */
 	readonly ast: RegexppAst;
 
 	private readonly _charCache = new Map<string, CharSet>();
@@ -113,6 +127,15 @@ export class Parser implements Literal {
 		this.ast = ast;
 	}
 
+	/**
+	 * Creates a new parser from the given literal.
+	 *
+	 * This function will throw a `SyntaxError` if the given literal is not a valid RegExp literal according to the
+	 * given RegExp parser options.
+	 *
+	 * @param literal
+	 * @param parserOptions
+	 */
 	static fromLiteral(literal: Literal, parserOptions?: RegExpParser.Options): Parser {
 		const parser = new RegExpParser(parserOptions);
 		const flags = parser.parseFlags(literal.flags);

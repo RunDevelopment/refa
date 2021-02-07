@@ -1,14 +1,35 @@
 import { CharRange, CharSet } from "./char-set";
 import { wordSetToWords as wordSetToWordsImpl } from "./char-util";
 
+/**
+ * Converts the given array of UTF16 character codes into a string.
+ *
+ * All numbers in the given array must be between 0 (inclusive) and 65535 = 0xFFFF (inclusive).
+ *
+ * @param word
+ */
 export function fromUTF16ToString(word: Iterable<number>): string {
 	return String.fromCharCode(...word);
 }
 
+/**
+ * Converts the given array of Unicode code points into a string.
+ *
+ * All numbers in the given array must be between 0 (inclusive) and 1114111 = 0x10FFFF (inclusive).
+ *
+ * @param word
+ */
 export function fromUnicodeToString(word: Iterable<number>): string {
 	return String.fromCodePoint(...word);
 }
 
+/**
+ * Converts the given string into an array of UTF16 character codes.
+ *
+ * All numbers in the returned array are guaranteed to be between 0 (inclusive) and 65535 = 0xFFFF (inclusive).
+ *
+ * @param string
+ */
 export function fromStringToUTF16(string: string): number[] {
 	const word: number[] = new Array<number>();
 
@@ -19,6 +40,13 @@ export function fromStringToUTF16(string: string): number[] {
 	return word;
 }
 
+/**
+ * Converts the given string into an array of Unicode code points.
+ *
+ * All numbers in the returned array are guaranteed to be between 0 (inclusive) and 1114111 = 0x10FFFF (inclusive).
+ *
+ * @param string
+ */
 export function fromStringToUnicode(string: string): number[] {
 	// https://stackoverflow.com/a/21409165/7595472
 

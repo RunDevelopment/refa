@@ -43,6 +43,11 @@ export interface ReadonlyNFA extends TransitionIterableFA {
 	copy(): NFA;
 }
 
+/**
+ * A [nondeterministic finite automaton](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton).
+ *
+ * This class implements epsilon-free NFAs.
+ */
 export class NFA implements ReadonlyNFA {
 	readonly nodes: NFA.NodeList;
 	readonly maxCharacter: number;
@@ -398,6 +403,7 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param words
 	 * @param options
+	 * @param creationOptions
 	 */
 	static fromWords(
 		words: Iterable<Iterable<number>>,
@@ -479,6 +485,11 @@ export class NFA implements ReadonlyNFA {
 	}
 }
 
+/**
+ * A namespace for NFA-specific classes and interfaces.
+ *
+ * @see {@link NFA} (class)
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NFA {
 	export interface ReadonlyNode {
@@ -697,10 +708,10 @@ export namespace NFA {
 		 * necessary to construct the NFA. This might cause the machine to run out of memory. I.e. some REs can only be
 		 * represented with a huge number of states (e.g `/a{123456789}/`).
 		 *
-		 * By default, this value is set to 10K nodes.
-		 *
 		 * Note: This limit describes maximum number of __created__ nodes. If nodes are created and subsequently
 		 * discard, they will still count toward the limit.
+		 *
+		 * @default 10000
 		 */
 		maxNodes?: number;
 	}
@@ -716,7 +727,7 @@ export namespace NFA {
 		/**
 		 * Whether to replace all lookarounds with an empty character class when construction the NFA.
 		 *
-		 * Defaults to `false`.
+		 * @default false
 		 */
 		disableLookarounds?: boolean;
 		/**
@@ -725,7 +736,7 @@ export namespace NFA {
 		 * Quantifiers with a large finite maximum (e.g. `a{1,10000}`) can create huge NFAs with thousands of states.
 		 * Any Quantifier with a maximum greater or equal to this threshold will be assumed to be infinite.
 		 *
-		 * Defaults to `Infinity`.
+		 * @default Infinity
 		 */
 		infinityThreshold?: number;
 	}

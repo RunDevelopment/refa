@@ -36,6 +36,10 @@ export interface ReadonlyDFA extends TransitionIterableFA {
 	 */
 	structurallyEqual(other: ReadonlyDFA): boolean;
 }
+
+/**
+ * A [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton).
+ */
 export class DFA implements ReadonlyDFA {
 	readonly nodes: DFA.NodeList;
 	readonly maxCharacter: number;
@@ -496,6 +500,11 @@ export class DFA implements ReadonlyDFA {
 	}
 }
 
+/**
+ * A namespace for DFA-specific classes and interfaces.
+ *
+ * @see {@link DFA} (class)
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DFA {
 	export interface ReadonlyNode {
@@ -560,12 +569,15 @@ export namespace DFA {
 				this._uncheckedLinkNodesWithCharRange(from, to, characters);
 			}
 		}
+		/** @internal */
 		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: number): void {
 			from.out.set(character, to);
 		}
+		/** @internal */
 		_uncheckedLinkNodesWithCharRange(from: Node, to: Node, characters: CharRange): void {
 			from.out.setEvery(characters, to);
 		}
+		/** @internal */
 		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {
 			for (const range of characters.ranges) {
 				from.out.setEvery(range, to);
@@ -680,10 +692,10 @@ export namespace DFA {
 		 * necessary to construct the DFA. This might cause the machine to run out of memory. I.e. the conversion from
 		 * NFA to DFA may create `O(2^n)` many nodes and an intersection may created `O(n * m)` many.
 		 *
-		 * By default, this value is set to 10K nodes.
-		 *
 		 * Note: This limit describes the maximum number of __created__ nodes. If nodes are created and subsequently
 		 * discard, they will still count toward the limit.
+		 *
+		 * @default 10000
 		 */
 		maxNodes?: number;
 	}
