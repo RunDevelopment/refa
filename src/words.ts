@@ -10,7 +10,7 @@ export function fromUnicodeToString(word: Iterable<number>): string {
 }
 
 export function fromStringToUTF16(string: string): number[] {
-	const word: number[] = new Array<number>(string.length);
+	const word: number[] = new Array<number>();
 
 	for (let i = 0, l = string.length; i < l; i++) {
 		word.push(string.charCodeAt(i));
