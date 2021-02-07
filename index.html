@@ -1,0 +1,266 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>refa - v0.6.0</title>
+	<meta name="description" content="Documentation for refa - v0.6.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">refa - v0.6.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>refa - v0.6.0</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#regular-expressions-and-finite-automata-refa" id="regular-expressions-and-finite-automata-refa" style="color: inherit; text-decoration: none;">
+					<h1>Regular Expressions and Finite Automata (refa)</h1>
+				</a>
+				<p><a href="https://github.com/RunDevelopment/refa/actions"><img src="https://github.com/RunDevelopment/refa/workflows/Node.js%20CI/badge.svg" alt="Actions Status"></a>
+				<a href="https://www.npmjs.com/package/refa"><img src="https://img.shields.io/npm/v/refa" alt="npm"></a></p>
+				<p>A library for regular expressions (RE) and finite automata (FA) in the context of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp">Javascript RegExp</a>.</p>
+				<a href="#about" id="about" style="color: inherit; text-decoration: none;">
+					<h2>About</h2>
+				</a>
+				<p>This is a general library for <a href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">DFA</a>, <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA</a>, and REs of <a href="https://en.wikipedia.org/wiki/Induction_of_regular_languages">formal regular languages</a>.</p>
+				<p>It also supports additional methods to easily convert from JS RegExp to the internal RE AST and vice versa.</p>
+				<p><strong>At this point in time, the library is still in development and partially incomplete!</strong></p>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<ul>
+					<li><p>Conversions</p>
+						<ul>
+							<li>RE to NFA (<em>lookarounds are not implemented yet</em>)</li>
+							<li>NFA to DFA and DFA to NFA</li>
+							<li>NFA to RE and DFA to RE</li>
+						</ul>
+					</li>
+					<li><p>DFA and NFA operations</p>
+						<ul>
+							<li>Construction from other FA, the intersection of two FA, or a finite set of words</li>
+							<li>Print internal representation in a human-readable form</li>
+							<li>Test whether a word is accepted</li>
+							<li>Test whether the language of an FA is the empty set/a finite set</li>
+							<li>Accept all prefixes of a language</li>
+						</ul>
+					</li>
+					<li><p>DFA specific operations</p>
+						<ul>
+							<li>Minimization</li>
+							<li>Complement</li>
+							<li>Structural equality</li>
+						</ul>
+					</li>
+					<li><p>NFA specific operations</p>
+						<ul>
+							<li>Union and Concatenation with other FA</li>
+							<li>Quantification</li>
+							<li>Reverse</li>
+							<li>Accept all suffixes of a language</li>
+						</ul>
+					</li>
+					<li><p>Javascript RegExp</p>
+						<ul>
+							<li>RegExp to RE and RE to RegExp (non-trivial backreferences are not supported)</li>
+						</ul>
+					</li>
+				</ul>
+				<a href="#limitations" id="limitations" style="color: inherit; text-decoration: none;">
+					<h3>Limitations</h3>
+				</a>
+				<p>This library will never be able to support some modern features of regex engines such as <a href="https://www.rexegg.com/regex-capture.html">backreferences</a> and <a href="https://www.rexegg.com/regex-recursion.html">recursion</a> because these features, generally, cannot be be represented by a DFA or NFA.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="modules/dfa.html">DFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="modules/js.html">JS</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="modules/nfa.html">NFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="modules/words.html">Words</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/charmap.html" class="tsd-kind-icon">Char<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/charset.html" class="tsd-kind-icon">Char<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/dfa.html" class="tsd-kind-icon">DFA</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/nfa.html" class="tsd-kind-icon">NFA</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/toomanynodeserror.html" class="tsd-kind-icon">Too<wbr>Many<wbr>Nodes<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/alternation.html" class="tsd-kind-icon">Alternation</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/assertion.html" class="tsd-kind-icon">Assertion</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/charrange.html" class="tsd-kind-icon">Char<wbr>Range</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/characterclass.html" class="tsd-kind-icon">Character<wbr>Class</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/concatenation.html" class="tsd-kind-icon">Concatenation</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/expression.html" class="tsd-kind-icon">Expression</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/faiterator.html" class="tsd-kind-icon">FAIterator</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/finiteautomaton.html" class="tsd-kind-icon">Finite<wbr>Automaton</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/intersectionoptions.html" class="tsd-kind-icon">Intersection<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/nodebase.html" class="tsd-kind-icon">Node<wbr>Base</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/quantifier.html" class="tsd-kind-icon">Quantifier</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/readonlycharmap.html" class="tsd-kind-icon">Readonly<wbr>Char<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/readonlydfa.html" class="tsd-kind-icon">ReadonlyDFA</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/readonlynfa.html" class="tsd-kind-icon">ReadonlyNFA</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sourcelocation.html" class="tsd-kind-icon">Source<wbr>Location</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/toregexoptions.html" class="tsd-kind-icon">To<wbr>Regex<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/transitioniterable.html" class="tsd-kind-icon">Transition<wbr>Iterable</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/transitioniterablefa.html" class="tsd-kind-icon">Transition<wbr>IterableFA</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/visitasthandler.html" class="tsd-kind-icon">Visit<wbr>Ast<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/visitnoparentasthandler.html" class="tsd-kind-icon">Visit<wbr>NoParent<wbr>Ast<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#element" class="tsd-kind-icon">Element</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#noparent" class="tsd-kind-icon">No<wbr>Parent</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#node" class="tsd-kind-icon">Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#parent" class="tsd-kind-icon">Parent</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#setparent" class="tsd-kind-icon">set<wbr>Parent</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#setsource" class="tsd-kind-icon">set<wbr>Source</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#topatternstring" class="tsd-kind-icon">to<wbr>Pattern<wbr>String</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#visitast" class="tsd-kind-icon">visit<wbr>Ast</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
