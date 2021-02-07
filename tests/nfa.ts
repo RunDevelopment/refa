@@ -7,6 +7,7 @@ import { Literal, Parser, toLiteral } from "../src/js";
 import { RegExpParser } from "regexpp";
 import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
+import { wordTestData, testWordTestCases } from "./helper/word-test-data";
 
 describe("NFA", function () {
 	describe("fromRegex", function () {
@@ -551,6 +552,15 @@ describe("NFA", function () {
 					}
 				});
 			}
+		}
+	});
+
+	describe("test", function () {
+		for (const testCase of wordTestData) {
+			it(literalToString(testCase.literal), function () {
+				const nfa = literalToNFA(testCase.literal);
+				testWordTestCases(nfa, testCase);
+			});
 		}
 	});
 

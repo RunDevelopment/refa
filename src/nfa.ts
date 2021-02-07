@@ -87,25 +87,28 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	test(word: Iterable<number>): boolean {
-		const nodes = this.nodes;
-		const characters = [...word];
+		// An implementation of Thompson's algorithm as described by Russ Cox
+		// https://swtch.com/~rsc/regexp/regexp1.html
+		let currentStates = [this.nodes.initial];
+		const newStatesSet = new Set<NFA.Node>();
 
-		function match(index: number, node: NFA.Node): boolean {
-			if (index >= characters.length) return nodes.finals.has(node);
+		for (const char of word) {
+			const newStates: NFA.Node[] = [];
+			newStatesSet.clear();
 
-			const cp = characters[index];
-
-			for (const [to, chars] of node.out) {
-				if (chars.has(cp)) {
-					if (match(index + 1, to)) {
-						return true;
+			for (const state of currentStates) {
+				state.out.forEach((charSet, to) => {
+					if (charSet.has(char) && !newStatesSet.has(to)) {
+						newStates.push(to);
+						newStatesSet.add(to);
 					}
-				}
+				});
 			}
 
-			return false;
+			currentStates = newStates;
 		}
-		return match(0, nodes.initial);
+
+		return currentStates.some(state => this.nodes.finals.has(state));
 	}
 
 	wordSets(): Iterable<CharSet[]> {
