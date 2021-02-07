@@ -4,6 +4,7 @@ node_modules/
 /**/tempCodeRunnerFile.*
 .nyc_output/
 coverage/
+docs/
 /index.js
 /index.mjs
 /index.d.ts
