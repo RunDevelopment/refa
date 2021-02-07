@@ -553,13 +553,11 @@ export namespace DFA {
 			}
 
 			if (typeof characters === "number") {
-				from.out.set(characters, to);
+				this._uncheckedLinkNodesWithCharacter(from, to, characters);
 			} else if (characters instanceof CharSet) {
-				for (const range of characters.ranges) {
-					from.out.setEvery(range, to);
-				}
+				this._uncheckedLinkNodesWithCharSet(from, to, characters);
 			} else {
-				from.out.setEvery(characters, to);
+				this._uncheckedLinkNodesWithCharRange(from, to, characters);
 			}
 		}
 		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: number): void {
