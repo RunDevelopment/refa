@@ -1,3 +1,4 @@
+import { Char } from "../core-types";
 import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Quantifier, NoParent } from "../ast";
 
 /**
@@ -19,7 +20,7 @@ export interface TransformContext {
 	/**
 	 * The maximum character of all character sets in the AST.
 	 */
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
 	/**
 	 * Signals that the transformer changed the AST.

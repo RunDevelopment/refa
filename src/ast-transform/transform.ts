@@ -1,3 +1,4 @@
+import { Char } from "../core-types";
 import { Expression, Node, NoParent, visitAst } from "../ast";
 import { Transformer, TransformContext } from "./transformer";
 
@@ -8,7 +9,7 @@ export interface TransformOptions {
 	 * This is only a maximum. The transformer will be stopped before this number is reach if the AST isn't modified
 	 * anymore.
 	 *
-	 * @default Infinity
+	 * @default 10
 	 */
 	maxPasses?: number;
 }
@@ -30,7 +31,7 @@ export function transform(
 	options?: Readonly<TransformOptions>
 ): void {
 	options = options ?? {};
-	let passesLeft = options.maxPasses ?? Infinity;
+	let passesLeft = options.maxPasses ?? 10;
 
 	const context: Context = {
 		transformer,
@@ -50,7 +51,7 @@ export function transform(
  *
  * @param ast
  */
-function determineMaxCharacter(ast: NoParent<Expression>): number {
+function determineMaxCharacter(ast: NoParent<Expression>): Char {
 	try {
 		visitAst(ast, {
 			onCharacterClassEnter(node) {
@@ -69,7 +70,7 @@ function determineMaxCharacter(ast: NoParent<Expression>): number {
 interface Context {
 	transformer: Transformer;
 	ast: NoParent<Expression>;
-	maxCharacter: number;
+	maxCharacter: Char;
 }
 
 function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
