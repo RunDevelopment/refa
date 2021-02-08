@@ -1,35 +1,39 @@
+import { Char } from "./core-types";
+
 /**
- * An immutable interval of characters with inclusive ends.
+ * An immutable interval of {@link Char}s with inclusive ends.
  *
- * Each interval contains all values `x` for `min <= x <= max`. Both ends have to be safe integers and `min <= max`.
+ * Each interval contains all characters `x` with `min <= x <= max`.
  */
 export interface CharRange {
 	/**
 	 * The inclusive minimum of the interval.
+	 *
+	 * This value has to be less or equal to {@link max}.
 	 */
-	readonly min: number;
+	readonly min: Char;
 	/**
 	 * The inclusive maximum of the interval.
 	 *
 	 * This value has to be greater or equal to {@link min}.
 	 */
-	readonly max: number;
+	readonly max: Char;
 }
 
 // caches for empty/full char sets of different sizes.
-const emptyCache = new Map<number, CharSet>();
-const allCache = new Map<number, CharSet>();
+const emptyCache = new Map<Char, CharSet>();
+const allCache = new Map<Char, CharSet>();
 
 /**
- * An immutable set of characters represented as a sorted set of disjoint non-adjacent intervals.
+ * An immutable set of {@link Char}s represented as a sorted set of disjoint non-adjacent intervals ({@link CharRange}).
  *
  * All characters in the set have to be between 0 (inclusive) and the maximum of the set (inclusive).
  */
 export class CharSet {
 	/**
-	 * The greatest code point which can be element of the set.
+	 * The greatest character which can be element of the set.
 	 */
-	readonly maximum: number;
+	readonly maximum: Char;
 
 	/**
 	 * An array of ranges representing this character set.
@@ -71,7 +75,7 @@ export class CharSet {
 		return size;
 	}
 
-	private constructor(maximum: number, ranges: readonly CharRange[]) {
+	private constructor(maximum: Char, ranges: readonly CharRange[]) {
 		this.maximum = maximum;
 		this.ranges = ranges;
 	}
@@ -95,9 +99,9 @@ export class CharSet {
 	/**
 	 * Returns an empty character set with the given maximum.
 	 *
-	 * @param maximum The greatest code point which can be element of the set.
+	 * @param maximum The greatest character which can be element of the set.
 	 */
-	static empty(maximum: number): CharSet {
+	static empty(maximum: Char): CharSet {
 		let emptySet = emptyCache.get(maximum);
 		if (emptySet === undefined) {
 			emptySet = new CharSet(maximum, []);
@@ -108,9 +112,9 @@ export class CharSet {
 	/**
 	 * Returns a complete character set with the given maximum.
 	 *
-	 * @param maximum The greatest code point which will be element of the set.
+	 * @param maximum The greatest character which will be element of the set.
 	 */
-	static all(maximum: number): CharSet {
+	static all(maximum: Char): CharSet {
 		let allSet = allCache.get(maximum);
 		if (allSet === undefined) {
 			allSet = new CharSet(maximum, [{ min: 0, max: maximum }]);
@@ -301,7 +305,7 @@ export class CharSet {
 	 *
 	 * @param character
 	 */
-	has(character: number): boolean {
+	has(character: Char): boolean {
 		return hasEveryOfRange(this.ranges, { min: character, max: character });
 	}
 
@@ -368,7 +372,7 @@ export class CharSet {
 	 *
 	 * @param other
 	 */
-	commonCharacter(other: CharSet | CharRange): number | undefined {
+	commonCharacter(other: CharSet | CharRange): Char | undefined {
 		if (!(other instanceof CharSet)) {
 			return commonCharacterOfRange(this.ranges, other);
 		}
@@ -435,7 +439,7 @@ function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolea
 	return false;
 }
 
-function commonCharacterOfRange(ranges: readonly CharRange[], range: CharRange): number | undefined {
+function commonCharacterOfRange(ranges: readonly CharRange[], range: CharRange): Char | undefined {
 	// runs in O(log(ranges.length))
 
 	const l = ranges.length;
@@ -638,7 +642,7 @@ function optimizeRanges(ranges: CharRange[]): void {
  * @param ranges
  * @param maximum
  */
-function negateRanges(ranges: readonly CharRange[], maximum: number): CharRange[] {
+function negateRanges(ranges: readonly CharRange[], maximum: Char): CharRange[] {
 	// runs in O(ranges.length)
 
 	if (ranges.length === 0) {

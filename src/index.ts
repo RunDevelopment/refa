@@ -1,3 +1,4 @@
+export * from "./core-types";
 export * from "./char-set";
 export * from "./char-map";
 export * from "./finite-automaton";

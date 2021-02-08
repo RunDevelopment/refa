@@ -1,3 +1,4 @@
+import { Char } from "../core-types";
 import { CharSet, CharRange } from "../char-set";
 import { runEncodeCharacters } from "../char-util";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
@@ -16,7 +17,7 @@ export const UTF16_MAXIMUM = 0xffff;
  */
 export function withCaseVaryingCharacters(
 	cs: CharSet,
-	caseFolding: Readonly<Record<number, readonly number[]>>,
+	caseFolding: Readonly<Record<Char, readonly Char[]>>,
 	caseVarying: CharSet
 ): CharSet {
 	if (cs.isSupersetOf(caseVarying)) {
@@ -29,7 +30,7 @@ export function withCaseVaryingCharacters(
 		return cs;
 	}
 
-	const caseVariationSet = new Set<number>();
+	const caseVariationSet = new Set<Char>();
 	for (const { min, max } of actualCaseVarying.ranges) {
 		for (let i = min; i <= max; i++) {
 			const fold = caseFolding[i];

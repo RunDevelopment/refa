@@ -1,3 +1,4 @@
+import type { Char, ReadonlyWord, Word } from "./core-types";
 import type { Expression, NoParent } from "./ast";
 import type { CharSet } from "./char-set";
 
@@ -18,21 +19,21 @@ export interface FiniteAutomaton {
 	/**
 	 * The maximum character that is part of the alphabet of the words that this FA can accept.
 	 */
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
 	/**
 	 * Returns whether this FA accepts the given word.
 	 *
 	 * @param word The characters of the word to test.
 	 */
-	test(word: Iterable<number>): boolean;
+	test(word: ReadonlyWord): boolean;
 
 	/**
 	 * Returns an iterable that will yield all words accepted by this FA. Words are yielded by ascending length.
 	 *
 	 * If this FA accepts infinitely many words, the iterable will never end.
 	 */
-	words(): Iterable<number[]>;
+	words(): Iterable<Word>;
 	/**
 	 * Returns an iterable that will yield all word sets accepted by this FA. Word sets are yielded by ascending length.
 	 *
@@ -107,7 +108,7 @@ export interface FAIterator<S, O = Iterable<S>> {
 }
 
 export interface TransitionIterable {
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	readonly transitionIterator: () => FAIterator<any, ReadonlyMap<unknown, CharSet>>;
 }
@@ -132,7 +133,7 @@ export interface TransitionIterableFA extends FiniteAutomaton, TransitionIterabl
 	/**
 	 * This is equivalent to `NFA.fromIntersection(this, other).words()` but implemented more efficiently.
 	 */
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]>;
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word>;
 }
 
 export interface IntersectionOptions {

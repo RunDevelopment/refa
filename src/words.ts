@@ -1,3 +1,4 @@
+import { Char, ReadonlyWord, Word } from "./core-types";
 import { CharRange, CharSet } from "./char-set";
 import { wordSetToWords as wordSetToWordsImpl } from "./char-util";
 
@@ -8,7 +9,7 @@ import { wordSetToWords as wordSetToWordsImpl } from "./char-util";
  *
  * @param word
  */
-export function fromUTF16ToString(word: Iterable<number>): string {
+export function fromUTF16ToString(word: ReadonlyWord): string {
 	return String.fromCharCode(...word);
 }
 
@@ -19,7 +20,7 @@ export function fromUTF16ToString(word: Iterable<number>): string {
  *
  * @param word
  */
-export function fromUnicodeToString(word: Iterable<number>): string {
+export function fromUnicodeToString(word: ReadonlyWord): string {
 	return String.fromCodePoint(...word);
 }
 
@@ -30,8 +31,8 @@ export function fromUnicodeToString(word: Iterable<number>): string {
  *
  * @param string
  */
-export function fromStringToUTF16(string: string): number[] {
-	const word: number[] = new Array<number>();
+export function fromStringToUTF16(string: string): Word {
+	const word: Word = [];
 
 	for (let i = 0, l = string.length; i < l; i++) {
 		word.push(string.charCodeAt(i));
@@ -47,10 +48,10 @@ export function fromStringToUTF16(string: string): number[] {
  *
  * @param string
  */
-export function fromStringToUnicode(string: string): number[] {
+export function fromStringToUnicode(string: string): Word {
 	// https://stackoverflow.com/a/21409165/7595472
 
-	const word: number[] = [];
+	const word: Word = [];
 
 	for (let i = 0, l = string.length; i < l; i++) {
 		const c1 = string.charCodeAt(i);
@@ -73,7 +74,7 @@ export function fromStringToUnicode(string: string): number[] {
  *
  * @param wordSet
  */
-export function wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<number[]> {
+export function wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<Word> {
 	return wordSetToWordsImpl(wordSet);
 }
 
@@ -108,7 +109,7 @@ const READABILITY_ASCII_PRIORITY: readonly CharRange[] = [
  *
  * @param set
  */
-export function pickMostReadableCharacter(set: CharSet): number | undefined {
+export function pickMostReadableCharacter(set: CharSet): Char | undefined {
 	if (set.ranges.length === 0) {
 		// empty
 		return undefined;
@@ -139,8 +140,8 @@ export function pickMostReadableCharacter(set: CharSet): number | undefined {
  *
  * @param wordSet
  */
-export function pickMostReadableWord(wordSet: Iterable<CharSet>): number[] | undefined {
-	const word: number[] = [];
+export function pickMostReadableWord(wordSet: Iterable<CharSet>): Word | undefined {
+	const word: Word = [];
 	for (const set of wordSet) {
 		const c = pickMostReadableCharacter(set);
 		if (c === undefined) {

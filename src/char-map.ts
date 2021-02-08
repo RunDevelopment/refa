@@ -1,3 +1,4 @@
+import { Char } from "./core-types";
 import { CharRange } from "./char-set";
 
 function checkRange(range: CharRange): void {
@@ -13,7 +14,7 @@ function checkRange(range: CharRange): void {
 		throw new TypeError(`max has to be a non-negative integer. (max=${max})`);
 	}
 }
-function checkChar(char: number): void {
+function checkChar(char: Char): void {
 	if (!Number.isInteger(char) || char < 0) {
 		throw new TypeError(`The given character has to be a non-negative integer. (char=${char})`);
 	}
@@ -30,7 +31,7 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	 *
 	 * @param char
 	 */
-	has(char: number): boolean;
+	has(char: Char): boolean;
 	/**
 	 * Returns whether every character in the given range is a key in the map.
 	 *
@@ -53,7 +54,7 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	 *
 	 * @param char
 	 */
-	get(char: number): T | undefined;
+	get(char: Char): T | undefined;
 
 	/**
 	 * Invokes the given callback for every item of the character map.
@@ -73,7 +74,7 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
  * A map from characters to generic values.
  *
  * The map guarantees that there are no adjacent character ranges that map to the equal values, will always be iterated
- * as one character range. The equality of values is given by a custom equal function or JavaScripts strict equality
+ * as one character range. The equality of values is given by a custom equal function or JavaScript's strict equality
  * operator (`===`).
  */
 export class CharMap<T> implements ReadonlyCharMap<T> {
@@ -87,7 +88,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		return this.tree.root === null;
 	}
 
-	has(char: number): boolean {
+	has(char: Char): boolean {
 		if (!Number.isFinite(char)) return false;
 		return this.tree.nodeOf(char) !== null;
 	}
@@ -119,13 +120,13 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		return this.tree.nodeInRange(chars) !== null;
 	}
 
-	get(char: number): T | undefined {
+	get(char: Char): T | undefined {
 		if (!Number.isFinite(char)) return undefined; // char is NaN, Inf, or -Inf
 		const node = this.tree.nodeOf(char);
 		return node ? node.value : undefined;
 	}
 
-	set(char: number, value: T): void {
+	set(char: Char, value: T): void {
 		checkChar(char);
 		this.tree.deleteCharacter(char);
 		this.tree.insert({ min: char, max: char }, value);
@@ -145,7 +146,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this.tree.insert(chars, value);
 	}
 
-	delete(char: number): boolean {
+	delete(char: Char): boolean {
 		if (!Number.isFinite(char)) return false;
 		const result = this.tree.deleteCharacter(char);
 		return result;
@@ -463,7 +464,7 @@ class AVLTree<T> {
 	 *
 	 * @param char
 	 */
-	nodeOf(char: number): Node<T> | null {
+	nodeOf(char: Char): Node<T> | null {
 		let node = this.root;
 		while (node) {
 			const { min, max } = node.key;
@@ -758,7 +759,7 @@ class AVLTree<T> {
 		}
 	}
 
-	deleteCharacter(char: number): boolean {
+	deleteCharacter(char: Char): boolean {
 		const node = this.nodeOf(char);
 		if (node) {
 			const { min, max } = node.key;

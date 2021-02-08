@@ -12,6 +12,7 @@ import {
 } from "./finite-automaton";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
+import { Char, ReadonlyWord, Word } from "./core-types";
 
 /*
  * ####################################################################################################################
@@ -50,9 +51,9 @@ export interface ReadonlyNFA extends TransitionIterableFA {
  */
 export class NFA implements ReadonlyNFA {
 	readonly nodes: NFA.NodeList;
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
-	private constructor(nodes: NFA.NodeList, maxCharacter: number) {
+	private constructor(nodes: NFA.NodeList, maxCharacter: Char) {
 		this.nodes = nodes;
 		this.maxCharacter = maxCharacter;
 	}
@@ -91,7 +92,7 @@ export class NFA implements ReadonlyNFA {
 		return NFA.fromFA(this);
 	}
 
-	test(word: Iterable<number>): boolean {
+	test(word: ReadonlyWord): boolean {
 		// An implementation of Thompson's algorithm as described by Russ Cox
 		// https://swtch.com/~rsc/regexp/regexp1.html
 		let currentStates = [this.nodes.initial];
@@ -119,7 +120,7 @@ export class NFA implements ReadonlyNFA {
 	wordSets(): Iterable<CharSet[]> {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
-	words(): Iterable<number[]> {
+	words(): Iterable<Word> {
 		return wordSetsToWords(this.wordSets());
 	}
 
@@ -155,7 +156,7 @@ export class NFA implements ReadonlyNFA {
 
 		return Iter.iterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
@@ -406,13 +407,13 @@ export class NFA implements ReadonlyNFA {
 	 * @param creationOptions
 	 */
 	static fromWords(
-		words: Iterable<Iterable<number>>,
+		words: Iterable<ReadonlyWord>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
 		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			function getNext(node: NFA.Node, char: number): NFA.Node {
+			function getNext(node: NFA.Node, char: Char): NFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 				}
@@ -721,7 +722,7 @@ export namespace NFA {
 		 *
 		 * This will be the maximum of all underlying {@link CharSet}s.
 		 */
-		maxCharacter: number;
+		maxCharacter: Char;
 	}
 	export interface FromRegexOptions extends CreationOptions {
 		/**

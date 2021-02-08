@@ -1,3 +1,4 @@
+import { Char } from "../core-types";
 import { NoParent, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
@@ -261,9 +262,9 @@ function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
 		return withCaseVaryingCharacters(cs, UTF16CaseFolding, UTF16CaseVarying);
 	}
 }
-function makeIgnoreCaseSingleChar(char: number, unicode: boolean): CharSet | null {
+function makeIgnoreCaseSingleChar(char: Char, unicode: boolean): CharSet | null {
 	const caseFoldingMap = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
-	const folding: undefined | readonly number[] = caseFoldingMap[char];
+	const folding: undefined | readonly Char[] = caseFoldingMap[char];
 	if (folding) {
 		return CharSet.empty(unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM).union(folding.map(c => ({ min: c, max: c })));
 	} else {
@@ -465,14 +466,14 @@ function isNonLineTerminator(chars: CharSet, unicode: boolean | undefined): bool
 	}
 }
 
-const PRINTABLE_CONTROL_CHARACTERS = new Map<number, string>([
+const PRINTABLE_CONTROL_CHARACTERS = new Map<Char, string>([
 	["\n".charCodeAt(0), "\\n"],
 	["\f".charCodeAt(0), "\\f"],
 	["\t".charCodeAt(0), "\\t"],
 	["\r".charCodeAt(0), "\\r"],
 ]);
 
-function printAsHex(char: number): string {
+function printAsHex(char: Char): string {
 	if (char === 0) {
 		return "\\0";
 	} else if (char < 16) {
@@ -488,8 +489,8 @@ function printAsHex(char: number): string {
 	}
 }
 
-const SPECIAL_IN_CHAR_CLASS = new Set<number>([..."\\]-^"].map(c => c.charCodeAt(0)));
-function printInCharClass(char: number): string {
+const SPECIAL_IN_CHAR_CLASS = new Set<Char>([..."\\]-^"].map(c => c.charCodeAt(0)));
+function printInCharClass(char: Char): string {
 	// special characters
 	if (SPECIAL_IN_CHAR_CLASS.has(char)) {
 		return "\\" + String.fromCharCode(char);
@@ -548,8 +549,8 @@ function printCharRange(range: CharRange): string {
 	}
 }
 
-const SPECIAL_OUTSIDE_CHAR_CLASS = new Set<number>([..."()[]{}*+?|\\.^$/"].map(c => c.charCodeAt(0)));
-function printOutsideOfCharClass(char: number): string {
+const SPECIAL_OUTSIDE_CHAR_CLASS = new Set<Char>([..."()[]{}*+?|\\.^$/"].map(c => c.charCodeAt(0)));
+function printOutsideOfCharClass(char: Char): string {
 	if (SPECIAL_OUTSIDE_CHAR_CLASS.has(char)) {
 		return "\\" + String.fromCharCode(char);
 	}
@@ -671,7 +672,7 @@ function printCharacters(chars: CharSet, flags: Flags, predefinedCS: PredefinedC
 	if (chars.isAll) return flags.dotAll ? "." : "[^]";
 	if (chars.isEmpty) return "[]";
 
-	const min: number = chars.ranges[0].min;
+	const min: Char = chars.ranges[0].min;
 	if (chars.ranges.length === 1 && min === chars.ranges[0].max) {
 		// a single character
 		return printOutsideOfCharClass(min);

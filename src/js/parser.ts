@@ -1,3 +1,4 @@
+import { Char, ReadonlyWord, Word } from "../core-types";
 import { CharSet } from "../char-set";
 import {
 	Element,
@@ -97,7 +98,7 @@ export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern | AST
 
 export interface ParseResult {
 	expression: Expression;
-	maxCharacter: number;
+	maxCharacter: Char;
 }
 
 interface ParserContext extends ParseOptions {
@@ -119,7 +120,7 @@ export class Parser implements Literal {
 	readonly ast: RegexppAst;
 
 	private readonly _charCache = new Map<string, CharSet>();
-	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, number[] | null>();
+	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, ReadonlyWord | null>();
 
 	private constructor(ast: RegexppAst) {
 		this.source = ast.pattern.raw;
@@ -584,13 +585,13 @@ export class Parser implements Literal {
 		parent.elements.push(char);
 	}
 
-	private resolveBackreference(element: AST.Backreference, context: ParserContext): number[] | null {
+	private resolveBackreference(element: AST.Backreference, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
 		}
 
-		let result: number[] | null;
+		let result: ReadonlyWord | null;
 		if (!somePathToBackreference(element)) {
 			result = [];
 		} else {
@@ -609,13 +610,13 @@ export class Parser implements Literal {
 		return result;
 	}
 
-	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): number[] | null {
+	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
 		}
 
-		let result: number[] | null;
+		let result: Word | null;
 
 		const { expression } = this.parseElement(element, {
 			backreferences: "resolve",

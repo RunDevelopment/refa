@@ -1,3 +1,4 @@
+import { Char, ReadonlyWord, Word } from "./core-types";
 import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } from "./util";
 import {
 	FAIterator,
@@ -42,9 +43,9 @@ export interface ReadonlyDFA extends TransitionIterableFA {
  */
 export class DFA implements ReadonlyDFA {
 	readonly nodes: DFA.NodeList;
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
-	private constructor(nodes: DFA.NodeList, maxCharacter: number) {
+	private constructor(nodes: DFA.NodeList, maxCharacter: Char) {
 		this.nodes = nodes;
 		this.maxCharacter = maxCharacter;
 	}
@@ -74,7 +75,7 @@ export class DFA implements ReadonlyDFA {
 		};
 	}
 
-	test(word: Iterable<number>): boolean {
+	test(word: ReadonlyWord): boolean {
 		let current = this.nodes.initial;
 
 		for (const char of word) {
@@ -97,7 +98,7 @@ export class DFA implements ReadonlyDFA {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
 
-	words(): Iterable<number[]> {
+	words(): Iterable<Word> {
 		return wordSetsToWords(this.wordSets());
 	}
 
@@ -133,7 +134,7 @@ export class DFA implements ReadonlyDFA {
 
 		return Iter.iterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
@@ -342,7 +343,7 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	static fromWords(
-		words: Iterable<Iterable<number>>,
+		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
@@ -553,7 +554,7 @@ export namespace DFA {
 			return node;
 		}
 
-		linkNodes(from: Node, to: Node, characters: CharSet | CharRange | number): void {
+		linkNodes(from: Node, to: Node, characters: CharSet | CharRange | Char): void {
 			if (from.list !== to.list) {
 				throw new Error("You can't link nodes from different node lists.");
 			}
@@ -570,7 +571,7 @@ export namespace DFA {
 			}
 		}
 		/** @internal */
-		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: number): void {
+		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: Char): void {
 			from.out.set(character, to);
 		}
 		/** @internal */
@@ -705,7 +706,7 @@ export namespace DFA {
 		 *
 		 * This will be the maximum of all underlying {@link CharSet}s.
 		 */
-		maxCharacter: number;
+		maxCharacter: Char;
 	}
 }
 
@@ -755,14 +756,11 @@ function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
 	};
 }
 
-function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: number): Set<ReadonlySet<DFA.Node>>;
+function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): Set<ReadonlySet<DFA.Node>>;
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): Set<ReadonlySet<DFA.ReadonlyNode>>;
 function findEquivalenceClasses(
 	nodeList: DFA.ReadonlyNodeList,
-	maxCharacter: number
-): Set<ReadonlySet<DFA.ReadonlyNode>>;
-function findEquivalenceClasses(
-	nodeList: DFA.ReadonlyNodeList,
-	maxCharacter: number
+	maxCharacter: Char
 ): Set<ReadonlySet<DFA.ReadonlyNode>> {
 	// https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
 	if (nodeList.finals.size === 0) {
