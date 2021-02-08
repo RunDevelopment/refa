@@ -1,3 +1,4 @@
+import { Char, ReadonlyWord, Word } from "../core-types";
 import { CharSet } from "../char-set";
 import {
 	Element,
@@ -77,6 +78,12 @@ export interface ParseOptions {
 	disableOptimizations?: boolean;
 }
 
+/**
+ * A light-weight representation of a
+ * [JavaScript RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object.
+ *
+ * This interface only requires the `source` and `flags` properties of a RegExp object.
+ */
 export interface Literal {
 	readonly source: string;
 	readonly flags: string;
@@ -91,7 +98,7 @@ export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern | AST
 
 export interface ParseResult {
 	expression: Expression;
-	maxCharacter: number;
+	maxCharacter: Char;
 }
 
 interface ParserContext extends ParseOptions {
@@ -99,13 +106,21 @@ interface ParserContext extends ParseOptions {
 }
 
 export class Parser implements Literal {
+	/** The source string of the literal this parser works on. */
 	readonly source: string;
+	/** The flags string of the literal this parser works on. */
 	readonly flags: string;
 
+	/**
+	 * The parsed AST of the literal this parser works on.
+	 *
+	 * While not explicitly typed that way, the parser will assume that the AST is readonly and makes optimizations
+	 * based on that assumption. It is not safe to change the AST in any way.
+	 */
 	readonly ast: RegexppAst;
 
 	private readonly _charCache = new Map<string, CharSet>();
-	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, number[] | null>();
+	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, ReadonlyWord | null>();
 
 	private constructor(ast: RegexppAst) {
 		this.source = ast.pattern.raw;
@@ -113,6 +128,15 @@ export class Parser implements Literal {
 		this.ast = ast;
 	}
 
+	/**
+	 * Creates a new parser from the given literal.
+	 *
+	 * This function will throw a `SyntaxError` if the given literal is not a valid RegExp literal according to the
+	 * given RegExp parser options.
+	 *
+	 * @param literal
+	 * @param parserOptions
+	 */
 	static fromLiteral(literal: Literal, parserOptions?: RegExpParser.Options): Parser {
 		const parser = new RegExpParser(parserOptions);
 		const flags = parser.parseFlags(literal.flags);
@@ -561,13 +585,13 @@ export class Parser implements Literal {
 		parent.elements.push(char);
 	}
 
-	private resolveBackreference(element: AST.Backreference, context: ParserContext): number[] | null {
+	private resolveBackreference(element: AST.Backreference, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
 		}
 
-		let result: number[] | null;
+		let result: ReadonlyWord | null;
 		if (!somePathToBackreference(element)) {
 			result = [];
 		} else {
@@ -586,13 +610,13 @@ export class Parser implements Literal {
 		return result;
 	}
 
-	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): number[] | null {
+	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
 		}
 
-		let result: number[] | null;
+		let result: Word | null;
 
 		const { expression } = this.parseElement(element, {
 			backreferences: "resolve",

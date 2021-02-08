@@ -1,3 +1,4 @@
+import type { Char, ReadonlyWord, Word } from "./core-types";
 import type { Expression, NoParent } from "./ast";
 import type { CharSet } from "./char-set";
 
@@ -18,21 +19,21 @@ export interface FiniteAutomaton {
 	/**
 	 * The maximum character that is part of the alphabet of the words that this FA can accept.
 	 */
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
 	/**
 	 * Returns whether this FA accepts the given word.
 	 *
 	 * @param word The characters of the word to test.
 	 */
-	test(word: Iterable<number>): boolean;
+	test(word: ReadonlyWord): boolean;
 
 	/**
 	 * Returns an iterable that will yield all words accepted by this FA. Words are yielded by ascending length.
 	 *
 	 * If this FA accepts infinitely many words, the iterable will never end.
 	 */
-	words(): Iterable<number[]>;
+	words(): Iterable<Word>;
 	/**
 	 * Returns an iterable that will yield all word sets accepted by this FA. Word sets are yielded by ascending length.
 	 *
@@ -48,6 +49,11 @@ export interface FiniteAutomaton {
 	 * Returns a string representation of this FA.
 	 */
 	toString(): string;
+	/**
+	 * Returns the AST of a regular expression that accepts the same language as this FA.
+	 *
+	 * @param options
+	 */
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression>;
 }
 
@@ -58,7 +64,7 @@ export interface ToRegexOptions {
 	 * If the implementation has to create more nodes to create the RE, a `TooManyNodesError` will be thrown. This
 	 * maximum will be check before any optimization passes.
 	 *
-	 * By default, this value is set to `10000`.
+	 * @default 10000
 	 */
 	maximumNodes?: number;
 	/**
@@ -67,22 +73,42 @@ export interface ToRegexOptions {
 	 * The initial AST is usually a lot more complex than necessary. Optimizations are then applied in order to minimize
 	 * the AST until this limit is reached or the AST can be optimized no further.
 	 *
-	 * By default, this value is set to `Infinity`.
+	 * @default Infinity
 	 */
 	maximumOptimizationPasses?: number;
 }
 
 /**
- * A graph iterator over all states of an FA with final states.
+ * A graph iterator for all states of an FA with final states.
+ *
+ * @template S The type of a state in the FA to iterate.
+ * @template O The type of the value each state maps to.
  */
 export interface FAIterator<S, O = Iterable<S>> {
+	/**
+	 * The initial state of the FA.
+	 */
 	readonly initial: S;
+	/**
+	 * Returns the value a state maps to.
+	 *
+	 * This function is guaranteed to be deterministic during the time the iterator is used. Subsequent invocations will
+	 * always return values that are equal to the first returned value. Equality is defined by
+	 * [the key equality of the Map class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality).
+	 * This function is also guaranteed to be sufficiently fast, usually `O(1)` can be assumed.
+	 */
 	readonly getOut: (state: S) => O;
+	/**
+	 * Returns whether the given state is a final state.
+	 *
+	 * This function is guaranteed to be deterministic during the time the iterator is used. It is also guaranteed to be
+	 * sufficiently fast, usually `O(1)` can be assumed.
+	 */
 	readonly isFinal: (state: S) => boolean;
 }
 
 export interface TransitionIterable {
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	readonly transitionIterator: () => FAIterator<any, ReadonlyMap<unknown, CharSet>>;
 }
@@ -107,7 +133,7 @@ export interface TransitionIterableFA extends FiniteAutomaton, TransitionIterabl
 	/**
 	 * This is equivalent to `NFA.fromIntersection(this, other).words()` but implemented more efficiently.
 	 */
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]>;
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word>;
 }
 
 export interface IntersectionOptions {
@@ -117,8 +143,17 @@ export interface IntersectionOptions {
 	 *
 	 * If the maximum number of nodes is unset or set to `Infinity`, the intersection operation may create as many nodes
 	 * as necessary to construct the intersection. This might cause the machine to run out of memory.
+	 *
+	 * @default Infinity
 	 */
 	maxNodes?: number;
 }
 
+/**
+ * An error that is thrown when an operation causes too many nodes to be created.
+ *
+ * Many FA operation have the potential to create a huge number of nodes (thousands and millions) which may result in
+ * the JavaScript runtime running out of memory and/or crashing. This error will thrown before that happens to safely
+ * abort an otherwise resource-intensive operation.
+ */
 export class TooManyNodesError extends Error {}

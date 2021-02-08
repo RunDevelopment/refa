@@ -1,3 +1,4 @@
+import { Char, Word } from "./core-types";
 import { CharRange, CharSet } from "./char-set";
 import { ReadonlyCharMap } from "./char-map";
 import { iterToSet } from "./util";
@@ -7,7 +8,7 @@ import { iterToSet } from "./util";
  *
  * @param chars
  */
-export function* runEncodeCharacters(chars: Iterable<number>): Iterable<CharRange> {
+export function* runEncodeCharacters(chars: Iterable<Char>): Iterable<CharRange> {
 	let start = -1;
 	let length = 0;
 
@@ -136,7 +137,7 @@ export function decomposeIntoBaseSets(set: CharSet, baseSets: readonly CharSet[]
 	return res;
 }
 
-export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: number): Map<T, CharSet> {
+export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: Char): Map<T, CharSet> {
 	const rangeMap = new Map<T, CharRange[]>();
 
 	charMap.forEach((value, range) => {
@@ -172,7 +173,7 @@ const READABLE_CHARACTERS = CharSet.empty(0x10ffff).union([
  * @param printReadable Whether to also output readable characters as characters.
  */
 export function rangesToString(ranges: CharSet | Iterable<CharRange>, printReadable: boolean = false): string {
-	function stringify(char: number): string {
+	function stringify(char: Char): string {
 		if (printReadable && char !== /* ',' */ 44 && char !== /* ' */ 39 && READABLE_CHARACTERS.has(char)) {
 			return `${char.toString(16)} '${String.fromCodePoint(char)}'`;
 		}
@@ -199,7 +200,7 @@ export function rangesToString(ranges: CharSet | Iterable<CharRange>, printReada
  * @param string
  */
 export function rangesFromString(string: string): CharRange[] {
-	function parse(s: string): number {
+	function parse(s: string): Char {
 		return parseInt(s, 16);
 	}
 
@@ -222,7 +223,7 @@ export function rangesFromString(string: string): CharRange[] {
  *
  * @param wordSet
  */
-export function* wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<number[]> {
+export function* wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<Word> {
 	if (wordSet.length === 0) {
 		yield [];
 	} else {
@@ -276,7 +277,7 @@ function* nestedIteration<T>(arrays: T[][]): IterableIterator<T[]> {
 	} while (hasNext());
 }
 
-export function* wordSetsToWords(wordSets: Iterable<CharSet[]>): IterableIterator<number[]> {
+export function* wordSetsToWords(wordSets: Iterable<CharSet[]>): IterableIterator<Word> {
 	for (const wordSet of wordSets) {
 		yield* wordSetToWords(wordSet);
 	}

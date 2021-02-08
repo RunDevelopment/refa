@@ -1,3 +1,4 @@
+import { Char, ReadonlyWord, Word } from "./core-types";
 import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } from "./util";
 import {
 	FAIterator,
@@ -36,11 +37,15 @@ export interface ReadonlyDFA extends TransitionIterableFA {
 	 */
 	structurallyEqual(other: ReadonlyDFA): boolean;
 }
+
+/**
+ * A [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton).
+ */
 export class DFA implements ReadonlyDFA {
 	readonly nodes: DFA.NodeList;
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
-	private constructor(nodes: DFA.NodeList, maxCharacter: number) {
+	private constructor(nodes: DFA.NodeList, maxCharacter: Char) {
 		this.nodes = nodes;
 		this.maxCharacter = maxCharacter;
 	}
@@ -70,7 +75,7 @@ export class DFA implements ReadonlyDFA {
 		};
 	}
 
-	test(word: Iterable<number>): boolean {
+	test(word: ReadonlyWord): boolean {
 		let current = this.nodes.initial;
 
 		for (const char of word) {
@@ -93,7 +98,7 @@ export class DFA implements ReadonlyDFA {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
 
-	words(): Iterable<number[]> {
+	words(): Iterable<Word> {
 		return wordSetsToWords(this.wordSets());
 	}
 
@@ -129,7 +134,7 @@ export class DFA implements ReadonlyDFA {
 
 		return Iter.iterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
@@ -338,7 +343,7 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	static fromWords(
-		words: Iterable<Iterable<number>>,
+		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
@@ -496,6 +501,11 @@ export class DFA implements ReadonlyDFA {
 	}
 }
 
+/**
+ * A namespace for DFA-specific classes and interfaces.
+ *
+ * @see {@link DFA} (class)
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DFA {
 	export interface ReadonlyNode {
@@ -544,7 +554,7 @@ export namespace DFA {
 			return node;
 		}
 
-		linkNodes(from: Node, to: Node, characters: CharSet | CharRange | number): void {
+		linkNodes(from: Node, to: Node, characters: CharSet | CharRange | Char): void {
 			if (from.list !== to.list) {
 				throw new Error("You can't link nodes from different node lists.");
 			}
@@ -553,21 +563,22 @@ export namespace DFA {
 			}
 
 			if (typeof characters === "number") {
-				from.out.set(characters, to);
+				this._uncheckedLinkNodesWithCharacter(from, to, characters);
 			} else if (characters instanceof CharSet) {
-				for (const range of characters.ranges) {
-					from.out.setEvery(range, to);
-				}
+				this._uncheckedLinkNodesWithCharSet(from, to, characters);
 			} else {
-				from.out.setEvery(characters, to);
+				this._uncheckedLinkNodesWithCharRange(from, to, characters);
 			}
 		}
-		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: number): void {
+		/** @internal */
+		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: Char): void {
 			from.out.set(character, to);
 		}
+		/** @internal */
 		_uncheckedLinkNodesWithCharRange(from: Node, to: Node, characters: CharRange): void {
 			from.out.setEvery(characters, to);
 		}
+		/** @internal */
 		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {
 			for (const range of characters.ranges) {
 				from.out.setEvery(range, to);
@@ -682,10 +693,10 @@ export namespace DFA {
 		 * necessary to construct the DFA. This might cause the machine to run out of memory. I.e. the conversion from
 		 * NFA to DFA may create `O(2^n)` many nodes and an intersection may created `O(n * m)` many.
 		 *
-		 * By default, this value is set to 10K nodes.
-		 *
 		 * Note: This limit describes the maximum number of __created__ nodes. If nodes are created and subsequently
 		 * discard, they will still count toward the limit.
+		 *
+		 * @default 10000
 		 */
 		maxNodes?: number;
 	}
@@ -695,7 +706,7 @@ export namespace DFA {
 		 *
 		 * This will be the maximum of all underlying {@link CharSet}s.
 		 */
-		maxCharacter: number;
+		maxCharacter: Char;
 	}
 }
 
@@ -745,14 +756,11 @@ function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
 	};
 }
 
-function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: number): Set<ReadonlySet<DFA.Node>>;
+function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): Set<ReadonlySet<DFA.Node>>;
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): Set<ReadonlySet<DFA.ReadonlyNode>>;
 function findEquivalenceClasses(
 	nodeList: DFA.ReadonlyNodeList,
-	maxCharacter: number
-): Set<ReadonlySet<DFA.ReadonlyNode>>;
-function findEquivalenceClasses(
-	nodeList: DFA.ReadonlyNodeList,
-	maxCharacter: number
+	maxCharacter: Char
 ): Set<ReadonlySet<DFA.ReadonlyNode>> {
 	// https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
 	if (nodeList.finals.size === 0) {

@@ -12,6 +12,7 @@ import {
 } from "./finite-automaton";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
+import { Char, ReadonlyWord, Word } from "./core-types";
 
 /*
  * ####################################################################################################################
@@ -43,11 +44,16 @@ export interface ReadonlyNFA extends TransitionIterableFA {
 	copy(): NFA;
 }
 
+/**
+ * A [nondeterministic finite automaton](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton).
+ *
+ * This class implements epsilon-free NFAs.
+ */
 export class NFA implements ReadonlyNFA {
 	readonly nodes: NFA.NodeList;
-	readonly maxCharacter: number;
+	readonly maxCharacter: Char;
 
-	private constructor(nodes: NFA.NodeList, maxCharacter: number) {
+	private constructor(nodes: NFA.NodeList, maxCharacter: Char) {
 		this.nodes = nodes;
 		this.maxCharacter = maxCharacter;
 	}
@@ -86,32 +92,35 @@ export class NFA implements ReadonlyNFA {
 		return NFA.fromFA(this);
 	}
 
-	test(word: Iterable<number>): boolean {
-		const nodes = this.nodes;
-		const characters = [...word];
+	test(word: ReadonlyWord): boolean {
+		// An implementation of Thompson's algorithm as described by Russ Cox
+		// https://swtch.com/~rsc/regexp/regexp1.html
+		let currentStates = [this.nodes.initial];
+		const newStatesSet = new Set<NFA.Node>();
 
-		function match(index: number, node: NFA.Node): boolean {
-			if (index >= characters.length) return nodes.finals.has(node);
+		for (const char of word) {
+			const newStates: NFA.Node[] = [];
+			newStatesSet.clear();
 
-			const cp = characters[index];
-
-			for (const [to, chars] of node.out) {
-				if (chars.has(cp)) {
-					if (match(index + 1, to)) {
-						return true;
+			for (const state of currentStates) {
+				state.out.forEach((charSet, to) => {
+					if (charSet.has(char) && !newStatesSet.has(to)) {
+						newStates.push(to);
+						newStatesSet.add(to);
 					}
-				}
+				});
 			}
 
-			return false;
+			currentStates = newStates;
 		}
-		return match(0, nodes.initial);
+
+		return currentStates.some(state => this.nodes.finals.has(state));
 	}
 
 	wordSets(): Iterable<CharSet[]> {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
-	words(): Iterable<number[]> {
+	words(): Iterable<Word> {
 		return wordSetsToWords(this.wordSets());
 	}
 
@@ -147,7 +156,7 @@ export class NFA implements ReadonlyNFA {
 
 		return Iter.iterateWordSets(iter);
 	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<number[]> {
+	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
 		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
@@ -395,15 +404,16 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param words
 	 * @param options
+	 * @param creationOptions
 	 */
 	static fromWords(
-		words: Iterable<Iterable<number>>,
+		words: Iterable<ReadonlyWord>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
 		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			function getNext(node: NFA.Node, char: number): NFA.Node {
+			function getNext(node: NFA.Node, char: Char): NFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 				}
@@ -476,6 +486,11 @@ export class NFA implements ReadonlyNFA {
 	}
 }
 
+/**
+ * A namespace for NFA-specific classes and interfaces.
+ *
+ * @see {@link NFA} (class)
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NFA {
 	export interface ReadonlyNode {
@@ -694,10 +709,10 @@ export namespace NFA {
 		 * necessary to construct the NFA. This might cause the machine to run out of memory. I.e. some REs can only be
 		 * represented with a huge number of states (e.g `/a{123456789}/`).
 		 *
-		 * By default, this value is set to 10K nodes.
-		 *
 		 * Note: This limit describes maximum number of __created__ nodes. If nodes are created and subsequently
 		 * discard, they will still count toward the limit.
+		 *
+		 * @default 10000
 		 */
 		maxNodes?: number;
 	}
@@ -707,13 +722,13 @@ export namespace NFA {
 		 *
 		 * This will be the maximum of all underlying {@link CharSet}s.
 		 */
-		maxCharacter: number;
+		maxCharacter: Char;
 	}
 	export interface FromRegexOptions extends CreationOptions {
 		/**
 		 * Whether to replace all lookarounds with an empty character class when construction the NFA.
 		 *
-		 * Defaults to `false`.
+		 * @default false
 		 */
 		disableLookarounds?: boolean;
 		/**
@@ -722,7 +737,7 @@ export namespace NFA {
 		 * Quantifiers with a large finite maximum (e.g. `a{1,10000}`) can create huge NFAs with thousands of states.
 		 * Any Quantifier with a maximum greater or equal to this threshold will be assumed to be infinite.
 		 *
-		 * Defaults to `Infinity`.
+		 * @default Infinity
 		 */
 		infinityThreshold?: number;
 	}

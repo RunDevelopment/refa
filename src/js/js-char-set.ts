@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
-
+import { Char } from "../core-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./js-flags";
@@ -62,7 +61,7 @@ const DOT_UTF16 = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate();
  * @param flags The flags of the pattern.
  */
 export function createCharSet(
-	chars: Iterable<number | CharRange | Readonly<PredefinedCharacterSet>>,
+	chars: Iterable<Char | CharRange | Readonly<PredefinedCharacterSet>>,
 	flags: Readonly<Flags>
 ): CharSet {
 	// https://tc39.es/ecma262/#sec-runtime-semantics-charactersetmatcher-abstract-operation
@@ -74,7 +73,7 @@ export function createCharSet(
 	const { unicode, ignoreCase, dotAll } = flags;
 	const maximum = unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
-	const caseFolding: Readonly<Record<number, readonly number[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
+	const caseFolding: Readonly<Record<Char, readonly Char[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
 	const caseVarying: CharSet = unicode ? UnicodeCaseVarying : UTF16CaseVarying;
 	const caseVaryingMin = caseVarying.ranges[0].min;
 	const caseVaryingMax = caseVarying.ranges[caseVarying.ranges.length - 1].max;
@@ -82,7 +81,7 @@ export function createCharSet(
 	const ranges: CharRange[] = [];
 	let fullCaseCheck = false;
 
-	function addChar(char: number): void {
+	function addChar(char: Char): void {
 		/**
 		 * We will only add all case variation for the given character if:
 		 *  1) the regexp has the i flag set.
@@ -91,7 +90,7 @@ export function createCharSet(
 		 *  3) the given character actually varies in case.
 		 */
 		if (ignoreCase && !fullCaseCheck) {
-			const fold: readonly number[] | undefined = caseFolding[char];
+			const fold: readonly Char[] | undefined = caseFolding[char];
 			if (fold) {
 				// add all case variations
 				for (let i = 0, l = fold.length; i < l; i++) {
@@ -213,7 +212,7 @@ export function createCharSet(
 	return withCaseVaryingCharacters(cs, caseFolding, caseVarying);
 }
 
-function negateRanges(ranges: readonly CharRange[], maximum: number): readonly CharRange[] {
+function negateRanges(ranges: readonly CharRange[], maximum: Char): readonly CharRange[] {
 	return CharSet.empty(maximum).union(ranges).negate().ranges;
 }
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.6.0 (2020-12-22)
+
+### Breaking changes
+
+- `DFA#clone` has been renamed to `DFA#copy` to be compatible with `NFA#copy`.
+- The `source` property of RE AST nodes is now optional. This results in the removal/change of several types and functions. The `Simple` type has been removed; use `NoParent` instead.
+
+### Added
+
+- `JS.toLiteral` now has a `flags` options to force/disallow certain flags and a `fastCharacters` options for up to 10x better performance.
+- `JS.toLiteral` now detects builtin assertions.
+
+### Changed
+
+- All DFA and NFA creation methods now have safe defaults and will throw if the FA that is being created is too large. The limit can be controlled using the `maxNodes` option.
+
+
 ## 0.5.0 (2020-10-26)
 
 ### Breaking changes

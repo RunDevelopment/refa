@@ -5,6 +5,7 @@ import { FINITE_LITERALS, NON_FINITE_LITERALS, EMPTY_LITERALS, NON_EMPTY_LITERAL
 import { Literal } from "../src/js";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { prefixes } from "./helper/util";
+import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 
 describe("DFA", function () {
 	describe("fromWords", function () {
@@ -417,6 +418,21 @@ describe("DFA", function () {
 					assert.strictEqual(literalToDFA(literal).toString(), removeIndentation(expected));
 				});
 			}
+		}
+	});
+
+	describe("test", function () {
+		for (const testCase of wordTestData) {
+			it(literalToString(testCase.literal), function () {
+				const dfa = literalToDFA(testCase.literal);
+				testWordTestCases(dfa, testCase);
+			});
+
+			it(literalToString(testCase.literal) + " (minimized)", function () {
+				const dfa = literalToDFA(testCase.literal);
+				dfa.minimize();
+				testWordTestCases(dfa, testCase);
+			});
 		}
 	});
 

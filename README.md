@@ -15,6 +15,21 @@ It also supports additional methods to easily convert from JS RegExp to the inte
 __At this point in time, the library is still in development and partially incomplete!__
 
 
+## Installation
+
+Get refa from NPM:
+
+```
+npm i --save refa
+```
+
+or
+
+```
+yarn add refa
+```
+
+
 ## Features
 
 - Conversions
@@ -47,6 +62,8 @@ __At this point in time, the library is still in development and partially incom
 - Javascript RegExp
 
   * RegExp to RE and RE to RegExp (non-trivial backreferences are not supported)
+
+See the [API documentation](https://rundevelopment.github.io/refa/) for a complete list of all currently implemented operations.
 
 ### Limitations
 
