@@ -11,7 +11,14 @@ import {
 } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
-import { invertCharMap, getBaseSets, decomposeIntoBaseSets, rangesToString, wordSetsToWords } from "./char-util";
+import {
+	invertCharMap,
+	getBaseSets,
+	decomposeIntoBaseSets,
+	rangesToString,
+	wordSetsToWords,
+	isChar,
+} from "./char-util";
 import { NoParent, Expression } from "./ast";
 import * as Iter from "./iter";
 
@@ -562,7 +569,7 @@ export namespace DFA {
 				throw new Error("Use the node list associated with the nodes to link them.");
 			}
 
-			if (typeof characters === "number") {
+			if (isChar(characters)) {
 				this._uncheckedLinkNodesWithCharacter(from, to, characters);
 			} else if (characters instanceof CharSet) {
 				this._uncheckedLinkNodesWithCharSet(from, to, characters);

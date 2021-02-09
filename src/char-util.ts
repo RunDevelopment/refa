@@ -3,6 +3,10 @@ import { CharRange, CharSet } from "./char-set";
 import { ReadonlyCharMap } from "./char-map";
 import { iterToSet } from "./util";
 
+export function isChar(value: unknown): value is Char {
+	return typeof value === "number";
+}
+
 /**
  * Converts the given iterable of sorted unique numbers to a optimal iterable of character ranges.
  *

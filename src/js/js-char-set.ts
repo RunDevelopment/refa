@@ -22,6 +22,7 @@ import {
 	UnicodeCaseFolding,
 } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
+import { isChar } from "../char-util";
 
 export type PredefinedCharacterSet =
 	| AnyCharacterSet
@@ -73,7 +74,7 @@ export function createCharSet(
 	const { unicode, ignoreCase, dotAll } = flags;
 	const maximum = unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
-	const caseFolding: Readonly<Record<Char, readonly Char[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
+	const caseFolding: Readonly<Record<number, readonly Char[]>> = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
 	const caseVarying: CharSet = unicode ? UnicodeCaseVarying : UTF16CaseVarying;
 	const caseVaryingMin = caseVarying.ranges[0].min;
 	const caseVaryingMax = caseVarying.ranges[caseVarying.ranges.length - 1].max;
@@ -133,7 +134,7 @@ export function createCharSet(
 	}
 
 	for (const char of chars) {
-		if (typeof char == "number") {
+		if (isChar(char)) {
 			addChar(char);
 		} else if ("kind" in char) {
 			switch (char.kind) {

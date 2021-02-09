@@ -17,7 +17,7 @@
  * Because of TypeScript's limitations, this type only serves documentation purposes. TypeScript will automatically
  * resolve `Char` to `number` and will not check the restrictions of this type.
  */
-export type Char = number;
+export type Char = number & { __?: never };
 
 /**
  * A word is finite sequence of {@link Char}s.

@@ -17,7 +17,7 @@ export const UTF16_MAXIMUM = 0xffff;
  */
 export function withCaseVaryingCharacters(
 	cs: CharSet,
-	caseFolding: Readonly<Record<Char, readonly Char[]>>,
+	caseFolding: Readonly<Record<number, readonly Char[]>>,
 	caseVarying: CharSet
 ): CharSet {
 	if (cs.isSupersetOf(caseVarying)) {
