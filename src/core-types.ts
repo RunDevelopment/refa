@@ -11,13 +11,8 @@
  * 2.  They can be at most `Number.MAX_SAFE_INTEGER`.
  *
  * This type serves as a way to document characters. It is a clear way to signal that a value is not just any number.
- *
- * ---
- *
- * Because of TypeScript's limitations, this type only serves documentation purposes. TypeScript will automatically
- * resolve `Char` to `number` and will not check the restrictions of this type.
  */
-export type Char = number & { __?: never };
+export type Char = number & { __char?: never };
 
 /**
  * A word is finite sequence of {@link Char}s.

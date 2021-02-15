@@ -221,6 +221,8 @@ export class CharSet {
 	 * The returned set will have the same maximum as this set.
 	 *
 	 * @param data
+	 * @throws `RangeError` If the maximum of one of the given sets differs from the maximum of this set or if the
+	 * maximum of one of the given ranges is greater than the maximum of this set.
 	 */
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
@@ -251,6 +253,8 @@ export class CharSet {
 	 * The returned set will have the same maximum as this set.
 	 *
 	 * @param set
+	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set or if the maximum of
+	 * one of the given ranges is greater than the maximum of this set.
 	 */
 	intersect(set: CharSet): CharSet;
 	intersect(ranges: Iterable<CharRange>): CharSet;
@@ -279,6 +283,8 @@ export class CharSet {
 	 * The returned set will have the same maximum as this set.
 	 *
 	 * @param set
+	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set or if the maximum of
+	 * one of the given ranges is greater than the maximum of this set.
 	 */
 	without(set: CharSet): CharSet;
 	without(ranges: Iterable<CharRange>): CharSet;
