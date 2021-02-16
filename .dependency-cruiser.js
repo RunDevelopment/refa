@@ -34,8 +34,7 @@ module.exports = {
       severity: "error",
       from: {},
       to: {
-        circular: true,
-        preCompilationOnly: false
+        circular: true
       },
     },
     {
