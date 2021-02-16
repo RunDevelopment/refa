@@ -1,5 +1,4 @@
 import { CharSet } from "./char-set";
-import { rangesToString } from "./char-util";
 import { assertNever } from "./util";
 
 export interface SourceLocation {
@@ -96,7 +95,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 					throw assertNever(parent);
 			}
 
-			node.elements.forEach(e => setParent(e, node));
+			node.elements.forEach(e => setParentImpl(e, node));
 			break;
 
 		case "Alternation":
@@ -112,7 +111,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 			}
 
 			if (node.type !== "CharacterClass") {
-				node.alternatives.forEach(c => setParent(c, node));
+				node.alternatives.forEach(c => setParentImpl(c, node));
 			}
 			break;
 
@@ -122,7 +121,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 
 			node.parent = null;
 
-			node.alternatives.forEach(c => setParent(c, node));
+			node.alternatives.forEach(c => setParentImpl(c, node));
 			break;
 
 		default:
@@ -162,14 +161,14 @@ function setSourceImpl(node: NoParent<Node>, getSource: () => SourceLocation, ov
 
 	switch (node.type) {
 		case "Concatenation":
-			node.elements.forEach(e => setSource(e, getSource, overwrite));
+			node.elements.forEach(e => setSourceImpl(e, getSource, overwrite));
 			break;
 
 		case "Alternation":
 		case "Assertion":
 		case "Expression":
 		case "Quantifier":
-			node.alternatives.forEach(c => setSource(c, getSource, overwrite));
+			node.alternatives.forEach(c => setSourceImpl(c, getSource, overwrite));
 			break;
 
 		case "CharacterClass":
@@ -181,86 +180,7 @@ function setSourceImpl(node: NoParent<Node>, getSource: () => SourceLocation, ov
 	}
 }
 
-function toPatternConcatenation(concat: NoParent<Concatenation>): string {
-	let s = "";
-	const elements = concat.elements;
-	for (let i = 0, l = elements.length; i < l; i++) {
-		s += toPatternElement(elements[i]);
-	}
-	return s;
-}
-function toPatternElement(element: NoParent<Element>): string {
-	switch (element.type) {
-		case "Alternation": {
-			return "(?:" + toPatternAlternatives(element.alternatives) + ")";
-		}
-		case "Assertion": {
-			const kind = element.kind === "ahead" ? "" : "<";
-			const negate = element.negate ? "!" : "=";
-			return `(?${kind}${negate}${toPatternAlternatives(element.alternatives)})`;
-		}
-		case "CharacterClass": {
-			return `[${rangesToString(element.characters.ranges)}]`;
-		}
-		case "Quantifier": {
-			let quant: string;
-			if (element.max === Infinity) {
-				if (element.min === 0) {
-					quant = "*";
-				} else if (element.min === 1) {
-					quant = "+";
-				} else {
-					quant = `{${element.min},}`;
-				}
-			} else if (element.max === 1) {
-				if (element.min === 0) {
-					quant = "?";
-				} /* if (element.min === 1) */ else {
-					quant = "{1}";
-				}
-			} else if (element.min === element.max) {
-				quant = `{${element.min}}`;
-			} else {
-				quant = `{${element.min},${element.max}}`;
-			}
-
-			let content: string;
-			if (
-				element.alternatives.length === 1 &&
-				element.alternatives[0].elements.length === 1 &&
-				element.alternatives[0].elements[0].type === "CharacterClass"
-			) {
-				content = toPatternConcatenation(element.alternatives[0]);
-			} else {
-				content = "(?:" + toPatternAlternatives(element.alternatives) + ")";
-			}
-
-			if (!content) {
-				content = "(?:)";
-			}
-
-			return content + quant;
-		}
-		default:
-			throw assertNever(element, "Invalid element");
-	}
-}
-function toPatternAlternatives(expressions: readonly NoParent<Concatenation>[]): string {
-	return expressions.map(toPatternConcatenation).join("|");
-}
-
-export function toPatternString(node: NoParent<Node>): string {
-	switch (node.type) {
-		case "Expression":
-			return toPatternAlternatives(node.alternatives);
-		case "Concatenation":
-			return toPatternConcatenation(node);
-		default:
-			return toPatternElement(node);
-	}
-}
-
-export interface VisitAstHandler {
+export interface VisitNodesHandler {
 	onAlternationEnter?(node: Alternation): void;
 	onAlternationLeave?(node: Alternation): void;
 	onAssertionEnter?(node: Assertion): void;
@@ -274,7 +194,7 @@ export interface VisitAstHandler {
 	onQuantifierEnter?(node: Quantifier): void;
 	onQuantifierLeave?(node: Quantifier): void;
 }
-export interface VisitNoParentAstHandler {
+export interface VisitNoParentNodesHandler {
 	onAlternationEnter?(node: NoParent<Alternation>): void;
 	onAlternationLeave?(node: NoParent<Alternation>): void;
 	onAssertionEnter?(node: NoParent<Assertion>): void;
@@ -288,11 +208,19 @@ export interface VisitNoParentAstHandler {
 	onQuantifierEnter?(node: NoParent<Quantifier>): void;
 	onQuantifierLeave?(node: NoParent<Quantifier>): void;
 }
-export function visitAst(node: Node, handler: VisitAstHandler): void;
-export function visitAst(node: NoParent<Node>, handler: VisitNoParentAstHandler): void;
+/**
+ * Calls the given visitor on the given node and all of its children.
+ *
+ * If the given visitor throws an error, the traversal will stop and the error will be re-thrown.
+ *
+ * @param node
+ * @param visitor
+ */
+export function visitNodes(node: Node, visitor: VisitNodesHandler): void;
+export function visitNodes(node: NoParent<Node>, visitor: VisitNoParentNodesHandler): void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function visitAst(node: NoParent<Node>, handler: Record<string, any>): void {
-	const enter = handler["on" + node.type + "Enter"];
+export function visitNodes(node: NoParent<Node>, visitor: Record<string, any>): void {
+	const enter = visitor["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);
 	}
@@ -303,13 +231,13 @@ export function visitAst(node: NoParent<Node>, handler: Record<string, any>): vo
 		case "Expression":
 		case "Quantifier":
 			for (const concat of node.alternatives) {
-				visitAst(concat, handler);
+				visitNodes(concat, visitor);
 			}
 			break;
 
 		case "Concatenation":
 			for (const element of node.elements) {
-				visitAst(element, handler);
+				visitNodes(element, visitor);
 			}
 			break;
 
@@ -317,7 +245,7 @@ export function visitAst(node: NoParent<Node>, handler: Record<string, any>): vo
 			break;
 	}
 
-	const leave = handler["on" + node.type + "Leave"];
+	const leave = visitor["on" + node.type + "Leave"];
 	if (leave) {
 		leave(node);
 	}

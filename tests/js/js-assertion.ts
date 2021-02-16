@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { Parser } from "../../src/js";
-import { toPatternString } from "../../src/ast";
+import { toPatternString } from "../helper/literal-to-string";
 
 describe("JS createCharSet", function () {
 	interface TestCase {

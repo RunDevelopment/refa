@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { Parser, ParseOptions } from "../../src/js";
-import { toPatternString } from "../../src/ast";
+import { toPatternString } from "../helper/literal-to-string";
 
 describe("JS.Parser", function () {
 	interface TestCase {

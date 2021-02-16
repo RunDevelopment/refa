@@ -3,6 +3,10 @@ import { CharRange, CharSet } from "./char-set";
 import { ReadonlyCharMap } from "./char-map";
 import { iterToSet } from "./util";
 
+export function isChar(value: unknown): value is Char {
+	return typeof value === "number";
+}
+
 /**
  * Converts the given iterable of sorted unique numbers to a optimal iterable of character ranges.
  *
@@ -155,41 +159,24 @@ export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: Char): Ma
 	return map;
 }
 
-const LATIN_LOWER: CharRange = { min: 0x61, max: 0x7a };
-const LATIN_UPPER: CharRange = { min: 0x41, max: 0x5a };
-const LATIN_DIGIT: CharRange = { min: 0x30, max: 0x39 };
-const LATIN_UNDERSCORE = 0x5f;
-const READABLE_CHARACTERS = CharSet.empty(0x10ffff).union([
-	LATIN_LOWER,
-	LATIN_UPPER,
-	LATIN_DIGIT,
-	{ min: LATIN_UNDERSCORE, max: LATIN_UNDERSCORE },
-]);
-
 /**
  * Returns a string representation of the given character ranges.
  *
  * @param ranges
  * @param printReadable Whether to also output readable characters as characters.
  */
-export function rangesToString(ranges: CharSet | Iterable<CharRange>, printReadable: boolean = false): string {
-	function stringify(char: Char): string {
-		if (printReadable && char !== /* ',' */ 44 && char !== /* ' */ 39 && READABLE_CHARACTERS.has(char)) {
-			return `${char.toString(16)} '${String.fromCodePoint(char)}'`;
-		}
-		return char.toString(16);
-	}
-
-	let s = "";
+export function rangesToString(ranges: CharSet | Iterable<CharRange>): string {
 	if (ranges instanceof CharSet) {
 		ranges = ranges.ranges;
 	}
-	for (const range of ranges) {
+
+	let s = "";
+	for (const { min, max } of ranges) {
 		if (s !== "") s += ", ";
-		if (range.min == range.max) {
-			s += stringify(range.min);
+		if (min == max) {
+			s += min.toString(16);
 		} else {
-			s += stringify(range.min) + ".." + stringify(range.max);
+			s += min.toString(16) + ".." + max.toString(16);
 		}
 	}
 	return s;
@@ -207,6 +194,7 @@ export function rangesFromString(string: string): CharRange[] {
 	return string
 		.trim()
 		.split(/\s*,\s*/g)
+		.filter(Boolean)
 		.map(r => {
 			const [min, max] = r.split("..");
 			if (max === undefined) {

@@ -1,8 +1,8 @@
 import { Element, Assertion, NoParent } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
-import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./js-util";
-import { Flags } from "./js-flags";
+import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./util";
+import { Flags } from "./flags";
 
 export type BoundaryAssertion = WordBoundaryAssertion | TextBoundaryAssertion;
 export interface WordBoundaryAssertion {

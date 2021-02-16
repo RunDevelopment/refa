@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { Expression, Node, NoParent, visitAst } from "../ast";
+import { Expression, Node, NoParent, visitNodes } from "../ast";
 import { Transformer, TransformContext } from "./transformer";
 
 export interface TransformOptions {
@@ -53,7 +53,7 @@ export function transform(
  */
 function determineMaxCharacter(ast: NoParent<Expression>): Char {
 	try {
-		visitAst(ast, {
+		visitNodes(ast, {
 			onCharacterClassEnter(node) {
 				throw node.characters.maximum;
 			},
@@ -92,7 +92,7 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 		}
 	}
 
-	visitAst(ast, {
+	visitNodes(ast, {
 		onAlternationLeave: leaveNode,
 		onAssertionLeave: leaveNode,
 		onCharacterClassLeave: leaveNode,

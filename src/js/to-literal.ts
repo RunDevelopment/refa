@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { NoParent, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
+import { NoParent, Node, Expression, Concatenation, visitNodes, Element, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
 import {
@@ -11,11 +11,11 @@ import {
 	WORD_IU,
 	UNICODE_MAXIMUM,
 	UTF16_MAXIMUM,
-} from "./js-util";
-import { Flags } from "./js-flags";
+} from "./util";
+import { Flags } from "./flags";
 import { UnicodeCaseVarying, UnicodeCaseFolding } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
-import { Literal } from "./parser";
+import { Literal } from "./literal";
 
 export interface ToLiteralOptions {
 	/**
@@ -275,7 +275,7 @@ function makeIgnoreCaseSingleChar(char: Char, unicode: boolean): CharSet | null 
 function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 	try {
 		for (const node of value) {
-			visitAst(node, {
+			visitNodes(node, {
 				onCharacterClassEnter(node) {
 					if (node.characters.maximum === UNICODE_MAXIMUM) {
 						throw true;
@@ -301,7 +301,7 @@ function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): 
 
 	try {
 		for (const node of value) {
-			visitAst(node, {
+			visitNodes(node, {
 				onCharacterClassEnter(node) {
 					const cs = node.characters;
 					if (!cs.equals(makeIgnoreCase(cs, unicode))) {
@@ -324,7 +324,7 @@ function getMultilineFlag(value: readonly NoParent<Node>[], unicode: boolean): b
 	let lineEndAssertion = false;
 
 	for (const node of value) {
-		visitAst(node, {
+		visitNodes(node, {
 			onAssertionEnter(assertion) {
 				if (assertion.negate && assertion.alternatives.length === 1) {
 					const alt = assertion.alternatives[0];

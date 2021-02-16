@@ -1,6 +1,7 @@
 node_modules/
 .out/
 .vscode/
+*.log
 /**/tempCodeRunnerFile.*
 .nyc_output/
 coverage/

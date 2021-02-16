@@ -1,4 +1,4 @@
-import { Assertion, Concatenation, Element, Expression, Node, NoParent, Parent, visitAst } from "../../ast";
+import { Assertion, Concatenation, Element, Expression, Node, NoParent, Parent, visitNodes } from "../../ast";
 import {
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
@@ -260,7 +260,7 @@ export function removeUnnecessaryAssertions(): Transformer {
 				stack.pop();
 			}
 
-			visitAst(node, {
+			visitNodes(node, {
 				onAlternationEnter: enter,
 				onAssertionEnter: enter,
 				onConcatenationEnter: enter,
