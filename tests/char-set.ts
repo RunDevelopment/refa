@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { CharSet, CharRange } from "../src/char-set";
-import { readableIntervalString, charsFromRegex } from "./helper/chars";
+import { rangesToString } from "../src/char-util";
+import { charsFromRegex } from "./helper/chars";
 
 function toRanges(input: (string | number | CharRange | [number, number])[]): CharRange[] {
 	const ranges: CharRange[] = [];
@@ -60,20 +61,20 @@ describe("CharSet", function () {
 		interface TestCase {
 			title: string;
 			set: CharSet;
-			content: string;
+			expected: string;
 		}
 
 		const testCases: TestCase[] = [
 			{
 				title: "Empty set",
 				set: CharSet.empty(0xffff),
-				content: "[]",
+				expected: "",
 			},
 			{
 				title: "[abc]",
 				// some are intentionally include twice
 				set: CharSet.empty(0xffff).union(toRanges("ccbbaa".split(""))),
-				content: "[['a','c']]",
+				expected: "61..63",
 			},
 			{
 				title: "[^abc]",
@@ -81,32 +82,32 @@ describe("CharSet", function () {
 				set: CharSet.empty(0xffff)
 					.union(toRanges("ccbbaa".split("")))
 					.negate(),
-				content: "[[0,96],['d',65535]]",
+				expected: "0..60, 64..ffff",
 			},
 			{
 				title: "White spaces",
 				set: CharSet.empty(0xffff).union(toRanges("\n\r\f\t\v \xA0 \n\r".split(""))),
-				content: "[[9,13],32,160]",
+				expected: "9..d, 20, a0",
 			},
 			{
 				title: "Not white spaces",
 				set: CharSet.empty(0xffff)
 					.union(toRanges("\n\r\f\t\v \xA0 \n\r".split("")))
 					.negate(),
-				content: "[[0,8],[14,31],[33,159],[161,65535]]",
+				expected: "0..8, e..1f, 21..9f, a1..ffff",
 			},
 			{
 				title: "[abc123] & [cdf321]",
 				set: CharSet.empty(0xffff)
 					.union(toRanges("abc123".split("")))
 					.intersect(toRanges("cdf123".split(""))),
-				content: "[['1','3'],'c']",
+				expected: "31..33, 63",
 			},
 		];
 
 		for (const test of testCases) {
 			it(test.title, function () {
-				assert.equal(readableIntervalString(test.set), test.content);
+				assert.equal(rangesToString(test.set), test.expected);
 			});
 		}
 	});
