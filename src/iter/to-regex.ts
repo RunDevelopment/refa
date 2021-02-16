@@ -9,7 +9,7 @@ import {
 	Quantifier,
 	Element,
 	Assertion,
-	visitAst,
+	visitNodes,
 } from "../ast";
 import { CharSet } from "../char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever, filterMut } from "../util";
@@ -1149,7 +1149,7 @@ function optimize(expr: NoParent<Expression>): boolean {
 		optimized = combineSingleCharacterAlternatives(node) || optimized;
 	}
 
-	visitAst(expr, {
+	visitNodes(expr, {
 		onAlternationLeave: onNodeWithAlternatives,
 		onAssertionLeave: onNodeWithAlternatives,
 		onExpressionLeave: onNodeWithAlternatives,

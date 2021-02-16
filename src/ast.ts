@@ -96,7 +96,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 					throw assertNever(parent);
 			}
 
-			node.elements.forEach(e => setParent(e, node));
+			node.elements.forEach(e => setParentImpl(e, node));
 			break;
 
 		case "Alternation":
@@ -112,7 +112,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 			}
 
 			if (node.type !== "CharacterClass") {
-				node.alternatives.forEach(c => setParent(c, node));
+				node.alternatives.forEach(c => setParentImpl(c, node));
 			}
 			break;
 
@@ -122,7 +122,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 
 			node.parent = null;
 
-			node.alternatives.forEach(c => setParent(c, node));
+			node.alternatives.forEach(c => setParentImpl(c, node));
 			break;
 
 		default:
@@ -162,14 +162,14 @@ function setSourceImpl(node: NoParent<Node>, getSource: () => SourceLocation, ov
 
 	switch (node.type) {
 		case "Concatenation":
-			node.elements.forEach(e => setSource(e, getSource, overwrite));
+			node.elements.forEach(e => setSourceImpl(e, getSource, overwrite));
 			break;
 
 		case "Alternation":
 		case "Assertion":
 		case "Expression":
 		case "Quantifier":
-			node.alternatives.forEach(c => setSource(c, getSource, overwrite));
+			node.alternatives.forEach(c => setSourceImpl(c, getSource, overwrite));
 			break;
 
 		case "CharacterClass":
@@ -260,7 +260,7 @@ export function toPatternString(node: NoParent<Node>): string {
 	}
 }
 
-export interface VisitAstHandler {
+export interface VisitNodesHandler {
 	onAlternationEnter?(node: Alternation): void;
 	onAlternationLeave?(node: Alternation): void;
 	onAssertionEnter?(node: Assertion): void;
@@ -274,7 +274,7 @@ export interface VisitAstHandler {
 	onQuantifierEnter?(node: Quantifier): void;
 	onQuantifierLeave?(node: Quantifier): void;
 }
-export interface VisitNoParentAstHandler {
+export interface VisitNoParentNodesHandler {
 	onAlternationEnter?(node: NoParent<Alternation>): void;
 	onAlternationLeave?(node: NoParent<Alternation>): void;
 	onAssertionEnter?(node: NoParent<Assertion>): void;
@@ -288,11 +288,19 @@ export interface VisitNoParentAstHandler {
 	onQuantifierEnter?(node: NoParent<Quantifier>): void;
 	onQuantifierLeave?(node: NoParent<Quantifier>): void;
 }
-export function visitAst(node: Node, handler: VisitAstHandler): void;
-export function visitAst(node: NoParent<Node>, handler: VisitNoParentAstHandler): void;
+/**
+ * Calls the given visitor on the given node and all of its children.
+ *
+ * If the given visitor throws an error, the traversal will stop and the error will be re-thrown.
+ *
+ * @param node
+ * @param visitor
+ */
+export function visitNodes(node: Node, visitor: VisitNodesHandler): void;
+export function visitNodes(node: NoParent<Node>, visitor: VisitNoParentNodesHandler): void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function visitAst(node: NoParent<Node>, handler: Record<string, any>): void {
-	const enter = handler["on" + node.type + "Enter"];
+export function visitNodes(node: NoParent<Node>, visitor: Record<string, any>): void {
+	const enter = visitor["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);
 	}
@@ -303,13 +311,13 @@ export function visitAst(node: NoParent<Node>, handler: Record<string, any>): vo
 		case "Expression":
 		case "Quantifier":
 			for (const concat of node.alternatives) {
-				visitAst(concat, handler);
+				visitNodes(concat, visitor);
 			}
 			break;
 
 		case "Concatenation":
 			for (const element of node.elements) {
-				visitAst(element, handler);
+				visitNodes(element, visitor);
 			}
 			break;
 
@@ -317,7 +325,7 @@ export function visitAst(node: NoParent<Node>, handler: Record<string, any>): vo
 			break;
 	}
 
-	const leave = handler["on" + node.type + "Leave"];
+	const leave = visitor["on" + node.type + "Leave"];
 	if (leave) {
 		leave(node);
 	}
