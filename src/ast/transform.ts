@@ -120,9 +120,7 @@ export interface TransformOptions {
 /**
  * Transforms the given expression according to the given transformer.
  *
- * This operation ignores the `parent` properties of all nodes. The `parent` properties are __not__ maintained. If the
- * given expression is used without the `NoParent` view after this operation, the `parent` properties have to be
- * restored with the `setParent` function.
+ * __Do not__ use the given `ast` object again after calling this function, the object will be in an undefined state.
  *
  * @param transformer
  * @param ast
@@ -132,7 +130,7 @@ export function transform(
 	transformer: Transformer,
 	ast: NoParent<Expression>,
 	options?: Readonly<TransformOptions>
-): void {
+): NoParent<Expression> {
 	options = options ?? {};
 	let passesLeft = options.maxPasses ?? 10;
 
@@ -147,6 +145,8 @@ export function transform(
 			break;
 		}
 	}
+
+	return ast;
 }
 
 /**

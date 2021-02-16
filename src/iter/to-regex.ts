@@ -673,9 +673,9 @@ export function toRegex<T>(
 	const expression = stateElimination(iter, maxAstNodes);
 
 	// optimize
-	transform(FULL_OPTIMIZE_TRANSFORMER, expression, {
+	const optimized = transform(FULL_OPTIMIZE_TRANSFORMER, expression, {
 		maxPasses: options?.maximumOptimizationPasses ?? Infinity,
 	});
 
-	return expression;
+	return optimized;
 }

@@ -26,8 +26,8 @@ export function itTest(cases: Iterable<TransformTestCase>): void {
 				lookarounds: "parse",
 				disableOptimizations: true,
 			});
-			transform(transformer, expression, options);
-			const actual = toLiteral(expression);
+			const transformedExpression = transform(transformer, expression, options);
+			const actual = toLiteral(transformedExpression);
 
 			const actualStr = literalToString(actual);
 			const expectedStr = typeof expected === "string" ? expected : literalToString(expected);
