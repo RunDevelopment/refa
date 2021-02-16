@@ -15,8 +15,8 @@ import {
 } from "../ast";
 import { RegExpParser, AST } from "regexpp";
 import { assertNever } from "../util";
-import { createAssertion } from "./js-assertion";
-import { createCharSet } from "./js-char-set";
+import { createAssertion } from "./create-assertion";
+import { createCharSet } from "./create-char-set";
 import {
 	somePathToBackreference,
 	backreferenceAlwaysAfterGroup,
@@ -24,7 +24,7 @@ import {
 	removeTrailingLookaheads,
 	UNICODE_MAXIMUM,
 	UTF16_MAXIMUM,
-} from "./js-util";
+} from "./util";
 
 export interface ParseOptions {
 	/**

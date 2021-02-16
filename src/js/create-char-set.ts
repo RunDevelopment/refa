@@ -1,7 +1,7 @@
 import { Char } from "../core-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
-import { Flags } from "./js-flags";
+import { Flags } from "./flags";
 import {
 	DIGIT,
 	LINE_TERMINATOR,
@@ -11,7 +11,7 @@ import {
 	withCaseVaryingCharacters,
 	UNICODE_MAXIMUM,
 	UTF16_MAXIMUM,
-} from "./js-util";
+} from "./util";
 import {
 	Alias,
 	Binary_Property,
