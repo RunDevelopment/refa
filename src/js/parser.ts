@@ -25,6 +25,7 @@ import {
 	UNICODE_MAXIMUM,
 	UTF16_MAXIMUM,
 } from "./util";
+import { Literal } from "./literal";
 
 export interface ParseOptions {
 	/**
@@ -78,17 +79,6 @@ export interface ParseOptions {
 	disableOptimizations?: boolean;
 }
 
-/**
- * A light-weight representation of a
- * [JavaScript RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object.
- *
- * This interface only requires the `source` and `flags` properties of a RegExp object.
- */
-export interface Literal {
-	readonly source: string;
-	readonly flags: string;
-}
-
 export interface RegexppAst {
 	readonly pattern: AST.Pattern;
 	readonly flags: AST.Flags;
@@ -105,11 +95,8 @@ interface ParserContext extends ParseOptions {
 	readonly flags: AST.Flags;
 }
 
-export class Parser implements Literal {
-	/** The source string of the literal this parser works on. */
-	readonly source: string;
-	/** The flags string of the literal this parser works on. */
-	readonly flags: string;
+export class Parser {
+	readonly literal: Literal;
 
 	/**
 	 * The parsed AST of the literal this parser works on.
@@ -123,8 +110,7 @@ export class Parser implements Literal {
 	private readonly _resolveCache = new Map<AST.CapturingGroup | AST.Backreference, ReadonlyWord | null>();
 
 	private constructor(ast: RegexppAst) {
-		this.source = ast.pattern.raw;
-		this.flags = ast.flags.raw;
+		this.literal = { source: ast.pattern.raw, flags: ast.flags.raw };
 		this.ast = ast;
 	}
 
@@ -162,9 +148,9 @@ export class Parser implements Literal {
 		const context: ParserContext = { ...options, flags: this.ast.flags };
 
 		if (element.type === "Alternative") {
-			this.addAlternatives([element], expression, context);
+			this._addAlternatives([element], expression, context);
 		} else {
-			this.addAlternatives(element.alternatives, expression, context);
+			this._addAlternatives(element.alternatives, expression, context);
 		}
 
 		return {
@@ -173,7 +159,7 @@ export class Parser implements Literal {
 		};
 	}
 
-	private addAlternatives(alternatives: readonly AST.Alternative[], parent: Parent, context: ParserContext): void {
+	private _addAlternatives(alternatives: readonly AST.Alternative[], parent: Parent, context: ParserContext): void {
 		for (const alt of alternatives) {
 			const elements: Element[] = [];
 			const concat: Concatenation = {
@@ -186,7 +172,7 @@ export class Parser implements Literal {
 
 			if (context.disableOptimizations) {
 				for (const e of alt.elements) {
-					this.addElement(e, concat, context);
+					this._addElement(e, concat, context);
 				}
 			} else {
 				// optimized version
@@ -194,7 +180,7 @@ export class Parser implements Literal {
 				let error: Error | undefined = undefined;
 				for (const e of alt.elements) {
 					try {
-						this.addElement(e, concat, context);
+						this._addElement(e, concat, context);
 					} catch (err) {
 						// we catch the error and only rethrow it if the alternative did not get removed
 						// the only errors which can be thrown are not-supported errors, so if the alternative gets
@@ -235,36 +221,36 @@ export class Parser implements Literal {
 			};
 			parent.alternatives.push(concat);
 
-			this.addEmptyCharacterClass(concat.source!, concat, context);
+			this._addEmptyCharacterClass(concat.source!, concat, context);
 		}
 	}
 
-	private addElement(element: AST.Element, parent: Concatenation, context: ParserContext): void {
+	private _addElement(element: AST.Element, parent: Concatenation, context: ParserContext): void {
 		switch (element.type) {
 			case "Assertion":
-				return this.addAssertion(element, parent, context);
+				return this._addAssertion(element, parent, context);
 
 			case "CapturingGroup":
 			case "Group":
-				return this.addGroup(element, parent, context);
+				return this._addGroup(element, parent, context);
 
 			case "Character":
 			case "CharacterClass":
 			case "CharacterSet":
-				return this.addCharacterClass(element, parent, context);
+				return this._addCharacterClass(element, parent, context);
 
 			case "Quantifier":
-				return this.addQuantifier(element, parent, context);
+				return this._addQuantifier(element, parent, context);
 
 			case "Backreference":
-				return this.addBackreference(element, parent, context);
+				return this._addBackreference(element, parent, context);
 
 			default:
 				throw assertNever(element, "Unsupported element");
 		}
 	}
 
-	private addAssertion(element: AST.Assertion, parent: Concatenation, context: ParserContext): void {
+	private _addAssertion(element: AST.Assertion, parent: Concatenation, context: ParserContext): void {
 		switch (element.kind) {
 			case "lookahead":
 			case "lookbehind": {
@@ -275,7 +261,7 @@ export class Parser implements Literal {
 						throw new Error("Assertions are not supported.");
 					}
 					if (context.lookarounds === "disable") {
-						this.addEmptyCharacterClass(element, parent, context);
+						this._addEmptyCharacterClass(element, parent, context);
 						return;
 					}
 				}
@@ -291,7 +277,7 @@ export class Parser implements Literal {
 				parent.elements.push(assertion);
 
 				try {
-					this.addAlternatives(element.alternatives, assertion, context);
+					this._addAlternatives(element.alternatives, assertion, context);
 				} catch (e) {
 					if (context.lookarounds === "throw") {
 						// we tried to optimize and failed, so we ignore e and throw our own error
@@ -300,7 +286,7 @@ export class Parser implements Literal {
 					if (context.lookarounds === "disable") {
 						// we tried to optimize and failed, so we ignore e and disable the assertion
 						parent.elements.pop(); // remove the assertion
-						this.addEmptyCharacterClass(element, parent, context);
+						this._addEmptyCharacterClass(element, parent, context);
 						return;
 					}
 
@@ -317,7 +303,7 @@ export class Parser implements Literal {
 							// if it's (?!) or (?<!), it will trivially reject, so just add an empty character class
 							// to simulate this behavior
 							if (assertion.negate) {
-								this.addEmptyCharacterClass(element, parent, context);
+								this._addEmptyCharacterClass(element, parent, context);
 							}
 							return;
 						}
@@ -329,7 +315,7 @@ export class Parser implements Literal {
 								// we have to replace it with an empty character class.
 								parent.elements.pop();
 								if (!assertion.negate) {
-									this.addEmptyCharacterClass(element, parent, context);
+									this._addEmptyCharacterClass(element, parent, context);
 								}
 								return;
 							}
@@ -344,7 +330,7 @@ export class Parser implements Literal {
 				if (context.lookarounds === "disable") {
 					// we tried to optimize and failed
 					parent.elements.pop(); // remove the assertion
-					this.addEmptyCharacterClass(element, parent, context);
+					this._addEmptyCharacterClass(element, parent, context);
 					return;
 				}
 
@@ -359,7 +345,7 @@ export class Parser implements Literal {
 					throw new Error("Assertions are not supported.");
 				}
 				if (context.lookarounds === "disable") {
-					this.addEmptyCharacterClass(element, parent, context);
+					this._addEmptyCharacterClass(element, parent, context);
 					return;
 				}
 
@@ -376,10 +362,10 @@ export class Parser implements Literal {
 		}
 	}
 
-	private addBackreference(element: AST.Backreference, parent: Concatenation, context: ParserContext): void {
+	private _addBackreference(element: AST.Backreference, parent: Concatenation, context: ParserContext): void {
 		if (context.disableOptimizations) {
 			if (context.backreferences === "disable") {
-				this.addEmptyCharacterClass(element, parent, context);
+				this._addEmptyCharacterClass(element, parent, context);
 			}
 			if (context.backreferences === "throw") {
 				throw new Error("Backreferences are not supported.");
@@ -388,13 +374,13 @@ export class Parser implements Literal {
 
 		// try resolve
 
-		const result = this.resolveBackreference(element, context);
+		const result = this._resolveBackreference(element, context);
 
 		if (result === null || result.length !== 0) {
 			// could not optimize backreference away
 
 			if (context.backreferences === "disable") {
-				this.addEmptyCharacterClass(element, parent, context);
+				this._addEmptyCharacterClass(element, parent, context);
 			}
 			if (context.backreferences === "throw") {
 				throw new Error("Backreferences are not supported.");
@@ -417,11 +403,11 @@ export class Parser implements Literal {
 		} else {
 			// could not resolve
 
-			this.addEmptyCharacterClass(element, parent, context);
+			this._addEmptyCharacterClass(element, parent, context);
 		}
 	}
 
-	private addCharacterClass(
+	private _addCharacterClass(
 		element: AST.Character | AST.CharacterClass | AST.CharacterSet,
 		parent: Concatenation,
 		context: ParserContext
@@ -484,7 +470,7 @@ export class Parser implements Literal {
 		parent.elements.push(char);
 	}
 
-	private addGroup(element: AST.Group | AST.CapturingGroup, parent: Concatenation, context: ParserContext): void {
+	private _addGroup(element: AST.Group | AST.CapturingGroup, parent: Concatenation, context: ParserContext): void {
 		const alteration: Alternation = {
 			type: "Alternation",
 			parent,
@@ -492,7 +478,7 @@ export class Parser implements Literal {
 			source: getSource(element),
 		};
 		parent.elements.push(alteration);
-		this.addAlternatives(element.alternatives, alteration, context);
+		this._addAlternatives(element.alternatives, alteration, context);
 
 		if (!context.disableOptimizations) {
 			if (alteration.alternatives.length === 1) {
@@ -512,7 +498,7 @@ export class Parser implements Literal {
 		}
 	}
 
-	private addQuantifier(element: AST.Quantifier, parent: Concatenation, context: ParserContext): void {
+	private _addQuantifier(element: AST.Quantifier, parent: Concatenation, context: ParserContext): void {
 		const min: number = element.min;
 		const max: number = element.max;
 
@@ -521,7 +507,7 @@ export class Parser implements Literal {
 				return;
 			}
 			if (min === 1 && max === 1) {
-				this.addElement(element.element, parent, context);
+				this._addElement(element.element, parent, context);
 				return;
 			}
 		}
@@ -539,7 +525,7 @@ export class Parser implements Literal {
 		const qElement = element.element;
 
 		if ((!context.disableOptimizations && qElement.type === "CapturingGroup") || qElement.type === "Group") {
-			this.addAlternatives(qElement.alternatives, quant, context);
+			this._addAlternatives(qElement.alternatives, quant, context);
 		} else {
 			const concat: Concatenation = {
 				type: "Concatenation",
@@ -549,7 +535,7 @@ export class Parser implements Literal {
 			};
 			quant.alternatives.push(concat);
 
-			this.addElement(qElement, concat, context);
+			this._addElement(qElement, concat, context);
 		}
 
 		if (!context.disableOptimizations) {
@@ -567,7 +553,7 @@ export class Parser implements Literal {
 						// be replaced with the empty character class
 						parent.elements.pop();
 						if (quant.min > 0) {
-							this.addEmptyCharacterClass(element, parent, context);
+							this._addEmptyCharacterClass(element, parent, context);
 						}
 					}
 				}
@@ -575,7 +561,7 @@ export class Parser implements Literal {
 		}
 	}
 
-	private addEmptyCharacterClass(node: SourceLocation, parent: Concatenation, context: ParserContext): void {
+	private _addEmptyCharacterClass(node: SourceLocation, parent: Concatenation, context: ParserContext): void {
 		const char: CharacterClass = {
 			type: "CharacterClass",
 			parent,
@@ -585,7 +571,7 @@ export class Parser implements Literal {
 		parent.elements.push(char);
 	}
 
-	private resolveBackreference(element: AST.Backreference, context: ParserContext): ReadonlyWord | null {
+	private _resolveBackreference(element: AST.Backreference, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
@@ -595,7 +581,7 @@ export class Parser implements Literal {
 		if (!somePathToBackreference(element)) {
 			result = [];
 		} else {
-			result = this.resolveConstantGroup(element.resolved, context);
+			result = this._resolveConstantGroup(element.resolved, context);
 
 			if (result !== null && result.length > 0) {
 				if (!backreferenceAlwaysAfterGroup(element)) {
@@ -610,7 +596,7 @@ export class Parser implements Literal {
 		return result;
 	}
 
-	private resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
+	private _resolveConstantGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
 		const cached = this._resolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;

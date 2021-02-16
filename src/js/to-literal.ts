@@ -15,7 +15,7 @@ import {
 import { Flags } from "./flags";
 import { UnicodeCaseVarying, UnicodeCaseFolding } from "./unicode";
 import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
-import { Literal } from "./parser";
+import { Literal } from "./literal";
 
 export interface ToLiteralOptions {
 	/**

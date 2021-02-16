@@ -14,4 +14,5 @@ export * from "./create-assertion";
 export * from "./create-char-set";
 export * from "./to-literal";
 export * from "./flags";
+export * from "./literal";
 export * from "./parser";
