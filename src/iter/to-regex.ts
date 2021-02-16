@@ -1,16 +1,28 @@
-import { NoParent, Expression, Concatenation, Alternation, CharacterClass, Quantifier, Element } from "../ast";
+import {
+	NoParent,
+	Expression,
+	Concatenation,
+	Alternation,
+	CharacterClass,
+	Quantifier,
+	Element,
+	combineTransformers,
+	TransformContext,
+	transform,
+} from "../ast";
 import { CharSet } from "../char-set";
 import { cachedFunc, DFS, firstOf, minOf, assertNever } from "../util";
 import { ToRegexOptions, TooManyNodesError, FAIterator } from "../finite-automaton";
 import { structurallyEqual } from "../ast-analysis";
-import { combineTransformers, CreationOptions, TransformContext } from "../ast-transform/transformer";
-import { mergeWithQuantifier } from "../ast-transform/transformers/merge-with-quantifier";
-import { factorOut } from "../ast-transform/transformers/factor-out";
-import { moveUpEmpty } from "../ast-transform/transformers/move-up-empty";
-import { inline } from "../ast-transform/transformers/inline";
-import { unionCharacters } from "../ast-transform/transformers/union-characters";
-import { nestedQuantifiers } from "../ast-transform/transformers/nested-quantifiers";
-import { transform } from "../ast-transform/transform";
+import {
+	CreationOptions,
+	mergeWithQuantifier,
+	factorOut,
+	moveUpEmpty,
+	inline,
+	unionCharacters,
+	nestedQuantifiers,
+} from "../transformers";
 
 const TRANSFORMER_CREATION_OPTIONS: CreationOptions = { ignoreAmbiguity: true, ignoreOrder: true };
 const CONCAT_TRANSFORMER = combineTransformers([mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS)]);

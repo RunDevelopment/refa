@@ -19,7 +19,10 @@ async function run() {
 
 	await fs.writeFile("./index.d.ts", outputModContext(inline(parsed).modules.refa), "utf8");
 }
-run();
+run().catch(err => {
+	console.log(err);
+	process.exit(1);
+});
 
 function ensureUniqueNames(parsed: ParsedDts): void {
 	const names = new Map<string, { modName: string }>();
@@ -93,6 +96,7 @@ function inline(parsed: Readonly<ParsedDts>): ParsedDts {
 
 	function inlineMod(mod: Readonly<ParsedModule>): ParsedModule {
 		const inlined: ParsedModule = {
+			comment: mod.comment,
 			imports: mod.imports.filter(i => isExternal(parsed, i.from)),
 			exports: [],
 			members: [],
@@ -121,7 +125,8 @@ function inline(parsed: Readonly<ParsedDts>): ParsedDts {
 						exported: true,
 						name: exp.as,
 						source: null as any,
-						members: nested.members
+						members: nested.members,
+						comment: exp.comment || nested.comment
 					});
 					break;
 				}
@@ -164,6 +169,10 @@ function outputModContext(mod: ParsedModule, options?: OutputOptions): string {
 	}
 
 	let s = "";
+	if (mod.comment) {
+		s += mod.comment + "\n";
+	}
+
 	for (const imp of mod.imports) {
 		switch (imp.type) {
 			case "ns":
@@ -183,6 +192,9 @@ function outputModContext(mod: ParsedModule, options?: OutputOptions): string {
 				s += `export * from ${JSON.stringify(mapModName(exp.from))};\n`;
 				break;
 			case "all-as":
+				if (exp.comment) {
+					s += exp.comment + "\n";
+				}
 				s += `export * as ${exp.as} from ${JSON.stringify(mapModName(exp.from))};\n`;
 				break;
 			default:
@@ -227,6 +239,7 @@ interface ParsedDts {
 	modules: Record<string, ParsedModule>;
 }
 interface ParsedModule {
+	comment?: string;
 	imports: Import[];
 	exports: Export[];
 	members: Member[];
@@ -253,6 +266,7 @@ interface AllExport extends ExportBase {
 interface AllAsExport extends ExportBase {
 	type: "all-as",
 	as: string;
+	comment?: string;
 }
 interface NsExport extends ExportBase {
 	type: "ns",
@@ -276,7 +290,7 @@ interface NamespaceMember extends MemberBase {
 }
 
 function parseDts(code: string): ParsedDts {
-	const source = new SourceCode(code);
+	const source = SourceCode.fromText(code);
 	source.consumeSpaces();
 
 	const banner = source.consume(/\/\/.*$(?:\s*\/\/.*$)*/my, "Expected comment")[0];
@@ -318,6 +332,14 @@ function parseModuleContent(modSource: SourceCode): ParsedModule {
 		members: [],
 	};
 
+	let moduleComment = modSource.peek(JS_M_COMMENT)?.[0];
+	if (moduleComment && /^\s*(?:\*\s*)?@module\b/m.test(moduleComment)) {
+		module.comment = moduleComment;
+
+		modSource.consumeOptional(JS_M_COMMENT);
+		modSource.consumeSpaces();
+	}
+
 	while (modSource.good) {
 		const docComment = modSource.consumeOptional(JS_M_COMMENT);
 		modSource.consumeSpaces();
@@ -326,9 +348,6 @@ function parseModuleContent(modSource: SourceCode): ParsedModule {
 			{
 				pattern: reBuild(/export\s*\*\s*(?:as\s+(<<JS_IDENT>>)\s*)?from\s*(<<JS_STRING>>);?/y, { JS_STRING, JS_IDENT }),
 				action(match, slice, invalid) {
-					if (docComment) {
-						invalid("Unexpected comment before export.");
-					}
 					const from = stringValue(match[2]);
 					const as = match[1];
 
@@ -336,9 +355,14 @@ function parseModuleContent(modSource: SourceCode): ParsedModule {
 						module.exports.push({
 							type: "all-as",
 							as,
-							from
+							from,
+							comment: docComment ? docComment[0] : undefined
 						});
 					} else {
+						if (docComment) {
+							invalid("Unexpected comment before export.");
+						}
+
 						module.exports.push({
 							type: "all",
 							from
@@ -483,7 +507,7 @@ function parseNamespace(source: SourceCode): NamespaceMember {
 	source.consumeSpaces();
 
 	const members: Member[] = [];
-	while (source.peek() !== "}") {
+	while (source.peekChar() !== "}") {
 		const docComment = source.consumeOptional(JS_M_COMMENT);
 		source.consumeSpaces();
 		const member = parseMember(source);
@@ -511,13 +535,13 @@ function consumeFunction(source: SourceCode): SourceCode {
 	source.consumeSpaces();
 	source.consume(JS_IDENT, "Expected function name");
 	source.consumeSpaces();
-	if (source.peek() === "<") {
+	if (source.peekChar() === "<") {
 		consumeBracket(source, "<", ">");
 		source.consumeSpaces();
 	}
 	consumeBracket(source, "(", ")");
 	source.consumeSpaces();
-	if (source.peek() === ":") {
+	if (source.peekChar() === ":") {
 		consumeTypeAnnotation(source);
 		source.consumeSpaces();
 	}
@@ -687,7 +711,7 @@ const CLOSING_BRACKET: Record<string, string> = {
 	"<": ">",
 }
 function consumeBracket(source: SourceCode, open: string, close: string): SourceCode {
-	if (source.peek() !== open) {
+	if (source.peekChar() !== open) {
 		source.error(source.pos, `The bracket doesn't start with the expected character ${JSON.stringify(open)}.`);
 	}
 
@@ -724,14 +748,52 @@ interface PatternAction<T> {
 	action(match: RegExpExecArray, slice: SourceCode, invalid: (message: string) => never): T;
 }
 
+function findLastIndex<T>(array: readonly T[], pred: (item: T) => boolean): number {
+	for (let i = array.length - 1; i >= 0; i--) {
+		if (pred(array[i])) {
+			return i;
+		}
+	}
+	return -1;
+}
+class SourcePositionTranslator {
+	private readonly _lineOffsets: number[];
+	private readonly _length: number;
+	constructor(text: string) {
+		const lineRE = /\r\n?|\n/g;
+		let m;
+
+		this._lineOffsets = [0];
+		this._length = text.length;
+
+		while ((m = lineRE.exec(text))) {
+			this._lineOffsets.push(m.index + m[0].length);
+		}
+	}
+
+	at(pos: number): { line: number; column: number } | undefined {
+		if (pos < 0 || pos > this._length) {
+			return undefined;
+		} else {
+			let lineIndex = findLastIndex(this._lineOffsets, offset => pos >= offset);
+			let column = pos - this._lineOffsets[lineIndex];
+			return { line: lineIndex + 1, column };
+		}
+	}
+}
 class SourceCode {
 	readonly text: string;
 	readonly sliceIndex: number;
+	readonly posTranslator: SourcePositionTranslator;
 	pos: number = 0;
 
-	constructor(text: string, sliceIndex: number = 0) {
+	private constructor(text: string, sliceIndex: number, posTranslator: SourcePositionTranslator) {
 		this.text = text;
 		this.sliceIndex = sliceIndex;
+		this.posTranslator = posTranslator;
+	}
+	static fromText(text: string): SourceCode {
+		return new SourceCode(text, 0, new SourcePositionTranslator(text));
 	}
 
 	get length(): number {
@@ -744,12 +806,20 @@ class SourceCode {
 	/**
 	 * Returns the character at the current position.
 	 */
-	peek(): string | number {
+	peekChar(): string {
 		return this.text[this.pos];
+	}
+	peek(pattern: RegExp): RegExpExecArray | null {
+		if (!pattern.sticky) {
+			throw new Error("The pattern has to be sticky.");
+		}
+		pattern.lastIndex = this.pos;
+		const m = pattern.exec(this.text);
+		return m;
 	}
 
 	slice(start: number, end: number): SourceCode {
-		return new SourceCode(this.text.substring(start, end), start + this.sliceIndex);
+		return new SourceCode(this.text.substring(start, end), start + this.sliceIndex, this.posTranslator);
 	}
 	consumeAsSlice(length: number): SourceCode {
 		const slice = this.slice(this.pos, this.pos + length);
@@ -786,11 +856,11 @@ class SourceCode {
 			if (m) {
 				const slice = this.slice(orgPos, orgPos + m[0].length);
 				return action(m, slice, msg => {
-					throw new Error(`Invalid format: ${msg}\nAt ${orgPos + this.sliceIndex}\n\n${m[0]}`);
+					throw new Error(`Invalid format: ${msg}\nAt ${this._at(orgPos + this.sliceIndex)}\n\n${m[0]}`);
 				});
 			}
 		}
-		throw new Error(`Invalid format: ${errorMessage}\nAt ${this.pos + this.sliceIndex}\n\n${this.text.substr(this.pos, 80)}`);
+		throw new Error(`Invalid format: ${errorMessage}\nAt ${this._at(this.pos + this.sliceIndex)}\n\n${this.text.substr(this.pos, 80)}`);
 	}
 	consumeAnyUntil(patterns: readonly PatternAction<boolean | void>[], errorMessage: string): SourceCode {
 		const initialPos = this.pos;
@@ -822,7 +892,16 @@ class SourceCode {
 	}
 
 	error(pos: number, message: string): never {
-		throw new Error(`Invalid format: ${message}\nAt ${pos + this.sliceIndex}\n\n${this.text.substr(pos, 80)}`);
+		throw new Error(`Invalid format: ${message}\nAt ${this._at(pos + this.sliceIndex)}\n\n${this.text.substr(pos, 80)}`);
+	}
+
+	private _at(pos: number): string {
+		const result = this.posTranslator.at(pos);
+		if (result) {
+			return `${result.line}:${result.column}`;
+		} else {
+			return "pos: " + pos;
+		}
 	}
 }
 

@@ -1,6 +1,5 @@
 import { assert } from "chai";
-import { transform, TransformOptions } from "../../src/ast-transform/transform";
-import { Transformer } from "../../src/ast-transform/transformer";
+import { transform, TransformOptions, Transformer } from "../../src/ast";
 import { Literal, Parser, toLiteral } from "../../src/js";
 import { literalToString } from "./fa";
 
