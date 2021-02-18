@@ -7,6 +7,9 @@ import { visitNodes } from "./visit";
  * They cannot see or modify anything outside the given sub tree.
  *
  * Transformers are always applied bottom-up.
+ *
+ * The most simple transformer is an empty object (`{}`). This is equivalent to a no-op transformer that does not change
+ * the given AST.
  */
 export interface Transformer {
 	onAlternation?(node: NoParent<Alternation>, context: TransformContext): void;
@@ -32,6 +35,14 @@ export interface TransformContext {
 	readonly signalMutation: () => void;
 }
 
+const TRANSFORMER_KEYS: readonly (keyof Transformer)[] = [
+	"onAlternation",
+	"onAssertion",
+	"onCharacterClass",
+	"onConcatenation",
+	"onExpression",
+	"onQuantifier",
+];
 /**
  * Creates a new transformer that performs all given transformers in sequentially in order for each node.
  *
@@ -43,16 +54,11 @@ export interface TransformContext {
  * @param transformers
  */
 export function combineTransformers(transformers: Iterable<Transformer>): Transformer {
-	const array = [...transformers].filter(t => !isNoop(t));
-	if (array.length === 0) {
-		return noopTransformer();
-	}
-
 	type OnFunction = (path: never, context: TransformContext) => void;
-
 	const functionLists: Partial<Record<keyof Transformer, OnFunction[]>> = {};
-	for (const t of array) {
-		for (const key of KEYS) {
+
+	for (const t of transformers) {
+		for (const key of TRANSFORMER_KEYS) {
 			const fn = t[key];
 			if (fn) {
 				const list = (functionLists[key] = functionLists[key] ?? []);
@@ -84,25 +90,6 @@ export function combineTransformers(transformers: Iterable<Transformer>): Transf
 		onExpression: toFunction("onExpression"),
 		onQuantifier: toFunction("onQuantifier"),
 	};
-}
-
-/**
- * Returns a transformer that does not modify the given AST sub trees.
- */
-export function noopTransformer(): Transformer {
-	return {};
-}
-
-const KEYS: readonly (keyof Transformer)[] = [
-	"onAlternation",
-	"onAssertion",
-	"onCharacterClass",
-	"onConcatenation",
-	"onExpression",
-	"onQuantifier",
-];
-function isNoop(transformer: Transformer): boolean {
-	return KEYS.every(k => transformer[k] === undefined);
 }
 
 export interface TransformOptions {
@@ -190,7 +177,7 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 
 		const fn = transformer[fnName as keyof Transformer];
 		if (fn) {
-			fn(node as any, transformerContext);
+			fn(node as never, transformerContext);
 		}
 	}
 

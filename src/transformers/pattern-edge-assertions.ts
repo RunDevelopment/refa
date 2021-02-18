@@ -1,4 +1,4 @@
-import { Assertion, Concatenation, Node, NoParent, noopTransformer, Transformer } from "../ast";
+import { Assertion, Concatenation, Node, NoParent, Transformer } from "../ast";
 import { followPaths, getAssertRange, invertMatchingDirection, isZeroLength, Path, stackPath } from "../ast-analysis";
 import { CreationOptions } from "./creation-options";
 import { at, inRange, tryInlineAssertions } from "./util";
@@ -178,7 +178,7 @@ export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCr
 	const remove = options?.remove ?? false;
 
 	if (!inline && !remove) {
-		return noopTransformer();
+		return {}; // noop
 	} else {
 		return {
 			onExpression(node, context) {
