@@ -18,6 +18,7 @@ import {
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
 import { filterMut } from "../util";
+import { CreationOptions } from "./creation-options";
 import {
 	at,
 	copyNode,
@@ -509,7 +510,8 @@ function moveAssertionIntoAlternation(
  * This transformer will apply all trivial assertion (e.g. `/(?!0)\d/` => `/[1-9]/`) and remove all branches in
  * assertions that are guaranteed to reject (e.g. `(?=\d+=|-)\w` => `(?=\d+=)\w`).
  */
-export function applyAssertions(): Transformer {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function applyAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
 		onConcatenation(node: NoParent<Concatenation>, context: TransformContext) {
 			const elements = node.elements;

@@ -32,6 +32,7 @@ import {
 	tryRemoveRejectingAssertionBranches,
 } from "./util";
 import { CharSet } from "../char-set";
+import { CreationOptions } from "./creation-options";
 
 const enum Result {
 	ACCEPT,
@@ -252,7 +253,8 @@ function removeAdjacentAssertions(
 /**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
  */
-export function removeUnnecessaryAssertions(): Transformer {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
 		onConcatenation(node, context) {
 			removeTrivialAssertions(node, getTrivialResult, context);
