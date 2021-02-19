@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ReadonlyNode | refa - v0.6.0</title>
+	<title>TransformOptions | refa - v0.6.0</title>
 	<meta name="description" content="Documentation for refa - v0.6.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,13 +53,10 @@
 					<a href="../modules.html">refa - v0.6.0</a>
 				</li>
 				<li>
-					<a href="../modules/dfa.html">DFA</a>
-				</li>
-				<li>
-					<a href="dfa.readonlynode.html">ReadonlyNode</a>
+					<a href="transformoptions.html">TransformOptions</a>
 				</li>
 			</ul>
-			<h1>Interface ReadonlyNode</h1>
+			<h1>Interface TransformOptions</h1>
 		</div>
 	</div>
 </header>
@@ -70,12 +67,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">ReadonlyNode</span>
-						<ul class="tsd-hierarchy">
-							<li>
-								<a href="dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a>
-							</li>
-						</ul>
+						<span class="target">TransformOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -86,8 +78,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="dfa.readonlynode.html#list" class="tsd-kind-icon">list</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="dfa.readonlynode.html#out" class="tsd-kind-icon">out</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="transformoptions.html#maxpasses" class="tsd-kind-icon">max<wbr>Passes</a></li>
 							</ul>
 						</section>
 					</div>
@@ -96,18 +87,23 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="list" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> list</h3>
-					<div class="tsd-signature tsd-kind-icon">list<span class="tsd-signature-symbol">:</span> <a href="dfa.readonlynodelist.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNodeList</a></div>
+					<a name="maxpasses" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> max<wbr>Passes</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Passes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="out" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> out</h3>
-					<div class="tsd-signature tsd-kind-icon">out<span class="tsd-signature-symbol">:</span> <a href="readonlycharmap.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyCharMap</a><span class="tsd-signature-symbol">&lt;</span><a href="dfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The maximum number of times the transformer will be applied to the AST.</p>
+						</div>
+						<p>This is only a maximum. The transformer will be stopped before this number is reach if the AST isn&#39;t modified
+						anymore.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>10</p>
+							</dd>
+						</dl>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -117,55 +113,22 @@
 					<li class=" ">
 						<a href="../modules.html">Exports</a>
 					</li>
-					<li class="current tsd-kind-namespace">
-						<a href="../modules/dfa.html">DFA</a>
-					</li>
-					<li class=" tsd-kind-namespace">
-						<a href="../modules/js.html">JS</a>
-					</li>
-					<li class=" tsd-kind-namespace">
-						<a href="../modules/nfa.html">NFA</a>
-					</li>
-					<li class=" tsd-kind-namespace">
-						<a href="../modules/transformers.html">Transformers</a>
-					</li>
-					<li class=" tsd-kind-namespace">
-						<a href="../modules/words.html">Words</a>
-					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-namespace">
-						<a href="../classes/dfa.nodelist.html" class="tsd-kind-icon">Node<wbr>List</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="dfa.creationoptions.html" class="tsd-kind-icon">Creation<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="dfa.node.html" class="tsd-kind-icon">Node</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="dfa.options.html" class="tsd-kind-icon">Options</a>
-					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="dfa.readonlynode.html" class="tsd-kind-icon">Readonly<wbr>Node</a>
+					<li class="current tsd-kind-interface">
+						<a href="transformoptions.html" class="tsd-kind-icon">Transform<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="dfa.readonlynode.html#list" class="tsd-kind-icon">list</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="dfa.readonlynode.html#out" class="tsd-kind-icon">out</a>
+								<a href="transformoptions.html#maxpasses" class="tsd-kind-icon">max<wbr>Passes</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="dfa.readonlynodelist.html" class="tsd-kind-icon">Readonly<wbr>Node<wbr>List</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

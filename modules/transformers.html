@@ -1,0 +1,569 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Transformers | refa - v0.6.0</title>
+	<meta name="description" content="Documentation for refa - v0.6.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">refa - v0.6.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">refa - v0.6.0</a>
+				</li>
+				<li>
+					<a href="transformers.html">Transformers</a>
+				</li>
+			</ul>
+			<h1>Namespace Transformers</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Contains all AST transformer implementations of refa.</p>
+					</div>
+					<p>All transformer factory functions implemented here will optionally take <a href="../interfaces/transformers.creationoptions.html">CreationOptions</a> or a sub-class of it.
+					This can be used to control the behavior of the created transformers.</p>
+				</div>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Interfaces</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-namespace"><a href="../interfaces/transformers.creationoptions.html" class="tsd-kind-icon">Creation<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-namespace"><a href="../interfaces/transformers.patternedgeassertionscreationoptions.html" class="tsd-kind-icon">Pattern<wbr>Edge<wbr>Assertions<wbr>Creation<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-namespace"><a href="../interfaces/transformers.removeassertionscreationoptions.html" class="tsd-kind-icon">Remove<wbr>Assertions<wbr>Creation<wbr>Options</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#applyassertions" class="tsd-kind-icon">apply<wbr>Assertions</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#factorout" class="tsd-kind-icon">factor<wbr>Out</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#inline" class="tsd-kind-icon">inline</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#mergewithquantifier" class="tsd-kind-icon">merge<wbr>With<wbr>Quantifier</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#moveupempty" class="tsd-kind-icon">move<wbr>UpEmpty</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#nestedquantifiers" class="tsd-kind-icon">nested<wbr>Quantifiers</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#patternedgeassertions" class="tsd-kind-icon">pattern<wbr>Edge<wbr>Assertions</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#removedeadbranches" class="tsd-kind-icon">remove<wbr>Dead<wbr>Branches</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#removeunnecessaryassertions" class="tsd-kind-icon">remove<wbr>Unnecessary<wbr>Assertions</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#replaceassertions" class="tsd-kind-icon">replace<wbr>Assertions</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#sortassertions" class="tsd-kind-icon">sort<wbr>Assertions</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace"><a href="transformers.html#unioncharacters" class="tsd-kind-icon">union<wbr>Characters</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="applyassertions" class="tsd-anchor"></a>
+					<h3>apply<wbr>Assertions</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">apply<wbr>Assertions<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This transformer will apply all trivial assertion (e.g. <code>/(?!0)\d/</code> =&gt; <code>/[1-9]/</code>) and remove all branches in
+									assertions that are guaranteed to reject (e.g. <code>(?=\d+=|-)\w</code> =&gt; <code>(?=\d+=)\w</code>).</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="factorout" class="tsd-anchor"></a>
+					<h3>factor<wbr>Out</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">factor<wbr>Out<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This will factor out common prefixes and suffixes in parent nodes.</p>
+								</div>
+								<p>Examples:</p>
+								<ul>
+									<li><code>(?:abc|aba)</code> =&gt; <code>(?:ab(?:c|a))</code></li>
+									<li><code>(?&lt;!air|after)</code> =&gt; <code>(?&lt;!a(?:i|fte)r)</code></li>
+								</ul>
+								<p>The order of alternatives and the ambiguity of the regular expression are guaranteed to be preserved. One non-obvious
+									case where ambiguity is preserved is the case of duplicate alternatives. In this case, a group with multiple empty
+								alternatives will be left.</p>
+								<p>E.g. <code>(?:abc|abc|abc)</code> =&gt; <code>(?:abc(?:||))</code></p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="inline" class="tsd-anchor"></a>
+					<h3>inline</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">inline<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This transformer will simplify the AST by doing trivial inlining operations.</p>
+								</div>
+								<p>It will:</p>
+								<ol>
+									<li>Inline single-alternative alternations in concatenation (e.g. <code>a(?:b)c</code> =&gt; <code>abc</code>).</li>
+									<li>Inline single-alternation concatenations (e.g. <code>(?:(?:a|b)|c)</code> =&gt; <code>(?:a|b|c)</code>).</li>
+									<li>Inline constant-one quantifiers (e.g. <code>ab{1}c</code> =&gt; <code>abc</code>).</li>
+									<li>Remove constant-zero quantifiers (e.g. <code>ab{0}c</code> =&gt; <code>ac</code>).</li>
+									<li>Inline trivially nested assertions (e.g. <code>(?!(?&lt;!a))</code> =&gt; <code>(?&lt;=a)</code>).</li>
+									<li>Inline nested assertions at the end of the expression tree (e.g. <code>(?!a(?=b))</code> =&gt; <code>(?!ab)</code>).</li>
+								</ol>
+								<hr>
+								<p>This transformer should be used in combination with <a href="transformers.html#removedeadbranches">removeDeadBranches</a> to handle trivial simplifications.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="mergewithquantifier" class="tsd-anchor"></a>
+					<h3>merge<wbr>With<wbr>Quantifier</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">merge<wbr>With<wbr>Quantifier<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This operation tries to merge as many elements as possible with existing quantifiers.</p>
+								</div>
+								<p>Examples:</p>
+								<ul>
+									<li><code>/a*a/</code> =&gt; <code>/a+/</code></li>
+									<li><code>/a*(?:a+|c)/</code> =&gt; <code>/a*(?:a|c)/</code></li>
+								</ul>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="moveupempty" class="tsd-anchor"></a>
+					<h3>move<wbr>UpEmpty</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">move<wbr>UpEmpty<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This tries to simplify how a given sub-expression accepts the empty string. The goal is to modify the sub-expression
+										such that exactly one path accepts the empty string. This has the emergent result that the operator that causes the
+									sub-expression to accept the empty string moves closer to the root of the tree.</p>
+								</div>
+								<p>Examples:</p>
+								<ul>
+									<li><code>a(?:b*|d?)</code> =&gt; <code>a(?:b+|d)?</code></li>
+									<li><code>||a*|b</code> =&gt; <code>(?:a+|b)?</code></li>
+								</ul>
+								<p>This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
+								order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="nestedquantifiers" class="tsd-anchor"></a>
+					<h3>nested<wbr>Quantifiers</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">nested<wbr>Quantifiers<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This merges/optimizes nested quantifiers.</p>
+								</div>
+								<p>Examples:</p>
+								<ul>
+									<li><code>(?:a+)*</code> =&gt; <code>a*</code></li>
+									<li><code>(?:a{2,4})+</code> =&gt; <code>a{2,}</code></li>
+									<li><code>(?:a{4}){8}</code> =&gt; <code>a{32}</code></li>
+									<li><code>(?:a*|b+c|f+)*</code> =&gt; <code>(?:a{1}|b+c|f{1})*</code></li>
+								</ul>
+								<p>This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
+								order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="patternedgeassertions" class="tsd-anchor"></a>
+					<h3>pattern<wbr>Edge<wbr>Assertions</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">pattern<wbr>Edge<wbr>Assertions<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.patternedgeassertionscreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">PatternEdgeAssertionsCreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This transformer will only touch assertion that assert characters beyond the edge of the pattern.</p>
+								</div>
+								<p>E.g. in <code>/(?&lt;!\w)(?!\d)\w+(?=\s*&lt;)/</code> only <code>(?&lt;!\w)</code> and <code>(?=\s*&lt;)</code> are pattern edge assertions.</p>
+								<p>The transformer can inline non-negated assertions (e.g. <code>/(?&lt;!\w)(?!\d)\w+(?=\s*&lt;)/</code> =&gt; <code>/(?&lt;!\w)(?!\d)\w+\s*&lt;/</code>)
+								and/or remove them (e.g. <code>/(?&lt;!\w)(?!\d)\w+\s*&lt;/</code> =&gt; <code>/(?!\d)\w+\s*&lt;/</code>).</p>
+								<p>If both inlining and removal are active, then inlining will be done first, e.g. <code>a(?=\w)(?!\d)</code> =&gt; <code>a(?!\d)\w</code>, which
+									may prevent some removal. Some assertions will not be removed because another may be inlined later. E.g. the <code>(?!\d)</code>
+									in <code>(?=\w)a?(?!\d)</code> will not be removed because the pattern may be transformed to <code>(?:a|(?=\w))(?!\d)</code> =&gt;
+								<code>a(?!\d)|(?=\w)(?!\d)</code> which can be inlined to <code>a(?!\d)|(?!\d)\w</code> and transformed to <code>a(?!\d)|[A-Z_a-z]</code>.</p>
+								<p>If neither inlining nor removal are active, then this transformer won&#39;t do anything.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.patternedgeassertionscreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">PatternEdgeAssertionsCreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="removedeadbranches" class="tsd-anchor"></a>
+					<h3>remove<wbr>Dead<wbr>Branches</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Dead<wbr>Branches<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This removes dead branches in the AST.</p>
+								</div>
+								<p>Dead branches are parts of the regex that can never accept on any given input string (e.g. <code>[]a|b</code> =&gt; <code>b</code>).</p>
+								<p>This operation may produce parent nodes with 0 alternatives. Quantifiers with 0 alternatives and a minimum of 0 will
+								be replaced with the empty concatenation (e.g. <code>a(?:[]b)?c</code> =&gt; <code>ac</code>).</p>
+								<hr>
+								<p>This transformer should be used in combination with <a href="transformers.html#inline">inline</a> to handle trivial simplifications.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="removeunnecessaryassertions" class="tsd-anchor"></a>
+					<h3>remove<wbr>Unnecessary<wbr>Assertions</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Unnecessary<wbr>Assertions<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This will remove all assertions that are known to always reject/accept no matter the input string.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="replaceassertions" class="tsd-anchor"></a>
+					<h3>replace<wbr>Assertions</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">replace<wbr>Assertions<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.removeassertionscreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">RemoveAssertionsCreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This transformer will all assertions with either the empty set or the empty word.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.removeassertionscreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">RemoveAssertionsCreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="sortassertions" class="tsd-anchor"></a>
+					<h3>sort<wbr>Assertions</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">sort<wbr>Assertions<span class="tsd-signature-symbol">(</span>_options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sorts adjacent assertions such that lookbehinds are always to the right of lookaheads.</p>
+								</div>
+								<p>This is operation may be necessary for other transformers to pick up on certain patterns.</p>
+								<p>E.g. <code>(?=a)(?!b)(?&lt;!c)(?&lt;=d)</code> =&gt; <code>(?&lt;!c)(?&lt;=d)(?=a)(?!b)</code></p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> _options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace">
+					<a name="unioncharacters" class="tsd-anchor"></a>
+					<h3>union<wbr>Characters</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace">
+						<li class="tsd-signature tsd-kind-icon">union<wbr>Characters<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Combines single-character alternatives.</p>
+								</div>
+								<p>This rule will try to combine as many character classes as possible to simplify the regular expression.</p>
+								<p>E.g. <code>a|b|c</code> =&gt; <code>[abc]</code>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/transformers.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transformer.html" class="tsd-signature-type" data-tsd-kind="Interface">Transformer</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="dfa.html">DFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="js.html">JS</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="nfa.html">NFA</a>
+					</li>
+					<li class="current tsd-kind-namespace">
+						<a href="transformers.html">Transformers</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="words.html">Words</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="../interfaces/transformers.creationoptions.html" class="tsd-kind-icon">Creation<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="../interfaces/transformers.patternedgeassertionscreationoptions.html" class="tsd-kind-icon">Pattern<wbr>Edge<wbr>Assertions<wbr>Creation<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="../interfaces/transformers.removeassertionscreationoptions.html" class="tsd-kind-icon">Remove<wbr>Assertions<wbr>Creation<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#applyassertions" class="tsd-kind-icon">apply<wbr>Assertions</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#factorout" class="tsd-kind-icon">factor<wbr>Out</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#inline" class="tsd-kind-icon">inline</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#mergewithquantifier" class="tsd-kind-icon">merge<wbr>With<wbr>Quantifier</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#moveupempty" class="tsd-kind-icon">move<wbr>UpEmpty</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#nestedquantifiers" class="tsd-kind-icon">nested<wbr>Quantifiers</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#patternedgeassertions" class="tsd-kind-icon">pattern<wbr>Edge<wbr>Assertions</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#removedeadbranches" class="tsd-kind-icon">remove<wbr>Dead<wbr>Branches</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#removeunnecessaryassertions" class="tsd-kind-icon">remove<wbr>Unnecessary<wbr>Assertions</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#replaceassertions" class="tsd-kind-icon">replace<wbr>Assertions</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#sortassertions" class="tsd-kind-icon">sort<wbr>Assertions</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="transformers.html#unioncharacters" class="tsd-kind-icon">union<wbr>Characters</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
