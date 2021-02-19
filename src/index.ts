@@ -6,6 +6,6 @@ export * from "./ast";
 export * from "./nfa";
 export * from "./dfa";
 
-export * as Transforms from "./transformers";
+export * as Transformers from "./transformers";
 export * as JS from "./js/index";
 export * as Words from "./words";
