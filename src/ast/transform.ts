@@ -3,8 +3,9 @@ import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Node
 import { visitNodes } from "./visit";
 
 /**
- * A transform is some algorithm that takes a AST sub tree and makes any number of modifications to the given sub tree.
- * They cannot see or modify anything outside the given sub tree.
+ * A transform is some algorithm that takes a AST subtree and makes any number of modifications to the given subtree.
+ * They cannot see or modify anything outside the given subtree. Transformers are assumed to behave like a set of pure
+ * functions.
  *
  * Transformers are always applied bottom-up.
  *

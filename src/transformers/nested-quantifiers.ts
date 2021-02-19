@@ -95,6 +95,19 @@ function optimizeChildQuantifier(
 	}
 }
 
+/**
+ * This merges/optimizes nested quantifiers.
+ *
+ * Examples:
+ *
+ * - `(?:a+)*` => `a*`
+ * - `(?:a{2,4})+` => `a{2,}`
+ * - `(?:a{4}){8}` => `a{32}`
+ * - `(?:a*|b+c|f+)*` => `(?:a{1}|b+c|f{1})*`
+ *
+ * This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
+ * order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.
+ */
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreAmbiguity || !options.ignoreOrder) {
 		// (almost) all changes will decrease the ambiguity of the regular expression and may change matching order

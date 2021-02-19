@@ -206,7 +206,10 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 /**
  * This will factor out common prefixes and suffixes in parent nodes.
  *
- * E.g. `(?:abc|aba)` => `(?:ab(?:c|a))`, `(?<!air|after)` => `(?<!a(?:i|fte)r)`
+ * Examples:
+ *
+ * - `(?:abc|aba)` => `(?:ab(?:c|a))`
+ * - `(?<!air|after)` => `(?<!a(?:i|fte)r)`
  *
  * The order of alternatives and the ambiguity of the regular expression are guaranteed to be preserved. One non-obvious
  * case where ambiguity is preserved is the case of duplicate alternatives. In this case, a group with multiple empty

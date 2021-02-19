@@ -74,6 +74,19 @@ function onAssertion(node: NoParent<Assertion>, context: TransformContext): void
 
 /**
  * This transformer will simplify the AST by doing trivial inlining operations.
+ *
+ * It will:
+ *
+ * 1. Inline single-alternative alternations in concatenation (e.g. `a(?:b)c` => `abc`).
+ * 2. Inline single-alternation concatenations (e.g. `(?:(?:a|b)|c)` => `(?:a|b|c)`).
+ * 3. Inline constant-one quantifiers (e.g. `ab{1}c` => `abc`).
+ * 4. Remove constant-zero quantifiers (e.g. `ab{0}c` => `ac`).
+ * 5. Inline trivially nested assertions (e.g. `(?!(?<!a))` => `(?<=a)`).
+ * 6. Inline nested assertions at the end of the expression tree (e.g. `(?!a(?=b))` => `(?!ab)`).
+ *
+ * ---
+ *
+ * This transformer should be used in combination with {@link removeDeadBranches} to handle trivial simplifications.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function inline(_options?: Readonly<CreationOptions>): Transformer {

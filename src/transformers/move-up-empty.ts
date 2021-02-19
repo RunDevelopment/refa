@@ -82,6 +82,19 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 	}
 }
 
+/**
+ * This tries to simplify how a given sub-expression accepts the empty string. The goal is to modify the sub-expression
+ * such that exactly one path accepts the empty string. This has the emergent result that the operator that causes the
+ * sub-expression to accept the empty string moves closer to the root of the tree.
+ *
+ * Examples:
+ *
+ * - `a(?:b*|d?)` => `a(?:b+|d)?`
+ * - `||a*|b` => `(?:a+|b)?`
+ *
+ * This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
+ * order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.
+ */
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreOrder || !options?.ignoreAmbiguity) {
 		return {}; // noop

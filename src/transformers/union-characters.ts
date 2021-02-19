@@ -12,6 +12,7 @@ function isSingleCharacterAlternative(
  * Combines single-character alternatives.
  *
  * This rule will try to combine as many character classes as possible to simplify the regular expression.
+ *
  * E.g. `a|b|c` => `[abc]`.
  */
 export function unionCharacters(options?: Readonly<CreationOptions>): Transformer {

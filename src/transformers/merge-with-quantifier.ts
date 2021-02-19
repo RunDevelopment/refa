@@ -46,7 +46,10 @@ function consumeUsingInfiniteQuantifier(
 /**
  * This operation tries to merge as many elements as possible with existing quantifiers.
  *
- * E.g. `/a*a/` => `/a+/`, `/a*(?:a+|c)/` => `/a*(?:a|c)/`
+ * Examples:
+ *
+ * - `/a*a/` => `/a+/`
+ * - `/a*(?:a+|c)/` => `/a*(?:a|c)/`
  */
 export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transformer {
 	// This will preserve the order of alternatives ASSUMING that there are no greedy vs lazy quantifiers.

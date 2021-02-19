@@ -37,6 +37,8 @@ function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): boolean {
  * Sorts adjacent assertions such that lookbehinds are always to the right of lookaheads.
  *
  * This is operation may be necessary for other transformers to pick up on certain patterns.
+ *
+ * E.g. `(?=a)(?!b)(?<!c)(?<=d)` => `(?<!c)(?<=d)(?=a)(?!b)`
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sortAssertions(_options?: Readonly<CreationOptions>): Transformer {

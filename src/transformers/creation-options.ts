@@ -1,8 +1,7 @@
 export interface CreationOptions {
 	/**
-	 * If `true`, then transformers are allowed to reorder alternatives.
-	 *
-	 * This may cause the behavior of the regex to change.
+	 * If `true`, then transformers are allowed to reorder alternatives. This may cause the behavior of the regex to
+	 * change.
 	 *
 	 * @default false
 	 */

@@ -70,9 +70,14 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 /**
  * This removes dead branches in the AST.
  *
- * Dead branches are parts of the regex that can never accept on any given input string.
+ * Dead branches are parts of the regex that can never accept on any given input string (e.g. `[]a|b` => `b`).
  *
- * __Note__: This operation may produce parent nodes with 0 alternatives.
+ * This operation may produce parent nodes with 0 alternatives. Quantifiers with 0 alternatives and a minimum of 0 will
+ * be replaced with the empty concatenation (e.g. `a(?:[]b)?c` => `ac`).
+ *
+ * ---
+ *
+ * This transformer should be used in combination with {@link inline} to handle trivial simplifications.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeDeadBranches(_options?: Readonly<CreationOptions>): Transformer {
