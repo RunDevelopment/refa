@@ -1,8 +1,8 @@
 import { assert } from "chai";
-import { literalToString, literalToNFA, nfaEqual } from "./helper/fa";
-import { Literal, toLiteral } from "../src/js";
-import { NFA } from "../src/nfa";
-import { ToRegexOptions } from "../src/finite-automaton";
+import { literalToString, literalToNFA, nfaEqual } from "../helper/fa";
+import { Literal, toLiteral } from "../../src/js";
+import { NFA } from "../../src/nfa";
+import { ToRegexOptions } from "../../src/finite-automaton";
 
 describe("toRegex", function () {
 	describe("Literals", function () {
@@ -43,7 +43,7 @@ describe("toRegex", function () {
 			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
 				options: { maximumOptimizationPasses: 0 },
-				expected: String.raw`/\d+(?:|\.(?:|\d+)|(?:|\.(?:|\d+))E[-+]\d\d*)/i`,
+				expected: String.raw`/\d+(?:\.\d*|(?:|\.(?:|\d+))E[-+]\d+)?/i`,
 			},
 		]);
 
@@ -90,7 +90,7 @@ describe("toRegex", function () {
 					/(?:#d(?:#[ei])?|#[ei](?:#d)?)?[+-]?(?:(?:\d*\.?\d+(?:[eE][+-]?\d+)?|\d+\/\d+)(?:[+-](?:\d*\.?\d+(?:[eE][+-]?\d+)?|\d+\/\d+)i)?|(?:\d*\.?\d+(?:[eE][+-]?\d+)?|\d+\/\d+)i)/,
 					/(?:#[box](?:#[ei])?|#[ei](?:#[box])?)[+-]?(?:[\da-fA-F]+(?:\/[\da-fA-F]+)?(?:[+-][\da-fA-F]+(?:\/[\da-fA-F]+)?i)?|[\da-fA-F]+(?:\/[\da-fA-F]+)?i)/,
 				],
-				expected: String.raw`/#[ei](?:\d+[Ee][-+]\d+i|\d+(?:[Ee]\d+)?i|\d+\/\d+i|[-+]\d+(?:(?:[Ee][-+]|[/Ee])\d+)?i|[-+]?\d+(?:[Ee]\d+)?[-+]\d+(?:[/Ee]\d+)?i|[-+]?\d+(?:[Ee]\d+)?|[-+]?\d+\/\d+(?:[-+]\d+(?:[/Ee]\d+)?i)?)/`,
+				expected: String.raw`/#[ei][-+]?\d+(?:[Ee]\d+|(?:(?:[Ee][-+]?|\/)\d+|(?:[Ee]\d+)?[-+]\d+(?:[/Ee]\d+)?)?i|\/\d+(?:[-+]\d+(?:[/Ee]\d+)?i)?)?/`,
 			},
 		]);
 
