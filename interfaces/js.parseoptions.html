@@ -84,6 +84,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#backreferences" class="tsd-kind-icon">backreferences</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#lookarounds" class="tsd-kind-icon">lookarounds</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maximumnodes" class="tsd-kind-icon">maximum<wbr>Nodes</a></li>
 							</ul>
 						</section>
 					</div>
@@ -99,20 +100,31 @@
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>How to the parser will handle backreferences.</p>
+							<p>How to the parser will handle unresolved backreferences.</p>
 						</div>
-						<p><code>&quot;resolve&quot;</code>: This is the default option. The parser will replace all non-resolvable backreferences with an empty
-							character class. This will cause all paths containing a non-resolvable backreference to be removed from
-						constructed FA. Backreferences which can be resolved as one constant word, will be replaced with that word.</p>
-						<p>E.g. <code>(a*)(a|\1)(\1|\2)</code> will be parsed as <code>(a*)(a|[])([]|a)</code> which is equivalent to <code>a*aa</code>.</p>
-						<p><code>&quot;disable&quot;</code>: The parser will replace all backreferences with an empty character class. This will cause all
-						path containing a backreference to be removed from constructed FA.</p>
-						<p>E.g. <code>(a*)(\1|b)</code> will be parsed as <code>(a*)([]|b)</code> which is equivalent to <code>a*b</code>.</p>
-						<p><code>&quot;throw&quot;</code>: The parser will throw an error when encountering an unresolvable backreference. Unresolvable
-							backreferences are ones which references a capturing group which can match more than a small finite number of
-						words.</p>
-						<p>E.g. <code>(a*)b\1</code> will throw but <code>(a*)[^\s\S]\1</code> will not because the backreference will be removed anyway because
-						of the empty character class.</p>
+						<ul>
+							<li><p><code>&quot;resolve&quot;</code></p>
+								<p>The parser will replace all non-resolvable backreferences with an empty character class. This will cause all
+									paths containing a non-resolvable backreference to be (effectively) removed. Backreferences which can be
+								resolved as one constant word, will be replaced with that word.</p>
+								<p>E.g. <code>(a*)(a|\1)(\1|\2)</code> will be parsed as <code>(a*)(a|[])([]|a)</code> which is equivalent to <code>a*aa</code>.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>The parser will replace all backreferences with an empty character class. This will cause all paths containing
+								a backreference to be (effectively) removed.</p>
+								<p>E.g. <code>(a*)(\1|b)</code> will be parsed as <code>(a*)([]|b)</code> which is equivalent to <code>a*b</code>.</p>
+							</li>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>The parser will throw an error when encountering a backreference that cannot be removed.</p>
+								<p>E.g. <code>(a*)b\1</code> will throw but <code>(a*)[^\s\S]\1</code> will not because the backreference will be removed anyway because
+								of the empty character class.</p>
+							</li>
+						</ul>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;resolve&quot;</p>
+							</dd>
+						</dl>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
@@ -133,6 +145,11 @@
 							<li>Removing backreferences that always resolve to the empty string.</li>
 						</ul>
 						<p>These optimization might prevent that certain backreferences or lookarounds from throwing an error.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>false</p>
+							</dd>
+						</dl>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
@@ -145,12 +162,43 @@
 						<div class="lead">
 							<p>How the parser will handle lookarounds.</p>
 						</div>
-						<p><code>&quot;parse&quot;</code>: This is the default option. The parser will literally translate every lookaround to a RE AST
-						representation.</p>
-						<p><code>&quot;disable&quot;</code>: The parser will disable all lookarounds with an empty character class. This will cause all paths
-						containing a lookaround to be removed from constructed FA.</p>
-						<p><code>&quot;throw&quot;</code>: The parser will throw an error when encountering a lookaround.</p>
-						<p>E.g. <code>a\b.</code> but not <code>a*([](\b){0})</code> because the <code>\b</code> cannot be reached.</p>
+						<ul>
+							<li><p><code>&quot;parse&quot;</code></p>
+								<p>The parser will translate every lookaround literally to an equivalent RE AST representation. Builtin assertions
+								(e.g. <code>\b</code>, <code>$</code>) will be transformed into equivalent lookarounds.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>The parser will disable all lookarounds by replacing them with an empty character class. This will cause all
+								paths containing a lookaround to be (effectively) removed.</p>
+							</li>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>The parser will throw an error when encountering a lookaround that cannot be removed.</p>
+								<p>E.g. <code>a\b.</code> but not <code>a*([](\b){0})</code> because the <code>\b</code> cannot be reached.</p>
+							</li>
+						</ul>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;parse&quot;</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="maximumnodes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> maximum<wbr>Nodes</h3>
+					<div class="tsd-signature tsd-kind-icon">maximum<wbr>Nodes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The maximum number of nodes the parser is allowed to create.</p>
+						</div>
+						<p>If the regexes requires more nodes, a <a href="../classes/toomanynodeserror.html">TooManyNodesError</a> will be thrown.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>100000</p>
+							</dd>
+						</dl>
 					</div>
 				</section>
 			</section>
@@ -208,6 +256,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#lookarounds" class="tsd-kind-icon">lookarounds</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#maximumnodes" class="tsd-kind-icon">maximum<wbr>Nodes</a>
 							</li>
 						</ul>
 					</li>
