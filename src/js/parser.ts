@@ -26,44 +26,63 @@ import {
 	UTF16_MAXIMUM,
 } from "./util";
 import { Literal } from "./literal";
+import { TooManyNodesError } from "../finite-automaton";
+
+const DEFAULT_MAX_NODES = 100_000;
 
 export interface ParseOptions {
 	/**
-	 * How to the parser will handle backreferences.
+	 * How to the parser will handle unresolved backreferences.
 	 *
-	 * `"resolve"`: This is the default option. The parser will replace all non-resolvable backreferences with an empty
-	 * character class. This will cause all paths containing a non-resolvable backreference to be removed from
-	 * constructed FA. Backreferences which can be resolved as one constant word, will be replaced with that word.
+	 * - `"resolve"`
 	 *
-	 * E.g. `(a*)(a|\1)(\1|\2)` will be parsed as `(a*)(a|[])([]|a)` which is equivalent to `a*aa`.
+	 *   The parser will replace all non-resolvable backreferences with an empty character class. This will cause all
+	 *   paths containing a non-resolvable backreference to be (effectively) removed. Backreferences which can be
+	 *   resolved as one constant word, will be replaced with that word.
 	 *
-	 * `"disable"`: The parser will replace all backreferences with an empty character class. This will cause all
-	 * path containing a backreference to be removed from constructed FA.
+	 *   E.g. `(a*)(a|\1)(\1|\2)` will be parsed as `(a*)(a|[])([]|a)` which is equivalent to `a*aa`.
 	 *
-	 * E.g. `(a*)(\1|b)` will be parsed as `(a*)([]|b)` which is equivalent to `a*b`.
+	 * - `"disable"`
 	 *
-	 * `"throw"`: The parser will throw an error when encountering an unresolvable backreference. Unresolvable
-	 * backreferences are ones which references a capturing group which can match more than a small finite number of
-	 * words.
+	 *   The parser will replace all backreferences with an empty character class. This will cause all paths containing
+	 *   a backreference to be (effectively) removed.
 	 *
-	 * E.g. `(a*)b\1` will throw but `(a*)[^\s\S]\1` will not because the backreference will be removed anyway because
-	 * of the empty character class.
+	 *   E.g. `(a*)(\1|b)` will be parsed as `(a*)([]|b)` which is equivalent to `a*b`.
+	 *
+	 * - `"throw"`
+	 *
+	 *   The parser will throw an error when encountering a backreference that cannot be removed.
+	 *
+	 *   E.g. `(a*)b\1` will throw but `(a*)[^\s\S]\1` will not because the backreference will be removed anyway because
+	 *   of the empty character class.
+	 *
+	 * @default "resolve"
 	 */
 	backreferences?: "resolve" | "disable" | "throw";
+
 	/**
 	 * How the parser will handle lookarounds.
 	 *
-	 * `"parse"`: This is the default option. The parser will literally translate every lookaround to a RE AST
-	 * representation.
+	 * - `"parse"`
 	 *
-	 * `"disable"`: The parser will disable all lookarounds with an empty character class. This will cause all paths
-	 * containing a lookaround to be removed from constructed FA.
+	 *   The parser will translate every lookaround literally to an equivalent RE AST representation. Builtin assertions
+	 *   (e.g. `\b`, `$`) will be transformed into equivalent lookarounds.
 	 *
-	 * `"throw"`: The parser will throw an error when encountering a lookaround.
+	 * - `"disable"`
 	 *
-	 * E.g. `a\b.` but not `a*([](\b){0})` because the `\b` cannot be reached.
+	 *   The parser will disable all lookarounds by replacing them with an empty character class. This will cause all
+	 *   paths containing a lookaround to be (effectively) removed.
+	 *
+	 * - `"throw"`
+	 *
+	 *   The parser will throw an error when encountering a lookaround that cannot be removed.
+	 *
+	 *   E.g. `a\b.` but not `a*([](\b){0})` because the `\b` cannot be reached.
+	 *
+	 * @default "parse"
 	 */
 	lookarounds?: "parse" | "disable" | "throw";
+
 	/**
 	 * By default, the parser will try to optimize the generated RE as much as possible.
 	 *
@@ -75,8 +94,19 @@ export interface ParseOptions {
 	 * - Removing backreferences that always resolve to the empty string.
 	 *
 	 * These optimization might prevent that certain backreferences or lookarounds from throwing an error.
+	 *
+	 * @default false
 	 */
 	disableOptimizations?: boolean;
+
+	/**
+	 * The maximum number of nodes the parser is allowed to create.
+	 *
+	 * If the regexes requires more nodes, a {@link TooManyNodesError} will be thrown.
+	 *
+	 * @default 100000
+	 */
+	maximumNodes?: number;
 }
 
 export interface RegexppAst {
@@ -91,8 +121,13 @@ export interface ParseResult {
 	maxCharacter: Char;
 }
 
-interface ParserContext extends ParseOptions {
+interface ParserContext {
+	readonly backreferences: NonNullable<ParseOptions["backreferences"]>;
+	readonly lookarounds: NonNullable<ParseOptions["lookarounds"]>;
+	readonly disableOptimizations: NonNullable<ParseOptions["disableOptimizations"]>;
+	readonly maxCharacter: Char;
 	readonly flags: AST.Flags;
+	readonly nc: NodeCreator;
 }
 
 export class Parser {
@@ -142,10 +177,19 @@ export class Parser {
 			type: "Expression",
 			parent: null,
 			alternatives: [],
-			source: getSource(element),
+			source: copySource(element),
 		};
 
-		const context: ParserContext = { ...options, flags: this.ast.flags };
+		const maxCharacter: Char = this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+
+		const context: ParserContext = {
+			backreferences: options?.backreferences ?? "resolve",
+			lookarounds: options?.lookarounds ?? "parse",
+			disableOptimizations: options?.disableOptimizations ?? false,
+			flags: this.ast.flags,
+			maxCharacter,
+			nc: new NodeCreator(options?.maximumNodes ?? DEFAULT_MAX_NODES),
+		};
 
 		if (element.type === "Alternative") {
 			this._addAlternatives([element], expression, context);
@@ -153,22 +197,13 @@ export class Parser {
 			this._addAlternatives(element.alternatives, expression, context);
 		}
 
-		return {
-			expression,
-			maxCharacter: this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM,
-		};
+		return { expression, maxCharacter };
 	}
 
 	private _addAlternatives(alternatives: readonly AST.Alternative[], parent: Parent, context: ParserContext): void {
 		for (const alt of alternatives) {
-			const elements: Element[] = [];
-			const concat: Concatenation = {
-				type: "Concatenation",
-				parent,
-				elements,
-				source: getSource(alt),
-			};
-			parent.alternatives.push(concat);
+			const concat = context.nc.addConcat(parent, alt);
+			const { elements } = concat;
 
 			if (context.disableOptimizations) {
 				for (const e of alt.elements) {
@@ -212,15 +247,7 @@ export class Parser {
 
 		// we might end up with zero alternatives which isn't valid.
 		if (parent.alternatives.length === 0) {
-			const elements: Element[] = [];
-			const concat: Concatenation = {
-				type: "Concatenation",
-				parent,
-				elements,
-				source: getSource(parent.source!),
-			};
-			parent.alternatives.push(concat);
-
+			const concat = context.nc.addConcat(parent, parent.source!);
 			this._addEmptyCharacterClass(concat.source!, concat, context);
 		}
 	}
@@ -266,15 +293,12 @@ export class Parser {
 					}
 				}
 
-				const assertion: Assertion = {
-					type: "Assertion",
-					kind: element.kind === "lookahead" ? "ahead" : "behind",
+				const assertion = context.nc.addAssertion(
 					parent,
-					negate: element.negate,
-					alternatives: [],
-					source: getSource(element),
-				};
-				parent.elements.push(assertion);
+					element,
+					element.kind === "lookahead" ? "ahead" : "behind",
+					element.negate
+				);
 
 				try {
 					this._addAlternatives(element.alternatives, assertion, context);
@@ -352,7 +376,7 @@ export class Parser {
 				// "parse" is the default
 
 				const assertion = createAssertion(element, context.flags);
-				setSource(assertion, getSource(element));
+				setSource(assertion, copySource(element));
 				setParent<Element>(assertion, parent);
 				parent.elements.push(assertion);
 				break;
@@ -390,15 +414,12 @@ export class Parser {
 		if (result !== null) {
 			// add all characters of the constant word
 
-			const maxCharacter = context.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 			for (const ch of result) {
-				const char: CharacterClass = {
-					type: "CharacterClass",
+				context.nc.addCharClass(
 					parent,
-					characters: CharSet.empty(maxCharacter).union([{ min: ch, max: ch }]),
-					source: getSource(element),
-				};
-				parent.elements.push(char);
+					element,
+					CharSet.empty(context.maxCharacter).union([{ min: ch, max: ch }])
+				);
 			}
 		} else {
 			// could not resolve
@@ -461,34 +482,22 @@ export class Parser {
 			this._charCache.set(cacheKey, characters);
 		}
 
-		const char: CharacterClass = {
-			type: "CharacterClass",
-			parent,
-			characters,
-			source: getSource(element),
-		};
-		parent.elements.push(char);
+		context.nc.addCharClass(parent, element, characters);
 	}
 
 	private _addGroup(element: AST.Group | AST.CapturingGroup, parent: Concatenation, context: ParserContext): void {
-		const alteration: Alternation = {
-			type: "Alternation",
-			parent,
-			alternatives: [],
-			source: getSource(element),
-		};
-		parent.elements.push(alteration);
-		this._addAlternatives(element.alternatives, alteration, context);
+		const alternation = context.nc.addAlt(parent, element);
+		this._addAlternatives(element.alternatives, alternation, context);
 
 		if (!context.disableOptimizations) {
-			if (alteration.alternatives.length === 1) {
+			if (alternation.alternatives.length === 1) {
 				// just add the elements of the alternative to the parent.
 				// This will make everything just work without any additional checks
 
 				// remove this alternation
 				parent.elements.pop();
 
-				const concat = alteration.alternatives[0];
+				const concat = alternation.alternatives[0];
 				for (const e of concat.elements) {
 					// set new parent
 					e.parent = parent;
@@ -512,29 +521,14 @@ export class Parser {
 			}
 		}
 
-		const quant: Quantifier = {
-			type: "Quantifier",
-			parent,
-			min,
-			max,
-			alternatives: [],
-			source: getSource(element),
-		};
-		parent.elements.push(quant);
+		const quant = context.nc.addQuant(parent, element, min, max);
 
 		const qElement = element.element;
 
 		if ((!context.disableOptimizations && qElement.type === "CapturingGroup") || qElement.type === "Group") {
 			this._addAlternatives(qElement.alternatives, quant, context);
 		} else {
-			const concat: Concatenation = {
-				type: "Concatenation",
-				parent: quant,
-				elements: [],
-				source: getSource(qElement),
-			};
-			quant.alternatives.push(concat);
-
+			const concat = context.nc.addConcat(quant, qElement);
 			this._addElement(qElement, concat, context);
 		}
 
@@ -562,13 +556,7 @@ export class Parser {
 	}
 
 	private _addEmptyCharacterClass(node: SourceLocation, parent: Concatenation, context: ParserContext): void {
-		const char: CharacterClass = {
-			type: "CharacterClass",
-			parent,
-			characters: CharSet.empty(context.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM),
-			source: getSource(node),
-		};
-		parent.elements.push(char);
+		context.nc.addCharClass(parent, node, CharSet.empty(context.maxCharacter));
 	}
 
 	private _resolveBackreference(element: AST.Backreference, context: ParserContext): ReadonlyWord | null {
@@ -653,7 +641,92 @@ export class Parser {
 	}
 }
 
-function getSource(node: SourceLocation): SourceLocation {
+class NodeCreator {
+	private _nodeCounter = 0;
+	private readonly _nodeLimit: number;
+
+	constructor(nodeLimit: number) {
+		this._nodeLimit = nodeLimit;
+	}
+
+	private _checkLimit(): void {
+		if (++this._nodeCounter > this._nodeLimit) {
+			throw new TooManyNodesError();
+		}
+	}
+
+	addAlt(parent: Concatenation, source: Readonly<SourceLocation>): Alternation {
+		this._checkLimit();
+
+		const node: Alternation = {
+			type: "Alternation",
+			parent,
+			alternatives: [],
+			source: copySource(source),
+		};
+		parent.elements.push(node);
+		return node;
+	}
+	addAssertion(
+		parent: Concatenation,
+		source: Readonly<SourceLocation>,
+		kind: Assertion["kind"],
+		negate: boolean
+	): Assertion {
+		this._checkLimit();
+
+		const node: Assertion = {
+			type: "Assertion",
+			parent,
+			alternatives: [],
+			kind,
+			negate,
+			source: copySource(source),
+		};
+		parent.elements.push(node);
+		return node;
+	}
+	addCharClass(parent: Concatenation, source: Readonly<SourceLocation>, characters: CharSet): CharacterClass {
+		this._checkLimit();
+
+		const node: CharacterClass = {
+			type: "CharacterClass",
+			parent,
+			characters,
+			source: copySource(source),
+		};
+		parent.elements.push(node);
+		return node;
+	}
+	addConcat(parent: Parent, source: Readonly<SourceLocation>): Concatenation {
+		this._checkLimit();
+
+		const node: Concatenation = {
+			type: "Concatenation",
+			parent,
+			elements: [],
+			source: copySource(source),
+		};
+		parent.alternatives.push(node);
+		return node;
+	}
+	addQuant(parent: Concatenation, source: Readonly<SourceLocation>, min: number, max: number): Quantifier {
+		this._checkLimit();
+
+		const node: Quantifier = {
+			type: "Quantifier",
+			parent,
+			alternatives: [],
+			min,
+			max,
+			source: copySource(source),
+		};
+		parent.elements.push(node);
+		return node;
+	}
+}
+
+function copySource(node: Readonly<SourceLocation>): SourceLocation {
 	return {
 		start: node.start,
 		end: node.end,
