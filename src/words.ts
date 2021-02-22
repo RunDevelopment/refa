@@ -74,7 +74,7 @@ export function fromStringToUnicode(string: string): Word {
  *
  * @param wordSet
  */
-export function wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<Word> {
+export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
 	return wordSetToWordsImpl(wordSet);
 }
 

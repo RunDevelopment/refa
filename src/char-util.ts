@@ -1,7 +1,7 @@
 import { Char, Word } from "./core-types";
 import { CharRange, CharSet } from "./char-set";
 import { ReadonlyCharMap } from "./char-map";
-import { iterToSet } from "./util";
+import { concatSequences, iterToSet } from "./util";
 
 export function isChar(value: unknown): value is Char {
 	return typeof value === "number";
@@ -211,61 +211,18 @@ export function rangesFromString(string: string): CharRange[] {
  *
  * @param wordSet
  */
-export function* wordSetToWords(wordSet: readonly CharSet[]): IterableIterator<Word> {
-	if (wordSet.length === 0) {
-		yield [];
-	} else {
-		const charsArray: number[][] = [];
-		for (const set of wordSet) {
-			const chars: number[] = [];
-			for (const { min, max } of set.ranges) {
-				for (let i = min; i <= max; i++) {
-					chars.push(i);
-				}
-			}
-			charsArray.push(chars);
+export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
+	return concatSequences(wordSet.map(charSetToChars));
+}
+function* charSetToChars(charSet: CharSet): Iterable<Char> {
+	for (const { min, max } of charSet.ranges) {
+		for (let i = min; i <= max; i++) {
+			yield i;
 		}
-		yield* nestedIteration(charsArray);
 	}
 }
-function* nestedIteration<T>(arrays: T[][]): IterableIterator<T[]> {
-	const indexes: number[] = [];
 
-	for (let i = 0; i < arrays.length; i++) {
-		const array = arrays[i];
-		if (array.length === 0) {
-			return;
-		}
-		indexes[i] = 0;
-	}
-
-	function hasNext(): boolean {
-		let i = arrays.length - 1;
-		while (true) {
-			if (i < 0) {
-				return false;
-			}
-			const index = ++indexes[i];
-			if (index >= arrays[i].length) {
-				indexes[i] = 0;
-				i--;
-			} else {
-				break;
-			}
-		}
-		return true;
-	}
-
-	do {
-		const res: T[] = [];
-		for (let i = 0; i < indexes.length; i++) {
-			res[i] = arrays[i][indexes[i]];
-		}
-		yield res;
-	} while (hasNext());
-}
-
-export function* wordSetsToWords(wordSets: Iterable<CharSet[]>): IterableIterator<Word> {
+export function* wordSetsToWords(wordSets: Iterable<readonly CharSet[]>): Iterable<Word> {
 	for (const wordSet of wordSets) {
 		yield* wordSetToWords(wordSet);
 	}

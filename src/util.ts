@@ -257,3 +257,104 @@ export function assertNever(value: never, message?: string): never {
 	(error as any).data = value;
 	throw error;
 }
+
+export type UnionIterable<T> = Iterable<T> & { __unionIterable?: never };
+export type ConcatIterable<T> = Iterable<T> & { __concatIterable?: never };
+
+export function* unionSequences<T>(sequencesSet: UnionIterable<UnionIterable<T>>): UnionIterable<T> {
+	for (const sequences of sequencesSet) {
+		yield* sequences;
+	}
+}
+export function* flatConcatSequences<T>(
+	sequencesList: ConcatIterable<UnionIterable<readonly T[]>>
+): UnionIterable<T[]> {
+	for (const combination of iterateCombinations(sequencesList)) {
+		const wordSet: T[] = [];
+		for (const item of combination) {
+			wordSet.push(...item);
+		}
+		yield wordSet;
+	}
+}
+export function* concatSequences<T>(sequencesList: ConcatIterable<UnionIterable<T>>): UnionIterable<T[]> {
+	for (const combination of iterateCombinations(sequencesList)) {
+		const wordSet: T[] = [];
+		for (const item of combination) {
+			wordSet.push(item);
+		}
+		yield wordSet;
+	}
+}
+function lazyStableIterable<T>(iter: Iterable<T>): Iterable<T> {
+	const cache: T[] = [];
+	let cached = false;
+
+	return {
+		[Symbol.iterator](): Iterator<T> {
+			if (cached) {
+				return cache[Symbol.iterator]();
+			} else {
+				return (function* () {
+					for (const item of iter) {
+						cache.push(item);
+						yield item;
+					}
+					cached = true;
+				})();
+			}
+		},
+	};
+}
+/**
+ * This function only yields one array. You are not allowed to modify the yielded array and you have to make a copy of
+ * it before this iterator yields the next value.
+ *
+ * @param sequences
+ */
+function* iterateCombinations<T>(sequences: ConcatIterable<Iterable<T>>): Iterable<ConcatIterable<T>> {
+	const iterables = [...sequences].map(lazyStableIterable);
+	const iterators = iterables.map(iter => iter[Symbol.iterator]());
+	const values: T[] = [];
+
+	for (const iter of iterators) {
+		const result = iter.next();
+		if (result.done) {
+			// one of the iterators is empty
+			return;
+		}
+		values.push(result.value);
+	}
+
+	yield values;
+
+	if (iterators.length === 0) {
+		return;
+	}
+
+	while (true) {
+		for (let i = iterators.length - 1; i >= 0; i--) {
+			const result = iterators[i].next();
+			if (result.done) {
+				if (i === 0) {
+					// finished iterating all combinations
+					return;
+				} else {
+					// restart
+					iterators[i] = iterables[i][Symbol.iterator]();
+					const restartResult = iterators[i].next();
+					if (restartResult.done) {
+						throw new Error();
+					} else {
+						values[i] = restartResult.value;
+					}
+				}
+			} else {
+				values[i] = result.value;
+				break;
+			}
+		}
+
+		yield values;
+	}
+}

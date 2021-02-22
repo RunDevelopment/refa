@@ -67,7 +67,11 @@ function toPatternElement(element: NoParent<Element>): string {
 	}
 }
 function toPatternAlternatives(expressions: readonly NoParent<Concatenation>[]): string {
-	return expressions.map(toPatternConcatenation).join("|");
+	if (expressions.length === 0) {
+		return "[]";
+	} else {
+		return expressions.map(toPatternConcatenation).join("|");
+	}
 }
 
 export function toPatternString(node: NoParent<Node>): string {
