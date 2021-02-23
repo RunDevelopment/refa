@@ -33,10 +33,12 @@ export interface ToLiteralOptions {
 	flags?: Flags;
 
 	/**
-	 * This will use cause the function to convert `CharSet`s as fast as possible.
+	 * This will force the function to print characters as fast as possible.
 	 *
-	 * Literal will usually be created about 10x faster if this option is enabled but the result is usually not humanly
-	 * readable.
+	 * Literals created with this option will usually be created about 10x faster but the result will usually be very
+	 * hard to read. The is option is intended to provide performance benefits when readability is not a concern.
+	 *
+	 * @default false
 	 */
 	fastCharacters?: boolean;
 }
