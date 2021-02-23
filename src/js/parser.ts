@@ -308,7 +308,7 @@ export class Parser {
 				result = this._createElement(currentElement, context);
 			} catch (e) {
 				if (context.disableSimplification) {
-					throw result;
+					throw e;
 				} else {
 					// we catch the error and only rethrow it if the alternative did not get removed
 					// the only errors which can be thrown are not-supported errors, so if the alternative gets
