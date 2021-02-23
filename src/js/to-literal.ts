@@ -635,7 +635,7 @@ function printCharClassContent(set: CharSet, flags: Flags, predefinedCS: Predefi
 			reducedSet = reducedSet.without(predefinedCS.digit);
 		}
 
-		if (set === reducedSet || reducedSet.ranges.length < set.ranges.length * 2 + 2) {
+		if (set === reducedSet || reducedSet.ranges.length > set.ranges.length * 2 + 2) {
 			// couldn't be reduced or the reduced set is significantly more complex than the original set.
 			return simpleCreator(set);
 		} else {

@@ -91,6 +91,28 @@ describe("JS.toLiteral", function () {
 				// eslint-disable-next-line no-control-regex
 				expected: /[\0-\x1f\x7f-\x9f]/iu,
 			},
+
+			{
+				literal: /[\s'">=]/,
+				expected: /[\s"'=>]/i,
+			},
+			{
+				literal: /[^\s'">=]/,
+				expected: /[^\s"'=>]/i,
+			},
+			{
+				literal: /[\s'">=]/u,
+				expected: /[\s"'=>]/iu,
+			},
+			{
+				literal: /[^\s'">=]/u,
+				expected: /[^\s"'=>]/iu,
+			},
+
+			{
+				literal: /[\w-]/,
+				expected: /[-\w]/i,
+			},
 		]);
 	});
 
