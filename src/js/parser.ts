@@ -144,9 +144,14 @@ type EmptySet = typeof EMPTY_SET;
 type EmptyConcat = typeof EMPTY_CONCAT;
 type Empty = EmptyConcat | EmptySet;
 
+/**
+ * Converts JS RegExp to refa's RE AST format.
+ */
 export class Parser {
+	/**
+	 * The literal of the parser instance.
+	 */
 	readonly literal: Literal;
-
 	/**
 	 * The parsed AST of the literal this parser works on.
 	 *
@@ -154,6 +159,11 @@ export class Parser {
 	 * based on that assumption. It is not safe to change the AST in any way.
 	 */
 	readonly ast: RegexppAst;
+	/**
+	 * The maximum character of all character sets in the parsed AST.
+	 *
+	 * This value will also be returned as part of the {@link ParseResult}.
+	 */
 	readonly maxCharacter: Char;
 
 	private readonly _charCache = new Map<string, CharSet>();
@@ -186,13 +196,29 @@ export class Parser {
 		const ast = { pattern, flags };
 		return new Parser(ast);
 	}
+	/**
+	 * Creates a new parser from the given [regexpp](https://github.com/mysticatea/regexpp) AST.
+	 *
+	 * When the JS RegExp has already been parsed using regexpp, this method can be used to avoid parsing the regex
+	 * again.
+	 *
+	 * The given AST is not allowed to be changed during the lifetime of the returned parser.
+	 *
+	 * @param ast
+	 */
 	static fromAst(ast: RegexppAst): Parser {
 		return new Parser(ast);
 	}
 
+	/**
+	 * Parsed the entire literal.
+	 */
 	parse(options?: Readonly<ParseOptions>): ParseResult {
 		return this.parseElement(this.ast.pattern, options);
 	}
+	/**
+	 * Parses a specific element of the literal.
+	 */
 	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const context: ParserContext = {
 			backreferenceMaximumWords: Math.round(options?.backreferenceMaximumWords ?? DEFAULT_BACK_REF_MAX_WORDS),
