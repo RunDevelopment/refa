@@ -289,6 +289,10 @@ describe("JS.Parser", function () {
 				expected: /"(?:(?!")[^\n\r\\]|\\.)*"/i,
 			},
 			{
+				literal: /(''''').+?(?=\1)/,
+				expected: /'''''.+(?=''''')/i,
+			},
+			{
 				literal: /(?<=\1(a))/,
 				expected: "(?<=[61][61])",
 			},
@@ -338,6 +342,25 @@ describe("JS.Parser", function () {
 			},
 
 			{
+				literal: /(?=(a)\1)/i,
+				expected: /(?=AA|aa)/,
+			},
+			{
+				literal: /(?=(AB|CD)bcd\1)/,
+				expected: /(?=ABbcdAB|CDbcdCD)/,
+			},
+			{
+				literal: /(?<=\1(a))/i,
+				expected: /(?<=AA|aa)/,
+			},
+			{
+				literal: /(?<=\1bcd(AB|CD))/,
+				expected: /(?<=ABbcdAB|CDbcdCD)/,
+			},
+
+			// real world examples
+
+			{
 				literal: /("|')(?:(?!\1)[^\\\r\n]|\\.)*\1/,
 				expected:
 					"[22](?:(?![22])[0..9, b..c, e..5b, 5d..ffff]|[5c][0..9, b..c, e..2027, 202a..ffff])*[22]|[27](?:(?![27])[0..9, b..c, e..5b, 5d..ffff]|[5c][0..9, b..c, e..2027, 202a..ffff])*[27]",
@@ -363,22 +386,38 @@ describe("JS.Parser", function () {
 				literal: /<(a|p|div)>[^]*?<\/\1>/i,
 				expected: /<(?:A>[^]*<\/A|a>[^]*<\/a|P>[^]*<\/P|p>[^]*<\/p|DIV>[^]*<\/DIV|DIv>[^]*<\/DIv|DiV>[^]*<\/DiV|Div>[^]*<\/Div|dIV>[^]*<\/dIV|dIv>[^]*<\/dIv|diV>[^]*<\/diV|div>[^]*<\/div)>/,
 			},
+			{
+				literal: /#[\da-z]+|#(?:-|([+/\\*~<>=@%|&?!])\1?)|#(?=\()/i,
+				expected: /#[0-9A-Z]+|#(?:-|!!?|%%?|&&?|\*\*?|\+\+?|\/\/?|<<?|==?|>>?|\?\??|@@?|\\\\?|\|\|?|~~?)|#(?=\()/i,
+			},
+			{
+				literal: /(?:[rub]|rb|br)?("""|''')[\s\S]*?\1/i,
+				expected: /(?:[BRU]|RB|BR)?(?:"""[^]*"""|'''[^]*''')/i,
+			},
+			//{
+			//	literal: /url\((["']?).*?\1\)/i,
+			//	expected: /#/i,
+			//},
+			{
+				literal: /@(["'`])(?:\\[\s\S]|(?!\1)[^\\])+\1/,
+				expected: /@(?:"(?:\\[^]|(?!")[^\\])+"|'(?:\\[^]|(?!')[^\\])+'|`(?:\\[^]|(?!`)[^\\])+`)/i,
+			},
+			{
+				literal: /\b(?:m|qr)\s+([a-zA-Z0-9])(?:(?!\1)[^\\]|\\[\s\S])*\1[msixpodualngc]*/,
+				expected: /\b(?:m|qr)\s+(?:0(?:(?!0)[^\\]|\\[^])*0|1(?:(?!1)[^\\]|\\[^])*1|2(?:(?!2)[^\\]|\\[^])*2|3(?:(?!3)[^\\]|\\[^])*3|4(?:(?!4)[^\\]|\\[^])*4|5(?:(?!5)[^\\]|\\[^])*5|6(?:(?!6)[^\\]|\\[^])*6|7(?:(?!7)[^\\]|\\[^])*7|8(?:(?!8)[^\\]|\\[^])*8|9(?:(?!9)[^\\]|\\[^])*9|A(?:(?!A)[^\\]|\\[^])*A|B(?:(?!B)[^\\]|\\[^])*B|C(?:(?!C)[^\\]|\\[^])*C|D(?:(?!D)[^\\]|\\[^])*D|E(?:(?!E)[^\\]|\\[^])*E|F(?:(?!F)[^\\]|\\[^])*F|G(?:(?!G)[^\\]|\\[^])*G|H(?:(?!H)[^\\]|\\[^])*H|I(?:(?!I)[^\\]|\\[^])*I|J(?:(?!J)[^\\]|\\[^])*J|K(?:(?!K)[^\\]|\\[^])*K|L(?:(?!L)[^\\]|\\[^])*L|M(?:(?!M)[^\\]|\\[^])*M|N(?:(?!N)[^\\]|\\[^])*N|O(?:(?!O)[^\\]|\\[^])*O|P(?:(?!P)[^\\]|\\[^])*P|Q(?:(?!Q)[^\\]|\\[^])*Q|R(?:(?!R)[^\\]|\\[^])*R|S(?:(?!S)[^\\]|\\[^])*S|T(?:(?!T)[^\\]|\\[^])*T|U(?:(?!U)[^\\]|\\[^])*U|V(?:(?!V)[^\\]|\\[^])*V|W(?:(?!W)[^\\]|\\[^])*W|X(?:(?!X)[^\\]|\\[^])*X|Y(?:(?!Y)[^\\]|\\[^])*Y|Z(?:(?!Z)[^\\]|\\[^])*Z|a(?:(?!a)[^\\]|\\[^])*a|b(?:(?!b)[^\\]|\\[^])*b|c(?:(?!c)[^\\]|\\[^])*c|d(?:(?!d)[^\\]|\\[^])*d|e(?:(?!e)[^\\]|\\[^])*e|f(?:(?!f)[^\\]|\\[^])*f|g(?:(?!g)[^\\]|\\[^])*g|h(?:(?!h)[^\\]|\\[^])*h|i(?:(?!i)[^\\]|\\[^])*i|j(?:(?!j)[^\\]|\\[^])*j|k(?:(?!k)[^\\]|\\[^])*k|l(?:(?!l)[^\\]|\\[^])*l|m(?:(?!m)[^\\]|\\[^])*m|n(?:(?!n)[^\\]|\\[^])*n|o(?:(?!o)[^\\]|\\[^])*o|p(?:(?!p)[^\\]|\\[^])*p|q(?:(?!q)[^\\]|\\[^])*q|r(?:(?!r)[^\\]|\\[^])*r|s(?:(?!s)[^\\]|\\[^])*s|t(?:(?!t)[^\\]|\\[^])*t|u(?:(?!u)[^\\]|\\[^])*u|v(?:(?!v)[^\\]|\\[^])*v|w(?:(?!w)[^\\]|\\[^])*w|x(?:(?!x)[^\\]|\\[^])*x|y(?:(?!y)[^\\]|\\[^])*y|z(?:(?!z)[^\\]|\\[^])*z)[acdgil-psux]*/,
+			},
 
 			{
-				literal: /(?=(a)\1)/i,
-				expected: /(?=AA|aa)/,
+				// `(nowiki|pre|source)` will be resolved to 136 words.
+				// Since only 135 words are allowed, this will fail.
+				literal: /<(nowiki|pre|source)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
+				options: { backreferenceMaximumWords: 135 },
+				expected: Error,
 			},
 			{
-				literal: /(?=(AB|CD)bcd\1)/,
-				expected: /(?=ABbcdAB|CDbcdCD)/,
-			},
-			{
-				literal: /(?<=\1(a))/i,
-				expected: /(?<=AA|aa)/,
-			},
-			{
-				literal: /(?<=\1bcd(AB|CD))/,
-				expected: /(?<=ABbcdAB|CDbcdCD)/,
+				literal: /<(nowiki|pre|source)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
+				options: { backreferenceMaximumWords: 136 },
+				expected: /<(?:NOWIKI\b[^]*>[^]*<\/NOWIKI|NOWIKi\b[^]*>[^]*<\/NOWIKi|NOWIkI\b[^]*>[^]*<\/NOWIkI|NOWIki\b[^]*>[^]*<\/NOWIki|NOWiKI\b[^]*>[^]*<\/NOWiKI|NOWiKi\b[^]*>[^]*<\/NOWiKi|NOWikI\b[^]*>[^]*<\/NOWikI|NOWiki\b[^]*>[^]*<\/NOWiki|NOwIKI\b[^]*>[^]*<\/NOwIKI|NOwIKi\b[^]*>[^]*<\/NOwIKi|NOwIkI\b[^]*>[^]*<\/NOwIkI|NOwIki\b[^]*>[^]*<\/NOwIki|NOwiKI\b[^]*>[^]*<\/NOwiKI|NOwiKi\b[^]*>[^]*<\/NOwiKi|NOwikI\b[^]*>[^]*<\/NOwikI|NOwiki\b[^]*>[^]*<\/NOwiki|NoWIKI\b[^]*>[^]*<\/NoWIKI|NoWIKi\b[^]*>[^]*<\/NoWIKi|NoWIkI\b[^]*>[^]*<\/NoWIkI|NoWIki\b[^]*>[^]*<\/NoWIki|NoWiKI\b[^]*>[^]*<\/NoWiKI|NoWiKi\b[^]*>[^]*<\/NoWiKi|NoWikI\b[^]*>[^]*<\/NoWikI|NoWiki\b[^]*>[^]*<\/NoWiki|NowIKI\b[^]*>[^]*<\/NowIKI|NowIKi\b[^]*>[^]*<\/NowIKi|NowIkI\b[^]*>[^]*<\/NowIkI|NowIki\b[^]*>[^]*<\/NowIki|NowiKI\b[^]*>[^]*<\/NowiKI|NowiKi\b[^]*>[^]*<\/NowiKi|NowikI\b[^]*>[^]*<\/NowikI|Nowiki\b[^]*>[^]*<\/Nowiki|nOWIKI\b[^]*>[^]*<\/nOWIKI|nOWIKi\b[^]*>[^]*<\/nOWIKi|nOWIkI\b[^]*>[^]*<\/nOWIkI|nOWIki\b[^]*>[^]*<\/nOWIki|nOWiKI\b[^]*>[^]*<\/nOWiKI|nOWiKi\b[^]*>[^]*<\/nOWiKi|nOWikI\b[^]*>[^]*<\/nOWikI|nOWiki\b[^]*>[^]*<\/nOWiki|nOwIKI\b[^]*>[^]*<\/nOwIKI|nOwIKi\b[^]*>[^]*<\/nOwIKi|nOwIkI\b[^]*>[^]*<\/nOwIkI|nOwIki\b[^]*>[^]*<\/nOwIki|nOwiKI\b[^]*>[^]*<\/nOwiKI|nOwiKi\b[^]*>[^]*<\/nOwiKi|nOwikI\b[^]*>[^]*<\/nOwikI|nOwiki\b[^]*>[^]*<\/nOwiki|noWIKI\b[^]*>[^]*<\/noWIKI|noWIKi\b[^]*>[^]*<\/noWIKi|noWIkI\b[^]*>[^]*<\/noWIkI|noWIki\b[^]*>[^]*<\/noWIki|noWiKI\b[^]*>[^]*<\/noWiKI|noWiKi\b[^]*>[^]*<\/noWiKi|noWikI\b[^]*>[^]*<\/noWikI|noWiki\b[^]*>[^]*<\/noWiki|nowIKI\b[^]*>[^]*<\/nowIKI|nowIKi\b[^]*>[^]*<\/nowIKi|nowIkI\b[^]*>[^]*<\/nowIkI|nowIki\b[^]*>[^]*<\/nowIki|nowiKI\b[^]*>[^]*<\/nowiKI|nowiKi\b[^]*>[^]*<\/nowiKi|nowikI\b[^]*>[^]*<\/nowikI|nowiki\b[^]*>[^]*<\/nowiki|PRE\b[^]*>[^]*<\/PRE|PRe\b[^]*>[^]*<\/PRe|PrE\b[^]*>[^]*<\/PrE|Pre\b[^]*>[^]*<\/Pre|pRE\b[^]*>[^]*<\/pRE|pRe\b[^]*>[^]*<\/pRe|prE\b[^]*>[^]*<\/prE|pre\b[^]*>[^]*<\/pre|SOURCE\b[^]*>[^]*<\/SOURCE|SOURCe\b[^]*>[^]*<\/SOURCe|SOURcE\b[^]*>[^]*<\/SOURcE|SOURce\b[^]*>[^]*<\/SOURce|SOUrCE\b[^]*>[^]*<\/SOUrCE|SOUrCe\b[^]*>[^]*<\/SOUrCe|SOUrcE\b[^]*>[^]*<\/SOUrcE|SOUrce\b[^]*>[^]*<\/SOUrce|SOuRCE\b[^]*>[^]*<\/SOuRCE|SOuRCe\b[^]*>[^]*<\/SOuRCe|SOuRcE\b[^]*>[^]*<\/SOuRcE|SOuRce\b[^]*>[^]*<\/SOuRce|SOurCE\b[^]*>[^]*<\/SOurCE|SOurCe\b[^]*>[^]*<\/SOurCe|SOurcE\b[^]*>[^]*<\/SOurcE|SOurce\b[^]*>[^]*<\/SOurce|SoURCE\b[^]*>[^]*<\/SoURCE|SoURCe\b[^]*>[^]*<\/SoURCe|SoURcE\b[^]*>[^]*<\/SoURcE|SoURce\b[^]*>[^]*<\/SoURce|SoUrCE\b[^]*>[^]*<\/SoUrCE|SoUrCe\b[^]*>[^]*<\/SoUrCe|SoUrcE\b[^]*>[^]*<\/SoUrcE|SoUrce\b[^]*>[^]*<\/SoUrce|SouRCE\b[^]*>[^]*<\/SouRCE|SouRCe\b[^]*>[^]*<\/SouRCe|SouRcE\b[^]*>[^]*<\/SouRcE|SouRce\b[^]*>[^]*<\/SouRce|SourCE\b[^]*>[^]*<\/SourCE|SourCe\b[^]*>[^]*<\/SourCe|SourcE\b[^]*>[^]*<\/SourcE|Source\b[^]*>[^]*<\/Source|sOURCE\b[^]*>[^]*<\/sOURCE|sOURCe\b[^]*>[^]*<\/sOURCe|sOURcE\b[^]*>[^]*<\/sOURcE|sOURce\b[^]*>[^]*<\/sOURce|sOUrCE\b[^]*>[^]*<\/sOUrCE|sOUrCe\b[^]*>[^]*<\/sOUrCe|sOUrcE\b[^]*>[^]*<\/sOUrcE|sOUrce\b[^]*>[^]*<\/sOUrce|sOuRCE\b[^]*>[^]*<\/sOuRCE|sOuRCe\b[^]*>[^]*<\/sOuRCe|sOuRcE\b[^]*>[^]*<\/sOuRcE|sOuRce\b[^]*>[^]*<\/sOuRce|sOurCE\b[^]*>[^]*<\/sOurCE|sOurCe\b[^]*>[^]*<\/sOurCe|sOurcE\b[^]*>[^]*<\/sOurcE|sOurce\b[^]*>[^]*<\/sOurce|soURCE\b[^]*>[^]*<\/soURCE|soURCe\b[^]*>[^]*<\/soURCe|soURcE\b[^]*>[^]*<\/soURcE|soURce\b[^]*>[^]*<\/soURce|soUrCE\b[^]*>[^]*<\/soUrCE|soUrCe\b[^]*>[^]*<\/soUrCe|soUrcE\b[^]*>[^]*<\/soUrcE|soUrce\b[^]*>[^]*<\/soUrce|souRCE\b[^]*>[^]*<\/souRCE|souRCe\b[^]*>[^]*<\/souRCe|souRcE\b[^]*>[^]*<\/souRcE|souRce\b[^]*>[^]*<\/souRce|sourCE\b[^]*>[^]*<\/sourCE|sourCe\b[^]*>[^]*<\/sourCe|sourcE\b[^]*>[^]*<\/sourcE|source\b[^]*>[^]*<\/source)>/,
 			},
 		]);
 	});

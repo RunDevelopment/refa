@@ -22,7 +22,7 @@ import { createCharSet } from "./create-char-set";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
 import { Literal } from "./literal";
 import { TooManyNodesError } from "../finite-automaton";
-import { isEmpty, isPotentiallyEmpty, MatchingDirection } from "../ast-analysis";
+import { isPotentiallyEmpty, MatchingDirection } from "../ast-analysis";
 import {
 	backreferenceAlwaysAfterGroup,
 	hasSomeAncestor,
@@ -142,6 +142,7 @@ const EMPTY_SET = 1;
 const EMPTY_CONCAT = 2;
 type EmptySet = typeof EMPTY_SET;
 type EmptyConcat = typeof EMPTY_CONCAT;
+type Empty = EmptyConcat | EmptySet;
 
 export class Parser {
 	readonly literal: Literal;
@@ -236,9 +237,7 @@ export class Parser {
 				if (context.disableSimplification) {
 					parent.alternatives.push(concat);
 				} else {
-					if (isDead(concat)) {
-						// do nothing
-					} else if (concat.elements.length === 1 && concat.elements[0].type === "Alternation") {
+					if (concat.elements.length === 1 && concat.elements[0].type === "Alternation") {
 						// add all alternatives
 						parent.alternatives.push(...concat.elements[0].alternatives);
 					} else {
@@ -256,9 +255,6 @@ export class Parser {
 		const result = this._createElements(elements, context);
 		if (result === EMPTY_SET) {
 			return EMPTY_SET;
-		}
-		if (result instanceof Error) {
-			throw result;
 		}
 
 		if (context.matchingDir === "rtl") {
@@ -298,131 +294,70 @@ export class Parser {
 	 * The function expects the given elements to be in that order and will returns the parsed elements in that order.
 	 */
 	private _createElements(
-		elements: readonly AST.Element[],
+		inputElements: readonly AST.Element[],
 		context: ParserContext
-	): NoParent<Element>[] | EmptySet | Error {
-		const concat: NoParent<Element>[] = [];
+	): NoParent<Element>[] | EmptySet {
+		const outputElements: NoParent<Element>[] = [];
 		let error: Error | undefined = undefined;
 
-		for (let i = 0; i < elements.length; i++) {
-			const currentElement = elements[i];
-			const result = this._createConcatenationElement(currentElement, context);
+		for (let i = 0; i < inputElements.length; i++) {
+			const currentElement = inputElements[i];
 
-			if (result === EMPTY_CONCAT) {
-				// do nothing
-			} else if (result instanceof Error) {
-				// error
-
+			let result;
+			try {
+				result = this._createElement(currentElement, context);
+			} catch (e) {
 				if (context.disableSimplification) {
-					return result;
+					throw result;
 				} else {
 					// we catch the error and only rethrow it if the alternative did not get removed
 					// the only errors which can be thrown are not-supported errors, so if the alternative gets
 					// removed anyway, we shouldn't throw the error
 					// Note: For multiple errors, only the first one will be re-thrown
-					error ??= result;
+					error ??= e;
+					continue;
 				}
+			}
+
+			if (result === EMPTY_SET) {
+				return EMPTY_SET;
+			} else if (result === EMPTY_CONCAT) {
+				// do nothing
 			} else {
 				// an actual element
 
-				if (!context.disableSimplification && isDead(result)) {
-					return EMPTY_SET;
+				let resolved = false;
+
+				if (currentElement.type === "CapturingGroup" && this._shouldResolveGroup(currentElement, context)) {
+					try {
+						// try to resolve the backreferences of this capturing group
+						const resolveResult = this._variableResolveGroup(
+							currentElement,
+							result,
+							inputElements.slice(i + 1),
+							context
+						);
+						resolved = true;
+
+						outputElements.push(resolveResult.resolved);
+						i += resolveResult.skip;
+					} catch (error) {
+						// could not resolve
+					}
 				}
 
-				// TODO: refactor this hot piece of garbage
-				if (currentElement.type === "CapturingGroup" && this._shouldResolveGroup(currentElement, context)) {
-					// try to resolve all backreferences of this capturing group
-					try {
-						const words = atMostK(iterateWords(result), context.backreferenceMaximumWords);
-						if (words.length === 0) {
-							// ignore
-
-							concat.push(result);
-						} else if (words.length === 1) {
-							// constant resolved
-							// We just have to add the word and adjust the context
-
-							const word = words[0];
-							const wordElement = this._wordToElement(currentElement, word, context);
-							if (wordElement !== EMPTY_CONCAT) {
-								concat.push(wordElement);
-							}
-							context = withResolved(context, currentElement, word);
-						} else {
-							// variable resolved
-
-							const affectedSlice = elements.slice(i + 1);
-							this._trimAffectedSlice(currentElement, affectedSlice);
-
-							const alternatives: NoParent<Concatenation>[] = [];
-							for (const word of words) {
-								const concatElements: NoParent<Element>[] = [];
-								const wordElement = this._wordToElement(currentElement, word, context);
-								if (wordElement !== EMPTY_CONCAT) {
-									concatElements.push(wordElement);
-								}
-
-								const result = this._createElements(
-									affectedSlice,
-									withResolved(context, currentElement, word)
-								);
-
-								if (result === EMPTY_SET) {
-									// do nothing
-								} else if (result instanceof Error) {
-									if (context.disableSimplification) {
-										return result;
-									} else {
-										error ??= result;
-									}
-								} else {
-									concatElements.push(...result);
-								}
-
-								if (context.matchingDir === "rtl") {
-									concatElements.reverse();
-								}
-
-								const wordConcat = context.nc.newConcat(currentElement);
-								this._setConcatenationElements(wordConcat, concatElements, context);
-								alternatives.push(wordConcat);
-							}
-
-							const alternation = context.nc.newAlt(currentElement);
-							alternation.alternatives = alternatives;
-							concat.push(alternation);
-
-							i += affectedSlice.length;
-						}
-					} catch (error) {
-						// too many words -> cannot resolve
-						concat.push(result);
-					}
-				} else {
-					concat.push(result);
+				if (!resolved) {
+					outputElements.push(result);
 				}
 			}
 		}
 
 		if (error !== undefined) {
 			// rethrow the error
-			return error;
-		}
-
-		return concat;
-	}
-	private _createConcatenationElement(
-		element: AST.Element,
-		context: ParserContext
-	): NoParent<Element> | EmptyConcat | Error {
-		try {
-			return this._createElement(element, context);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				return error;
-			}
 			throw error;
 		}
+
+		return outputElements;
 	}
 	private _shouldResolveGroup(group: AST.CapturingGroup, context: ParserContext): boolean {
 		// there has to be at least one resolvable backreference that is in the same alternative as the group
@@ -430,6 +365,55 @@ export class Parser {
 			context.backreferenceMaximumWords > 0 &&
 			this._getResolvableGroupReferencesUnder(group, group.parent).length > 0
 		);
+	}
+	private _variableResolveGroup(
+		group: AST.CapturingGroup,
+		groupElement: NoParent<Element>,
+		afterGroup: readonly AST.Element[],
+		context: ParserContext
+	): { resolved: NoParent<Element>; skip: number } {
+		// try to resolve all backreferences of this capturing group
+
+		const words = atMostK(iterateWords(groupElement), context.backreferenceMaximumWords);
+		if (words.length === 0) {
+			throw new Error("Cannot resolve dead capturing group");
+		}
+
+		// variable resolved
+
+		const affectedSlice = [...afterGroup];
+		this._trimAffectedSlice(group, affectedSlice);
+
+		const alternatives: NoParent<Concatenation>[] = [];
+		for (const word of words) {
+			const result = this._createElements(affectedSlice, withResolved(context, group, word));
+
+			if (result === EMPTY_SET) {
+				// skip this alternative
+				continue;
+			}
+
+			const concatElements: NoParent<Element>[] = [];
+			const wordElement = this._wordToElement(group, word, context);
+			if (wordElement !== EMPTY_CONCAT) {
+				concatElements.push(wordElement);
+			}
+
+			concatElements.push(...result);
+
+			if (context.matchingDir === "rtl") {
+				concatElements.reverse();
+			}
+
+			const wordConcat = context.nc.newConcat(group);
+			this._setConcatenationElements(wordConcat, concatElements, context);
+			alternatives.push(wordConcat);
+		}
+
+		const alternation = context.nc.newAlt(group);
+		alternation.alternatives = alternatives;
+
+		return { resolved: alternation, skip: affectedSlice.length };
 	}
 	private _trimAffectedSlice(group: AST.CapturingGroup, slice: AST.Element[]): void {
 		const length = this._affectedSliceLength(group, slice);
@@ -472,7 +456,7 @@ export class Parser {
 		return Math.max(...rights) + 1;
 	}
 
-	private _createElement(element: AST.Element, context: ParserContext): NoParent<Element> | EmptyConcat {
+	private _createElement(element: AST.Element, context: ParserContext): NoParent<Element> | Empty {
 		switch (element.type) {
 			case "Assertion":
 				return this._createAssertion(element, context);
@@ -497,12 +481,16 @@ export class Parser {
 		}
 	}
 
-	private _createAssertion(element: AST.Assertion, context: ParserContext): NoParent<Element> | EmptyConcat {
+	private _createAssertion(element: AST.Assertion, context: ParserContext): NoParent<Element> | Empty {
 		if (context.lookarounds === "throw") {
 			throw new Error("Assertions are not supported.");
 		}
 		if (context.lookarounds === "disable") {
-			return this._createEmptyCharacterClass(element, context);
+			if (context.disableSimplification) {
+				return this._createEmptyCharacterClass(element, context);
+			} else {
+				return EMPTY_SET;
+			}
 		}
 
 		switch (element.kind) {
@@ -529,16 +517,16 @@ export class Parser {
 						UNKNOWN,
 					}
 					let result = TrivialResult.UNKNOWN;
-					if (assertion.alternatives.every(isDead)) {
+					if (assertion.alternatives.length === 0) {
 						result = assertion.negate ? TrivialResult.ACCEPT : TrivialResult.REJECT;
-					} else if (isEmpty(assertion.alternatives)) {
+					} else if (isPotentiallyEmpty(assertion.alternatives)) {
 						result = assertion.negate ? TrivialResult.REJECT : TrivialResult.ACCEPT;
 					}
 
 					if (result === TrivialResult.ACCEPT) {
 						return EMPTY_CONCAT;
 					} else if (result === TrivialResult.REJECT) {
-						return this._createEmptyCharacterClass(element, context);
+						return EMPTY_SET;
 					}
 				}
 
@@ -562,7 +550,7 @@ export class Parser {
 	private _createCharacterClass(
 		element: AST.Character | AST.CharacterClass | AST.CharacterSet,
 		context: ParserContext
-	): NoParent<CharacterClass> {
+	): NoParent<CharacterClass> | EmptySet {
 		let characters: CharSet;
 
 		let cacheKey: string;
@@ -612,19 +600,26 @@ export class Parser {
 			this._charCache.set(cacheKey, characters);
 		}
 
-		return context.nc.newCharClass(element, characters);
+		return !context.disableSimplification && characters.isEmpty
+			? EMPTY_SET
+			: context.nc.newCharClass(element, characters);
 	}
 
-	private _createGroup(
-		element: AST.Group | AST.CapturingGroup,
-		context: ParserContext
-	): NoParent<Element> | EmptyConcat {
+	private _createGroup(element: AST.Group | AST.CapturingGroup, context: ParserContext): NoParent<Element> | Empty {
 		const alternation = context.nc.newAlt(element);
 		this._addAlternatives(element.alternatives, alternation, context);
+
+		if (!context.disableSimplification) {
+			if (alternation.alternatives.length === 0) {
+				return EMPTY_SET;
+			} else if (alternation.alternatives.length === 1 && alternation.alternatives[0].elements.length === 0) {
+				return EMPTY_CONCAT;
+			}
+		}
 		return alternation;
 	}
 
-	private _createQuantifier(element: AST.Quantifier, context: ParserContext): NoParent<Element> | EmptyConcat {
+	private _createQuantifier(element: AST.Quantifier, context: ParserContext): NoParent<Element> | Empty {
 		const min: number = element.min;
 		const max: number = element.max;
 
@@ -643,24 +638,20 @@ export class Parser {
 		if (qElement.type === "CapturingGroup" || qElement.type === "Group") {
 			this._addAlternatives(qElement.alternatives, quant, context);
 		} else {
-			const concat = context.nc.newConcat(qElement);
-			quant.alternatives.push(concat);
 			const newElement = this._createElement(qElement, context);
-			if (newElement !== EMPTY_CONCAT) {
-				concat.elements.push(newElement);
+			if (newElement !== EMPTY_SET) {
+				const concat = context.nc.newConcat(qElement);
+				quant.alternatives.push(concat);
+				if (newElement !== EMPTY_CONCAT) {
+					concat.elements.push(newElement);
+				}
 			}
 		}
 
 		if (!context.disableSimplification) {
-			if (quant.alternatives.every(isDead)) {
-				if (min === 0) {
-					// empty
-					return EMPTY_CONCAT;
-				} else {
-					return this._createEmptyCharacterClass(element, context);
-				}
-			}
-			if (quant.alternatives.length === 1 && quant.alternatives[0].elements.length === 0) {
+			if (quant.alternatives.length === 0) {
+				return min === 0 ? EMPTY_CONCAT : EMPTY_SET;
+			} else if (quant.alternatives.length === 1 && quant.alternatives[0].elements.length === 0) {
 				return EMPTY_CONCAT;
 			}
 		}
@@ -672,7 +663,7 @@ export class Parser {
 		return context.nc.newCharClass(node, CharSet.empty(this.maxCharacter));
 	}
 
-	private _createBackreference(element: AST.Backreference, context: ParserContext): NoParent<Element> | EmptyConcat {
+	private _createBackreference(element: AST.Backreference, context: ParserContext): NoParent<Element> | Empty {
 		if (context.backreferenceMaximumWords > 0) {
 			// try resolve
 			if (!this._backRefCanReachGroup(element)) {
@@ -698,8 +689,13 @@ export class Parser {
 		if (context.backreferences === "throw") {
 			throw new Error("Backreferences are not supported.");
 		}
+
 		// disable
-		return this._createEmptyCharacterClass(element, context);
+		if (context.disableSimplification) {
+			return this._createEmptyCharacterClass(element, context);
+		} else {
+			return EMPTY_SET;
+		}
 	}
 	private _constantResolveGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
 		const cached = this._constantResolveCache.get(element);
@@ -943,32 +939,6 @@ function getCharacterClassCacheKey(
 		}
 	}
 	return s;
-}
-
-function isDead(node: NoParent<Node>): boolean {
-	switch (node.type) {
-		case "Alternation":
-		case "Expression":
-			return node.alternatives.every(isDead);
-
-		case "Assertion":
-			return node.negate ? isPotentiallyEmpty(node.alternatives) : node.alternatives.every(isDead);
-
-		case "CharacterClass":
-			return node.characters.isEmpty;
-
-		case "Concatenation":
-			// this is an optimization
-			// we will make sure that all dead concatenation have exactly one element, so we can ignore a lot of
-			// non-dead branches without having to look at their contents
-			return node.elements.length === 1 && isDead(node.elements[0]);
-
-		case "Quantifier":
-			return node.min > 0 && node.alternatives.every(isDead);
-
-		default:
-			assertNever(node);
-	}
 }
 
 function removeLeadingLookbehinds(element: NoParent<Expression | Alternation | Quantifier>): void {

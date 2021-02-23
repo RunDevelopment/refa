@@ -20,7 +20,7 @@ const CHECK_RE_LANGUAGE = false;
 
 function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
 	const nfa = NFA.fromRegex(re, { maxCharacter }, { disableLookarounds: true });
-	const dfa = DFA.fromFA(nfa, { maxNodes: 100000 });
+	const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
 	dfa.minimize();
 
 	assert.isTrue(expected.structurallyEqual(dfa));
@@ -35,31 +35,29 @@ describe("Regex stress test", function () {
 			patternPreview = patternPreview.substr(0, 80) + "...";
 		}
 		it(`[${index}]: ${patternPreview}`, function () {
-			const { expression, maxCharacter } = Parser.fromLiteral(literal).parse();
+			const { expression, maxCharacter } = Parser.fromLiteral(literal).parse({ backreferences: "disable" });
 			const nfa = NFA.fromRegex(expression, { maxCharacter }, { disableLookarounds: true });
 			nfa.nodes.count();
 
-			const dfa = DFA.fromFA(nfa);
-			const dfaOriginalCount = dfa.nodes.count();
-			dfa.minimize();
-			assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
-
 			const re1 = nfa.toRegex({ maximumNodes: Infinity });
-			if (CHECK_RE_LANGUAGE) {
-				equalLanguage(dfa, re1, maxCharacter);
-			}
 
-			let re2;
 			try {
-				re2 = dfa.toRegex({ maximumNodes: 100_000 });
+				const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
+				const dfaOriginalCount = dfa.nodes.count();
+				dfa.minimize();
+				assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
+
+				if (CHECK_RE_LANGUAGE) {
+					equalLanguage(dfa, re1, maxCharacter);
+				}
+
+				const re2 = dfa.toRegex({ maximumNodes: 100_000 });
+				if (CHECK_RE_LANGUAGE) {
+					equalLanguage(dfa, re2, maxCharacter);
+				}
 			} catch (e) {
 				if (!(e instanceof TooManyNodesError)) {
 					throw e;
-				}
-			}
-			if (CHECK_RE_LANGUAGE) {
-				if (re2) {
-					equalLanguage(dfa, re2, maxCharacter);
 				}
 			}
 		});
