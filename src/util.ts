@@ -282,25 +282,67 @@ export function* concatSequences<T>(sequencesList: ConcatIterable<UnionIterable<
 		yield [...combination];
 	}
 }
-function lazyStableIterable<T>(iter: Iterable<T>): Iterable<T> {
-	const cache: T[] = [];
-	let cached = false;
+export function* repeatSequences<T, R>(
+	counts: UnionIterable<number>,
+	sequences: UnionIterable<T>,
+	concat: (list: ConcatIterable<UnionIterable<T>>) => UnionIterable<R>
+): UnionIterable<R> {
+	sequences = LazyStableIterable.from(sequences);
 
-	return {
-		[Symbol.iterator](): Iterator<T> {
-			if (cached) {
-				return cache[Symbol.iterator]();
-			} else {
-				return (function* () {
-					for (const item of iter) {
-						cache.push(item);
-						yield item;
+	for (const count of counts) {
+		const concatSeq: UnionIterable<T>[] = [];
+		for (let i = 0; i < count; i++) {
+			concatSeq.push(sequences);
+		}
+		yield* concat(concatSeq);
+	}
+}
+
+class LazyStableIterable<T> implements Iterable<T> {
+	private readonly _iterator: Iterator<T>;
+	private readonly _cache: T[] = [];
+	private _fullyCached = false;
+	private constructor(iter: Iterable<T>) {
+		this._iterator = iter[Symbol.iterator]();
+	}
+	static from<T>(iter: Iterable<T>): LazyStableIterable<T> {
+		if (iter instanceof LazyStableIterable) {
+			return iter;
+		} else {
+			return new LazyStableIterable(iter);
+		}
+	}
+	[Symbol.iterator](): Iterator<T> {
+		if (this._fullyCached) {
+			return this._cache[Symbol.iterator]();
+		} else {
+			return (function* (instance: LazyStableIterable<T>) {
+				const { _cache, _iterator } = instance;
+
+				let i = 0;
+				while (!instance._fullyCached) {
+					if (i < _cache.length) {
+						yield _cache[i];
+						i++;
+					} else {
+						const next = _iterator.next();
+						if (next.done) {
+							instance._fullyCached = true;
+						} else {
+							const { value } = next;
+							_cache.push(value);
+							yield value;
+							i++;
+						}
 					}
-					cached = true;
-				})();
-			}
-		},
-	};
+				}
+
+				for (; i < _cache.length; i++) {
+					yield _cache[i];
+				}
+			})(this);
+		}
+	}
 }
 /**
  * This function only yields one array. You are not allowed to modify the yielded array and you have to make a copy of
@@ -309,7 +351,7 @@ function lazyStableIterable<T>(iter: Iterable<T>): Iterable<T> {
  * @param sequences
  */
 function* iterateCombinations<T>(sequences: ConcatIterable<Iterable<T>>): Iterable<ConcatIterable<T>> {
-	const iterables = [...sequences].map(lazyStableIterable);
+	const iterables = iterToArray(sequences).map(LazyStableIterable.from);
 	const iterators = iterables.map(iter => iter[Symbol.iterator]());
 	const values: T[] = [];
 

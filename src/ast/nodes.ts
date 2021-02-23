@@ -33,6 +33,7 @@ export interface Quantifier extends NodeBase {
 	type: "Quantifier";
 	parent: Concatenation;
 	alternatives: Concatenation[];
+	lazy: boolean;
 	min: number;
 	max: number;
 }

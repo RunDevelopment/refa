@@ -33,6 +33,7 @@ function makeContentOptional(
 		elements: [
 			{
 				type: "Quantifier",
+				lazy: false,
 				min: 0,
 				max: 1,
 				alternatives: copy,

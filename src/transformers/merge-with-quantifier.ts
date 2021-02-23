@@ -55,7 +55,7 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 	// This will preserve the order of alternatives ASSUMING that there are no greedy vs lazy quantifiers.
 	// This has to be changed as soon as lazy/greedy quantifiers are added.
 
-	const ignoreAmbiguity = !!options?.ignoreAmbiguity;
+	const { ignoreAmbiguity = false, ignoreOrder = false } = options ?? {};
 
 	function consumeNonQuantifier(
 		elements: NoParent<Element>[],
@@ -84,7 +84,7 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 			for (let i = 1; i < elements.length; i++) {
 				const quant = elements[i - 1];
 				const after = elements[i];
-				if (quant.type === "Quantifier") {
+				if (quant.type === "Quantifier" && (ignoreOrder || (!quant.lazy && quant.max === Infinity))) {
 					consumeUsingInfiniteQuantifier(quant, after, direction, context);
 				}
 			}
@@ -106,8 +106,25 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 			// make e.g. a*a+ -> a+
 			filterMut(elements, (after, before) => {
 				if (before && before.type === "Quantifier" && after.type === "Quantifier") {
-					if (!ignoreAmbiguity && before.min !== before.max && after.min !== after.max) {
+					const beforeConst = before.min === before.max;
+					const afterConst = after.min === after.max;
+
+					if (!ignoreAmbiguity && !(beforeConst || afterConst)) {
 						// If ambiguity can't be ignored, at least one of the two quantifiers has to be constant
+						return true;
+					}
+					if (
+						!ignoreOrder &&
+						!(
+							beforeConst ||
+							afterConst ||
+							before.lazy === after.lazy ||
+							(!before.lazy && before.max === Infinity) ||
+							(!after.lazy && after.max === Infinity)
+						)
+					) {
+						// If order can't be ignored, at least one of the two quantifiers has to be constant or both
+						// have to have the same laziness or at least one of them is greedy and is unbounded
 						return true;
 					}
 

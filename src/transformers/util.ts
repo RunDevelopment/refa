@@ -77,6 +77,7 @@ function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
 		case "Quantifier":
 			return {
 				type: "Quantifier",
+				lazy: n.lazy,
 				min: n.min,
 				max: n.max,
 				source: copySource(n.source),

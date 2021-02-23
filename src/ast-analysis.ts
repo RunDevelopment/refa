@@ -1224,7 +1224,7 @@ export function structurallyEqual(
 		}
 		case "Quantifier": {
 			const other = b as NoParent<Quantifier>;
-			if (a.min !== other.min || a.max !== other.max) return false;
+			if (a.min !== other.min || a.max !== other.max || a.lazy !== other.lazy) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		default:

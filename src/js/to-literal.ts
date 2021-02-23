@@ -174,6 +174,9 @@ function elementToSource(element: NoParent<Element>, flags: Flags, options: Prin
 			} else {
 				s += `{${element.min},${element.max}}`;
 			}
+			if (element.lazy) {
+				s += "?";
+			}
 			return s;
 		}
 		default:

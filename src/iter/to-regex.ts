@@ -165,6 +165,7 @@ class TransitionCreator {
 		return {
 			type: "Quantifier",
 			alternatives,
+			lazy: false,
 			min,
 			max,
 		};
@@ -175,6 +176,7 @@ class TransitionCreator {
 		return {
 			type: "Quantifier",
 			alternatives,
+			lazy: false,
 			min: 0,
 			max: Infinity,
 		};
@@ -185,6 +187,7 @@ class TransitionCreator {
 		return {
 			type: "Quantifier",
 			alternatives,
+			lazy: false,
 			min: 1,
 			max: Infinity,
 		};

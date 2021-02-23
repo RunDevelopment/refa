@@ -44,6 +44,9 @@ function toPatternElement(element: NoParent<Element>): string {
 			} else {
 				quant = `{${element.min},${element.max}}`;
 			}
+			if (element.lazy) {
+				quant += "?";
+			}
 
 			let content: string;
 			if (

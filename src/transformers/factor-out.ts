@@ -41,7 +41,8 @@ interface CharPrefix {
 }
 function getConcatenationCharPrefix(
 	alternative: NoParent<Concatenation>,
-	direction: MatchingDirection
+	direction: MatchingDirection,
+	noLazyStar: boolean
 ): CharPrefix | undefined {
 	if (alternative.elements.length === 0) {
 		return undefined;
@@ -62,7 +63,7 @@ function getConcatenationCharPrefix(
 				return {
 					char: single.characters,
 					constant: first.min,
-					star: first.max === Infinity,
+					star: !(first.lazy && noLazyStar) && first.max === Infinity,
 				};
 			}
 		}
@@ -80,15 +81,19 @@ function unionCharPrefixes(a: CharPrefix | undefined, b: CharPrefix | undefined)
 	}
 	return undefined;
 }
-function getCharPrefix(alternatives: NoParent<Concatenation>[], direction: MatchingDirection): CharPrefix | undefined {
+function getCharPrefix(
+	alternatives: NoParent<Concatenation>[],
+	direction: MatchingDirection,
+	noLazyStar: boolean
+): CharPrefix | undefined {
 	if (alternatives.length === 0) {
 		return undefined;
 	}
 
-	let prefix: CharPrefix | undefined = getConcatenationCharPrefix(alternatives[0], direction);
+	let prefix: CharPrefix | undefined = getConcatenationCharPrefix(alternatives[0], direction, noLazyStar);
 	for (let i = 1; i < alternatives.length && prefix !== undefined; i++) {
 		const alternative = alternatives[i];
-		prefix = unionCharPrefixes(prefix, getConcatenationCharPrefix(alternative, direction));
+		prefix = unionCharPrefixes(prefix, getConcatenationCharPrefix(alternative, direction, noLazyStar));
 	}
 	return prefix;
 }
@@ -134,14 +139,19 @@ function subtractCharPrefix(
 		subtractConcatenationCharPrefix(alt, prefix, direction);
 	}
 }
-function tryFactorOutQuantifiedCharacter(node: NoParent<Parent>, direction: MatchingDirection): boolean {
-	const prefix = getCharPrefix(node.alternatives, direction);
-	if (prefix) {
+function tryFactorOutQuantifiedCharacter(
+	node: NoParent<Parent>,
+	direction: MatchingDirection,
+	noLazyStar: boolean
+): boolean {
+	const prefix = getCharPrefix(node.alternatives, direction, noLazyStar);
+	if (prefix && (prefix.constant > 0 || prefix.star)) {
 		subtractCharPrefix(node.alternatives, prefix, direction);
 		let char: NoParent<Element>;
 		if (prefix.star || prefix.constant !== 1) {
 			char = {
 				type: "Quantifier",
+				lazy: false,
 				min: prefix.constant,
 				max: prefix.star ? Infinity : prefix.constant,
 				alternatives: [
@@ -161,48 +171,6 @@ function tryFactorOutQuantifiedCharacter(node: NoParent<Parent>, direction: Matc
 	return false;
 }
 
-function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
-	if (node.alternatives.length < 2) {
-		return;
-	}
-
-	const { prefix, suffix } = getPrefixAndSuffix(node);
-
-	if (prefix.length > 0 || suffix.length > 0) {
-		signalMutation();
-
-		// remove prefix and suffix
-		const alternatives = node.alternatives;
-		for (const alt of alternatives) {
-			alt.elements.splice(0, prefix.length);
-			alt.elements.splice(alt.elements.length - suffix.length, suffix.length);
-		}
-
-		node.alternatives = [
-			{
-				type: "Concatenation",
-				elements: [
-					...prefix,
-					{
-						type: "Alternation",
-						alternatives,
-						source: copySource(node.source),
-					},
-					...suffix,
-				],
-				source: copySource(node.source),
-			},
-		];
-	} else {
-		if (tryFactorOutQuantifiedCharacter(node, "ltr")) {
-			signalMutation();
-		}
-		if (tryFactorOutQuantifiedCharacter(node, "rtl")) {
-			signalMutation();
-		}
-	}
-}
-
 /**
  * This will factor out common prefixes and suffixes in parent nodes.
  *
@@ -218,8 +186,52 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
  * E.g. `(?:abc|abc|abc)` => `(?:abc(?:||))`
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function factorOut(_options?: Readonly<CreationOptions>): Transformer {
-	// we can safely ignore the options as order and ambiguity are guaranteed to be preserved
+export function factorOut(options?: Readonly<CreationOptions>): Transformer {
+	const { ignoreOrder = false } = options ?? {};
+
+	function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
+		if (node.alternatives.length < 2) {
+			return;
+		}
+
+		const { prefix, suffix } = getPrefixAndSuffix(node);
+
+		if (prefix.length > 0 || suffix.length > 0) {
+			signalMutation();
+
+			// remove prefix and suffix
+			const alternatives = node.alternatives;
+			for (const alt of alternatives) {
+				alt.elements.splice(0, prefix.length);
+				alt.elements.splice(alt.elements.length - suffix.length, suffix.length);
+			}
+
+			node.alternatives = [
+				{
+					type: "Concatenation",
+					elements: [
+						...prefix,
+						{
+							type: "Alternation",
+							alternatives,
+							source: copySource(node.source),
+						},
+						...suffix,
+					],
+					source: copySource(node.source),
+				},
+			];
+		} else {
+			const noLazyStar = !ignoreOrder;
+			if (tryFactorOutQuantifiedCharacter(node, "ltr", noLazyStar)) {
+				signalMutation();
+			}
+			if (tryFactorOutQuantifiedCharacter(node, "rtl", noLazyStar)) {
+				signalMutation();
+			}
+		}
+	}
+
 	return {
 		onAlternation: onParent,
 		onAssertion: onParent,

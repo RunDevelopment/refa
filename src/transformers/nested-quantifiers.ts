@@ -109,10 +109,12 @@ function optimizeChildQuantifier(
  * order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.
  */
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
-	if (!options?.ignoreAmbiguity || !options.ignoreOrder) {
+	if (!options?.ignoreAmbiguity) {
 		// (almost) all changes will decrease the ambiguity of the regular expression and may change matching order
 		return {}; // noop
 	}
+
+	const { ignoreOrder } = options;
 
 	return {
 		onQuantifier(node: NoParent<Quantifier>, { signalMutation }: TransformContext): void {
@@ -126,16 +128,20 @@ export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transfor
 				if (first.elements.length === 1) {
 					const nested = first.elements[0];
 					if (nested.type === "Quantifier") {
-						combineNestedQuantifiers(node, nested, signalMutation);
+						if (ignoreOrder || node.lazy === nested.lazy) {
+							combineNestedQuantifiers(node, nested, signalMutation);
+						}
 					}
 				}
 			} else {
 				// we might still be able to simplify some quantifiers.
-				for (const alt of node.alternatives) {
-					if (alt.elements.length === 1) {
-						const element = alt.elements[0];
-						if (element.type === "Quantifier") {
-							optimizeChildQuantifier(node, element, signalMutation);
+				if (ignoreOrder) {
+					for (const alt of node.alternatives) {
+						if (alt.elements.length === 1) {
+							const element = alt.elements[0];
+							if (element.type === "Quantifier") {
+								optimizeChildQuantifier(node, element, signalMutation);
+							}
 						}
 					}
 				}

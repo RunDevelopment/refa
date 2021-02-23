@@ -16,7 +16,7 @@ import {
 	NoParent,
 } from "../ast";
 import { RegExpParser, AST, visitRegExpAST } from "regexpp";
-import { assertNever, flatConcatSequences, UnionIterable, unionSequences } from "../util";
+import { assertNever, flatConcatSequences, repeatSequences, UnionIterable, unionSequences } from "../util";
 import { createAssertion } from "./create-assertion";
 import { createCharSet } from "./create-char-set";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
@@ -673,7 +673,7 @@ export class Parser {
 			}
 		}
 
-		const quant = context.nc.newQuant(element, min, max);
+		const quant = context.nc.newQuant(element, min, max, !element.greedy);
 
 		const qElement = element.element;
 		if (qElement.type === "CapturingGroup" || qElement.type === "Group") {
@@ -933,12 +933,13 @@ class NodeCreator {
 			source: copySource(source),
 		};
 	}
-	newQuant(source: Readonly<SourceLocation>, min: number, max: number): NoParent<Quantifier> {
+	newQuant(source: Readonly<SourceLocation>, min: number, max: number, lazy: boolean): NoParent<Quantifier> {
 		this._checkLimit();
 
 		return {
 			type: "Quantifier",
 			alternatives: [],
+			lazy,
 			min,
 			max,
 			source: copySource(source),
@@ -1071,10 +1072,28 @@ function iterateWordSets(node: NoParent<Node>): UnionIterable<CharSet[]> {
 		case "Concatenation":
 			return flatConcatSequences(node.elements.map(iterateWordSets));
 
-		case "Quantifier":
-			// We can't iterate them yet because we don't know in which order.
-			// E.g. `a?` and `a??` will both be parsed as a quantifier.
-			throw new Error();
+		case "Quantifier": {
+			if (node.max === Infinity) {
+				throw new Error();
+			}
+
+			let counts: Iterable<number>;
+			if (node.lazy) {
+				counts = (function* () {
+					for (let i = node.min; i <= node.max; i++) {
+						yield i;
+					}
+				})();
+			} else {
+				counts = (function* () {
+					for (let i = node.max; i >= node.min; i--) {
+						yield i;
+					}
+				})();
+			}
+
+			return repeatSequences(counts, unionSequences(node.alternatives.map(iterateWordSets)), flatConcatSequences);
+		}
 
 		default:
 			assertNever(node);
