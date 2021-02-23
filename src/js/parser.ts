@@ -328,7 +328,7 @@ export class Parser {
 
 				let resolved = false;
 
-				if (currentElement.type === "CapturingGroup" && this._shouldResolveGroup(currentElement, context)) {
+				if (currentElement.type === "CapturingGroup" && context.backreferenceMaximumWords > 0) {
 					try {
 						// try to resolve the backreferences of this capturing group
 						const resolveResult = this._variableResolveGroup(
@@ -341,7 +341,7 @@ export class Parser {
 
 						outputElements.push(resolveResult.resolved);
 						i += resolveResult.skip;
-					} catch (error) {
+					} catch (e) {
 						// could not resolve
 					}
 				}
@@ -359,13 +359,6 @@ export class Parser {
 
 		return outputElements;
 	}
-	private _shouldResolveGroup(group: AST.CapturingGroup, context: ParserContext): boolean {
-		// there has to be at least one resolvable backreference that is in the same alternative as the group
-		return (
-			context.backreferenceMaximumWords > 0 &&
-			this._getResolvableGroupReferencesUnder(group, group.parent).length > 0
-		);
-	}
 	private _variableResolveGroup(
 		group: AST.CapturingGroup,
 		groupElement: NoParent<Element>,
@@ -373,6 +366,10 @@ export class Parser {
 		context: ParserContext
 	): { resolved: NoParent<Element>; skip: number } {
 		// try to resolve all backreferences of this capturing group
+
+		if (this._getResolvableGroupReferencesUnder(group, group.parent).length === 0) {
+			throw new Error("No backreferences that resolve this capturing group");
+		}
 
 		const words = atMostK(iterateWords(groupElement), context.backreferenceMaximumWords);
 		if (words.length === 0) {
@@ -382,6 +379,23 @@ export class Parser {
 		// variable resolved
 
 		const affectedSlice = [...afterGroup];
+		/**
+		 * Resolving the capturing group might not affect all elements after the group.
+		 *
+		 * E.g. `(a|b)c\1d`: Only the elements between `(a|b)` and `\1` are affected, so we don't have to copy `c`.
+		 *
+		 * This is a minor optimization that can drastically reduce the number of created RE AST nodes in some cases.
+		 * E.g. `/(a)\1(b)\2(c)\3/i` can be converted to `/(?:AA|aa)(?:BB|bb)(?:CC|cc)/` instead of
+		 * `/AA(?:BB(?:CC|cc)|bb(?:CC|cc))|aa(?:BB(?:CC|cc)|bb(?:CC|cc))/`.
+		 *
+		 * However, there is one thing that makes it somewhat difficult to determine which elements are affected:
+		 * other capturing groups. If another capturing group is affected by the current one, then the elements affected
+		 * the other capturing group also have to be accounted for.
+		 *
+		 * Examples:
+		 * - `/(a)(b)\1\2/i`: `\2` is affected because its capturing group is affected by `(a)`.
+		 * - `/(a)(b\1)\1\2/i`: `(b\1)` is obviously affected by `(a)`.
+		 */
 		this._trimAffectedSlice(group, affectedSlice);
 
 		const alternatives: NoParent<Concatenation>[] = [];
@@ -402,6 +416,7 @@ export class Parser {
 			concatElements.push(...result);
 
 			if (context.matchingDir === "rtl") {
+				// we have to reverse the order because `afterGroup` is reversed.
 				concatElements.reverse();
 			}
 
@@ -1031,6 +1046,8 @@ function iterateWordSets(node: NoParent<Node>): UnionIterable<CharSet[]> {
 			return flatConcatSequences(node.elements.map(iterateWordSets));
 
 		case "Quantifier":
+			// We can't iterate them yet because we don't know in which order.
+			// E.g. `a?` and `a??` will both be parsed as a quantifier.
 			throw new Error();
 
 		default:

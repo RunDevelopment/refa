@@ -279,11 +279,7 @@ export function* flatConcatSequences<T>(
 }
 export function* concatSequences<T>(sequencesList: ConcatIterable<UnionIterable<T>>): UnionIterable<T[]> {
 	for (const combination of iterateCombinations(sequencesList)) {
-		const wordSet: T[] = [];
-		for (const item of combination) {
-			wordSet.push(item);
-		}
-		yield wordSet;
+		yield [...combination];
 	}
 }
 function lazyStableIterable<T>(iter: Iterable<T>): Iterable<T> {
