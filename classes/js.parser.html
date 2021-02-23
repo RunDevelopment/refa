@@ -66,6 +66,13 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Converts JS RegExp to refa&#39;s RE AST format.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -120,6 +127,11 @@
 					<div class="tsd-signature tsd-kind-icon">literal<span class="tsd-signature-symbol">:</span> <a href="../interfaces/js.literal.html" class="tsd-signature-type" data-tsd-kind="Interface">Literal</a></div>
 					<aside class="tsd-sources">
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The literal of the parser instance.</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="maxcharacter" class="tsd-anchor"></a>
@@ -127,6 +139,12 @@
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Character<span class="tsd-signature-symbol">:</span> <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></div>
 					<aside class="tsd-sources">
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The maximum character of all character sets in the parsed AST.</p>
+						</div>
+						<p>This value will also be returned as part of the <a href="../interfaces/js.parseresult.html">ParseResult</a>.</p>
+					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -141,6 +159,11 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Parsed the entire literal.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -161,6 +184,11 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Parses a specific element of the literal.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -184,10 +212,20 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a new parser from the given <a href="https://github.com/mysticatea/regexpp">regexpp</a> AST.</p>
+								</div>
+								<p>When the JS RegExp has already been parsed using regexpp, this method can be used to avoid parsing the regex
+								again.</p>
+								<p>The given AST is not allowed to be changed during the lifetime of the returned parser.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>ast: <a href="../interfaces/js.regexppast.html" class="tsd-signature-type" data-tsd-kind="Interface">RegexppAst</a></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="js.parser.html" class="tsd-signature-type" data-tsd-kind="Class">Parser</a></h4>
