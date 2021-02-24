@@ -1,5 +1,6 @@
 # Contributing
 
+Issues, comments, and pull requests are always welcome!
 
 ## Writing code
 

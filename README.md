@@ -8,11 +8,7 @@ A library for regular expressions (RE) and finite automata (FA) in the context o
 
 ## About
 
-This is a general library for [DFA](https://en.wikipedia.org/wiki/Deterministic_finite_automaton), [NFA](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton), and REs of [formal regular languages](https://en.wikipedia.org/wiki/Induction_of_regular_languages).
-
-It also supports additional methods to easily convert from JS RegExp to the internal RE AST and vice versa.
-
-__At this point in time, the library is still in development and partially incomplete!__
+refa is a general library for [DFA](https://en.wikipedia.org/wiki/Deterministic_finite_automaton), [NFA](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton), and REs of [formal regular languages](https://en.wikipedia.org/wiki/Induction_of_regular_languages). It also includes methods to easily convert from JS RegExp to the internal RE AST and vice versa.
 
 
 ## Installation
@@ -71,7 +67,7 @@ See the [API documentation](https://rundevelopment.github.io/refa/docs/latest/) 
 
 ### RE AST format
 
-refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and comparatively simple.
+refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and relatively simple.
 
 It supports:
 
@@ -82,8 +78,6 @@ It supports:
 - Characters/character sets (represented by interval sets)
 
 Some features like atomic groups and capturing groups are not supported (but might be added in the future).
-
-Features like backreferences and recursion will never be support because their implementation details are very specific to the underlying regex engine and cannot be represented in an language-agnostic way.
 
 #### Converting to and from the RE AST format
 
