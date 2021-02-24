@@ -258,12 +258,7 @@ However, simply removing assertions is not ideal since they are a lot more commo
 The details about the transformers used in this example can be found in their documentation.
 
 ```ts
-import { combineTransformers, FiniteAutomaton, JS, NFA, transform, Transformers } from "refa";
-
-function toRegExp(fa: FiniteAutomaton): RegExp {
-	const literal = JS.toLiteral(fa.toRegex());
-	return new RegExp(literal.source, literal.flags);
-}
+import { combineTransformers, JS, NFA, transform, Transformers } from "refa";
 
 const regex = /\b(?!\d)\w+\b|->/;
 const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
@@ -271,28 +266,33 @@ const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
 console.log(JS.toLiteral(expression));
 // => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
 
-const transformer = combineTransformers([
+const applyTransformer = combineTransformers([
 	Transformers.inline(),
 	Transformers.removeDeadBranches(),
 	Transformers.removeUnnecessaryAssertions(),
+	Transformers.sortAssertions(),
 	Transformers.applyAssertions(),
+	Transformers.removeUnnecessaryAssertions(),
 ]);
-const modifiedExpression = transform(transformer, expression);
+const modifiedExpression = transform(applyTransformer, expression);
 
 console.log(JS.toLiteral(modifiedExpression));
 // => { source: '(?<!\\w)[A-Z_]\\w*(?!\\w)|->', flags: 'i' }
 
-// most assertions have been removed
-// the only ones left assert characters beyond the edge of the pattern, so let's remove them
+// Most assertions have been removed but the patterns are still equivalent.
+// The only assertions left assert characters beyond the edge of the pattern.
+// Removing those assertions is easy but slightly changes the pattern.
 
-const finalExpression = transform(Transformers.patternEdgeAssertions({ remove: true }), modifiedExpression);
+const edgeAssertionTransformer = Transformers.patternEdgeAssertions({ remove: true });
+const finalExpression = transform(edgeAssertionTransformer, modifiedExpression);
 
 console.log(JS.toLiteral(finalExpression));
 // => { source: '[A-Z_]\\w*|->', flags: 'i' }
 
 const nfa = NFA.fromRegex(finalExpression, { maxCharacter });
-console.log(toRegExp(nfa));
-// => /->|[A-Z_]\w*/i
+
+console.log(JS.toLiteral(nfa.toRegex()));
+// => { source: '->|[A-Z_]\\w*', flags: 'i' }
 ```
 
 AST transformers can handle a lot of assertions but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST.
