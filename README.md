@@ -34,7 +34,7 @@ yarn add refa
 
 - Conversions
 
-  * RE to NFA (_lookarounds are not implemented yet_)
+  * RE to NFA (_assertions are not implemented yet_)
   * NFA to DFA and DFA to NFA
   * NFA to RE and DFA to RE
 
@@ -59,12 +59,232 @@ yarn add refa
   * Reverse
   * Accept all suffixes of a language
 
-- Javascript RegExp
+- JavaScript RegExp
 
-  * RegExp to RE and RE to RegExp (non-trivial backreferences are not supported)
+  * RegExp to RE and RE to RegExp
+    * All flags are fully supported
+    * Unicode properties
+    * Change flags
+    * Limited support for simple backreferences
 
 See the [API documentation](https://rundevelopment.github.io/refa/) for a complete list of all currently implemented operations.
 
-### Limitations
+### RE AST format
+
+refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and comparatively simple.
+
+It supports:
+
+- Concatenation (e.g. `ab`)
+- Alternation (e.g. `a|b`)
+- Quantifiers (greedy and lazy) (e.g. `a{4,6}`, `a{2,}?`, `a?`, `a*`)
+- Lookarounds (e.g. `(?=a)`, `(?<!a)`)
+- Characters/character sets (represented by interval sets)
+
+Some features like atomic groups and capturing groups are not supported (but might be added in the future).
+
+Features like backreferences and recursion will never be support because their implementation details are very specific to the underlying regex engine and cannot be represented in an language-agnostic way.
+
+#### Converting to and from the RE AST format
+
+JavaScript RegExp can be converted to the RE AST format by using `JS.Parser`. `JS.toLiteral` converts into the other direction. (Note that the conversion from JS RegExp to the RE AST format is lossy (capturing groups) and sometime impossible due to the limitations of the RE AST format.)
+
+Converters for other regex dialects might be added in the future as separate packages.
+
+### General limitations
 
 This library will never be able to support some modern features of regex engines such as [backreferences](https://www.rexegg.com/regex-capture.html) and [recursion](https://www.rexegg.com/regex-recursion.html) because these features, generally, cannot be be represented by a DFA or NFA.
+
+
+## Usage examples
+
+refa is a relatively low-level library. It only provides the basic building blocks. In the following examples, JS RegExps are used a lot so we will define a few useful helper function beforehand.
+
+```ts
+import { DFA, FiniteAutomaton, JS, NFA } from "refa";
+
+function toNFA(regex: RegExp): NFA {
+	const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
+	return NFA.fromRegex(expression, { maxCharacter });
+}
+function toDFA(regex: RegExp): DFA {
+	return DFA.fromFA(toNFA(regex));
+}
+function toRegExp(fa: FiniteAutomaton): RegExp {
+	const literal = JS.toLiteral(fa.toRegex());
+	return new RegExp(literal.source, literal.flags);
+}
+```
+
+- `toNFA` parses the given RegExp and constructs a new NFA from the parsed AST.
+- `toDFA` constructs a new NFA from the RegExp first and then converts that NFA into a new DFA.
+- `toRegex` takes an FA (= NFA or DFA) and converts it into a RegExp.
+
+### Testing whether a word is accepted
+
+```ts
+import { Words } from "refa";
+
+const regex = /\w+\d+/;
+const nfa = toNFA(regex);
+
+console.log(nfa.test(Words.fromStringToUTF16("abc")));
+// => false
+console.log(nfa.test(Words.fromStringToUTF16("123")));
+// => true
+console.log(nfa.test(Words.fromStringToUTF16("abc123")));
+// => true
+console.log(nfa.test(Words.fromStringToUTF16("123abc")));
+// => false
+```
+
+### Finding the intersection of two JS RegExps
+
+```ts
+const regex1 = /a+B+c+/i;
+const regex2 = /Ab*C\d?/;
+
+const intersection = NFA.fromIntersection(toNFA(regex1), toNFA(regex2));
+
+console.log(toRegExp(intersection));
+// => /Ab+C/
+```
+
+### Finding the complement of a JS RegExp
+
+```ts
+const regex = /a+b*/i;
+
+const dfa = toDFA(regex);
+dfa.complement();
+
+console.log(toRegExp(dfa));
+// => /(?:(?:[^A]|A+(?:[^AB]|B+[^B]))[^]*)?/i
+```
+
+### Converting a JS RegExp to an NFA
+
+In the above examples, we have been using the `toNFA` helper function to parse and convert RegExps. This function assumes that the given RegExp is a pure regular expression without assertions and backreferences and will throw an error if the assumption is not met.
+
+However, the JS parser and `NFA.fromRegex` provide some options to work around and even solve this problem.
+
+#### Backreferences
+
+Firstly, the parser will automatically resolve simple backreferences. Even `toNFA` will do this since it's on by default:
+
+```ts
+console.log(toRegExp(toNFA(/("|').*?\1/)));
+// => /".*"|'.*'/i
+```
+
+But it will throw an error for non-trivial backreferences that cannot be resolved:
+
+```ts
+toNFA(/(#+).*\1|foo/);
+// Error: Backreferences are not supported.
+```
+
+The only way to parse the RegExp despite unresolvable backreferences is to remove the backreferences. This means that the result will be imperfect but it might still be useful.
+
+```ts
+const regex = /(#+).*\1|foo/;
+const parseResult = JS.Parser.fromLiteral(regex).parse({ backreferences: "disable" });
+
+console.log(JS.toLiteral(parseResult.expression));
+// => { source: 'foo', flags: '' }
+```
+
+Note that the `foo` alternative is kept because it is completely unaffected by the unresolvable backreferences.
+
+#### Assertions
+
+While the parser and AST format can handle assertions, the NFA construction cannot.
+
+```ts
+const regex = /\b(?!\d)\w+\b|->/;
+const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
+
+console.log(JS.toLiteral(expression));
+// => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
+
+NFA.fromRegex(expression, { maxCharacter });
+// Error: Assertions are not supported yet.
+```
+
+Similarly to backreferences, we can let the parser remove them:
+
+```ts
+const regex = /\b(?!\d)\w+\b|->/;
+const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse({ lookarounds: "disable" });
+
+console.log(JS.toLiteral(expression));
+// => { source: '->', flags: 'i' }
+
+const nfa = NFA.fromRegex(expression, { maxCharacter });
+console.log(toRegExp(nfa));
+// => /->/i
+```
+
+<details>
+
+Or we can let the NFA construction method remove them:
+
+```ts
+const regex = /\b(?!\d)\w+\b|->/;
+const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
+
+console.log(JS.toLiteral(expression));
+// => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
+
+const nfa = NFA.fromRegex(expression, { maxCharacter }, { disableLookarounds: true });
+console.log(toRegExp(nfa));
+// => /->/i
+```
+
+Prefer using the parser to remove assertions if possible. The parser is quite clever and will optimize based on that assertions can be removed resulting in faster parse times.
+
+</details>
+
+However, simply removing assertions is not ideal since they are a lot more common than backreferences. To work around this, refa has AST transformers. AST transformers can make changes to a given AST. While each transformer is rather simple, they can also work together to accomplish more complex tasks. Applying and removing assertions is one such task.
+
+The details about the transformers used in this example can be found in their documentation.
+
+```ts
+import { combineTransformers, FiniteAutomaton, JS, NFA, transform, Transformers } from "refa";
+
+function toRegExp(fa: FiniteAutomaton): RegExp {
+	const literal = JS.toLiteral(fa.toRegex());
+	return new RegExp(literal.source, literal.flags);
+}
+
+const regex = /\b(?!\d)\w+\b|->/;
+const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
+
+console.log(JS.toLiteral(expression));
+// => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
+
+const transformer = combineTransformers([
+	Transformers.inline(),
+	Transformers.removeDeadBranches(),
+	Transformers.removeUnnecessaryAssertions(),
+	Transformers.applyAssertions(),
+]);
+const modifiedExpression = transform(transformer, expression);
+
+console.log(JS.toLiteral(modifiedExpression));
+// => { source: '(?<!\\w)[A-Z_]\\w*(?!\\w)|->', flags: 'i' }
+
+// most assertions have been removed
+// the only ones left assert characters beyond the edge of the pattern, so let's remove them
+
+const finalExpression = transform(Transformers.patternEdgeAssertions({ remove: true }), modifiedExpression);
+
+console.log(JS.toLiteral(finalExpression));
+// => { source: '[A-Z_]\\w*|->', flags: 'i' }
+
+const nfa = NFA.fromRegex(finalExpression, { maxCharacter });
+console.log(toRegExp(nfa));
+// => /->|[A-Z_]\w*/i
+```
+
+AST transformers can handle a lot of assertions but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST.

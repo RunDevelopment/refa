@@ -97,27 +97,3 @@ You can run all tests using `npm run test` (or just `npm test`).
 If you want to run the tests quicker, you can use `npm run test:fast`. This will run all tests except the stress test which is executed for thousands of regexes.
 
 The `helper` folder contains functions used to implement tests. This includes useful constant, conversions function, and sets of test regexes.
-
-
-## refa's RE AST format
-
-refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and comparatively simple.
-
-It supports:
-
-- Concatenation (e.g. `ab`)
-- Alternation (e.g. `a|b`)
-- Quantifiers (e.g. `a{4,6}`, `a{2,}`, `a?`, `a*`)
-- Lookarounds (e.g. `(?=a)`, `(?<!a)`)
-- Characters are represented by an interval set of symbols
-
-Some features like lazy quantifiers, atomic groups, and capturing groups might be added in the future.
-
-Features like backreferences and recursion will never be support because their implementation details are very specific to the underlying regex engine and cannot be represented in an language-agnostic way.
-
-### Converting to and from the RE AST format
-
-JavaScript regular expressions can be converted to the RE AST format by using `JS.Parser`. `JS.toLiteral` converts into the other direction.
-Note that the conversion from JS RegExp to the RE AST format is lossy and sometime impossible due to the limitations of the RE AST format.
-
-Converters for the regex dialects of other programming languages might be added in the future as separate packages.
