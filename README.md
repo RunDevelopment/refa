@@ -91,6 +91,14 @@ JavaScript RegExp can be converted to the RE AST format by using `JS.Parser`. `J
 
 Converters for other regex dialects might be added in the future as separate packages.
 
+### Universal characters
+
+refa does not use JavaScript string represent characters or a sequence of characters. Instead it uses integers to represent characters (see the `Char` type) and arrays of numbers to represent words/strings (see the `Word` type).
+
+This means that any text encoding can be used.
+
+The `Words` namespace contains functions to convert JavaScript data into refa-compatible words and characters.
+
 ### General limitations
 
 This library will never be able to support some modern features of regex engines such as [backreferences](https://www.rexegg.com/regex-capture.html) and [recursion](https://www.rexegg.com/regex-recursion.html) because these features, generally, cannot be be represented by a DFA or NFA.
