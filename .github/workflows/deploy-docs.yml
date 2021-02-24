@@ -1,8 +1,10 @@
 name: Deploy docs
+
 on:
   push:
     branches:
       - master
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -10,18 +12,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.1
         with:
-          persist-credentials: false
+          fetch-depth: 0
 
-      - name: Install and Build
-        run: |
-          npm ci
-          npm run build
-          npm run build:docs
+      # build docs
 
-      - name: Deploy
+      - name: Deploy dev
         uses: JamesIves/github-pages-deploy-action@4.0.0
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder the action should deploy.
+          target-folder: docs/dev # the folder in gh-pages that will be created/cleaned
+          clean: true # Automatically remove deleted files from the deploy branch
+
+      - name: Find current tag
+        run: echo "tag=$(git tag --points-at HEAD)" >> $GITHUB_ENV
+
+      - name: Deploy tag
+        if: ${{ startsWith(env.tag, 'v') }}
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder the action should deploy.
+          target-folder: docs/${{ env.tag }} # the folder in gh-pages that will be created/cleaned
+          clean: true # Automatically remove deleted files from the deploy branch
+
+      - name: Deploy latest
+        if: ${{ startsWith(env.tag, 'v') }}
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
           branch: gh-pages # The branch the action should deploy to.
           folder: docs # The folder the action should deploy.
           target-folder: docs/latest # the folder in gh-pages that will be created/cleaned
