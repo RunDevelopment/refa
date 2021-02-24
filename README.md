@@ -67,7 +67,7 @@ yarn add refa
     * Change flags
     * Limited support for simple backreferences
 
-See the [API documentation](https://rundevelopment.github.io/refa/) for a complete list of all currently implemented operations.
+See the [API documentation](https://rundevelopment.github.io/refa/docs/latest/) for a complete list of all currently implemented operations.
 
 ### RE AST format
 
