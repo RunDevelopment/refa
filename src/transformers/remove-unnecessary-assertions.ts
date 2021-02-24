@@ -40,7 +40,7 @@ const enum Result {
 	DEPENDS_ON_INPUT,
 }
 function getTrivialResult(assertion: NoParent<Assertion>): Result {
-	// the idea here is that a negate lookaround accepts when non-negated version reject and vise versa.
+	// the idea here is that a negate assertion accepts when non-negated version reject and vise versa.
 	const ACCEPT = assertion.negate ? Result.REJECT : Result.ACCEPT;
 	const REJECT = assertion.negate ? Result.ACCEPT : Result.REJECT;
 
@@ -64,7 +64,7 @@ function analyzeAssertion(
 		return trivial;
 	}
 
-	// the idea here is that a negate lookaround accepts when non-negated version reject and vise versa.
+	// the idea here is that a negate assertion accepts when non-negated version reject and vise versa.
 	const ACCEPT = assertion.negate ? Result.REJECT : Result.ACCEPT;
 	const REJECT = assertion.negate ? Result.ACCEPT : Result.REJECT;
 

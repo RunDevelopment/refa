@@ -19,7 +19,7 @@ import { TooManyNodesError } from "../src/finite-automaton";
 const CHECK_RE_LANGUAGE = false;
 
 function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
-	const nfa = NFA.fromRegex(re, { maxCharacter }, { disableLookarounds: true });
+	const nfa = NFA.fromRegex(re, { maxCharacter }, { assertions: "disable" });
 	const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
 	dfa.minimize();
 
@@ -36,7 +36,7 @@ describe("Regex stress test", function () {
 		}
 		it(`[${index}]: ${patternPreview}`, function () {
 			const { expression, maxCharacter } = Parser.fromLiteral(literal).parse({ backreferences: "disable" });
-			const nfa = NFA.fromRegex(expression, { maxCharacter }, { disableLookarounds: true });
+			const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
 			nfa.nodes.count();
 
 			const re1 = nfa.toRegex({ maximumNodes: Infinity });

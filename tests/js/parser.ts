@@ -80,12 +80,12 @@ describe("JS.Parser", function () {
 
 			{
 				literal: /ab|c\b/,
-				options: { lookarounds: "disable" },
+				options: { assertions: "disable" },
 				expected: "[61][62]",
 			},
 			{
 				literal: /ab\b|c(?:\b)/,
-				options: { lookarounds: "disable" },
+				options: { assertions: "disable" },
 				expected: "[]",
 			},
 			{
@@ -115,7 +115,7 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /(a*)(?:\b\1|$)/,
-				options: { backreferences: "throw", lookarounds: "disable" },
+				options: { backreferences: "throw", assertions: "disable" },
 				expected: "[]",
 			},
 			{
@@ -140,27 +140,27 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /(?:\b|abc$)+/,
-				options: { lookarounds: "disable" },
+				options: { assertions: "disable" },
 				expected: "[]",
 			},
 		]);
 	});
 
-	describe("parse options: lookaround", function () {
+	describe("parse options: assertions", function () {
 		test([
 			{
 				literal: /(?=abc)a|b/,
-				options: { lookarounds: "parse" },
+				options: { assertions: "parse" },
 				expected: "(?=[61][62][63])[61]|[62]",
 			},
 			{
 				literal: /(?=abc)a|b/,
-				options: { lookarounds: "disable" },
+				options: { assertions: "disable" },
 				expected: "[62]",
 			},
 			{
 				literal: /(?=abc)a|b/,
-				options: { lookarounds: "throw" },
+				options: { assertions: "throw" },
 				expected: Error,
 			},
 		]);

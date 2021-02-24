@@ -67,27 +67,27 @@ export interface ParseOptions {
 	backreferences?: "disable" | "throw";
 
 	/**
-	 * How the parser will handle lookarounds.
+	 * How the parser will handle assertions.
 	 *
 	 * - `"parse"`
 	 *
-	 *   The parser will translate every lookaround literally to an equivalent RE AST representation. Builtin assertions
-	 *   (e.g. `\b`, `$`) will be transformed into equivalent lookarounds.
+	 *   The parser will translate every assertion literally to an equivalent RE AST representation. Builtin assertions
+	 *   (e.g. `\b`, `$`) will be transformed into equivalent assertions.
 	 *
 	 * - `"disable"`
 	 *
-	 *   The parser will disable all lookarounds by replacing them with an empty character class. This will cause all
-	 *   paths containing a lookaround to be (effectively) removed.
+	 *   The parser will disable all assertion by replacing them with an empty character class. This will cause all
+	 *   paths containing a assertion to be (effectively) removed.
 	 *
 	 * - `"throw"`
 	 *
-	 *   The parser will throw an error when encountering a lookaround that cannot be removed.
+	 *   The parser will throw an error when encountering a assertion that cannot be removed.
 	 *
 	 *   E.g. `a\B` will throw but `a([]\b)(\b){0}` will not because none of the `\b`s can be reached.
 	 *
 	 * @default "parse"
 	 */
-	lookarounds?: "parse" | "disable" | "throw";
+	assertions?: "parse" | "disable" | "throw";
 
 	/**
 	 * By default, the parser will try to optimize the generated RE as much as possible.
@@ -98,7 +98,7 @@ export interface ParseOptions {
 	 * - Removing constant 0 and constant 1 quantifiers.
 	 * - Inlining single-alternative groups.
 	 *
-	 * These optimization might prevent that certain backreferences or lookarounds from throwing an error.
+	 * These optimization might prevent that certain backreferences or assertions from throwing an error.
 	 *
 	 * @default false
 	 */
@@ -129,7 +129,7 @@ export interface ParseResult {
 interface ParserContext {
 	readonly backreferenceMaximumWords: number;
 	readonly backreferences: NonNullable<ParseOptions["backreferences"]>;
-	readonly lookarounds: NonNullable<ParseOptions["lookarounds"]>;
+	readonly assertions: NonNullable<ParseOptions["assertions"]>;
 	readonly disableSimplification: boolean;
 
 	readonly nc: NodeCreator;
@@ -223,7 +223,7 @@ export class Parser {
 		const context: ParserContext = {
 			backreferenceMaximumWords: Math.round(options?.backreferenceMaximumWords ?? DEFAULT_BACK_REF_MAX_WORDS),
 			backreferences: options?.backreferences ?? "throw",
-			lookarounds: options?.lookarounds ?? "parse",
+			assertions: options?.assertions ?? "parse",
 			disableSimplification: options?.disableOptimizations ?? false,
 
 			nc: new NodeCreator(options?.maximumNodes ?? DEFAULT_MAX_NODES),
@@ -523,10 +523,10 @@ export class Parser {
 	}
 
 	private _createAssertion(element: AST.Assertion, context: ParserContext): NoParent<Element> | Empty {
-		if (context.lookarounds === "throw") {
+		if (context.assertions === "throw") {
 			throw new Error("Assertions are not supported.");
 		}
-		if (context.lookarounds === "disable") {
+		if (context.assertions === "disable") {
 			if (context.disableSimplification) {
 				return this._createEmptyCharacterClass(element, context);
 			} else {

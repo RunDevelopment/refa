@@ -504,7 +504,7 @@ export interface FirstLookChar {
 	/**
 	 * A super set of the first character.
 	 *
-	 * We can usually only guarantee a super set because lookaround in the pattern may narrow down the actual character
+	 * We can usually only guarantee a super set because assertions in the pattern may narrow down the actual character
 	 * set.
 	 */
 	char: CharSet;
@@ -525,7 +525,7 @@ export interface FirstFullyConsumedChar {
 	/**
 	 * A super set of the first character.
 	 *
-	 * We can usually only guarantee a super set because lookaround in the pattern may narrow down the actual character
+	 * We can usually only guarantee a super set because assertions in the pattern may narrow down the actual character
 	 * set.
 	 */
 	char: CharSet;
@@ -546,7 +546,7 @@ export interface FirstPartiallyConsumedChar {
 	/**
 	 * A super set of the first character.
 	 *
-	 * We can usually only guarantee a super set because lookaround in the pattern may narrow down the actual character
+	 * We can usually only guarantee a super set because assertions in the pattern may narrow down the actual character
 	 * set.
 	 */
 	char: CharSet;
@@ -569,7 +569,7 @@ export interface FirstPartiallyConsumedChar {
  * always of zero length, then the empty character set will be returned.
  *
  * If `exact` is `true` then it is guaranteed that the returned character is guaranteed to be the actual
- * character at all times if this element is not influenced by lookarounds outside itself.
+ * character at all times if this element is not influenced by assertions outside itself.
  */
 export function getFirstCharConsumedBy(
 	node: NoParent<Node> | NoParent<Concatenation>[],
@@ -591,7 +591,7 @@ export function getFirstCharConsumedBy(
 		case "Assertion":
 			if (toMatchingDirection(node.kind) === direction) {
 				if (node.negate) {
-					// we can only meaningfully analyse negative lookarounds of the form `(?![a])`
+					// we can only meaningfully analyse negative assertions of the form `(?![a])`
 					if (hasSomeDescendant(node, d => d !== node && d.type === "Assertion")) {
 						return misdirectedAssertion();
 					}
@@ -672,14 +672,14 @@ export function getFirstCharConsumedBy(
 	}
 }
 /**
- * Returns first-look-char that is equivalent to a trivially-accepting lookaround.
+ * Returns first-look-char that is equivalent to a trivially-accepting assertion.
  */
 function firstLookCharTriviallyAccepting(maxCharacter: number): FirstLookChar {
 	return { char: CharSet.all(maxCharacter), edge: true, exact: true };
 }
 /**
  * Returns first-consumed-char that is equivalent to consuming nothing (the empty word) followed by a trivially
- * accepting lookaround.
+ * accepting assertion.
  */
 function firstConsumedCharEmptyWord(maxCharacter: number, look?: FirstLookChar): FirstPartiallyConsumedChar {
 	return {
@@ -862,8 +862,7 @@ export interface FollowOperations<S> {
 	 */
 	join(states: S[], direction: MatchingDirection): S;
 	/**
-	 * This function is called when dealing to general lookarounds (it will __not__ be called for predefined assertion -
-	 * `^`, `$`, `\b`, `\B`).
+	 * This function is called when dealing with assertions.
 	 */
 	assert?: (state: S, direction: MatchingDirection, assertion: S, assertionDirection: MatchingDirection) => S;
 
@@ -949,7 +948,7 @@ export interface FollowOperations<S> {
  *                     state,
  *                     Enter(quantifier, operations.fork(state))
  *                 ])
- *         if elementType == LOOKAROUND:
+ *         if elementType == ASSERTION:
  *             operations.assert(
  *                 state,
  *                 operations.join(

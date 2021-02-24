@@ -726,11 +726,19 @@ export namespace NFA {
 	}
 	export interface FromRegexOptions extends CreationOptions {
 		/**
-		 * Whether to replace all lookarounds with an empty character class when construction the NFA.
+		 * How to handle assertions when construction the NFA.
 		 *
-		 * @default false
+		 * - `"throw"`
+		 *
+		 *   This method will throw an error when encountering an assertion.
+		 *
+		 * - `"disable"`
+		 *
+		 *   This method will replace any assertion with an empty character class, effectively removing it.
+		 *
+		 * @default "throw"
 		 */
-		disableLookarounds?: boolean;
+		assertions?: "disable" | "throw";
 		/**
 		 * The number at which the maximum of a quantifier will be assumed to be infinity.
 		 *
@@ -819,7 +827,7 @@ function createNodeList(
 			for (let i = 0, l = elements.length; i < l; i++) {
 				const element = elements[i];
 				if (element.type === "Assertion") {
-					if (creationOptions.disableLookarounds) {
+					if (creationOptions.assertions === "disable") {
 						return base;
 					} else {
 						throw new Error("Assertions are not supported yet.");
@@ -862,7 +870,7 @@ function createNodeList(
 					break;
 
 				case "Assertion":
-					if (creationOptions.disableLookarounds) {
+					if (creationOptions.assertions === "disable") {
 						baseMakeEmpty(nodeList, base);
 						break;
 					} else {

@@ -78,7 +78,7 @@ It supports:
 - Concatenation (e.g. `ab`)
 - Alternation (e.g. `a|b`)
 - Quantifiers (greedy and lazy) (e.g. `a{4,6}`, `a{2,}?`, `a?`, `a*`)
-- Lookarounds (e.g. `(?=a)`, `(?<!a)`)
+- Assertions (e.g. `(?=a)`, `(?<!a)`)
 - Characters/character sets (represented by interval sets)
 
 Some features like atomic groups and capturing groups are not supported (but might be added in the future).
@@ -215,7 +215,7 @@ Similarly to backreferences, we can let the parser remove them:
 
 ```ts
 const regex = /\b(?!\d)\w+\b|->/;
-const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse({ lookarounds: "disable" });
+const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse({ assertions: "disable" });
 
 console.log(JS.toLiteral(expression));
 // => { source: '->', flags: 'i' }
@@ -236,7 +236,7 @@ const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
 console.log(JS.toLiteral(expression));
 // => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
 
-const nfa = NFA.fromRegex(expression, { maxCharacter }, { disableLookarounds: true });
+const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
 console.log(toRegExp(nfa));
 // => /->/i
 ```

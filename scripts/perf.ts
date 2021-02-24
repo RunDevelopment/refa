@@ -35,16 +35,14 @@ function perfTest(): void {
 			const { expression, maxCharacter } = measure("parse", () =>
 				parser.parse({
 					backreferences: "disable",
-					lookarounds: "disable",
+					assertions: "disable",
 				})
 			);
 			const nfa = measure("Create NFA", () =>
 				NFA.fromRegex(
 					expression,
 					{ maxCharacter },
-					{
-						disableLookarounds: true,
-					}
+					{ assertions: "disable" }
 				)
 			);
 			const dfa = measure("Create DFA", () => DFA.fromFA(nfa));

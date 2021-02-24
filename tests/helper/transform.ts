@@ -23,7 +23,7 @@ export function itTest(cases: Iterable<TransformTestCase>): void {
 
 			const { expression } = Parser.fromLiteral(literal).parse({
 				backreferences: "throw",
-				lookarounds: "parse",
+				assertions: "parse",
 				disableOptimizations: true,
 			});
 			const transformedExpression = transform(transformer, expression, options);

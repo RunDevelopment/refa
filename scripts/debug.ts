@@ -5,7 +5,7 @@ import { performance } from "perf_hooks";
 function toNFA(literal: JS.Literal): NFA {
 	const parser = JS.Parser.fromLiteral(literal);
 	const { expression, maxCharacter } = parser.parse();
-	return NFA.fromRegex(expression, { maxCharacter }, { disableLookarounds: true });
+	return NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
 }
 const toDFA = (literal: JS.Literal): DFA => DFA.fromFA(toNFA(literal));
 function toCharSet(literal: JS.Literal): CharSet {
