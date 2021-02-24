@@ -14,7 +14,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # build docs
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+          npm run build:docs
 
       - name: Deploy dev
         uses: JamesIves/github-pages-deploy-action@4.0.0
