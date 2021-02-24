@@ -65,9 +65,7 @@
 				<a href="#about" id="about" style="color: inherit; text-decoration: none;">
 					<h2>About</h2>
 				</a>
-				<p>This is a general library for <a href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">DFA</a>, <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA</a>, and REs of <a href="https://en.wikipedia.org/wiki/Induction_of_regular_languages">formal regular languages</a>.</p>
-				<p>It also supports additional methods to easily convert from JS RegExp to the internal RE AST and vice versa.</p>
-				<p><strong>At this point in time, the library is still in development and partially incomplete!</strong></p>
+				<p>refa is a general library for <a href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">DFA</a>, <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA</a>, and REs of <a href="https://en.wikipedia.org/wiki/Induction_of_regular_languages">formal regular languages</a>. It also includes methods to easily convert from JS RegExp to the internal RE AST and vice versa.</p>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
@@ -128,7 +126,7 @@
 				<a href="#re-ast-format" id="re-ast-format" style="color: inherit; text-decoration: none;">
 					<h3>RE AST format</h3>
 				</a>
-				<p>refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and comparatively simple.</p>
+				<p>refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and relatively simple.</p>
 				<p>It supports:</p>
 				<ul>
 					<li>Concatenation (e.g. <code>ab</code>)</li>
@@ -138,7 +136,6 @@
 					<li>Characters/character sets (represented by interval sets)</li>
 				</ul>
 				<p>Some features like atomic groups and capturing groups are not supported (but might be added in the future).</p>
-				<p>Features like backreferences and recursion will never be support because their implementation details are very specific to the underlying regex engine and cannot be represented in an language-agnostic way.</p>
 				<a href="#converting-to-and-from-the-re-ast-format" id="converting-to-and-from-the-re-ast-format" style="color: inherit; text-decoration: none;">
 					<h4>Converting to and from the RE AST format</h4>
 				</a>
