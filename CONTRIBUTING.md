@@ -13,10 +13,12 @@ A few general rules:
 
 Useful commands:
 
+- `npm run test`
+    Run all tests.
 - `npm run test:fast`
-    Run all test except the slow ones.
+    Run all tests except for the regex stress test that takes from 5s to 20s.
 - `npm run build`
-    Compiles the whole project and creates the final `index.{ts,d.ts}` files in the project's root directory.
+    Compiles the whole project and creates the final `index.{js,d.ts}` files in the project's root directory.
 - `npm run scripts:debug`
     This will execute the `scripts/debug.ts` file. This is a quick way to test new or existing features with access to all files in the library.
 
