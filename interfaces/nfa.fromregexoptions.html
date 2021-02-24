@@ -86,7 +86,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="nfa.fromregexoptions.html#disablelookarounds" class="tsd-kind-icon">disable<wbr>Lookarounds</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="nfa.fromregexoptions.html#assertions" class="tsd-kind-icon">assertions</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="nfa.fromregexoptions.html#infinitythreshold" class="tsd-kind-icon">infinity<wbr>Threshold</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="nfa.fromregexoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
 							</ul>
@@ -97,18 +97,26 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="disablelookarounds" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> disable<wbr>Lookarounds</h3>
-					<div class="tsd-signature tsd-kind-icon">disable<wbr>Lookarounds<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span></div>
+					<a name="assertions" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> assertions</h3>
+					<div class="tsd-signature tsd-kind-icon">assertions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span></div>
 					<aside class="tsd-sources">
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Whether to replace all lookarounds with an empty character class when construction the NFA.</p>
+							<p>How to handle assertions when construction the NFA.</p>
 						</div>
+						<ul>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>This method will throw an error when encountering an assertion.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>This method will replace any assertion with an empty character class, effectively removing it.</p>
+							</li>
+						</ul>
 						<dl class="tsd-comment-tags">
 							<dt>default</dt>
-							<dd><p>false</p>
+							<dd><p>&quot;throw&quot;</p>
 							</dd>
 						</dl>
 					</div>
@@ -195,7 +203,7 @@
 						<a href="nfa.fromregexoptions.html" class="tsd-kind-icon">From<wbr>Regex<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="nfa.fromregexoptions.html#disablelookarounds" class="tsd-kind-icon">disable<wbr>Lookarounds</a>
+								<a href="nfa.fromregexoptions.html#assertions" class="tsd-kind-icon">assertions</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="nfa.fromregexoptions.html#infinitythreshold" class="tsd-kind-icon">infinity<wbr>Threshold</a>

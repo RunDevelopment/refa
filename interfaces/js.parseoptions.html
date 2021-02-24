@@ -81,10 +81,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#assertions" class="tsd-kind-icon">assertions</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#backreferencemaximumwords" class="tsd-kind-icon">backreference<wbr>Maximum<wbr>Words</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#backreferences" class="tsd-kind-icon">backreferences</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#lookarounds" class="tsd-kind-icon">lookarounds</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maximumnodes" class="tsd-kind-icon">maximum<wbr>Nodes</a></li>
 							</ul>
 						</section>
@@ -93,6 +93,37 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="assertions" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> assertions</h3>
+					<div class="tsd-signature tsd-kind-icon">assertions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;parse&quot;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>How the parser will handle assertions.</p>
+						</div>
+						<ul>
+							<li><p><code>&quot;parse&quot;</code></p>
+								<p>The parser will translate every assertion literally to an equivalent RE AST representation. Builtin assertions
+								(e.g. <code>\b</code>, <code>$</code>) will be transformed into equivalent assertions.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>The parser will disable all assertion by replacing them with an empty character class. This will cause all
+								paths containing a assertion to be (effectively) removed.</p>
+							</li>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>The parser will throw an error when encountering a assertion that cannot be removed.</p>
+								<p>E.g. <code>a\B</code> will throw but <code>a([]\b)(\b){0}</code> will not because none of the <code>\b</code>s can be reached.</p>
+							</li>
+						</ul>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;parse&quot;</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="backreferencemaximumwords" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> backreference<wbr>Maximum<wbr>Words</h3>
@@ -157,41 +188,10 @@
 							<li>Removing constant 0 and constant 1 quantifiers.</li>
 							<li>Inlining single-alternative groups.</li>
 						</ul>
-						<p>These optimization might prevent that certain backreferences or lookarounds from throwing an error.</p>
+						<p>These optimization might prevent that certain backreferences or assertions from throwing an error.</p>
 						<dl class="tsd-comment-tags">
 							<dt>default</dt>
 							<dd><p>false</p>
-							</dd>
-						</dl>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="lookarounds" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> lookarounds</h3>
-					<div class="tsd-signature tsd-kind-icon">lookarounds<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;parse&quot;</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>How the parser will handle lookarounds.</p>
-						</div>
-						<ul>
-							<li><p><code>&quot;parse&quot;</code></p>
-								<p>The parser will translate every lookaround literally to an equivalent RE AST representation. Builtin assertions
-								(e.g. <code>\b</code>, <code>$</code>) will be transformed into equivalent lookarounds.</p>
-							</li>
-							<li><p><code>&quot;disable&quot;</code></p>
-								<p>The parser will disable all lookarounds by replacing them with an empty character class. This will cause all
-								paths containing a lookaround to be (effectively) removed.</p>
-							</li>
-							<li><p><code>&quot;throw&quot;</code></p>
-								<p>The parser will throw an error when encountering a lookaround that cannot be removed.</p>
-								<p>E.g. <code>a\B</code> will throw but <code>a([]\b)(\b){0}</code> will not because none of the <code>\b</code>s can be reached.</p>
-							</li>
-						</ul>
-						<dl class="tsd-comment-tags">
-							<dt>default</dt>
-							<dd><p>&quot;parse&quot;</p>
 							</dd>
 						</dl>
 					</div>
@@ -262,6 +262,9 @@
 						<a href="js.parseoptions.html" class="tsd-kind-icon">Parse<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#assertions" class="tsd-kind-icon">assertions</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#backreferencemaximumwords" class="tsd-kind-icon">backreference<wbr>Maximum<wbr>Words</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
@@ -269,9 +272,6 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="js.parseoptions.html#lookarounds" class="tsd-kind-icon">lookarounds</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#maximumnodes" class="tsd-kind-icon">maximum<wbr>Nodes</a>

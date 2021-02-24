@@ -83,7 +83,7 @@
 				<ul>
 					<li><p>Conversions</p>
 						<ul>
-							<li>RE to NFA (<em>lookarounds are not implemented yet</em>)</li>
+							<li>RE to NFA (<em>assertions are not implemented yet</em>)</li>
 							<li>NFA to DFA and DFA to NFA</li>
 							<li>NFA to RE and DFA to RE</li>
 						</ul>
@@ -112,17 +112,211 @@
 							<li>Accept all suffixes of a language</li>
 						</ul>
 					</li>
-					<li><p>Javascript RegExp</p>
+					<li><p>JavaScript RegExp</p>
 						<ul>
-							<li>RegExp to RE and RE to RegExp (non-trivial backreferences are not supported)</li>
+							<li>RegExp to RE and RE to RegExp<ul>
+									<li>All flags are fully supported</li>
+									<li>Unicode properties</li>
+									<li>Change flags</li>
+									<li>Limited support for simple backreferences</li>
+								</ul>
+							</li>
 						</ul>
 					</li>
 				</ul>
 				<p>See the <a href="https://rundevelopment.github.io/refa/">API documentation</a> for a complete list of all currently implemented operations.</p>
-				<a href="#limitations" id="limitations" style="color: inherit; text-decoration: none;">
-					<h3>Limitations</h3>
+				<a href="#re-ast-format" id="re-ast-format" style="color: inherit; text-decoration: none;">
+					<h3>RE AST format</h3>
+				</a>
+				<p>refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and comparatively simple.</p>
+				<p>It supports:</p>
+				<ul>
+					<li>Concatenation (e.g. <code>ab</code>)</li>
+					<li>Alternation (e.g. <code>a|b</code>)</li>
+					<li>Quantifiers (greedy and lazy) (e.g. <code>a{4,6}</code>, <code>a{2,}?</code>, <code>a?</code>, <code>a*</code>)</li>
+					<li>Assertions (e.g. <code>(?=a)</code>, <code>(?&lt;!a)</code>)</li>
+					<li>Characters/character sets (represented by interval sets)</li>
+				</ul>
+				<p>Some features like atomic groups and capturing groups are not supported (but might be added in the future).</p>
+				<p>Features like backreferences and recursion will never be support because their implementation details are very specific to the underlying regex engine and cannot be represented in an language-agnostic way.</p>
+				<a href="#converting-to-and-from-the-re-ast-format" id="converting-to-and-from-the-re-ast-format" style="color: inherit; text-decoration: none;">
+					<h4>Converting to and from the RE AST format</h4>
+				</a>
+				<p>JavaScript RegExp can be converted to the RE AST format by using <code>JS.Parser</code>. <code>JS.toLiteral</code> converts into the other direction. (Note that the conversion from JS RegExp to the RE AST format is lossy (capturing groups) and sometime impossible due to the limitations of the RE AST format.)</p>
+				<p>Converters for other regex dialects might be added in the future as separate packages.</p>
+				<a href="#universal-characters" id="universal-characters" style="color: inherit; text-decoration: none;">
+					<h3>Universal characters</h3>
+				</a>
+				<p>refa does not use JavaScript string represent characters or a sequence of characters. Instead it uses integers to represent characters (see the <code>Char</code> type) and arrays of numbers to represent words/strings (see the <code>Word</code> type).</p>
+				<p>This means that any text encoding can be used.</p>
+				<p>The <code>Words</code> namespace contains functions to convert JavaScript data into refa-compatible words and characters.</p>
+				<a href="#general-limitations" id="general-limitations" style="color: inherit; text-decoration: none;">
+					<h3>General limitations</h3>
 				</a>
 				<p>This library will never be able to support some modern features of regex engines such as <a href="https://www.rexegg.com/regex-capture.html">backreferences</a> and <a href="https://www.rexegg.com/regex-recursion.html">recursion</a> because these features, generally, cannot be be represented by a DFA or NFA.</p>
+				<a href="#usage-examples" id="usage-examples" style="color: inherit; text-decoration: none;">
+					<h2>Usage examples</h2>
+				</a>
+				<p>refa is a relatively low-level library. It only provides the basic building blocks. In the following examples, JS RegExps are used a lot so we will define a few useful helper function beforehand.</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">DFA</span><span style="color: #000000">, </span><span style="color: #001080">FiniteAutomaton</span><span style="color: #000000">, </span><span style="color: #001080">JS</span><span style="color: #000000">, </span><span style="color: #001080">NFA</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;refa&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">: </span><span style="color: #267F99">RegExp</span><span style="color: #000000">): </span><span style="color: #267F99">NFA</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">();</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromRegex</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">, { </span><span style="color: #001080">maxCharacter</span><span style="color: #000000"> });</span>
+<span style="color: #000000">}</span>
+<span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">toDFA</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">: </span><span style="color: #267F99">RegExp</span><span style="color: #000000">): </span><span style="color: #267F99">DFA</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #0070C1">DFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromFA</span><span style="color: #000000">(</span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">));</span>
+<span style="color: #000000">}</span>
+<span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">fa</span><span style="color: #000000">: </span><span style="color: #267F99">FiniteAutomaton</span><span style="color: #000000">): </span><span style="color: #267F99">RegExp</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">literal</span><span style="color: #000000"> = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">fa</span><span style="color: #000000">.</span><span style="color: #795E26">toRegex</span><span style="color: #000000">());</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #267F99">RegExp</span><span style="color: #000000">(</span><span style="color: #001080">literal</span><span style="color: #000000">.</span><span style="color: #001080">source</span><span style="color: #000000">, </span><span style="color: #001080">literal</span><span style="color: #000000">.</span><span style="color: #001080">flags</span><span style="color: #000000">);</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<ul>
+					<li><code>toNFA</code> parses the given RegExp and constructs a new NFA from the parsed AST.</li>
+					<li><code>toDFA</code> constructs a new NFA from the RegExp first and then converts that NFA into a new DFA.</li>
+					<li><code>toRegex</code> takes an FA (= NFA or DFA) and converts it into a RegExp.</li>
+				</ul>
+				<a href="#testing-whether-a-word-is-accepted" id="testing-whether-a-word-is-accepted" style="color: inherit; text-decoration: none;">
+					<h3>Testing whether a word is accepted</h3>
+				</a>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Words</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;refa&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /\w</span><span style="color: #000000">+</span><span style="color: #811F3F">\d</span><span style="color: #000000">+</span><span style="color: #811F3F">/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">nfa</span><span style="color: #000000"> = </span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">);</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">.</span><span style="color: #795E26">test</span><span style="color: #000000">(</span><span style="color: #001080">Words</span><span style="color: #000000">.</span><span style="color: #795E26">fromStringToUTF16</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;abc&quot;</span><span style="color: #000000">)));</span>
+<span style="color: #008000">// =&gt; false</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">.</span><span style="color: #795E26">test</span><span style="color: #000000">(</span><span style="color: #001080">Words</span><span style="color: #000000">.</span><span style="color: #795E26">fromStringToUTF16</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;123&quot;</span><span style="color: #000000">)));</span>
+<span style="color: #008000">// =&gt; true</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">.</span><span style="color: #795E26">test</span><span style="color: #000000">(</span><span style="color: #001080">Words</span><span style="color: #000000">.</span><span style="color: #795E26">fromStringToUTF16</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;abc123&quot;</span><span style="color: #000000">)));</span>
+<span style="color: #008000">// =&gt; true</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">.</span><span style="color: #795E26">test</span><span style="color: #000000">(</span><span style="color: #001080">Words</span><span style="color: #000000">.</span><span style="color: #795E26">fromStringToUTF16</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;123abc&quot;</span><span style="color: #000000">)));</span>
+<span style="color: #008000">// =&gt; false</span>
+</code></pre>
+				<a href="#finding-the-intersection-of-two-js-regexps" id="finding-the-intersection-of-two-js-regexps" style="color: inherit; text-decoration: none;">
+					<h3>Finding the intersection of two JS RegExps</h3>
+				</a>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex1</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /a</span><span style="color: #000000">+</span><span style="color: #811F3F">B</span><span style="color: #000000">+</span><span style="color: #811F3F">c</span><span style="color: #000000">+</span><span style="color: #811F3F">/</span><span style="color: #0000FF">i</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex2</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /Ab</span><span style="color: #000000">*</span><span style="color: #811F3F">C\d</span><span style="color: #000000">?</span><span style="color: #811F3F">/</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">intersection</span><span style="color: #000000"> = </span><span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromIntersection</span><span style="color: #000000">(</span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #001080">regex1</span><span style="color: #000000">), </span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #001080">regex2</span><span style="color: #000000">));</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">intersection</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; /Ab+C/</span>
+</code></pre>
+				<a href="#finding-the-complement-of-a-js-regexp" id="finding-the-complement-of-a-js-regexp" style="color: inherit; text-decoration: none;">
+					<h3>Finding the complement of a JS RegExp</h3>
+				</a>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /a</span><span style="color: #000000">+</span><span style="color: #811F3F">b</span><span style="color: #000000">*</span><span style="color: #811F3F">/</span><span style="color: #0000FF">i</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">dfa</span><span style="color: #000000"> = </span><span style="color: #795E26">toDFA</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">);</span>
+<span style="color: #001080">dfa</span><span style="color: #000000">.</span><span style="color: #795E26">complement</span><span style="color: #000000">();</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">dfa</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; /(?:(?:[^A]|A+(?:[^AB]|B+[^B]))[^]*)?/i</span>
+</code></pre>
+				<a href="#converting-a-js-regexp-to-an-nfa" id="converting-a-js-regexp-to-an-nfa" style="color: inherit; text-decoration: none;">
+					<h3>Converting a JS RegExp to an NFA</h3>
+				</a>
+				<p>In the above examples, we have been using the <code>toNFA</code> helper function to parse and convert RegExps. This function assumes that the given RegExp is a pure regular expression without assertions and backreferences and will throw an error if the assumption is not met.</p>
+				<p>However, the JS parser and <code>NFA.fromRegex</code> provide some options to work around and even solve this problem.</p>
+				<a href="#backreferences" id="backreferences" style="color: inherit; text-decoration: none;">
+					<h4>Backreferences</h4>
+				</a>
+				<p>Firstly, the parser will automatically resolve simple backreferences. Even <code>toNFA</code> will do this since it&#39;s on by default:</p>
+				<pre><code class="language-ts"><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #811F3F">/</span><span style="color: #D16969">(</span><span style="color: #811F3F">&quot;</span><span style="color: #EE0000">|</span><span style="color: #811F3F">&#039;</span><span style="color: #D16969">)</span><span style="color: #811F3F">.</span><span style="color: #000000">*?</span><span style="color: #0000FF">\1</span><span style="color: #811F3F">/</span><span style="color: #000000">)));</span>
+<span style="color: #008000">// =&gt; /&quot;.*&quot;|&#039;.*&#039;/i</span>
+</code></pre>
+				<p>But it will throw an error for non-trivial backreferences that cannot be resolved:</p>
+				<pre><code class="language-ts"><span style="color: #795E26">toNFA</span><span style="color: #000000">(</span><span style="color: #811F3F">/</span><span style="color: #D16969">(</span><span style="color: #811F3F">#</span><span style="color: #000000">+</span><span style="color: #D16969">)</span><span style="color: #811F3F">.</span><span style="color: #000000">*</span><span style="color: #0000FF">\1</span><span style="color: #EE0000">|</span><span style="color: #811F3F">foo/</span><span style="color: #000000">);</span>
+<span style="color: #008000">// Error: Backreferences are not supported.</span>
+</code></pre>
+				<p>The only way to parse the RegExp despite unresolvable backreferences is to remove the backreferences. This means that the result will be imperfect but it might still be useful.</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #D16969">(</span><span style="color: #811F3F">#</span><span style="color: #000000">+</span><span style="color: #D16969">)</span><span style="color: #811F3F">.</span><span style="color: #000000">*</span><span style="color: #0000FF">\1</span><span style="color: #EE0000">|</span><span style="color: #811F3F">foo/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">parseResult</span><span style="color: #000000"> = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">backreferences:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">parseResult</span><span style="color: #000000">.</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;foo&#039;, flags: &#039;&#039; }</span>
+</code></pre>
+				<p>Note that the <code>foo</code> alternative is kept because it is completely unaffected by the unresolvable backreferences.</p>
+				<a href="#assertions" id="assertions" style="color: inherit; text-decoration: none;">
+					<h4>Assertions</h4>
+				</a>
+				<p>While the parser and AST format can handle assertions, the NFA construction cannot.</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #EE0000">\b</span><span style="color: #D16969">(?!</span><span style="color: #811F3F">\d</span><span style="color: #D16969">)</span><span style="color: #811F3F">\w</span><span style="color: #000000">+</span><span style="color: #EE0000">\b|</span><span style="color: #811F3F">-&gt;/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">();</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;\\b(?!\\d)\\w+\\b|-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromRegex</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">, { </span><span style="color: #001080">maxCharacter</span><span style="color: #000000"> });</span>
+<span style="color: #008000">// Error: Assertions are not supported yet.</span>
+</code></pre>
+				<p>Similarly to backreferences, we can let the parser remove them:</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #EE0000">\b</span><span style="color: #D16969">(?!</span><span style="color: #811F3F">\d</span><span style="color: #D16969">)</span><span style="color: #811F3F">\w</span><span style="color: #000000">+</span><span style="color: #EE0000">\b|</span><span style="color: #811F3F">-&gt;/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">assertions:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">nfa</span><span style="color: #000000"> = </span><span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromRegex</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">, { </span><span style="color: #001080">maxCharacter</span><span style="color: #000000"> });</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; /-&gt;/i</span>
+</code></pre>
+				<details>
+					<p>Or we can let the NFA construction method remove them:</p>
+					<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #EE0000">\b</span><span style="color: #D16969">(?!</span><span style="color: #811F3F">\d</span><span style="color: #D16969">)</span><span style="color: #811F3F">\w</span><span style="color: #000000">+</span><span style="color: #EE0000">\b|</span><span style="color: #811F3F">-&gt;/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">();</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;\\b(?!\\d)\\w+\\b|-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">nfa</span><span style="color: #000000"> = </span><span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromRegex</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">, { </span><span style="color: #001080">maxCharacter</span><span style="color: #000000"> }, { </span><span style="color: #001080">assertions:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; /-&gt;/i</span>
+</code></pre>
+					<p>Prefer using the parser to remove assertions if possible. The parser is quite clever and will optimize based on that assertions can be removed resulting in faster parse times.</p>
+				</details>
+				<p>However, simply removing assertions is not ideal since they are a lot more common than backreferences. To work around this, refa has AST transformers. AST transformers can make changes to a given AST. While each transformer is rather simple, they can also work together to accomplish more complex tasks. Applying and removing assertions is one such task.</p>
+				<p>The details about the transformers used in this example can be found in their documentation.</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">combineTransformers</span><span style="color: #000000">, </span><span style="color: #001080">FiniteAutomaton</span><span style="color: #000000">, </span><span style="color: #001080">JS</span><span style="color: #000000">, </span><span style="color: #001080">NFA</span><span style="color: #000000">, </span><span style="color: #001080">transform</span><span style="color: #000000">, </span><span style="color: #001080">Transformers</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;refa&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">fa</span><span style="color: #000000">: </span><span style="color: #267F99">FiniteAutomaton</span><span style="color: #000000">): </span><span style="color: #267F99">RegExp</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">literal</span><span style="color: #000000"> = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">fa</span><span style="color: #000000">.</span><span style="color: #795E26">toRegex</span><span style="color: #000000">());</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #267F99">RegExp</span><span style="color: #000000">(</span><span style="color: #001080">literal</span><span style="color: #000000">.</span><span style="color: #001080">source</span><span style="color: #000000">, </span><span style="color: #001080">literal</span><span style="color: #000000">.</span><span style="color: #001080">flags</span><span style="color: #000000">);</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #EE0000">\b</span><span style="color: #D16969">(?!</span><span style="color: #811F3F">\d</span><span style="color: #D16969">)</span><span style="color: #811F3F">\w</span><span style="color: #000000">+</span><span style="color: #EE0000">\b|</span><span style="color: #811F3F">-&gt;/</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">();</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;\\b(?!\\d)\\w+\\b|-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">transformer</span><span style="color: #000000"> = </span><span style="color: #795E26">combineTransformers</span><span style="color: #000000">([</span>
+<span style="color: #000000">    </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">inline</span><span style="color: #000000">(),</span>
+<span style="color: #000000">    </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">removeDeadBranches</span><span style="color: #000000">(),</span>
+<span style="color: #000000">    </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">removeUnnecessaryAssertions</span><span style="color: #000000">(),</span>
+<span style="color: #000000">    </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">applyAssertions</span><span style="color: #000000">(),</span>
+<span style="color: #000000">]);</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">modifiedExpression</span><span style="color: #000000"> = </span><span style="color: #795E26">transform</span><span style="color: #000000">(</span><span style="color: #001080">transformer</span><span style="color: #000000">, </span><span style="color: #001080">expression</span><span style="color: #000000">);</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">modifiedExpression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;(?&lt;!\\w)[A-Z_]\\w*(?!\\w)|-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #008000">// most assertions have been removed</span>
+<span style="color: #008000">// the only ones left assert characters beyond the edge of the pattern, so let&#039;s remove them</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">finalExpression</span><span style="color: #000000"> = </span><span style="color: #795E26">transform</span><span style="color: #000000">(</span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">patternEdgeAssertions</span><span style="color: #000000">({ </span><span style="color: #001080">remove:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000"> }), </span><span style="color: #001080">modifiedExpression</span><span style="color: #000000">);</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">finalExpression</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; { source: &#039;[A-Z_]\\w*|-&gt;&#039;, flags: &#039;i&#039; }</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">nfa</span><span style="color: #000000"> = </span><span style="color: #0070C1">NFA</span><span style="color: #000000">.</span><span style="color: #795E26">fromRegex</span><span style="color: #000000">(</span><span style="color: #001080">finalExpression</span><span style="color: #000000">, { </span><span style="color: #001080">maxCharacter</span><span style="color: #000000"> });</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #795E26">toRegExp</span><span style="color: #000000">(</span><span style="color: #001080">nfa</span><span style="color: #000000">));</span>
+<span style="color: #008000">// =&gt; /-&gt;|[A-Z_]\w*/i</span>
+</code></pre>
+				<p>AST transformers can handle a lot of assertions but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST.</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
