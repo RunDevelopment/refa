@@ -221,7 +221,7 @@ class TransitionCreator {
 function createNodeList<T>(
 	iter: FAIterator<T, Iterable<[T, CharSet]>>,
 	tc: TransitionCreator
-): { nodeList: NodeList; maximumCharacter: number } | null {
+): { nodeList: NodeList; maxCharacter: number } | null {
 	const nodeList = new NodeList();
 
 	// the state elimination method requires that the initial state isn't final, so we add a temp state
@@ -232,7 +232,7 @@ function createNodeList<T>(
 	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
 	translate.cache.set(iter.initial, tempInitial);
 
-	let maximumCharacter: number | undefined = undefined;
+	let maxCharacter: number | undefined = undefined;
 
 	DFS(iter.initial, n => {
 		// set final
@@ -255,9 +255,9 @@ function createNodeList<T>(
 		});
 
 		out.forEach(([outNode, charSet]) => {
-			if (maximumCharacter === undefined) {
-				maximumCharacter = charSet.maximum;
-			} else if (charSet.maximum !== maximumCharacter) {
+			if (maxCharacter === undefined) {
+				maxCharacter = charSet.maximum;
+			} else if (charSet.maximum !== maxCharacter) {
 				throw new Error("All character sets have to have to same maximum.");
 			}
 			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet));
@@ -304,9 +304,9 @@ function createNodeList<T>(
 		});
 	});
 
-	return { nodeList, maximumCharacter: maximumCharacter ?? 0 };
+	return { nodeList, maxCharacter: maxCharacter ?? 0 };
 }
-function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumCharacter: number): void {
+function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter: number): void {
 	const initial = nodeList.initial;
 	const final = firstOf(nodeList.finals)!;
 
@@ -319,7 +319,7 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maximumChara
 	});
 
 	const transformContext: TransformContext = {
-		maxCharacter: maximumCharacter,
+		maxCharacter,
 		signalMutation: () => {
 			/* noop */
 		},
@@ -648,8 +648,8 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAst
 		return tc.emptyExpression();
 	}
 
-	const { nodeList, maximumCharacter } = result;
-	eliminateStates(nodeList, tc, maximumCharacter);
+	const { nodeList, maxCharacter } = result;
+	eliminateStates(nodeList, tc, maxCharacter);
 
 	const [finalState] = [...nodeList.finals];
 	if (finalState.in.size !== 1 || !finalState.in.has(nodeList.initial)) {
@@ -672,12 +672,12 @@ export function toRegex<T>(
 	iter: FAIterator<T, Iterable<[T, CharSet]>>,
 	options?: Readonly<ToRegexOptions>
 ): NoParent<Expression> {
-	const maxAstNodes = options?.maximumNodes ?? 10000;
+	const maxAstNodes = options?.maxNodes ?? 10000;
 	const expression = stateElimination(iter, maxAstNodes);
 
 	// optimize
 	const optimized = transform(FULL_OPTIMIZE_TRANSFORMER, expression, {
-		maxPasses: options?.maximumOptimizationPasses ?? Infinity,
+		maxPasses: options?.maxOptimizationPasses ?? Infinity,
 	});
 
 	return optimized;

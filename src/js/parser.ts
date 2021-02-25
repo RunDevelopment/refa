@@ -42,7 +42,7 @@ export interface ParseOptions {
 	 *
 	 * @default 100
 	 */
-	backreferenceMaximumWords?: number;
+	maxBackreferenceWords?: number;
 	/**
 	 * How to the parser will handle unresolved backreferences.
 	 *
@@ -111,7 +111,7 @@ export interface ParseOptions {
 	 *
 	 * @default 100000
 	 */
-	maximumNodes?: number;
+	maxNodes?: number;
 }
 
 export interface RegexppAst {
@@ -127,7 +127,7 @@ export interface ParseResult {
 }
 
 interface ParserContext {
-	readonly backreferenceMaximumWords: number;
+	readonly maxBackreferenceWords: number;
 	readonly backreferences: NonNullable<ParseOptions["backreferences"]>;
 	readonly assertions: NonNullable<ParseOptions["assertions"]>;
 	readonly disableSimplification: boolean;
@@ -221,12 +221,12 @@ export class Parser {
 	 */
 	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const context: ParserContext = {
-			backreferenceMaximumWords: Math.round(options?.backreferenceMaximumWords ?? DEFAULT_BACK_REF_MAX_WORDS),
+			maxBackreferenceWords: Math.round(options?.maxBackreferenceWords ?? DEFAULT_BACK_REF_MAX_WORDS),
 			backreferences: options?.backreferences ?? "throw",
 			assertions: options?.assertions ?? "parse",
 			disableSimplification: options?.disableOptimizations ?? false,
 
-			nc: new NodeCreator(options?.maximumNodes ?? DEFAULT_MAX_NODES),
+			nc: new NodeCreator(options?.maxNodes ?? DEFAULT_MAX_NODES),
 			matchingDir: inheritedMatchingDirection(element),
 			variableResolved: new Map(),
 		};
@@ -354,7 +354,7 @@ export class Parser {
 
 				let resolved = false;
 
-				if (currentElement.type === "CapturingGroup" && context.backreferenceMaximumWords > 0) {
+				if (currentElement.type === "CapturingGroup" && context.maxBackreferenceWords > 0) {
 					try {
 						// try to resolve the backreferences of this capturing group
 						const resolveResult = this._variableResolveGroup(
@@ -397,7 +397,7 @@ export class Parser {
 			throw new Error("No backreferences that resolve this capturing group");
 		}
 
-		const words = atMostK(iterateWords(groupElement), context.backreferenceMaximumWords);
+		const words = atMostK(iterateWords(groupElement), context.maxBackreferenceWords);
 		if (words.length === 0) {
 			throw new Error("Cannot resolve dead capturing group");
 		}
@@ -705,7 +705,7 @@ export class Parser {
 	}
 
 	private _createBackreference(element: AST.Backreference, context: ParserContext): NoParent<Element> | Empty {
-		if (context.backreferenceMaximumWords > 0) {
+		if (context.maxBackreferenceWords > 0) {
 			// try resolve
 			if (!this._backRefCanReachGroup(element)) {
 				return EMPTY_CONCAT;

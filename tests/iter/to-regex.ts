@@ -13,7 +13,7 @@ describe("toRegex", function () {
 			},
 			{
 				literal: /a+/,
-				options: { maximumOptimizationPasses: 0 },
+				options: { maxOptimizationPasses: 0 },
 				expected: String.raw`/a+/`,
 			},
 			{
@@ -42,7 +42,7 @@ describe("toRegex", function () {
 			},
 			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
-				options: { maximumOptimizationPasses: 0 },
+				options: { maxOptimizationPasses: 0 },
 				expected: String.raw`/\d+(?:\.\d*|(?:|\.(?:|\d+))E[-+]\d+)?/i`,
 			},
 		]);
@@ -133,11 +133,11 @@ describe("toRegex", function () {
 		const i = NFA.fromIntersection(a, b);
 
 		assert.throws(() => i.toRegex()); // safe by default
-		assert.throws(() => i.toRegex({ maximumNodes: 10_000 })); // default value
-		assert.throws(() => i.toRegex({ maximumNodes: 100_000 }));
-		assert.throws(() => i.toRegex({ maximumNodes: 1_000_000 }));
+		assert.throws(() => i.toRegex({ maxNodes: 10_000 })); // default value
+		assert.throws(() => i.toRegex({ maxNodes: 100_000 }));
+		assert.throws(() => i.toRegex({ maxNodes: 1_000_000 }));
 		// disabled so tests run faster
-		// assert.throws(() => i.toRegex({ maximumNodes: 10_000_000 }));
+		// assert.throws(() => i.toRegex({ maxNodes: 10_000_000 }));
 
 		// increasing by another order of magnitude causes NodeJS to crash on my computer
 	});

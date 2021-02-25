@@ -123,7 +123,7 @@ export class CharSet {
 		return allSet;
 	}
 
-	private checkCompatibility(value: CharSet): void {
+	private _checkCompatibility(value: CharSet): void {
 		if (value.maximum !== this.maximum) {
 			throw new RangeError(
 				`The maximum of the other set (${value.maximum}) ` +
@@ -132,18 +132,18 @@ export class CharSet {
 		}
 	}
 
-	private toRanges(value: CharSet): readonly CharRange[];
-	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange>;
-	private toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange> {
+	private _toRanges(value: CharSet): readonly CharRange[];
+	private _toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange>;
+	private _toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange> {
 		if (value instanceof CharSet) {
-			this.checkCompatibility(value);
+			this._checkCompatibility(value);
 			return value.ranges;
 		} else {
 			return value;
 		}
 	}
 
-	private checkRange(range: CharRange): CharRange {
+	private _checkRange(range: CharRange): CharRange {
 		if (range.min < 0 || range.min > range.max || range.max > this.maximum)
 			throw new RangeError(`min=${range.min} has to be >= 0 and <= max.`);
 		if (range.max > this.maximum) throw new RangeError(`max=${range.max} has to be <= maximum=${this.maximum}.`);
@@ -227,7 +227,7 @@ export class CharSet {
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
 		if (data.length === 1 && first instanceof CharSet) {
-			this.checkCompatibility(first);
+			this._checkCompatibility(first);
 			if (first.ranges.length === 0) {
 				return this;
 			} else {
@@ -237,8 +237,8 @@ export class CharSet {
 
 		const newRanges: CharRange[] = this.ranges.slice();
 		for (const rangesOrSet of data) {
-			for (const range of this.toRanges(rangesOrSet)) {
-				newRanges.push(this.checkRange(range));
+			for (const range of this._toRanges(rangesOrSet)) {
+				newRanges.push(this._checkRange(range));
 			}
 		}
 
@@ -261,7 +261,7 @@ export class CharSet {
 	intersect(data: Iterable<CharRange> | CharSet): CharSet {
 		let other: CharSet;
 		if (data instanceof CharSet) {
-			this.checkCompatibility(data);
+			this._checkCompatibility(data);
 			other = data;
 		} else {
 			// will be slower because the data has to be sorted and optimized which is done in O(n log n)
@@ -291,7 +291,7 @@ export class CharSet {
 	without(data: Iterable<CharRange> | CharSet): CharSet {
 		let other;
 		if (data instanceof CharSet) {
-			this.checkCompatibility(data);
+			this._checkCompatibility(data);
 			other = data;
 		} else {
 			other = CharSet.empty(this.maximum).union(data);

@@ -1,5 +1,5 @@
 import { FAIterator } from "../finite-automaton";
-import { IterateBFS, iterToArray, traverse as traverseGraph } from "../util";
+import { iterateBFS, iterToArray, traverse as traverseGraph } from "../util";
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -131,7 +131,7 @@ export function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 export function iterateStates<S>(iter: FAIterator<S>): Iterable<S> {
 	const { initial, getOut } = iter;
 
-	return IterateBFS([initial], getOut);
+	return iterateBFS([initial], getOut);
 }
 
 /**
@@ -252,7 +252,7 @@ export function languageIsFinite<T>(iter: FAIterator<T>): boolean {
 	const inMap = createInTransitionMap(states, iter.getOut);
 
 	// get all states that can reach a final state
-	const statesToFinal = new Set(IterateBFS(finals, s => inMap.get(s)!));
+	const statesToFinal = new Set(iterateBFS(finals, s => inMap.get(s)!));
 
 	// an iter where each state can reach a final state
 	const iterToFinal = filterOutIter(iter, s => statesToFinal.has(s));

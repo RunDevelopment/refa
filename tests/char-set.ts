@@ -201,13 +201,13 @@ describe("CharSet", function () {
 
 		for (const predicateTest of predicateTests) {
 			describe(predicateTest.name, function () {
-				for (const _case of predicateTest.cases) {
-					const caseName = _case
+				for (const testCase of predicateTest.cases) {
+					const caseName = testCase
 						.toString()
 						.replace(/\s+/g, " ")
 						.replace(/^\s*\(\s*\)\s*=>\s*/, "");
 					it(caseName, function () {
-						assert.isTrue(_case());
+						assert.isTrue(testCase());
 					});
 				}
 			});

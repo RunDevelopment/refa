@@ -39,7 +39,7 @@ describe("Regex stress test", function () {
 			const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
 			nfa.nodes.count();
 
-			const re1 = nfa.toRegex({ maximumNodes: Infinity });
+			const re1 = nfa.toRegex({ maxNodes: Infinity });
 
 			try {
 				const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
@@ -51,7 +51,7 @@ describe("Regex stress test", function () {
 					equalLanguage(dfa, re1, maxCharacter);
 				}
 
-				const re2 = dfa.toRegex({ maximumNodes: 100_000 });
+				const re2 = dfa.toRegex({ maxNodes: 100_000 });
 				if (CHECK_RE_LANGUAGE) {
 					equalLanguage(dfa, re2, maxCharacter);
 				}

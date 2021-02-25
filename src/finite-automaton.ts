@@ -66,7 +66,7 @@ export interface ToRegexOptions {
 	 *
 	 * @default 10000
 	 */
-	maximumNodes?: number;
+	maxNodes?: number;
 	/**
 	 * The maximum number of optimization passes that will be done after the initial RE AST was created.
 	 *
@@ -75,7 +75,7 @@ export interface ToRegexOptions {
 	 *
 	 * @default Infinity
 	 */
-	maximumOptimizationPasses?: number;
+	maxOptimizationPasses?: number;
 }
 
 /**

@@ -10,9 +10,24 @@ A few general rules:
 - Strongly type everything (except what is trivially inferred).
 - Document as much as possible but nothing obvious. (No `i++; // increase variable`)
 - Use an IDE that supports ESLint. This will take care of formatting and give warnings and errors.
-- Use existing naming conventions (camelCase for functions and variables, PascalCase for classes, interfaces, and types.).
 
-Useful commands:
+### Naming conventions
+
+- Casing
+    - Lower camelCase for variables, functions, and parameters.
+        - Private methods and variables in a class must have one leading underscore (`_`).
+        - Unused function parameters may have a leading underscore (`_`).
+    - PascalCase for classes, interfaces, types, and type parameters.
+    - UPPER_CASE for compile-time constants.
+- Maximum and minimum
+    - When referring to a maximum of something, call it `maxSomething` instead of `maximumSomething`. Same for "minimum" and "min".
+    - When referring to a maximum and minimum to describe a range, call it `max` and `min`.
+    - When referring to a maximum (without corresponding minimum), call it `maximum`. Same for "minimum".
+- Assertion vs. Lookaround
+    - Always use "assertion" when referring to a lookaround (= lookbehind inclusive or lookahead).
+    - Use "lookbehind" and "lookahead" only when referring to either specifically, excluding the other.
+
+### Useful commands
 
 - `npm run test`
     Run all tests.

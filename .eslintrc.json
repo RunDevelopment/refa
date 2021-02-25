@@ -23,6 +23,43 @@
 		}
 	},
 	"rules": {
+		"@typescript-eslint/naming-convention": [
+			"error",
+			{
+				"selector": "default",
+				"format": ["camelCase"]
+			},
+			{
+				"selector": ["class", "interface", "typeAlias", "enum", "typeParameter"],
+				"format": ["PascalCase"]
+			},
+			{
+				"selector": "enumMember",
+				"format": ["UPPER_CASE"]
+			},
+			{
+				"selector": "variable",
+				"modifiers": ["const"],
+				"format": ["UPPER_CASE", "camelCase"]
+			},
+			{
+				"selector": ["classProperty", "classMethod"],
+				"modifiers": ["private"],
+				"format": ["camelCase"],
+				"leadingUnderscore": "require"
+			},
+			{
+				"selector": ["variable", "parameter"],
+				"modifiers": ["unused"],
+				"format": null,
+				"leadingUnderscore": "allow"
+			},
+			{
+				"selector": "typeProperty",
+				"format": ["camelCase"],
+				"leadingUnderscore": "allowDouble"
+			}
+		],
 		"no-constant-condition": [
 			"error",
 			{

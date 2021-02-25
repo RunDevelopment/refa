@@ -95,9 +95,13 @@ function isSearchResult<T>(result: any): result is SearchResult<T> {
  * @param rootElement
  * @param next
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DFS<S, T>(
 	rootElement: S,
 	next: (element: S) => Iterable<S> | SearchResult<T>,
@@ -167,9 +171,13 @@ export function DFS<S, T>(
 	return defaultValue;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function BFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function BFS<S, T>(
 	rootElement: S,
 	next: (element: S) => Iterable<S> | SearchResult<T>,
@@ -211,7 +219,7 @@ export function BFS<S, T>(
 	return defaultValue;
 }
 
-export function* IterateBFS<S>(startElements: Iterable<S>, next: (element: S) => Iterable<S>): Iterable<S> {
+export function* iterateBFS<S>(startElements: Iterable<S>, next: (element: S) => Iterable<S>): Iterable<S> {
 	const visited = new Set<S>();
 	let visitNow: S[] = [...startElements];
 	let visitNext: S[] = [];
@@ -317,28 +325,28 @@ class LazyStableIterable<T> implements Iterable<T> {
 			return this._cache[Symbol.iterator]();
 		} else {
 			return (function* (instance: LazyStableIterable<T>) {
-				const { _cache, _iterator } = instance;
+				const { _cache: cache, _iterator: iterator } = instance;
 
 				let i = 0;
 				while (!instance._fullyCached) {
-					if (i < _cache.length) {
-						yield _cache[i];
+					if (i < cache.length) {
+						yield cache[i];
 						i++;
 					} else {
-						const next = _iterator.next();
+						const next = iterator.next();
 						if (next.done) {
 							instance._fullyCached = true;
 						} else {
 							const { value } = next;
-							_cache.push(value);
+							cache.push(value);
 							yield value;
 							i++;
 						}
 					}
 				}
 
-				for (; i < _cache.length; i++) {
-					yield _cache[i];
+				for (; i < cache.length; i++) {
+					yield cache[i];
 				}
 			})(this);
 		}

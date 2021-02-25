@@ -78,27 +78,27 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
  * operator (`===`).
  */
 export class CharMap<T> implements ReadonlyCharMap<T> {
-	private tree: AVLTree<T>;
+	private _tree: AVLTree<T>;
 
 	constructor(equalFn?: (a: T, b: T) => boolean) {
-		this.tree = new AVLTree<T>(equalFn || strictEqualFn);
+		this._tree = new AVLTree<T>(equalFn || strictEqualFn);
 	}
 
 	get isEmpty(): boolean {
-		return this.tree.root === null;
+		return this._tree.root === null;
 	}
 
 	has(char: Char): boolean {
 		if (!Number.isFinite(char)) return false;
-		return this.tree.nodeOf(char) !== null;
+		return this._tree.nodeOf(char) !== null;
 	}
 	hasEvery(chars: CharRange): boolean {
 		checkRange(chars);
 		const { min, max } = chars;
 
 		// get nodes which contain min and max
-		const minNode = this.tree.nodeOf(min);
-		const maxNode = this.tree.nodeOf(max);
+		const minNode = this._tree.nodeOf(min);
+		const maxNode = this._tree.nodeOf(max);
 
 		if (minNode === null || maxNode === null) return false;
 
@@ -117,19 +117,19 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 	hasSome(chars: CharRange): boolean {
 		checkRange(chars);
-		return this.tree.nodeInRange(chars) !== null;
+		return this._tree.nodeInRange(chars) !== null;
 	}
 
 	get(char: Char): T | undefined {
 		if (!Number.isFinite(char)) return undefined; // char is NaN, Inf, or -Inf
-		const node = this.tree.nodeOf(char);
+		const node = this._tree.nodeOf(char);
 		return node ? node.value : undefined;
 	}
 
 	set(char: Char, value: T): void {
 		checkChar(char);
-		this.tree.deleteCharacter(char);
-		this.tree.insert({ min: char, max: char }, value);
+		this._tree.deleteCharacter(char);
+		this._tree.insert({ min: char, max: char }, value);
 	}
 
 	/**
@@ -142,13 +142,13 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 */
 	setEvery(chars: CharRange, value: T): void {
 		checkRange(chars);
-		this.tree.deleteRange(chars);
-		this.tree.insert(chars, value);
+		this._tree.deleteRange(chars);
+		this._tree.insert(chars, value);
 	}
 
 	delete(char: Char): boolean {
 		if (!Number.isFinite(char)) return false;
-		const result = this.tree.deleteCharacter(char);
+		const result = this._tree.deleteCharacter(char);
 		return result;
 	}
 
@@ -161,11 +161,11 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 */
 	deleteEvery(range: CharRange): void {
 		checkRange(range);
-		this.tree.deleteRange(range);
+		this._tree.deleteRange(range);
 	}
 
 	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
-		this.tree.map((r, v) => {
+		this._tree.map((r, v) => {
 			return mapFn(v, r, this);
 		});
 	}
@@ -173,7 +173,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		range: CharRange,
 		mapFn: (value: T | undefined, chars: CharRange, map: ReadonlyCharMap<T>) => T | undefined
 	): void {
-		this.tree.mapWithGaps(range, (r, v) => {
+		this._tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});
 	}
@@ -186,7 +186,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 				rec(node.right);
 			}
 		};
-		rec(this.tree.root);
+		rec(this._tree.root);
 	}
 	*keys(): IterableIterator<CharRange> {
 		for (const [key] of this.entries()) {
@@ -200,8 +200,8 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 	*entries(range?: CharRange): IterableIterator<[CharRange, T]> {
 		if (range) {
-			let current = this.tree.leftmostNodeInRange(range);
-			const end = this.tree.rightmostNodeInRange(range);
+			let current = this._tree.leftmostNodeInRange(range);
+			const end = this._tree.rightmostNodeInRange(range);
 			while (current) {
 				yield [current.key, current.value];
 
@@ -214,8 +214,8 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		} else {
 			const stack: { leftDone: boolean; node: Node<T> }[] = [];
 
-			if (this.tree.root) {
-				stack.push({ leftDone: false, node: this.tree.root });
+			if (this._tree.root) {
+				stack.push({ leftDone: false, node: this._tree.root });
 			}
 
 			while (stack.length > 0) {
@@ -520,7 +520,7 @@ class AVLTree<T> {
 		return rightmostNodeInRange(this.root, range);
 	}
 
-	private mergeAdjacentLeft(key: CharRange, rightNode: Node<T>): void {
+	private _mergeAdjacentLeft(key: CharRange, rightNode: Node<T>): void {
 		if (!areAdjacentRanges(key, rightNode.key)) {
 			throw new Error("The ranges are not adjacent");
 		}
@@ -539,7 +539,7 @@ class AVLTree<T> {
 
 		rightNode.key = { min, max: rightNode.key.max };
 	}
-	private mergeAdjacentRight(leftNode: Node<T>, key: CharRange): void {
+	private _mergeAdjacentRight(leftNode: Node<T>, key: CharRange): void {
 		if (!areAdjacentRanges(leftNode.key, key)) {
 			throw new Error("The ranges are not adjacent");
 		}
@@ -578,7 +578,7 @@ class AVLTree<T> {
 			if (parent.key.max < key.min) {
 				// [parent] [key]
 				if (areAdjacentRanges(parent.key, key) && this.equalFn(parent.value, value)) {
-					this.mergeAdjacentRight(parent, key);
+					this._mergeAdjacentRight(parent, key);
 					return;
 				} else {
 					const rightN = rightNeighbor(parent);
@@ -591,7 +591,7 @@ class AVLTree<T> {
 			} else {
 				// [key] [parent]
 				if (areAdjacentRanges(key, parent.key) && this.equalFn(value, parent.value)) {
-					this.mergeAdjacentLeft(key, parent);
+					this._mergeAdjacentLeft(key, parent);
 					return;
 				} else {
 					const leftN = leftNeighbor(parent);
@@ -653,7 +653,7 @@ class AVLTree<T> {
 		}
 	}
 
-	private transplant(u: Node<T>, v: Node<T> | null): void {
+	private _transplant(u: Node<T>, v: Node<T> | null): void {
 		if (u.parent === null) {
 			//u is root
 			this.root = v;
@@ -669,7 +669,7 @@ class AVLTree<T> {
 			v.parent = u.parent;
 		}
 	}
-	private avlDeleteFixup(n: Node<T>): void {
+	private _avlDeleteFixup(n: Node<T>): void {
 		let p: Node<T> | null = n;
 
 		while (p !== null) {
@@ -734,28 +734,28 @@ class AVLTree<T> {
 	 */
 	detachNode(z: Node<T>): void {
 		if (z.left === null) {
-			this.transplant(z, z.right);
+			this._transplant(z, z.right);
 			if (z.parent) {
-				this.avlDeleteFixup(z.parent);
+				this._avlDeleteFixup(z.parent);
 			}
 		} else if (z.right === null) {
-			this.transplant(z, z.left);
+			this._transplant(z, z.left);
 			if (z.parent) {
-				this.avlDeleteFixup(z.parent);
+				this._avlDeleteFixup(z.parent);
 			}
 		} else {
 			const y = leftmostNode(z.right); //leftmostNode element in right subtree
 			let fixupStart = y;
 			if (y.parent !== z) {
 				fixupStart = y.parent!;
-				this.transplant(y, y.right);
+				this._transplant(y, y.right);
 				y.right = z.right;
 				y.right.parent = y;
 			}
-			this.transplant(z, y);
+			this._transplant(z, y);
 			y.left = z.left;
 			y.left.parent = y;
-			this.avlDeleteFixup(fixupStart);
+			this._avlDeleteFixup(fixupStart);
 		}
 	}
 
@@ -918,7 +918,7 @@ class AVLTree<T> {
 		}
 	}
 
-	private applyModifications(mods: [Node<T>, T][]): void {
+	private _applyModifications(mods: [Node<T>, T][]): void {
 		if (mods.length === 0) {
 			return;
 		} else if (mods.length === 1) {
@@ -1053,7 +1053,7 @@ class AVLTree<T> {
 
 			// delete, modify, and insert
 			del.forEach(n => this.detachNode(n));
-			this.applyModifications(mod);
+			this._applyModifications(mod);
 			ins.forEach(([range, v]) => this.insert(range, v));
 		}
 	}
