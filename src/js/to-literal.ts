@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { NoParent, Node, Expression, Concatenation, visitNodes, Element, Assertion, Alternation } from "../ast";
+import { NoParent, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
 import {
@@ -286,7 +286,7 @@ function makeIgnoreCaseSingleChar(char: Char, unicode: boolean): CharSet | null 
 function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 	try {
 		for (const node of value) {
-			visitNodes(node, {
+			visitAst(node, {
 				onCharacterClassEnter(node) {
 					if (node.characters.maximum === UNICODE_MAXIMUM) {
 						throw true;
@@ -312,7 +312,7 @@ function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): 
 
 	try {
 		for (const node of value) {
-			visitNodes(node, {
+			visitAst(node, {
 				onCharacterClassEnter(node) {
 					const cs = node.characters;
 					if (!cs.equals(makeIgnoreCase(cs, unicode))) {
@@ -335,7 +335,7 @@ function getMultilineFlag(value: readonly NoParent<Node>[], unicode: boolean): b
 	let lineEndAssertion = false;
 
 	for (const node of value) {
-		visitNodes(node, {
+		visitAst(node, {
 			onAssertionEnter(assertion) {
 				if (assertion.negate && assertion.alternatives.length === 1) {
 					const alt = assertion.alternatives[0];

@@ -1,6 +1,6 @@
 import { Char } from "../core-types";
 import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Node, NoParent, Quantifier } from "./nodes";
-import { visitNodes } from "./visit";
+import { visitAst } from "./visit";
 
 /**
  * A transform is some algorithm that takes a AST subtree and makes any number of modifications to the given subtree.
@@ -144,7 +144,7 @@ export function transform(
  */
 function determineMaxCharacter(ast: NoParent<Expression>): Char {
 	try {
-		visitNodes(ast, {
+		visitAst(ast, {
 			onCharacterClassEnter(node) {
 				throw node.characters.maximum;
 			},
@@ -182,7 +182,7 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 		}
 	}
 
-	visitNodes(ast, {
+	visitAst(ast, {
 		onAlternationLeave: leaveNode,
 		onAssertionLeave: leaveNode,
 		onCharacterClassLeave: leaveNode,

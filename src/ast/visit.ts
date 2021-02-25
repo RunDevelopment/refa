@@ -1,6 +1,6 @@
 import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Quantifier, NoParent, Node } from "./nodes";
 
-export interface VisitNodesHandler {
+export interface VisitAstHandler {
 	onAlternationEnter?(node: Alternation): void;
 	onAlternationLeave?(node: Alternation): void;
 	onAssertionEnter?(node: Assertion): void;
@@ -14,7 +14,7 @@ export interface VisitNodesHandler {
 	onQuantifierEnter?(node: Quantifier): void;
 	onQuantifierLeave?(node: Quantifier): void;
 }
-export interface VisitNoParentNodesHandler {
+export interface VisitNoParentAstHandler {
 	onAlternationEnter?(node: NoParent<Alternation>): void;
 	onAlternationLeave?(node: NoParent<Alternation>): void;
 	onAssertionEnter?(node: NoParent<Assertion>): void;
@@ -36,10 +36,10 @@ export interface VisitNoParentNodesHandler {
  * @param node
  * @param visitor
  */
-export function visitNodes(node: Node, visitor: VisitNodesHandler): void;
-export function visitNodes(node: NoParent<Node>, visitor: VisitNoParentNodesHandler): void;
+export function visitAst(node: Node, visitor: VisitAstHandler): void;
+export function visitAst(node: NoParent<Node>, visitor: VisitNoParentAstHandler): void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function visitNodes(node: NoParent<Node>, visitor: Record<string, any>): void {
+export function visitAst(node: NoParent<Node>, visitor: Record<string, any>): void {
 	const enter = visitor["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);
@@ -51,13 +51,13 @@ export function visitNodes(node: NoParent<Node>, visitor: Record<string, any>): 
 		case "Expression":
 		case "Quantifier":
 			for (const concat of node.alternatives) {
-				visitNodes(concat, visitor);
+				visitAst(concat, visitor);
 			}
 			break;
 
 		case "Concatenation":
 			for (const element of node.elements) {
-				visitNodes(element, visitor);
+				visitAst(element, visitor);
 			}
 			break;
 

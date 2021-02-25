@@ -6,7 +6,7 @@ import {
 	Node,
 	NoParent,
 	Parent,
-	visitNodes,
+	visitAst,
 	Transformer,
 	TransformContext,
 } from "../ast";
@@ -272,7 +272,7 @@ export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>
 				stack.pop();
 			}
 
-			visitNodes(node, {
+			visitAst(node, {
 				onAlternationEnter: enter,
 				onAssertionEnter: enter,
 				onConcatenationEnter: enter,
