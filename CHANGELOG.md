@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.7.0 (2021-02-25)
+
+### Breaking changes
+
+- `FiniteAutomaton.test` now requires a `ReadonlyArray` instead of an `Iterable`.
+- `Words.wordSetToWords` now returns an `Iterable` instead of an `IterableIterator`.
+- Removed `toPatternString` function.
+- Removed `NFA.FromRegexOptions.disableLookarounds`. Use `NFA.FromRegexOptions.assertions` instead.
+- AST format: Quantifier nodes now have a lazy property to enable non-greedy quantifiers.
+- `JS.Parser` no longer implements `JS.Literal`. Use the `JS.Parser.literal` property instead.
+- `JS.Parser` now resolves backreferences differently. It now supports resolving capturing groups with finite small languages. How small the language is required to be can be controlled via the new `JS.ParseOptions.maxBackreferenceWords` option (defaults to 100 words). `JS.ParseOptions.backreferences` also works differently now. See the `JS.ParseOptions` documentation for more details.
+- Some renaming:
+	- `JS.ParseOptions.lookarounds` -> `JS.ParseOptions.assertions`
+	- `ToRegexOptions.maximumNodes` -> `ToRegexOptions.maxNodes`
+	- `ToRegexOptions.maximumOptimizationPasses` -> `ToRegexOptions.maxOptimizationPasses`
+
+### Fixed
+
+- `Words.fromStringToUTF16` now works properly.
+- `JS.toLiteral` will now properly detect predefined character sets in character classes. This didn't work properly before.
+
+### Added
+
+- Documentation. A lot of code documentation and a TypeDoc-generated website have been added.
+- New `Char`, `Word`, and `ReadonlyWord` types replace the old plain number and iterable types.
+- AST transformers. They can efficiently modify a given AST and are used to e.g. apply assertions.
+- `JS.ParseOptions` now has a `maxNodes` option to limit the size of the parsed AST.
+- `JS.Parser` now has a `maxCharacter` property.
+
+### Changed
+
+- `NFA.test` now implements [Thompson's algorithm](https://swtch.com/~rsc/regexp/regexp1.html) which guarantees efficient execution.
+- The `toRegex` methods of the DFA and NFA classes now use AST transformers under the hood to produce smaller ASTs.
+- The default value of `ToRegexOptions.maxOptimizationPasses` is now implementation-defined.
+
+
 ## 0.6.0 (2020-12-22)
 
 ### Breaking changes
