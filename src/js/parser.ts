@@ -31,7 +31,7 @@ import {
 } from "./regexpp-util";
 import { wordSetsToWords } from "../char-util";
 
-const DEFAULT_MAX_NODES = 100_000;
+const DEFAULT_MAX_NODES = 10_000;
 const DEFAULT_BACK_REF_MAX_WORDS = 100;
 
 export interface ParseOptions {
@@ -109,7 +109,7 @@ export interface ParseOptions {
 	 *
 	 * If the regexes requires more nodes, a {@link TooManyNodesError} will be thrown.
 	 *
-	 * @default 100000
+	 * @default 10000
 	 */
 	maxNodes?: number;
 }
@@ -891,7 +891,7 @@ class NodeCreator {
 
 	private _checkLimit(): void {
 		if (++this._nodeCounter > this._nodeLimit) {
-			throw new TooManyNodesError();
+			throw new TooManyNodesError(`The parser is not allowed to create more than ${this._nodeLimit} nodes.`);
 		}
 	}
 

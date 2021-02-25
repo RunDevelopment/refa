@@ -18,9 +18,11 @@ import { TooManyNodesError } from "../src/finite-automaton";
  */
 const CHECK_RE_LANGUAGE = false;
 
+const maxNodes = 100_000;
+
 function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
 	const nfa = NFA.fromRegex(re, { maxCharacter }, { assertions: "disable" });
-	const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
+	const dfa = DFA.fromFA(nfa, { maxNodes });
 	dfa.minimize();
 
 	assert.isTrue(expected.structurallyEqual(dfa));
@@ -35,14 +37,17 @@ describe("Regex stress test", function () {
 			patternPreview = patternPreview.substr(0, 80) + "...";
 		}
 		it(`[${index}]: ${patternPreview}`, function () {
-			const { expression, maxCharacter } = Parser.fromLiteral(literal).parse({ backreferences: "disable" });
-			const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
-			nfa.nodes.count();
-
-			const re1 = nfa.toRegex({ maxNodes: Infinity });
-
 			try {
-				const dfa = DFA.fromFA(nfa, { maxNodes: 100_000 });
+				const { expression, maxCharacter } = Parser.fromLiteral(literal).parse({
+					backreferences: "disable",
+					maxNodes,
+				});
+				const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable", maxNodes });
+				nfa.nodes.count();
+
+				const re1 = nfa.toRegex({ maxNodes });
+
+				const dfa = DFA.fromFA(nfa, { maxNodes });
 				const dfaOriginalCount = dfa.nodes.count();
 				dfa.minimize();
 				assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
@@ -51,7 +56,7 @@ describe("Regex stress test", function () {
 					equalLanguage(dfa, re1, maxCharacter);
 				}
 
-				const re2 = dfa.toRegex({ maxNodes: 100_000 });
+				const re2 = dfa.toRegex({ maxNodes });
 				if (CHECK_RE_LANGUAGE) {
 					equalLanguage(dfa, re2, maxCharacter);
 				}

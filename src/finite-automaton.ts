@@ -73,7 +73,7 @@ export interface ToRegexOptions {
 	 * The initial AST is usually a lot more complex than necessary. Optimizations are then applied in order to minimize
 	 * the AST until this limit is reached or the AST can be optimized no further.
 	 *
-	 * @default Infinity
+	 * The default number of passes is implementation defined.
 	 */
 	maxOptimizationPasses?: number;
 }
