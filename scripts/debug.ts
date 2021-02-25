@@ -1,4 +1,4 @@
-import { NFA, DFA, Words, JS, CharSet, CharMap, CharacterClass, FiniteAutomaton } from "../src";
+import { combineTransformers, transform, NFA, DFA, Words, JS, CharSet, CharacterClass, FiniteAutomaton, Expression, NoParent, Transformers } from "../src";
 import { performance } from "perf_hooks";
 
 // util functions
@@ -13,12 +13,14 @@ function toCharSet(literal: JS.Literal): CharSet {
 	const { expression } = parser.parse();
 	return (expression.alternatives[0].elements[0] as CharacterClass).characters;
 }
-function toLiteral(value: FiniteAutomaton | CharSet): RegExp {
+function toRegExp(value: FiniteAutomaton | CharSet | NoParent<Expression>): RegExp {
 	let literal;
 	if (value instanceof CharSet) {
 		literal = JS.toLiteral({ type: "Concatenation", elements: [{ type: "CharacterClass", characters: value }] });
-	} else {
+	} else if ("toRegex" in value) {
 		literal = JS.toLiteral(value.toRegex());
+	} else {
+		literal = JS.toLiteral(value);
 	}
 	return RegExp(literal.source, literal.flags);
 }
