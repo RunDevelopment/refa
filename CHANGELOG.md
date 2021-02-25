@@ -21,7 +21,7 @@
 
 ### Breaking changes
 
-- Remove `NFA.fromDFA` and `NFA.fromNFA`. Use `{DFA,NFA}.fromFA` instead.
+- Remove `NFA.fromDFA` and `DFA.fromNFA`. Use `{DFA,NFA}.fromFA` instead.
 - Renamed `NFA#removeEmptyWord` to `NFA#withoutEmptyWord`.
 - All `NFA`/`DFA`-specific interfaces/classes now live in the `NFA`/`DFA` namespace.
 
