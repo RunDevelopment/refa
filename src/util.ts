@@ -77,18 +77,6 @@ export function intersectSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	return s;
 }
 
-const searchResult = Symbol();
-export interface SearchResult<T> {
-	[searchResult]: T;
-}
-export function createSearchResult<T>(value: T): SearchResult<T> {
-	return { [searchResult]: value };
-}
-
-function isSearchResult<T>(result: any): result is SearchResult<T> {
-	return searchResult in result;
-}
-
 /**
  * Performs a depth first search on the given root element.
  *
@@ -96,17 +84,7 @@ function isSearchResult<T>(result: any): result is SearchResult<T> {
  * @param next
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function DFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function DFS<S, T>(
-	rootElement: S,
-	next: (element: S) => Iterable<S> | SearchResult<T>,
-	defaultValue?: T
-): T | undefined {
+export function DFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void {
 	// It's important that this is implemented iteratively.
 	// A recursive implementation might cause a stack overflow.
 
@@ -132,12 +110,7 @@ export function DFS<S, T>(
 			// first time seeing this stack frame
 			visited.add(top.element);
 
-			const nextResult = next(top.element);
-			if (isSearchResult(nextResult)) {
-				return nextResult[searchResult];
-			}
-
-			top.nextElements = iterToArray(nextResult);
+			top.nextElements = iterToArray(next(top.element));
 		}
 
 		const nextElements = top.nextElements;
@@ -166,57 +139,6 @@ export function DFS<S, T>(
 			nextIndex: -1,
 		});
 	}
-
-	// nothing found
-	return defaultValue;
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function BFS<S>(rootElement: S, next: (element: S) => Iterable<S>): void;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>): T | undefined;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function BFS<S, T>(rootElement: S, next: (element: S) => Iterable<S> | SearchResult<T>, defaultValue: T): T;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function BFS<S, T>(
-	rootElement: S,
-	next: (element: S) => Iterable<S> | SearchResult<T>,
-	defaultValue?: T
-): T | undefined {
-	// It's important that this is implemented iteratively.
-	// A recursive implementation might cause a stack overflow.
-
-	const visited = new Set<S>();
-	let toCheck: readonly S[] = [rootElement];
-
-	while (toCheck.length > 0) {
-		const newToCheck: S[] = [];
-
-		for (let i = 0, l = toCheck.length; i < l; i++) {
-			const element = toCheck[i];
-
-			if (visited.has(element)) {
-				// already processed that element
-				continue;
-			}
-			visited.add(element);
-
-			const nextResult = next(element);
-			if (isSearchResult(nextResult)) {
-				return nextResult[searchResult];
-			}
-
-			for (const nextElement of nextResult) {
-				if (!visited.has(nextElement)) {
-					newToCheck.push(nextElement);
-				}
-			}
-		}
-
-		toCheck = newToCheck;
-	}
-
-	return defaultValue;
 }
 
 export function* iterateBFS<S>(startElements: Iterable<S>, next: (element: S) => Iterable<S>): Iterable<S> {
