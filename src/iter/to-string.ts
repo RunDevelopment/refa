@@ -1,4 +1,5 @@
 import { FAIterator } from "../finite-automaton";
+import { iterToArray } from "../util";
 import { cacheOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
 /**
@@ -28,12 +29,18 @@ import { cacheOut, iterateStates, mapOut, mapOutIter } from "./iterator";
  * [3] -> none
  * ```
  */
-export function toString<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, toString: (value: T) => string = String): string {
+export function toString<S, T>(
+	iter: FAIterator<S, Iterable<[S, T]>>,
+	toString: (value: T) => string = String,
+	ordered: boolean = false
+): string {
 	const stableIter = cacheOut(
 		mapOut(iter, out => {
-			return [...out]
-				.map<[S, string]>(([k, v]) => [k, toString(v)])
-				.sort(([, a], [, b]) => a.localeCompare(b));
+			const mapped = iterToArray(out).map<[S, string]>(([k, v]) => [k, toString(v)]);
+			if (!ordered) {
+				mapped.sort(([, a], [, b]) => a.localeCompare(b));
+			}
+			return mapped;
 		})
 	);
 
