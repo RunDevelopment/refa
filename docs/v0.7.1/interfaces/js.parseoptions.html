@@ -1,0 +1,352 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ParseOptions | refa - v0.7.1</title>
+	<meta name="description" content="Documentation for refa - v0.7.1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">refa - v0.7.1</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">refa - v0.7.1</a>
+				</li>
+				<li>
+					<a href="../modules/js.html">JS</a>
+				</li>
+				<li>
+					<a href="js.parseoptions.html">ParseOptions</a>
+				</li>
+			</ul>
+			<h1>Interface ParseOptions</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">ParseOptions</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#assertions" class="tsd-kind-icon">assertions</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#backreferences" class="tsd-kind-icon">backreferences</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maxbackreferencewords" class="tsd-kind-icon">max<wbr>Backreference<wbr>Words</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="assertions" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> assertions</h3>
+					<div class="tsd-signature tsd-kind-icon">assertions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;parse&quot;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>How the parser will handle assertions.</p>
+						</div>
+						<ul>
+							<li><p><code>&quot;parse&quot;</code></p>
+								<p>The parser will translate every assertion literally to an equivalent RE AST representation. Builtin assertions
+								(e.g. <code>\b</code>, <code>$</code>) will be transformed into equivalent assertions.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>The parser will disable all assertion by replacing them with an empty character class. This will cause all
+								paths containing a assertion to be (effectively) removed.</p>
+							</li>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>The parser will throw an error when encountering a assertion that cannot be removed.</p>
+								<p>E.g. <code>a\B</code> will throw but <code>a([]\b)(\b){0}</code> will not because none of the <code>\b</code>s can be reached.</p>
+							</li>
+						</ul>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;parse&quot;</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="backreferences" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> backreferences</h3>
+					<div class="tsd-signature tsd-kind-icon">backreferences<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>How to the parser will handle unresolved backreferences.</p>
+						</div>
+						<ul>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>The parser will replace all backreferences with an empty character class. This will cause all paths containing
+								a backreference to be (effectively) removed.</p>
+								<p>E.g. <code>(a*)(\1|b)</code> will be parsed as <code>(a*)([]|b)</code> which is equivalent to <code>a*b</code>.</p>
+							</li>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>The parser will throw an error when encountering a backreference that cannot be removed.</p>
+								<p>E.g. <code>(a*)b\1</code> will throw but <code>(a*)[^\s\S]\1</code> will not because the backreference will be removed anyway because
+								of the empty character class.</p>
+							</li>
+						</ul>
+						<p>Backreferences that have been resolved are not affected by this option.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;throw&quot;</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="disableoptimizations" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> disable<wbr>Optimizations</h3>
+					<div class="tsd-signature tsd-kind-icon">disable<wbr>Optimizations<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>By default, the parser will try to optimize the generated RE as much as possible.</p>
+						</div>
+						<p>If set to <code>true</code>, all trivial optimizations will be disabled. This includes:</p>
+						<ul>
+							<li>Removing alternatives where all paths go through an empty character class.</li>
+							<li>Removing constant 0 and constant 1 quantifiers.</li>
+							<li>Inlining single-alternative groups.</li>
+						</ul>
+						<p>These optimization might prevent that certain backreferences or assertions from throwing an error.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>false</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="maxbackreferencewords" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> max<wbr>Backreference<wbr>Words</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Backreference<wbr>Words<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The maximum number of words a backreference can be replaced by.</p>
+						</div>
+						<p>Set this to 0 to disable resolving backreferences.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>100</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="maxnodes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> max<wbr>Nodes</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Nodes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The maximum number of nodes the parser is allowed to create.</p>
+						</div>
+						<p>If the regexes requires more nodes, a <a href="../classes/toomanynodeserror.html">TooManyNodesError</a> will be thrown.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>10000</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/dfa.html">DFA</a>
+					</li>
+					<li class="current tsd-kind-namespace">
+						<a href="../modules/js.html">JS</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/nfa.html">NFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/transformers.html">Transformers</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/words.html">Words</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-parent-kind-namespace">
+						<a href="../classes/js.parser.html" class="tsd-kind-icon">Parser</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.anycharacterset.html" class="tsd-kind-icon">Any<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.digitcharacterset.html" class="tsd-kind-icon">Digit<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.flags.html" class="tsd-kind-icon">Flags</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.literal.html" class="tsd-kind-icon">Literal</a>
+					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.parseoptions.html" class="tsd-kind-icon">Parse<wbr>Options</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#assertions" class="tsd-kind-icon">assertions</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#backreferences" class="tsd-kind-icon">backreferences</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#maxbackreferencewords" class="tsd-kind-icon">max<wbr>Backreference<wbr>Words</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.parseresult.html" class="tsd-kind-icon">Parse<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.propertycharacterset.html" class="tsd-kind-icon">Property<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.regexppast.html" class="tsd-kind-icon">Regexpp<wbr>Ast</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.spacecharacterset.html" class="tsd-kind-icon">Space<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.textboundaryassertion.html" class="tsd-kind-icon">Text<wbr>Boundary<wbr>Assertion</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.toliteraloptions.html" class="tsd-kind-icon">To<wbr>Literal<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.wordboundaryassertion.html" class="tsd-kind-icon">Word<wbr>Boundary<wbr>Assertion</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="js.wordcharacterset.html" class="tsd-kind-icon">Word<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
+						<a href="../modules/js.html#boundaryassertion" class="tsd-kind-icon">Boundary<wbr>Assertion</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
+						<a href="../modules/js.html#parsableelement" class="tsd-kind-icon">Parsable<wbr>Element</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
+						<a href="../modules/js.html#predefinedcharacterset" class="tsd-kind-icon">Predefined<wbr>Character<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="../modules/js.html#createassertion" class="tsd-kind-icon">create<wbr>Assertion</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="../modules/js.html#createcharset" class="tsd-kind-icon">create<wbr>Char<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace">
+						<a href="../modules/js.html#toliteral" class="tsd-kind-icon">to<wbr>Literal</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
