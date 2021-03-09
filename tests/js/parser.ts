@@ -317,32 +317,74 @@ describe("JS.Parser", function () {
 	describe("resolve variable backreferences", function () {
 		test([
 			{
-				literal: /(a)\1/i,
-				expected: "[41][41]|[61][61]",
+				literal: /(a)\1/,
+				expected: "[61][61]",
 			},
 			{
+				literal: /(a)\1/i,
+				expected: "[41, 61][41, 61]",
+			},
+			{
+				literal: /(a)\1/iu,
+				expected: "[41, 61][41, 61]",
+			},
+			{
+				literal: /([aA])\1/,
+				expected: "[41][41]|[61][61]",
+			},
+
+			{
+				literal: /(k)\1/i,
+				expected: "[4b, 6b][4b, 6b]",
+			},
+			{
+				literal: /(k)\1/iu,
+				expected: "[4b, 6b, 212a][4b, 6b, 212a]",
+			},
+
+			{
 				literal: /(a)\1?/i,
-				expected: "[41][41]?|[61][61]?",
+				expected: "[41, 61][41, 61]?",
 			},
 			{
 				literal: /(a)\1(b)\2(c)\3/i,
-				expected: "(?:[41][41]|[61][61])(?:[42][42]|[62][62])(?:[43][43]|[63][63])",
+				expected: "[41, 61][41, 61][42, 62][42, 62][43, 63][43, 63]",
 			},
 			{
 				literal: /(a)\1(b)\2(c\1)\3/i,
+				expected: /AABBCACA/i,
+			},
+			{
+				literal: /([aA])\1([bB])\2([cC])\3/,
+				expected: "(?:[41][41]|[61][61])(?:[42][42]|[62][62])(?:[43][43]|[63][63])",
+			},
+			{
+				literal: /([aA])\1([bB])\2([cC]\1)\3/,
 				expected: /AA(?:BB|bb)(?:CACA|cAcA)|aa(?:BB|bb)(?:CaCa|caca)/,
 			},
 			{
 				literal: /(a)(b)\1\2/i,
-				expected: "[41](?:[42][41][42]|[62][41][62])|[61](?:[42][61][42]|[62][61][62])",
+				expected: "[41, 61][42, 62][41, 61][42, 62]",
 			},
 			{
 				literal: /(a)(b)\1\2/i,
+				expected: /ABAB/i,
+			},
+			{
+				literal: /([aA])([bB])\1\2/,
+				expected: "[41](?:[42][41][42]|[62][41][62])|[61](?:[42][61][42]|[62][61][62])",
+			},
+			{
+				literal: /([aA])([bB])\1\2/,
 				expected: /A(?:BAB|bAb)|a(?:BaB|bab)/,
 			},
 
 			{
 				literal: /(?=(a)\1)/i,
+				expected: /(?=AA)/i,
+			},
+			{
+				literal: /(?=([aA])\1)/,
 				expected: /(?=AA|aa)/,
 			},
 			{
@@ -351,7 +393,15 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /(?<=\1(a))/i,
+				expected: /(?<=AA)/i,
+			},
+			{
+				literal: /(?<=\1([aA]))/,
 				expected: /(?<=AA|aa)/,
+			},
+			{
+				literal: /(?<=\1("|'))/i,
+				expected: /(?<=""|'')/i,
 			},
 			{
 				literal: /(?<=\1bcd(AB|CD))/,
@@ -384,7 +434,11 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /<(a|p|div)>[^]*?<\/\1>/i,
-				expected: /<(?:A>[^]*?<\/A|a>[^]*?<\/a|P>[^]*?<\/P|p>[^]*?<\/p|DIV>[^]*?<\/DIV|DIv>[^]*?<\/DIv|DiV>[^]*?<\/DiV|Div>[^]*?<\/Div|dIV>[^]*?<\/dIV|dIv>[^]*?<\/dIv|diV>[^]*?<\/diV|div>[^]*?<\/div)>/,
+				expected: /<(?:A>[^]*?<\/A|P>[^]*?<\/P|DIV>[^]*?<\/DIV)>/i,
+			},
+			{
+				literal: /<(a|p|div)>[^]*?<\/\1>/iu,
+				expected: /<(?:A>[^]*?<\/A|P>[^]*?<\/P|DIV>[^]*?<\/DIV)>/iu,
 			},
 			{
 				literal: /#[\da-z]+|#(?:-|([+/\\*~<>=@%|&?!])\1?)|#(?=\()/i,
@@ -411,21 +465,25 @@ describe("JS.Parser", function () {
 				expected: /'''''.+?'''''|''''.+?''''|'''.+?'''|''.+?''/i,
 			},
 			{
+				literal: /('{2,5}?).+?\1/,
+				expected: /''.+?''|'''.+?'''|''''.+?''''|'''''.+?'''''/i,
+			},
+			{
 				literal: /^("(?:"")?)(?!\1)[\s\S]+(?=\1$)/,
 				expected: /^(?:"""(?!""")[^]+(?="""$)|"(?!")[^]+(?="$))/i,
 			},
 
 			{
-				// `(nowiki|pre|source)` will be resolved to 136 words.
-				// Since only 135 words are allowed, this will fail.
-				literal: /<(nowiki|pre|source)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
-				options: { maxBackreferenceWords: 135 },
+				// `(nowiki|pre|sources?)` will be resolved to 4 words.
+				// Since if only 3 words are allowed, this will fail.
+				literal: /<(nowiki|pre|sources?)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
+				options: { maxBackreferenceWords: 3 },
 				expected: Error,
 			},
 			{
-				literal: /<(nowiki|pre|source)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
-				options: { maxBackreferenceWords: 136 },
-				expected: /<(?:NOWIKI\b[^]*?>[^]*?<\/NOWIKI|NOWIKi\b[^]*?>[^]*?<\/NOWIKi|NOWIkI\b[^]*?>[^]*?<\/NOWIkI|NOWIki\b[^]*?>[^]*?<\/NOWIki|NOWiKI\b[^]*?>[^]*?<\/NOWiKI|NOWiKi\b[^]*?>[^]*?<\/NOWiKi|NOWikI\b[^]*?>[^]*?<\/NOWikI|NOWiki\b[^]*?>[^]*?<\/NOWiki|NOwIKI\b[^]*?>[^]*?<\/NOwIKI|NOwIKi\b[^]*?>[^]*?<\/NOwIKi|NOwIkI\b[^]*?>[^]*?<\/NOwIkI|NOwIki\b[^]*?>[^]*?<\/NOwIki|NOwiKI\b[^]*?>[^]*?<\/NOwiKI|NOwiKi\b[^]*?>[^]*?<\/NOwiKi|NOwikI\b[^]*?>[^]*?<\/NOwikI|NOwiki\b[^]*?>[^]*?<\/NOwiki|NoWIKI\b[^]*?>[^]*?<\/NoWIKI|NoWIKi\b[^]*?>[^]*?<\/NoWIKi|NoWIkI\b[^]*?>[^]*?<\/NoWIkI|NoWIki\b[^]*?>[^]*?<\/NoWIki|NoWiKI\b[^]*?>[^]*?<\/NoWiKI|NoWiKi\b[^]*?>[^]*?<\/NoWiKi|NoWikI\b[^]*?>[^]*?<\/NoWikI|NoWiki\b[^]*?>[^]*?<\/NoWiki|NowIKI\b[^]*?>[^]*?<\/NowIKI|NowIKi\b[^]*?>[^]*?<\/NowIKi|NowIkI\b[^]*?>[^]*?<\/NowIkI|NowIki\b[^]*?>[^]*?<\/NowIki|NowiKI\b[^]*?>[^]*?<\/NowiKI|NowiKi\b[^]*?>[^]*?<\/NowiKi|NowikI\b[^]*?>[^]*?<\/NowikI|Nowiki\b[^]*?>[^]*?<\/Nowiki|nOWIKI\b[^]*?>[^]*?<\/nOWIKI|nOWIKi\b[^]*?>[^]*?<\/nOWIKi|nOWIkI\b[^]*?>[^]*?<\/nOWIkI|nOWIki\b[^]*?>[^]*?<\/nOWIki|nOWiKI\b[^]*?>[^]*?<\/nOWiKI|nOWiKi\b[^]*?>[^]*?<\/nOWiKi|nOWikI\b[^]*?>[^]*?<\/nOWikI|nOWiki\b[^]*?>[^]*?<\/nOWiki|nOwIKI\b[^]*?>[^]*?<\/nOwIKI|nOwIKi\b[^]*?>[^]*?<\/nOwIKi|nOwIkI\b[^]*?>[^]*?<\/nOwIkI|nOwIki\b[^]*?>[^]*?<\/nOwIki|nOwiKI\b[^]*?>[^]*?<\/nOwiKI|nOwiKi\b[^]*?>[^]*?<\/nOwiKi|nOwikI\b[^]*?>[^]*?<\/nOwikI|nOwiki\b[^]*?>[^]*?<\/nOwiki|noWIKI\b[^]*?>[^]*?<\/noWIKI|noWIKi\b[^]*?>[^]*?<\/noWIKi|noWIkI\b[^]*?>[^]*?<\/noWIkI|noWIki\b[^]*?>[^]*?<\/noWIki|noWiKI\b[^]*?>[^]*?<\/noWiKI|noWiKi\b[^]*?>[^]*?<\/noWiKi|noWikI\b[^]*?>[^]*?<\/noWikI|noWiki\b[^]*?>[^]*?<\/noWiki|nowIKI\b[^]*?>[^]*?<\/nowIKI|nowIKi\b[^]*?>[^]*?<\/nowIKi|nowIkI\b[^]*?>[^]*?<\/nowIkI|nowIki\b[^]*?>[^]*?<\/nowIki|nowiKI\b[^]*?>[^]*?<\/nowiKI|nowiKi\b[^]*?>[^]*?<\/nowiKi|nowikI\b[^]*?>[^]*?<\/nowikI|nowiki\b[^]*?>[^]*?<\/nowiki|PRE\b[^]*?>[^]*?<\/PRE|PRe\b[^]*?>[^]*?<\/PRe|PrE\b[^]*?>[^]*?<\/PrE|Pre\b[^]*?>[^]*?<\/Pre|pRE\b[^]*?>[^]*?<\/pRE|pRe\b[^]*?>[^]*?<\/pRe|prE\b[^]*?>[^]*?<\/prE|pre\b[^]*?>[^]*?<\/pre|SOURCE\b[^]*?>[^]*?<\/SOURCE|SOURCe\b[^]*?>[^]*?<\/SOURCe|SOURcE\b[^]*?>[^]*?<\/SOURcE|SOURce\b[^]*?>[^]*?<\/SOURce|SOUrCE\b[^]*?>[^]*?<\/SOUrCE|SOUrCe\b[^]*?>[^]*?<\/SOUrCe|SOUrcE\b[^]*?>[^]*?<\/SOUrcE|SOUrce\b[^]*?>[^]*?<\/SOUrce|SOuRCE\b[^]*?>[^]*?<\/SOuRCE|SOuRCe\b[^]*?>[^]*?<\/SOuRCe|SOuRcE\b[^]*?>[^]*?<\/SOuRcE|SOuRce\b[^]*?>[^]*?<\/SOuRce|SOurCE\b[^]*?>[^]*?<\/SOurCE|SOurCe\b[^]*?>[^]*?<\/SOurCe|SOurcE\b[^]*?>[^]*?<\/SOurcE|SOurce\b[^]*?>[^]*?<\/SOurce|SoURCE\b[^]*?>[^]*?<\/SoURCE|SoURCe\b[^]*?>[^]*?<\/SoURCe|SoURcE\b[^]*?>[^]*?<\/SoURcE|SoURce\b[^]*?>[^]*?<\/SoURce|SoUrCE\b[^]*?>[^]*?<\/SoUrCE|SoUrCe\b[^]*?>[^]*?<\/SoUrCe|SoUrcE\b[^]*?>[^]*?<\/SoUrcE|SoUrce\b[^]*?>[^]*?<\/SoUrce|SouRCE\b[^]*?>[^]*?<\/SouRCE|SouRCe\b[^]*?>[^]*?<\/SouRCe|SouRcE\b[^]*?>[^]*?<\/SouRcE|SouRce\b[^]*?>[^]*?<\/SouRce|SourCE\b[^]*?>[^]*?<\/SourCE|SourCe\b[^]*?>[^]*?<\/SourCe|SourcE\b[^]*?>[^]*?<\/SourcE|Source\b[^]*?>[^]*?<\/Source|sOURCE\b[^]*?>[^]*?<\/sOURCE|sOURCe\b[^]*?>[^]*?<\/sOURCe|sOURcE\b[^]*?>[^]*?<\/sOURcE|sOURce\b[^]*?>[^]*?<\/sOURce|sOUrCE\b[^]*?>[^]*?<\/sOUrCE|sOUrCe\b[^]*?>[^]*?<\/sOUrCe|sOUrcE\b[^]*?>[^]*?<\/sOUrcE|sOUrce\b[^]*?>[^]*?<\/sOUrce|sOuRCE\b[^]*?>[^]*?<\/sOuRCE|sOuRCe\b[^]*?>[^]*?<\/sOuRCe|sOuRcE\b[^]*?>[^]*?<\/sOuRcE|sOuRce\b[^]*?>[^]*?<\/sOuRce|sOurCE\b[^]*?>[^]*?<\/sOurCE|sOurCe\b[^]*?>[^]*?<\/sOurCe|sOurcE\b[^]*?>[^]*?<\/sOurcE|sOurce\b[^]*?>[^]*?<\/sOurce|soURCE\b[^]*?>[^]*?<\/soURCE|soURCe\b[^]*?>[^]*?<\/soURCe|soURcE\b[^]*?>[^]*?<\/soURcE|soURce\b[^]*?>[^]*?<\/soURce|soUrCE\b[^]*?>[^]*?<\/soUrCE|soUrCe\b[^]*?>[^]*?<\/soUrCe|soUrcE\b[^]*?>[^]*?<\/soUrcE|soUrce\b[^]*?>[^]*?<\/soUrce|souRCE\b[^]*?>[^]*?<\/souRCE|souRCe\b[^]*?>[^]*?<\/souRCe|souRcE\b[^]*?>[^]*?<\/souRcE|souRce\b[^]*?>[^]*?<\/souRce|sourCE\b[^]*?>[^]*?<\/sourCE|sourCe\b[^]*?>[^]*?<\/sourCe|sourcE\b[^]*?>[^]*?<\/sourcE|source\b[^]*?>[^]*?<\/source)>/,
+				literal: /<(nowiki|pre|sources?)\b[\s\S]*?>[\s\S]*?<\/\1>/i,
+				options: { maxBackreferenceWords: 4 },
+				expected: /<(?:NOWIKI\b[^]*?>[^]*?<\/NOWIKI|PRE\b[^]*?>[^]*?<\/PRE|SOURCES\b[^]*?>[^]*?<\/SOURCES|SOURCE\b[^]*?>[^]*?<\/SOURCE)>/i,
 			},
 		]);
 	});
