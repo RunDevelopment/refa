@@ -1,8 +1,8 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
-import { Char } from "./core-types";
+import { Char, ReadonlyWord } from "./core-types";
 import { FAIterator, TooManyNodesError } from "./finite-automaton";
-import { assertNever, cachedFunc, intersectSet, traverse } from "./util";
+import { assertNever, cachedFunc, DFS, intersectSet, traverse } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Quantifier } from "./ast";
 import { rangesToString } from "./char-util";
@@ -16,6 +16,33 @@ export class ENFA {
 	private constructor(nodes: ENFA.NodeList, maxCharacter: Char) {
 		this.nodes = nodes;
 		this.maxCharacter = maxCharacter;
+	}
+
+	test(word: ReadonlyWord): boolean {
+		// An implementation of Thompson's algorithm as described by Russ Cox
+		// https://swtch.com/~rsc/regexp/regexp1.html
+		/*let currentStates = [this.nodes.initial];
+		const newStatesSet = new Set<ENFA.Node>();
+
+		for (const char of word) {
+			const newStates: ENFA.Node[] = [];
+			newStatesSet.clear();
+
+			for (const state of currentStates) {
+				state.out.forEach((charSet, to) => {
+					if (charSet.has(char) && !newStatesSet.has(to)) {
+						newStates.push(to);
+						newStatesSet.add(to);
+					}
+				});
+			}
+
+			currentStates = newStates;
+		}
+
+		return currentStates.some(state => this.nodes.final === state);*/
+
+		throw new Error("Not implemented");
 	}
 
 	toString(): string {
@@ -69,6 +96,26 @@ export class ENFA {
 			}
 		}
 		return new ENFA(nodeList, options.maxCharacter);
+	}
+
+	static resolveEpsilon(node: ENFA.ReadonlyNode, direction: "in" | "out"): Iterable<[CharSet, ENFA.ReadonlyNode]> {
+		const result: [CharSet, ENFA.ReadonlyNode][] = [];
+
+		DFS(node, n => {
+			const next: ENFA.ReadonlyNode[] = [];
+
+			n[direction].forEach((via, to) => {
+				if (via === null) {
+					next.push(to);
+				} else {
+					result.push([via, to]);
+				}
+			});
+
+			return next;
+		});
+
+		return result;
 	}
 }
 

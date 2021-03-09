@@ -43,3 +43,11 @@ function measure(fn: () => void, samples: number = 1, label?: string): void {
 
 // actual debug code
 // DO NOT commit changes to this file
+
+const dfa = toDFA(/a+(?:b+a+)*/)
+dfa.minimize();
+console.log(toRegExp(dfa));
+
+
+console.log(toENFA(/a*b/).toString());
+console.log(toENFA(/a*?b/).toString());
