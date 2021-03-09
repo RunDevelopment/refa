@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1 (2021-03-09)
+
+### Fixed
+
+- Backreferences in ignore-case JS RegExps are now correctly resolved ([#25](https://github.com/RunDevelopment/refa/issues/25)).
+
+
 ## 0.7.0 (2021-02-25)
 
 ### Breaking changes
