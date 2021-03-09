@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>refa - v0.7.0</title>
-	<meta name="description" content="Documentation for refa - v0.7.0">
+	<title>refa - v0.7.1</title>
+	<meta name="description" content="Documentation for refa - v0.7.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
 	<script async src="assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">refa - v0.7.0</a>
+					<a href="index.html" class="title">refa - v0.7.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -48,7 +48,7 @@
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<h1>refa - v0.7.0</h1>
+			<h1>refa - v0.7.1</h1>
 		</div>
 	</div>
 </header>
@@ -231,9 +231,10 @@
 </code></pre>
 				<p>The only way to parse the RegExp despite unresolvable backreferences is to remove the backreferences. This means that the result will be imperfect but it might still be useful.</p>
 				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #D16969">(</span><span style="color: #811F3F">#</span><span style="color: #000000">+</span><span style="color: #D16969">)</span><span style="color: #811F3F">.</span><span style="color: #000000">*</span><span style="color: #0000FF">\1</span><span style="color: #EE0000">|</span><span style="color: #811F3F">foo/</span><span style="color: #000000">;</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">parseResult</span><span style="color: #000000"> = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">backreferences:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000"> } =</span>
+<span style="color: #000000">    </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">backreferences:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
 
-<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">parseResult</span><span style="color: #000000">.</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
 <span style="color: #008000">// =&gt; { source: &#039;foo&#039;, flags: &#039;&#039; }</span>
 </code></pre>
 				<p>Note that the <code>foo</code> alternative is kept because it is completely unaffected by the unresolvable backreferences.</p>
@@ -252,7 +253,8 @@
 </code></pre>
 				<p>Similarly to backreferences, we can let the parser remove them:</p>
 				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">regex</span><span style="color: #000000"> =</span><span style="color: #811F3F"> /</span><span style="color: #EE0000">\b</span><span style="color: #D16969">(?!</span><span style="color: #811F3F">\d</span><span style="color: #D16969">)</span><span style="color: #811F3F">\w</span><span style="color: #000000">+</span><span style="color: #EE0000">\b|</span><span style="color: #811F3F">-&gt;/</span><span style="color: #000000">;</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } = </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">assertions:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">expression</span><span style="color: #000000">, </span><span style="color: #0070C1">maxCharacter</span><span style="color: #000000"> } =</span>
+<span style="color: #000000">    </span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #001080">Parser</span><span style="color: #000000">.</span><span style="color: #795E26">fromLiteral</span><span style="color: #000000">(</span><span style="color: #001080">regex</span><span style="color: #000000">).</span><span style="color: #795E26">parse</span><span style="color: #000000">({ </span><span style="color: #001080">assertions:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;disable&quot;</span><span style="color: #000000"> });</span>
 
 <span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">expression</span><span style="color: #000000">));</span>
 <span style="color: #008000">// =&gt; { source: &#039;-&gt;&#039;, flags: &#039;i&#039; }</span>
@@ -302,8 +304,10 @@
 <span style="color: #008000">// The only assertions left assert characters beyond the edge of the pattern.</span>
 <span style="color: #008000">// Removing those assertions is easy but slightly changes the pattern.</span>
 
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">edgeAssertionTransformer</span><span style="color: #000000"> = </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">patternEdgeAssertions</span><span style="color: #000000">({ </span><span style="color: #001080">remove:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000"> });</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">finalExpression</span><span style="color: #000000"> = </span><span style="color: #795E26">transform</span><span style="color: #000000">(</span><span style="color: #001080">edgeAssertionTransformer</span><span style="color: #000000">, </span><span style="color: #001080">modifiedExpression</span><span style="color: #000000">);</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">finalExpression</span><span style="color: #000000"> = </span><span style="color: #795E26">transform</span><span style="color: #000000">(</span>
+<span style="color: #000000">    </span><span style="color: #001080">Transformers</span><span style="color: #000000">.</span><span style="color: #795E26">patternEdgeAssertions</span><span style="color: #000000">({ </span><span style="color: #001080">remove:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000"> }),</span>
+<span style="color: #000000">    </span><span style="color: #001080">modifiedExpression</span>
+<span style="color: #000000">);</span>
 
 <span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #0070C1">JS</span><span style="color: #000000">.</span><span style="color: #795E26">toLiteral</span><span style="color: #000000">(</span><span style="color: #001080">finalExpression</span><span style="color: #000000">));</span>
 <span style="color: #008000">// =&gt; { source: &#039;[A-Z_]\\w*|-&gt;&#039;, flags: &#039;i&#039; }</span>
