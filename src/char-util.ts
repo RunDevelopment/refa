@@ -214,7 +214,7 @@ export function rangesFromString(string: string): CharRange[] {
 export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
 	return concatSequences(wordSet.map(charSetToChars));
 }
-function* charSetToChars(charSet: CharSet): Iterable<Char> {
+export function* charSetToChars(charSet: CharSet): Iterable<Char> {
 	for (const { min, max } of charSet.ranges) {
 		for (let i = min; i <= max; i++) {
 			yield i;

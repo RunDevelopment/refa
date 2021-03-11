@@ -190,9 +190,10 @@ The only way to parse the RegExp despite unresolvable backreferences is to remov
 
 ```ts
 const regex = /(#+).*\1|foo/;
-const parseResult = JS.Parser.fromLiteral(regex).parse({ backreferences: "disable" });
+const { expression } =
+	JS.Parser.fromLiteral(regex).parse({ backreferences: "disable" });
 
-console.log(JS.toLiteral(parseResult.expression));
+console.log(JS.toLiteral(expression));
 // => { source: 'foo', flags: '' }
 ```
 
@@ -217,7 +218,8 @@ Similarly to backreferences, we can let the parser remove them:
 
 ```ts
 const regex = /\b(?!\d)\w+\b|->/;
-const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse({ assertions: "disable" });
+const { expression, maxCharacter } =
+	JS.Parser.fromLiteral(regex).parse({ assertions: "disable" });
 
 console.log(JS.toLiteral(expression));
 // => { source: '->', flags: 'i' }
@@ -277,8 +279,10 @@ console.log(JS.toLiteral(modifiedExpression));
 // The only assertions left assert characters beyond the edge of the pattern.
 // Removing those assertions is easy but slightly changes the pattern.
 
-const edgeAssertionTransformer = Transformers.patternEdgeAssertions({ remove: true });
-const finalExpression = transform(edgeAssertionTransformer, modifiedExpression);
+const finalExpression = transform(
+	Transformers.patternEdgeAssertions({ remove: true }),
+	modifiedExpression
+);
 
 console.log(JS.toLiteral(finalExpression));
 // => { source: '[A-Z_]\\w*|->', flags: 'i' }

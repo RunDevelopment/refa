@@ -1,4 +1,4 @@
-import { Char, ReadonlyWord, Word } from "../core-types";
+import { Char } from "../core-types";
 import { CharSet } from "../char-set";
 import {
 	Node,
@@ -16,7 +16,15 @@ import {
 	NoParent,
 } from "../ast";
 import { RegExpParser, AST, visitRegExpAST } from "regexpp";
-import { assertNever, flatConcatSequences, repeatSequences, UnionIterable, unionSequences } from "../util";
+import {
+	assertNever,
+	concatSequences,
+	flatConcatSequences,
+	repeatSequences,
+	UnionIterable,
+	unionSequences,
+} from "../util";
+import { charSetToChars } from "../char-util";
 import { createAssertion } from "./create-assertion";
 import { createCharSet } from "./create-char-set";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
@@ -29,7 +37,8 @@ import {
 	inheritedMatchingDirection,
 	somePathToBackreference,
 } from "./regexpp-util";
-import { wordSetsToWords } from "../char-util";
+import { UTF16CaseFolding } from "./utf16-case-folding";
+import { UnicodeCaseFolding } from "./unicode";
 
 const DEFAULT_MAX_NODES = 10_000;
 const DEFAULT_BACK_REF_MAX_WORDS = 100;
@@ -126,6 +135,10 @@ export interface ParseResult {
 	maxCharacter: Char;
 }
 
+type LogicalChar = Char | CharSet;
+type LogicalWord = LogicalChar[];
+type ReadonlyLogicalWord = readonly LogicalChar[];
+
 interface ParserContext {
 	readonly maxBackreferenceWords: number;
 	readonly backreferences: NonNullable<ParseOptions["backreferences"]>;
@@ -134,7 +147,7 @@ interface ParserContext {
 
 	readonly nc: NodeCreator;
 	readonly matchingDir: MatchingDirection;
-	readonly variableResolved: ReadonlyMap<AST.CapturingGroup, ReadonlyWord>;
+	readonly variableResolved: ReadonlyMap<AST.CapturingGroup, ReadonlyLogicalWord>;
 }
 
 // Some helper constants and types to make the parser implementation more readable
@@ -171,13 +184,15 @@ export class Parser {
 
 	private readonly _backRefCanReachGroupCache = new Map<AST.Backreference, boolean>();
 	private readonly _backRefAlwaysAfterGroupCache = new Map<AST.Backreference, boolean>();
-	private readonly _constantResolveCache = new Map<AST.CapturingGroup, ReadonlyWord | null>();
+	private readonly _constantResolveCache = new Map<AST.CapturingGroup, ReadonlyLogicalWord | null>();
 	private readonly _groupReferencesCache = new Map<AST.CapturingGroup, AST.Backreference[]>();
+	private readonly _charSetToCharFn: CharSetToCharsFn;
 
 	private constructor(ast: RegexppAst) {
 		this.literal = { source: ast.pattern.raw, flags: ast.flags.raw };
 		this.ast = ast;
 		this.maxCharacter = this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+		this._charSetToCharFn = createCharSetToCharsFn(this.ast.flags);
 	}
 
 	/**
@@ -397,7 +412,7 @@ export class Parser {
 			throw new Error("No backreferences that resolve this capturing group");
 		}
 
-		const words = atMostK(iterateWords(groupElement), context.maxBackreferenceWords);
+		const words = atMostK(iterateLogicalWords(groupElement, this._charSetToCharFn), context.maxBackreferenceWords);
 		if (words.length === 0) {
 			throw new Error("Cannot resolve dead capturing group");
 		}
@@ -738,13 +753,11 @@ export class Parser {
 			return EMPTY_SET;
 		}
 	}
-	private _constantResolveGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyWord | null {
+	private _constantResolveGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyLogicalWord | null {
 		const cached = this._constantResolveCache.get(element);
 		if (cached !== undefined) {
 			return cached;
 		}
-
-		let result: Word | null;
 
 		const expression = this._parseElement(element, {
 			...context,
@@ -759,37 +772,24 @@ export class Parser {
 		// if the group is constant, then all that's left will be a single alternative of only single-character
 		// character classes
 
-		if (expression.alternatives.length === 1) {
-			const concat = expression.alternatives[0];
-			if (
-				concat.elements.length === 1 &&
-				concat.elements[0].type === "CharacterClass" &&
-				concat.elements[0].characters.isEmpty
-			) {
+		let words = undefined;
+		try {
+			words = atMostK(iterateLogicalWords(expression, this._charSetToCharFn), 1);
+		} catch (e) {
+			// noop
+		}
+
+		let result: LogicalWord | null = null;
+		if (words) {
+			if (words.length === 0) {
 				// since the capturing can never be matched, all backreferences to it will always be replaced with the
 				// empty string
 				result = [];
+			} else if (words.length === 1) {
+				result = words[0];
 			} else {
-				result = [];
-
-				for (const char of concat.elements) {
-					if (char.type === "CharacterClass") {
-						const charset = char.characters;
-						if (charset.ranges.length === 1) {
-							const { min, max } = charset.ranges[0];
-							if (min === max) {
-								result.push(min);
-								continue;
-							}
-						}
-					}
-
-					result = null;
-					break;
-				}
+				throw new Error("More than one words were returned.");
 			}
-		} else {
-			result = null;
 		}
 
 		this._constantResolveCache.set(element, result);
@@ -814,17 +814,20 @@ export class Parser {
 	}
 	private _wordToElement(
 		source: Readonly<SourceLocation>,
-		word: ReadonlyWord,
+		word: ReadonlyLogicalWord,
 		context: ParserContext
 	): NoParent<Element> | EmptyConcat {
 		if (word.length === 0) {
 			return EMPTY_CONCAT;
 		} else if (word.length === 1) {
-			return context.nc.newCharClass(source, this._charToCharSet(word[0]));
+			const char = word[0];
+			const characters = char instanceof CharSet ? char : this._charToCharSet(char);
+			return context.nc.newCharClass(source, characters);
 		} else {
 			const concat = context.nc.newConcat(source);
 			for (const char of word) {
-				concat.elements.push(context.nc.newCharClass(source, this._charToCharSet(char)));
+				const characters = char instanceof CharSet ? char : this._charToCharSet(char);
+				concat.elements.push(context.nc.newCharClass(source, characters));
 			}
 
 			const alt = context.nc.newAlt(source);
@@ -947,7 +950,7 @@ class NodeCreator {
 	}
 }
 
-function withResolved(context: ParserContext, group: AST.CapturingGroup, word: ReadonlyWord): ParserContext {
+function withResolved(context: ParserContext, group: AST.CapturingGroup, word: ReadonlyLogicalWord): ParserContext {
 	const variableResolved = new Map(context.variableResolved);
 	variableResolved.set(group, word);
 	return { ...context, variableResolved };
@@ -1049,8 +1052,55 @@ function removeDuplicateEmptyAlternative(element: NoParent<Expression | Alternat
 	});
 }
 
-function iterateWords(node: NoParent<Node>): UnionIterable<Word> {
-	return wordSetsToWords(iterateWordSets(node));
+type CharSetToCharsFn = (charSet: CharSet) => Iterable<LogicalChar>;
+function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
+	if (!flags.ignoreCase) {
+		return charSetToChars;
+	} else {
+		const caseFolding = flags.unicode ? UnicodeCaseFolding : UTF16CaseFolding;
+		const maxCharacter = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+
+		const charSetCache = new Map<readonly number[], CharSet>();
+
+		return function* charSetToLogicalChars(charSet: CharSet): Iterable<LogicalChar> {
+			const seen = new Set<Char>();
+
+			for (const c of charSetToChars(charSet)) {
+				if (seen.has(c)) {
+					continue;
+				}
+
+				const equivalenceClass: readonly number[] | undefined = caseFolding[c];
+				if (equivalenceClass) {
+					for (const char of equivalenceClass) {
+						seen.add(char);
+					}
+
+					let cached = charSetCache.get(equivalenceClass);
+					if (cached === undefined) {
+						cached = CharSet.empty(maxCharacter).union(equivalenceClass.map(c => ({ min: c, max: c })));
+						charSetCache.set(equivalenceClass, cached);
+					}
+					yield cached;
+				} else {
+					yield c;
+				}
+			}
+		};
+	}
+}
+
+function* wordSetsToLogicalWords(
+	wordSets: Iterable<readonly CharSet[]>,
+	charSetToChars: CharSetToCharsFn
+): Iterable<LogicalWord> {
+	for (const wordSet of wordSets) {
+		yield* concatSequences(wordSet.map(charSetToChars));
+	}
+}
+
+function iterateLogicalWords(node: NoParent<Node>, charSetToChars: CharSetToCharsFn): UnionIterable<LogicalWord> {
+	return wordSetsToLogicalWords(iterateWordSets(node), charSetToChars);
 }
 function iterateWordSets(node: NoParent<Node>): UnionIterable<CharSet[]> {
 	switch (node.type) {
