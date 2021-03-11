@@ -305,7 +305,7 @@ export class DFA implements ReadonlyDFA {
 	): DFA {
 		checkCompatibility(left, right);
 
-		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 			// traverse the whole iterator to create our NodeList
@@ -356,7 +356,7 @@ export class DFA implements ReadonlyDFA {
 	): DFA {
 		const { maxCharacter } = options;
 
-		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			// build a prefix trie
 			for (const word of words) {
 				let node = nodeList.initial;
@@ -384,7 +384,7 @@ export class DFA implements ReadonlyDFA {
 
 	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
 		if (fa instanceof DFA) {
-			const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 				copyTo(fa.nodes, nodeList);
 			});
 			return new DFA(nodeList, fa.maxCharacter);
@@ -402,7 +402,7 @@ export class DFA implements ReadonlyDFA {
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
-		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			iter = Iter.ensurePureOut(iter);
 
 			const transitionSets = new Set<CharSet>();
@@ -545,6 +545,28 @@ export namespace DFA {
 
 		constructor() {
 			this.initial = this.createNode();
+		}
+
+		/**
+		 * Creates and returns a new node list that is only allowed to create a certain number of nodes during the
+		 * execution of the given consumer function.
+		 *
+		 * After this function returns, the limit no longer applies.
+		 *
+		 * @param maxNodes
+		 * @param consumerFn
+		 */
+		static withLimit(maxNodes: number, consumerFn: (nodeList: NodeList) => void): NodeList {
+			const nodeList = new NodeList();
+			nodeList._nodeLimit = maxNodes;
+			try {
+				consumerFn(nodeList);
+				nodeList._nodeLimit = Infinity;
+			} catch (error) {
+				nodeList._nodeLimit = Infinity;
+				throw error;
+			}
+			return nodeList;
 		}
 
 		createNode(): Node {
@@ -718,23 +740,6 @@ export namespace DFA {
 		 */
 		maxCharacter: Char;
 	}
-}
-
-/**
- * Creates a node list that is only allowed to create a certain number of nodes during the execution of the given
- * consumer function.
- *
- * After the node list is returned by this function, the limit no longer applies.
- *
- * @param maxNodes
- * @param consumerFn
- */
-function nodeListWithLimit(maxNodes: number, consumerFn: (nodeList: DFA.NodeList) => void): DFA.NodeList {
-	const nodeList = new DFA.NodeList();
-	nodeList["_nodeLimit"] = maxNodes;
-	consumerFn(nodeList);
-	nodeList["_nodeLimit"] = Infinity;
-	return nodeList;
 }
 
 function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {

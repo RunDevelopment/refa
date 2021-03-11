@@ -319,7 +319,7 @@ export class NFA implements ReadonlyNFA {
 	): NFA {
 		checkCompatibility(left, right);
 
-		const nodeList = nodeListWithLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = NFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 			// traverse the whole iterator to create our NodeList
@@ -412,7 +412,7 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			function getNext(node: NFA.Node, char: Char): NFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
@@ -460,7 +460,7 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = nodeListWithLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
 			translate.cache.set(iter.initial, nodeList.initial);
 
@@ -533,6 +533,28 @@ export namespace NFA {
 
 		constructor() {
 			this.initial = this.createNode();
+		}
+
+		/**
+		 * Creates and returns a new node list that is only allowed to create a certain number of nodes during the
+		 * execution of the given consumer function.
+		 *
+		 * After this function returns, the limit no longer applies.
+		 *
+		 * @param maxNodes
+		 * @param consumerFn
+		 */
+		static withLimit(maxNodes: number, consumerFn: (nodeList: NodeList) => void): NodeList {
+			const nodeList = new NodeList();
+			nodeList._nodeLimit = maxNodes;
+			try {
+				consumerFn(nodeList);
+				nodeList._nodeLimit = Infinity;
+			} catch (error) {
+				nodeList._nodeLimit = Infinity;
+				throw error;
+			}
+			return nodeList;
 		}
 
 		/**
@@ -767,23 +789,6 @@ function linkNodesAddImpl(map: Map<NFA.Node, CharSet>, to: NFA.Node, characters:
 	}
 }
 
-/**
- * Creates a node list that is only allowed to create a certain number of nodes during the execution of the given
- * consumer function.
- *
- * After the node list is returned by this function, the limit no longer applies.
- *
- * @param maxNodes
- * @param consumerFn
- */
-function nodeListWithLimit(maxNodes: number, consumerFn: (nodeList: NFA.NodeList) => void): NFA.NodeList {
-	const nodeList = new NFA.NodeList();
-	nodeList["_nodeLimit"] = maxNodes;
-	consumerFn(nodeList);
-	nodeList["_nodeLimit"] = Infinity;
-	return nodeList;
-}
-
 interface SubList {
 	readonly initial: NFA.Node;
 	readonly finals: Set<NFA.Node>;
@@ -800,7 +805,7 @@ function createNodeList(
 ): NFA.NodeList {
 	const infinityThreshold: number = creationOptions.infinityThreshold || Infinity;
 
-	return nodeListWithLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+	return NFA.NodeList.withLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 		baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
 
 		// All sub lists guarantee that the initial node has no incoming edges.
