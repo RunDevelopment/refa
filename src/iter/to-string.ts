@@ -59,7 +59,10 @@ export function toString<S, T>(
 	return states
 		.map(state => {
 			const label = labelOf(state);
-			const out = stableIter.getOut(state).sort(([s1], [s2]) => indexOf(s1) - indexOf(s2));
+			const out = stableIter.getOut(state);
+			if (!ordered) {
+				out.sort(([s1], [s2]) => indexOf(s1) - indexOf(s2));
+			}
 
 			if (out.length === 0) {
 				return `${label} -> none`;
