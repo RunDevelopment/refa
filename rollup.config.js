@@ -9,7 +9,10 @@ export default /** @type {import('rollup').RollupOptions[]} */ ([
 			file: "index.js",
 			format: "cjs",
 		},
-		plugins: [nodeResolve(), terser()],
+		plugins: [
+			nodeResolve(),
+			terser({ compress: { pure_funcs: ['debugAssert'] } }),
+		],
 	},
 ]);
 

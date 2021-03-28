@@ -1,5 +1,6 @@
 import { DFA } from "../../src/dfa";
 import { NFA, ReadonlyNFA } from "../../src/nfa";
+import { ENFA } from "../../src/enfa";
 import { Parser, Literal } from "../../src/js";
 import * as Iter from "../../src/iter";
 
@@ -15,6 +16,11 @@ export function literalToDFA(literal: Literal): DFA {
 export function literalToNFA(literal: Literal): NFA {
 	const parsed = Parser.fromLiteral(literal).parse();
 	return NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter });
+}
+
+export function literalToENFA(literal: Literal): ENFA {
+	const parsed = Parser.fromLiteral(literal).parse();
+	return ENFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter });
 }
 
 export function removeIndentation(expected: string): string {

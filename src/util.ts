@@ -164,13 +164,25 @@ export function* iterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
 
 /**
  * Traverses the given graph in any order. All elements will be visited exactly once.
- *
- * @param root
- * @param next
  */
 export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 	const visited = new Set<S>();
 	const toCheck: S[] = [root];
+
+	let element;
+	while ((element = toCheck.pop())) {
+		if (!visited.has(element)) {
+			visited.add(element);
+			toCheck.push(...next(element));
+		}
+	}
+}
+/**
+ * Traverses the given graph in any order. All elements will be visited exactly once.
+ */
+export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => Iterable<S>): void {
+	const visited = new Set<S>();
+	const toCheck: S[] = [...roots];
 
 	let element;
 	while ((element = toCheck.pop())) {
@@ -186,6 +198,12 @@ export function assertNever(value: never, message?: string): never {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(error as any).data = value;
 	throw error;
+}
+
+export function debugAssert(condition: boolean, message?: string): asserts condition {
+	if (!condition) {
+		throw new Error("Debug assertion failed." + (message ? "Message: " + message : ""));
+	}
 }
 
 export type UnionIterable<T> = Iterable<T> & { __unionIterable?: never };

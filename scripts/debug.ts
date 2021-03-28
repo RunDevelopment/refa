@@ -1,4 +1,4 @@
-import { combineTransformers, transform, NFA, DFA, Words, JS, CharSet, CharacterClass, FiniteAutomaton, Expression, NoParent, Transformers } from "../src";
+import { combineTransformers, transform, NFA, DFA, ENFA, Words, JS, CharSet, CharacterClass, FiniteAutomaton, Expression, NoParent, Transformers } from "../src";
 import { performance } from "perf_hooks";
 
 // util functions
@@ -6,6 +6,11 @@ function toNFA(literal: JS.Literal): NFA {
 	const parser = JS.Parser.fromLiteral(literal);
 	const { expression, maxCharacter } = parser.parse();
 	return NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
+}
+function toENFA(literal: JS.Literal): ENFA {
+	const parser = JS.Parser.fromLiteral(literal);
+	const { expression, maxCharacter } = parser.parse();
+	return ENFA.fromRegex(expression, { maxCharacter }, { assertions: "disable" });
 }
 const toDFA = (literal: JS.Literal): DFA => DFA.fromFA(toNFA(literal));
 function toCharSet(literal: JS.Literal): CharSet {
@@ -38,3 +43,11 @@ function measure(fn: () => void, samples: number = 1, label?: string): void {
 
 // actual debug code
 // DO NOT commit changes to this file
+
+const dfa = toDFA(/a+(?:b+a+)*/)
+dfa.minimize();
+console.log(toRegExp(dfa));
+
+
+console.log(toENFA(/a*b/).toString());
+console.log(toENFA(/a*?b/).toString());
