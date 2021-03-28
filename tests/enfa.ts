@@ -7,6 +7,7 @@ import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERAL
 import { Literal } from "../src/js";
 import { prefixes, suffixes } from "./helper/util";
 import { wordTestData, testWordTestCases } from "./helper/word-test-data";
+import { CharSet } from "../src/char-set";
 
 describe("ENFA", function () {
 	describe("fromRegex", function () {
@@ -674,101 +675,234 @@ describe("ENFA", function () {
 		}
 	});
 
-	//	describe("union", function () {
-	//		test([
-	//			{
-	//				literal: /a/,
-	//				other: /b/,
-	//				expected: `
-	//					(0) -> [1] : 61..62
-	//
-	//					[1] -> none`,
-	//			},
-	//			{
-	//				literal: /ab|ba/,
-	//				other: /aa|bb/,
-	//				expected: `
-	//					(0) -> (1) : 61..62
-	//
-	//					(1) -> [2] : 61..62
-	//
-	//					[2] -> none`,
-	//			},
-	//			{
-	//				literal: /a/,
-	//				other: /()/,
-	//				expected: `
-	//					[0] -> [1] : 61
-	//
-	//					[1] -> none`,
-	//			},
-	//			{
-	//				literal: /a/,
-	//				other: /b*/,
-	//				expected: `
-	//					[0] -> [1] : 61
-	//					    -> [2] : 62
-	//
-	//					[1] -> none
-	//
-	//					[2] -> [2] : 62`,
-	//			},
-	//			{
-	//				literal: /a+/,
-	//				other: /b+/,
-	//				expected: `
-	//					(0) -> [1] : 61
-	//					    -> [2] : 62
-	//
-	//					[1] -> [1] : 61
-	//
-	//					[2] -> [2] : 62`,
-	//			},
-	//			{
-	//				literal: /a+/,
-	//				other: /()/,
-	//				expected: `
-	//					[0] -> [1] : 61
-	//
-	//					[1] -> [1] : 61`,
-	//			},
-	//			{
-	//				literal: /a|b|c{2}/,
-	//				other: /a{2}|b{2}|c/,
-	//				expected: `
-	//					(0) -> (1) : 61
-	//					    -> [2] : 61..63
-	//					    -> (3) : 62
-	//					    -> (4) : 63
-	//
-	//					(1) -> [2] : 61
-	//
-	//					[2] -> none
-	//
-	//					(3) -> [2] : 62
-	//
-	//					(4) -> [2] : 63`,
-	//			},
-	//		]);
-	//
-	//		interface TestCase {
-	//			literal: Literal;
-	//			other: Literal;
-	//			expected: string;
-	//		}
-	//
-	//		function test(cases: TestCase[]): void {
-	//			for (const { literal, other, expected } of cases) {
-	//				it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
-	//					const enfa = literalToENFA(literal);
-	//					const enfaOther = literalToENFA(other);
-	//					enfa.union(enfaOther);
-	//					const actual = enfa.toString();
-	//					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
-	//				});
-	//			}
-	//		}
-	//	});
+	describe("union", function () {
+		test([
+			{
+				literal: /a/,
+				other: /b/,
+				expectedLeft: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 62
+
+					(2) -> (4) : 61
+
+					(3) -> [5] : ε
+
+					(4) -> [5] : ε
+
+					[5] -> none`,
+				expectedRight: `
+					(0) -> [1] : 61
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : 62
+
+					(3) -> [1] : ε`,
+			},
+			{
+				literal: /ab|ba/,
+				other: /aa|bb/,
+				expectedLeft: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+					    -> (4) : 62
+
+					(2) -> (5) : 61
+					    -> (6) : 62
+
+					(3) -> (7) : 61
+
+					(4) -> (8) : 62
+
+					(5) -> (9) : 62
+
+					(6) -> (10) : 61
+
+					(7) -> (11) : ε
+
+					(8) -> (11) : ε
+
+					(9) -> (12) : ε
+
+					(10) -> (12) : ε
+
+					(11) -> [13] : ε
+
+					(12) -> [13] : ε
+
+					[13] -> none`,
+				expectedRight: `
+					(0) -> (1) : 61
+					    -> (2) : 62
+					    -> (3) : ε
+
+					(1) -> (4) : 62
+
+					(2) -> (5) : 61
+
+					(3) -> (6) : 61
+					    -> (7) : 62
+
+					(4) -> [8] : ε
+
+					(5) -> [8] : ε
+
+					(6) -> (9) : 61
+
+					(7) -> (10) : 62
+
+					[8] -> none
+
+					(9) -> (11) : ε
+
+					(10) -> (11) : ε
+
+					(11) -> [8] : ε`,
+			},
+			{
+				literal: /a/,
+				other: /()/,
+				expectedLeft: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : ε
+
+					(2) -> (4) : 61
+
+					(3) -> [5] : ε
+
+					(4) -> [5] : ε
+
+					[5] -> none`,
+				expectedRight: `
+					(0) -> [1] : 61
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+
+					(3) -> [1] : ε`,
+			},
+			{
+				literal: /a/,
+				other: /b*/,
+				expectedLeft: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : ε
+					    -> (4) : ε
+
+					(2) -> (5) : 61
+
+					(3) -> (6) : 62
+
+					(4) -> [7] : ε
+
+					(5) -> [7] : ε
+
+					(6) -> (3) : ε
+					    -> (4) : ε
+
+					[7] -> none`,
+				expectedRight: `
+					(0) -> [1] : 61
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+					    -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> [1] : ε
+
+					(5) -> (3) : ε
+					    -> (4) : ε`,
+			},
+			{
+				literal: /a+/,
+				other: /b+/,
+				expectedLeft: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : ε
+
+					(2) -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> (6) : 61
+
+					(5) -> (3) : ε
+					    -> (7) : ε
+
+					(6) -> (4) : ε
+					    -> (8) : ε
+
+					(7) -> [9] : ε
+
+					(8) -> [9] : ε
+
+					[9] -> none`,
+				expectedRight: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+
+					(2) -> (4) : ε
+
+					(3) -> (1) : ε
+					    -> [5] : ε
+
+					(4) -> (6) : 62
+
+					[5] -> none
+
+					(6) -> (4) : ε
+					    -> (7) : ε
+
+					(7) -> [5] : ε`,
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			other: Literal;
+			expectedLeft: string;
+			expectedRight: string;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, other, expectedLeft, expectedRight } of cases) {
+				it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
+					const enfa = literalToENFA(literal);
+					const enfaOther = literalToENFA(other);
+					enfa.union(enfaOther, "left");
+					const actual = enfa.toString();
+					assert.strictEqual(actual, removeIndentation(expectedLeft), "Actual:\n" + actual + "\n");
+				});
+				it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
+					const enfa = literalToENFA(literal);
+					const enfaOther = literalToENFA(other);
+					enfa.union(enfaOther, "right");
+					const actual = enfa.toString();
+					assert.strictEqual(actual, removeIndentation(expectedRight), "Actual:\n" + actual + "\n");
+				});
+			}
+		}
+	});
 
 	describe("append", function () {
 		test([
@@ -953,6 +1087,1009 @@ describe("ENFA", function () {
 
 					const actual = enfaLeft.toString();
 					assert.strictEqual(actual, removeIndentation(expected));
+				});
+			}
+		}
+	});
+
+	describe("quantify", function () {
+		test([
+			{
+				literal: /a/,
+				min: 1,
+				max: 0,
+				lazy: false,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: Infinity,
+				max: Infinity,
+				lazy: false,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: NaN,
+				max: NaN,
+				lazy: false,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: -1,
+				max: 0,
+				lazy: false,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: 0.5,
+				max: 1.5,
+				lazy: false,
+				expected: Error,
+			},
+
+			{
+				literal: /a/,
+				min: 1,
+				max: 1,
+				lazy: false,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> none`,
+			},
+			{
+				literal: /a*/,
+				min: 1,
+				max: 1,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : 61
+
+					[2] -> none
+
+					(3) -> (1) : ε
+					    -> [2] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 1,
+				max: 1,
+				lazy: true,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> none`,
+			},
+			{
+				literal: /a*/,
+				min: 1,
+				max: 1,
+				lazy: true,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : 61
+
+					[2] -> none
+
+					(3) -> (1) : ε
+					    -> [2] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 1,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> [2] : 61
+
+					[2] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 1,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+					    -> [2] : ε
+
+					[2] -> none
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> [2] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 1,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+
+					[2] -> none
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> [2] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 1,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> [1] : 61`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 1,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+					    -> [1] : ε
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> [1] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 1,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> [1] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : ε
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : ε
+
+					(4) -> [5] : 61
+
+					[5] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+
+					(2) -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> (6) : ε
+					    -> (7) : ε
+
+					(5) -> (1) : ε
+					    -> (2) : ε
+
+					(6) -> (8) : 61
+
+					(7) -> (9) : ε
+
+					(8) -> (10) : 62
+
+					(9) -> (11) : ε
+					    -> [12] : ε
+
+					(10) -> (6) : ε
+					     -> (7) : ε
+
+					(11) -> (13) : 61
+
+					[12] -> none
+
+					(13) -> (14) : 62
+
+					(14) -> (11) : ε
+					     -> [12] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+
+					(1) -> (2) : 61
+
+					(2) -> (3) : 62
+
+					(3) -> (1) : ε
+					    -> (4) : ε
+
+					(4) -> (5) : ε
+
+					(5) -> (6) : ε
+
+					(6) -> (7) : 61
+
+					(7) -> (8) : 62
+
+					(8) -> (6) : ε
+					    -> (9) : ε
+
+					(9) -> (10) : ε
+
+					(10) -> (11) : ε
+
+					(11) -> (12) : 61
+
+					(12) -> (13) : 62
+
+					(13) -> (11) : ε
+					     -> [14] : ε
+
+					[14] -> none`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : ε
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : ε
+
+					(4) -> [5] : 61
+
+					[5] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+
+					(2) -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> (6) : ε
+					    -> (7) : ε
+
+					(5) -> (1) : ε
+					    -> (2) : ε
+
+					(6) -> (8) : 61
+
+					(7) -> (9) : ε
+
+					(8) -> (10) : 62
+
+					(9) -> (11) : ε
+					    -> [12] : ε
+
+					(10) -> (6) : ε
+					     -> (7) : ε
+
+					(11) -> (13) : 61
+
+					[12] -> none
+
+					(13) -> (14) : 62
+
+					(14) -> (11) : ε
+					     -> [12] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> (1) : ε
+
+					(1) -> (2) : 61
+
+					(2) -> (3) : 62
+
+					(3) -> (1) : ε
+					    -> (4) : ε
+
+					(4) -> (5) : ε
+
+					(5) -> (6) : ε
+
+					(6) -> (7) : 61
+
+					(7) -> (8) : 62
+
+					(8) -> (6) : ε
+					    -> (9) : ε
+
+					(9) -> (10) : ε
+
+					(10) -> (11) : ε
+
+					(11) -> (12) : 61
+
+					(12) -> (13) : 62
+
+					(13) -> (11) : ε
+					     -> [14] : ε
+
+					[14] -> none`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : 61
+
+					[2] -> none
+
+					(3) -> (4) : ε
+					    -> [2] : ε
+
+					(4) -> (5) : 61
+
+					(5) -> (6) : ε
+					    -> [2] : ε
+
+					(6) -> [2] : 61`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+					    -> (4) : ε
+
+					[2] -> none
+
+					(3) -> (5) : 61
+
+					(4) -> (6) : ε
+					    -> [2] : ε
+
+					(5) -> (7) : 62
+
+					(6) -> (8) : ε
+					    -> (9) : ε
+
+					(7) -> (3) : ε
+					    -> (4) : ε
+
+					(8) -> (10) : 61
+
+					(9) -> (11) : ε
+					    -> [2] : ε
+
+					(10) -> (12) : 62
+
+					(11) -> (13) : ε
+					     -> [2] : ε
+
+					(12) -> (8) : ε
+					     -> (9) : ε
+
+					(13) -> (14) : 61
+
+					(14) -> (15) : 62
+
+					(15) -> (13) : ε
+					     -> [2] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 3,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+
+					[2] -> none
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> (6) : ε
+
+					(6) -> (7) : ε
+					    -> [2] : ε
+
+					(7) -> (8) : ε
+
+					(8) -> (9) : 61
+
+					(9) -> (10) : 62
+
+					(10) -> (8) : ε
+					     -> (11) : ε
+
+					(11) -> (12) : ε
+					     -> [2] : ε
+
+					(12) -> (13) : ε
+
+					(13) -> (14) : 61
+
+					(14) -> (15) : 62
+
+					(15) -> (13) : ε
+					     -> [2] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : 61
+
+					(3) -> [1] : ε
+					    -> (4) : ε
+
+					(4) -> (5) : 61
+
+					(5) -> [1] : ε
+					    -> (6) : ε
+
+					(6) -> [1] : 61`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+					    -> (4) : ε
+
+					(3) -> (5) : 61
+
+					(4) -> [1] : ε
+					    -> (6) : ε
+
+					(5) -> (7) : 62
+
+					(6) -> (8) : ε
+					    -> (9) : ε
+
+					(7) -> (3) : ε
+					    -> (4) : ε
+
+					(8) -> (10) : 61
+
+					(9) -> [1] : ε
+					    -> (11) : ε
+
+					(10) -> (12) : 62
+
+					(11) -> (13) : ε
+					     -> [1] : ε
+
+					(12) -> (8) : ε
+					     -> (9) : ε
+
+					(13) -> (14) : 61
+
+					(14) -> (15) : 62
+
+					(15) -> (13) : ε
+					     -> [1] : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 3,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> (6) : ε
+
+					(6) -> [1] : ε
+					    -> (7) : ε
+
+					(7) -> (8) : ε
+
+					(8) -> (9) : 61
+
+					(9) -> (10) : 62
+
+					(10) -> (8) : ε
+					     -> (11) : ε
+
+					(11) -> [1] : ε
+					     -> (12) : ε
+
+					(12) -> (13) : ε
+
+					(13) -> (14) : 61
+
+					(14) -> (15) : 62
+
+					(15) -> (13) : ε
+					     -> [1] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : 61
+
+					[2] -> none
+
+					(3) -> (1) : ε
+					    -> [2] : ε`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+					    -> (4) : ε
+
+					[2] -> none
+
+					(3) -> (5) : 61
+
+					(4) -> (1) : ε
+					    -> [2] : ε
+
+					(5) -> (6) : 62
+
+					(6) -> (3) : ε
+					    -> (4) : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> [2] : ε
+
+					(1) -> (3) : ε
+
+					[2] -> none
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> (6) : ε
+
+					(6) -> (1) : ε
+					    -> [2] : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : 61
+
+					(3) -> [1] : ε
+					    -> (2) : ε`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+					    -> (4) : ε
+
+					(3) -> (5) : 61
+
+					(4) -> [1] : ε
+					    -> (2) : ε
+
+					(5) -> (6) : 62
+
+					(6) -> (3) : ε
+					    -> (4) : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> [1] : ε
+					    -> (2) : ε
+
+					[1] -> none
+
+					(2) -> (3) : ε
+
+					(3) -> (4) : 61
+
+					(4) -> (5) : 62
+
+					(5) -> (3) : ε
+					    -> (6) : ε
+
+					(6) -> [1] : ε
+					    -> (2) : ε`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : ε
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : ε
+
+					(4) -> (5) : 61
+
+					(5) -> (4) : ε
+					    -> [6] : ε
+
+					[6] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+
+					(2) -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> (6) : ε
+					    -> (7) : ε
+
+					(5) -> (1) : ε
+					    -> (2) : ε
+
+					(6) -> (8) : 61
+
+					(7) -> (9) : ε
+
+					(8) -> (10) : 62
+
+					(9) -> (11) : ε
+					    -> (12) : ε
+
+					(10) -> (6) : ε
+					     -> (7) : ε
+
+					(11) -> (13) : 61
+
+					(12) -> (9) : ε
+					     -> [14] : ε
+
+					(13) -> (15) : 62
+
+					[14] -> none
+
+					(15) -> (11) : ε
+					     -> (12) : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: Infinity,
+				lazy: false,
+				expected: `
+					(0) -> (1) : ε
+
+					(1) -> (2) : 61
+
+					(2) -> (3) : 62
+
+					(3) -> (1) : ε
+					    -> (4) : ε
+
+					(4) -> (5) : ε
+
+					(5) -> (6) : ε
+
+					(6) -> (7) : 61
+
+					(7) -> (8) : 62
+
+					(8) -> (6) : ε
+					    -> (9) : ε
+
+					(9) -> (10) : ε
+
+					(10) -> (11) : ε
+
+					(11) -> (12) : 61
+
+					(12) -> (13) : 62
+
+					(13) -> (11) : ε
+					     -> (14) : ε
+
+					(14) -> (10) : ε
+					     -> [15] : ε
+
+					[15] -> none`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : ε
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : ε
+
+					(4) -> (5) : 61
+
+					(5) -> [6] : ε
+					    -> (4) : ε
+
+					[6] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> (1) : ε
+					    -> (2) : ε
+
+					(1) -> (3) : 61
+
+					(2) -> (4) : ε
+
+					(3) -> (5) : 62
+
+					(4) -> (6) : ε
+					    -> (7) : ε
+
+					(5) -> (1) : ε
+					    -> (2) : ε
+
+					(6) -> (8) : 61
+
+					(7) -> (9) : ε
+
+					(8) -> (10) : 62
+
+					(9) -> (11) : ε
+					    -> (12) : ε
+
+					(10) -> (6) : ε
+					     -> (7) : ε
+
+					(11) -> (13) : 61
+
+					(12) -> [14] : ε
+					     -> (9) : ε
+
+					(13) -> (15) : 62
+
+					[14] -> none
+
+					(15) -> (11) : ε
+					     -> (12) : ε`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: Infinity,
+				lazy: true,
+				expected: `
+					(0) -> (1) : ε
+
+					(1) -> (2) : 61
+
+					(2) -> (3) : 62
+
+					(3) -> (1) : ε
+					    -> (4) : ε
+
+					(4) -> (5) : ε
+
+					(5) -> (6) : ε
+
+					(6) -> (7) : 61
+
+					(7) -> (8) : 62
+
+					(8) -> (6) : ε
+					    -> (9) : ε
+
+					(9) -> (10) : ε
+
+					(10) -> (11) : ε
+
+					(11) -> (12) : 61
+
+					(12) -> (13) : 62
+
+					(13) -> (11) : ε
+					     -> (14) : ε
+
+					(14) -> [15] : ε
+					     -> (10) : ε
+
+					[15] -> none`,
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			min: number;
+			max: number;
+			lazy: boolean;
+			expected: string | typeof Error;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, min, max, lazy, expected } of cases) {
+				it(`${literalToString(literal)}{${min},${max === Infinity ? "" : max}}${lazy ? "?" : ""}`, function () {
+					const enfa = literalToENFA(literal);
+
+					if (typeof expected === "string") {
+						enfa.quantify(min, max, lazy);
+						assert.strictEqual(enfa.toString(), removeIndentation(expected));
+					} else {
+						assert.throws(() => enfa.quantify(min, max, lazy));
+					}
 				});
 			}
 		}
@@ -1207,6 +2344,75 @@ describe("ENFA", function () {
 			assert.throws(() => {
 				ENFA.fromWords(testENFA.words(), testENFA.options, { maxNodes: 100 });
 			});
+		});
+	});
+
+	describe(ENFA.NodeList.name, function () {
+		it(ENFA.NodeList.resolveEpsilon.name, function () {
+			const nodeList = new ENFA.NodeList();
+
+			/**
+			 * This creates the graph.
+			 *
+			 * ```txt
+			 * (0) -> (1) : "a"
+			 *     -> (2) : epsilon
+			 *     -> (3) : "b"
+			 *
+			 * (1) -> (3) : "c"
+			 *
+			 * (2) -> (4) : "d"
+			 *     -> (1) : "e"
+			 *     -> (2) : epsilon
+			 *
+			 * (3) -> (1) : epsilon
+			 * ```
+			 */
+
+			const a = CharSet.empty(0xffff).union([{ min: 97, max: 97 }]);
+			const b = CharSet.empty(0xffff).union([{ min: 98, max: 98 }]);
+			const c = CharSet.empty(0xffff).union([{ min: 99, max: 99 }]);
+			const d = CharSet.empty(0xffff).union([{ min: 100, max: 100 }]);
+			const e = CharSet.empty(0xffff).union([{ min: 101, max: 101 }]);
+
+			const n0 = nodeList.createNode();
+			const n1 = nodeList.createNode();
+			const n2 = nodeList.createNode();
+			const n3 = nodeList.createNode();
+			const n4 = nodeList.createNode();
+
+			nodeList.linkNodes(n0, n1, a);
+			nodeList.linkNodes(n0, n2, null);
+			nodeList.linkNodes(n0, n3, b);
+
+			nodeList.linkNodes(n1, n3, c);
+
+			nodeList.linkNodes(n2, n4, d);
+			nodeList.linkNodes(n2, n1, e);
+			nodeList.linkNodes(n2, n2, null);
+
+			nodeList.linkNodes(n3, n1, null);
+
+			/**
+			 * The node `(0)` will return the resolved list:
+			 *
+			 * ```txt
+			 * [(1), "a"]
+			 * [(4), "d"]
+			 * [(1), "e"]
+			 * [(3), "b"]
+			 * ```
+			 */
+
+			const resolved: [ENFA.ReadonlyNode, CharSet][] = [];
+			ENFA.NodeList.resolveEpsilon(n0, "out", (charSet, node) => resolved.push([node, charSet]));
+
+			assert.deepEqual(resolved, [
+				[n1, a],
+				[n4, d],
+				[n1, e],
+				[n3, b],
+			]);
 		});
 	});
 });
