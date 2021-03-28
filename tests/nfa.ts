@@ -820,6 +820,270 @@ describe("NFA", function () {
 		}
 	});
 
+	describe("quantify", function () {
+		test([
+			{
+				literal: /a/,
+				min: 1,
+				max: 0,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: Infinity,
+				max: Infinity,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: NaN,
+				max: NaN,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: -1,
+				max: 0,
+				expected: Error,
+			},
+			{
+				literal: /a/,
+				min: 0.5,
+				max: 1.5,
+				expected: Error,
+			},
+
+			{
+				literal: /a/,
+				min: 1,
+				max: 1,
+				expected: `
+					(0) -> [1] : 61
+
+					[1] -> none`,
+			},
+			{
+				literal: /a*/,
+				min: 1,
+				max: 1,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> [1] : 61`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 1,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 1,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 1,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: 3,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : 61
+
+					(2) -> [3] : 61
+
+					[3] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: 3,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: 3,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : 62
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : 62
+
+					(4) -> (5) : 61
+
+					(5) -> [6] : 62
+
+					[6] -> (5) : 61`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: 3,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> [2] : 61
+
+					[2] -> [3] : 61
+
+					[3] -> none`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: 3,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: 3,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+
+			{
+				literal: /a/,
+				min: 0,
+				max: Infinity,
+				expected: `
+					[0] -> [1] : 61
+
+					[1] -> [1] : 61`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 0,
+				max: Infinity,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 0,
+				max: Infinity,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+
+			{
+				literal: /a/,
+				min: 3,
+				max: Infinity,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : 61
+
+					(2) -> [3] : 61
+
+					[3] -> [3] : 61`,
+			},
+			{
+				literal: /(ab)*/,
+				min: 3,
+				max: Infinity,
+				expected: `
+					[0] -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> (1) : 61`,
+			},
+			{
+				literal: /(ab)+/,
+				min: 3,
+				max: Infinity,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> (2) : 62
+
+					(2) -> (3) : 61
+
+					(3) -> (4) : 62
+
+					(4) -> (5) : 61
+
+					(5) -> [6] : 62
+
+					[6] -> (5) : 61`,
+			},
+		]);
+
+		interface TestCase {
+			literal: Literal;
+			min: number;
+			max: number;
+			expected: string | typeof Error;
+		}
+
+		function test(cases: TestCase[]): void {
+			for (const { literal, min, max, expected } of cases) {
+				it(`${literalToString(literal)}{${min},${max === Infinity ? "" : max}}`, function () {
+					const nfa = literalToNFA(literal);
+
+					if (typeof expected === "string") {
+						nfa.quantify(min, max);
+						assert.strictEqual(nfa.toString(), removeIndentation(expected));
+					} else {
+						assert.throws(() => nfa.quantify(min, max));
+					}
+				});
+			}
+		}
+	});
+
 	describe("intersect", function () {
 		test([
 			{
