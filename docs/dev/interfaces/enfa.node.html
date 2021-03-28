@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>AnyCharacterSet | refa - v0.7.1</title>
+	<title>Node | refa - v0.7.1</title>
 	<meta name="description" content="Documentation for refa - v0.7.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,13 +53,13 @@
 					<a href="../modules.html">refa - v0.7.1</a>
 				</li>
 				<li>
-					<a href="../modules/js.html">JS</a>
+					<a href="../modules/enfa.html">ENFA</a>
 				</li>
 				<li>
-					<a href="js.anycharacterset.html">AnyCharacterSet</a>
+					<a href="enfa.node.html">Node</a>
 				</li>
 			</ul>
-			<h1>Interface AnyCharacterSet</h1>
+			<h1>Interface Node</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +70,12 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">AnyCharacterSet</span>
+						<a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">Node</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -81,7 +86,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.anycharacterset.html#kind" class="tsd-kind-icon">kind</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="enfa.node.html#in" class="tsd-kind-icon">in</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="enfa.node.html#list" class="tsd-kind-icon">list</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="enfa.node.html#out" class="tsd-kind-icon">out</a></li>
 							</ul>
 						</section>
 					</div>
@@ -89,11 +96,28 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="kind" class="tsd-anchor"></a>
-					<h3>kind</h3>
-					<div class="tsd-signature tsd-kind-icon">kind<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;any&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="in" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> in</h3>
+					<div class="tsd-signature tsd-kind-icon">in<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><a href="enfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
+						<p>Overrides <a href="enfa.readonlynode.html">ReadonlyNode</a>.<a href="enfa.readonlynode.html#in">in</a></p>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="list" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> list</h3>
+					<div class="tsd-signature tsd-kind-icon">list<span class="tsd-signature-symbol">:</span> <a href="../classes/enfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></div>
+					<aside class="tsd-sources">
+						<p>Overrides <a href="enfa.readonlynode.html">ReadonlyNode</a>.<a href="enfa.readonlynode.html#list">list</a></p>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="out" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> out</h3>
+					<div class="tsd-signature tsd-kind-icon">out<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><a href="enfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Overrides <a href="enfa.readonlynode.html">ReadonlyNode</a>.<a href="enfa.readonlynode.html#out">out</a></p>
 					</aside>
 				</section>
 			</section>
@@ -107,10 +131,10 @@
 					<li class=" tsd-kind-namespace">
 						<a href="../modules/dfa.html">DFA</a>
 					</li>
-					<li class=" tsd-kind-namespace">
+					<li class="current tsd-kind-namespace">
 						<a href="../modules/enfa.html">ENFA</a>
 					</li>
-					<li class="current tsd-kind-namespace">
+					<li class=" tsd-kind-namespace">
 						<a href="../modules/js.html">JS</a>
 					</li>
 					<li class=" tsd-kind-namespace">
@@ -127,73 +151,40 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-namespace">
-						<a href="../classes/js.parser.html" class="tsd-kind-icon">Parser</a>
+						<a href="../classes/enfa.nodelist.html" class="tsd-kind-icon">Node<wbr>List</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="enfa.creationoptions.html" class="tsd-kind-icon">Creation<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="enfa.fromregexoptions.html" class="tsd-kind-icon">From<wbr>Regex<wbr>Options</a>
 					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.anycharacterset.html" class="tsd-kind-icon">Any<wbr>Character<wbr>Set</a>
+						<a href="enfa.node.html" class="tsd-kind-icon">Node</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="js.anycharacterset.html#kind" class="tsd-kind-icon">kind</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="enfa.node.html#in" class="tsd-kind-icon">in</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="enfa.node.html#list" class="tsd-kind-icon">list</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="enfa.node.html#out" class="tsd-kind-icon">out</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.digitcharacterset.html" class="tsd-kind-icon">Digit<wbr>Character<wbr>Set</a>
+						<a href="enfa.options.html" class="tsd-kind-icon">Options</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.flags.html" class="tsd-kind-icon">Flags</a>
+						<a href="enfa.readonlynode.html" class="tsd-kind-icon">Readonly<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.literal.html" class="tsd-kind-icon">Literal</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.parseoptions.html" class="tsd-kind-icon">Parse<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.parseresult.html" class="tsd-kind-icon">Parse<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.propertycharacterset.html" class="tsd-kind-icon">Property<wbr>Character<wbr>Set</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.regexppast.html" class="tsd-kind-icon">Regexpp<wbr>Ast</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.spacecharacterset.html" class="tsd-kind-icon">Space<wbr>Character<wbr>Set</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.textboundaryassertion.html" class="tsd-kind-icon">Text<wbr>Boundary<wbr>Assertion</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.toliteraloptions.html" class="tsd-kind-icon">To<wbr>Literal<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.wordboundaryassertion.html" class="tsd-kind-icon">Word<wbr>Boundary<wbr>Assertion</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="js.wordcharacterset.html" class="tsd-kind-icon">Word<wbr>Character<wbr>Set</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
-						<a href="../modules/js.html#boundaryassertion" class="tsd-kind-icon">Boundary<wbr>Assertion</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
-						<a href="../modules/js.html#parsableelement" class="tsd-kind-icon">Parsable<wbr>Element</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-namespace">
-						<a href="../modules/js.html#predefinedcharacterset" class="tsd-kind-icon">Predefined<wbr>Character<wbr>Set</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-namespace">
-						<a href="../modules/js.html#createassertion" class="tsd-kind-icon">create<wbr>Assertion</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-namespace">
-						<a href="../modules/js.html#createcharset" class="tsd-kind-icon">create<wbr>Char<wbr>Set</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-namespace">
-						<a href="../modules/js.html#toliteral" class="tsd-kind-icon">to<wbr>Literal</a>
+						<a href="enfa.readonlynodelist.html" class="tsd-kind-icon">Readonly<wbr>Node<wbr>List</a>
 					</li>
 				</ul>
 			</nav>
