@@ -60,7 +60,7 @@ export interface ParseOptions {
 	 *   The parser will replace all backreferences with an empty character class. This will cause all paths containing
 	 *   a backreference to be (effectively) removed.
 	 *
-	 *   E.g. `(a*)(\1|b)` will be parsed as `(a*)([]|b)` which is equivalent to `a*b`.
+	 *   E.g. `(a*)(\1|b)` will be parsed as `(a*)(([])|b)` which is equivalent to `a*b`.
 	 *
 	 * - `"throw"`
 	 *
@@ -103,11 +103,15 @@ export interface ParseOptions {
 	 *
 	 * If set to `true`, all trivial optimizations will be disabled. This includes:
 	 *
-	 * - Removing alternatives where all paths go through an empty character class.
+	 * - Removing alternatives where all paths go through an empty character class, an alternation with 0 alternatives,
+	 *   or a disabled backreference/assertion.
 	 * - Removing constant 0 and constant 1 quantifiers.
 	 * - Inlining single-alternative groups.
 	 *
-	 * These optimization might prevent that certain backreferences or assertions from throwing an error.
+	 * These optimization might prevent that certain backreferences or assertions from throwing an error. It's usually
+	 * good to have them enabled since parsing is usually faster and the produced RE AST is smaller.
+	 *
+	 * If the produced RE AST is supposed to be a literal translation, then optimization have to be disabled.
 	 *
 	 * @default false
 	 */
@@ -128,7 +132,7 @@ export interface RegexppAst {
 	readonly flags: AST.Flags;
 }
 
-export type ParsableElement = AST.Group | AST.CapturingGroup | AST.Pattern | AST.Alternative;
+export type ParsableElement = AST.Element | AST.Pattern | AST.Alternative;
 
 export interface ParseResult {
 	expression: Expression;
@@ -227,12 +231,29 @@ export class Parser {
 
 	/**
 	 * Parsed the entire literal.
+	 *
+	 * For more information on parsing, see {@link parseElement}.
 	 */
 	parse(options?: Readonly<ParseOptions>): ParseResult {
 		return this.parseElement(this.ast.pattern, options);
 	}
 	/**
 	 * Parses a specific element of the literal.
+	 *
+	 * Use {@link ParseOptions} to control how the element is parsed.
+	 *
+	 * ## Disabled elements
+	 *
+	 * The parser allows for certain elements to be disabled. This means that the element will be replaced with the
+	 * empty set. Hence, all paths that contain the disabled element can never accept.
+	 *
+	 * With optimizations enabled (see {@link ParseOptions.disableOptimizations}), disabled elements will always be
+	 * removed from the returned RE AST. To keep disabled element, it is necessary to disable optimizations.
+	 *
+	 * Disabled elements are always guaranteed to be represented by an empty alternation (an alternation with 0
+	 * alternatives). Empty alternations (assuming that optimizations are disabled and that the Regexpp Ast hasn't been
+	 * modified) are unique to disabled elements and can be used to identify them. The source of the empty alternations
+	 * can then be used to determine the Regexpp Ast element (a backreference or assertion) that was disabled.
 	 */
 	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const context: ParserContext = {
@@ -258,10 +279,35 @@ export class Parser {
 			source: copySource(element),
 		};
 
-		if (element.type === "Alternative") {
-			this._addAlternatives([element], expression, context);
-		} else {
-			this._addAlternatives(element.alternatives, expression, context);
+		switch (element.type) {
+			case "Alternative": {
+				this._addAlternatives([element], expression, context);
+				break;
+			}
+
+			case "Pattern": {
+				this._addAlternatives(element.alternatives, expression, context);
+				break;
+			}
+
+			default: {
+				const e = this._createElement(element, context);
+				if (e === EMPTY_SET) {
+					// do nothing
+				} else if (e === EMPTY_CONCAT) {
+					expression.alternatives.push(context.nc.newConcat(element));
+				} else {
+					if (!context.disableSimplification && e.type === "Alternation") {
+						// just inline the alternatives
+						expression.alternatives = e.alternatives;
+					} else {
+						const concat = context.nc.newConcat(element);
+						expression.alternatives.push(concat);
+						concat.elements.push(e);
+					}
+				}
+				break;
+			}
 		}
 
 		return expression;
@@ -542,11 +588,7 @@ export class Parser {
 			throw new Error("Assertions are not supported.");
 		}
 		if (context.assertions === "disable") {
-			if (context.disableSimplification) {
-				return this._createEmptyCharacterClass(element, context);
-			} else {
-				return EMPTY_SET;
-			}
+			return this._createDisabledElement(element, context);
 		}
 
 		switch (element.kind) {
@@ -715,8 +757,12 @@ export class Parser {
 		return quant;
 	}
 
-	private _createEmptyCharacterClass(node: SourceLocation, context: ParserContext): NoParent<CharacterClass> {
-		return context.nc.newCharClass(node, CharSet.empty(this.maxCharacter));
+	private _createDisabledElement(node: SourceLocation, context: ParserContext): NoParent<Element> | EmptySet {
+		if (context.disableSimplification) {
+			return context.nc.newAlt(node);
+		} else {
+			return EMPTY_SET;
+		}
 	}
 
 	private _createBackreference(element: AST.Backreference, context: ParserContext): NoParent<Element> | Empty {
@@ -747,11 +793,7 @@ export class Parser {
 		}
 
 		// disable
-		if (context.disableSimplification) {
-			return this._createEmptyCharacterClass(element, context);
-		} else {
-			return EMPTY_SET;
-		}
+		return this._createDisabledElement(element, context);
 	}
 	private _constantResolveGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyLogicalWord | null {
 		const cached = this._constantResolveCache.get(element);
