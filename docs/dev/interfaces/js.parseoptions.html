@@ -138,7 +138,7 @@
 							<li><p><code>&quot;disable&quot;</code></p>
 								<p>The parser will replace all backreferences with an empty character class. This will cause all paths containing
 								a backreference to be (effectively) removed.</p>
-								<p>E.g. <code>(a*)(\1|b)</code> will be parsed as <code>(a*)([]|b)</code> which is equivalent to <code>a*b</code>.</p>
+								<p>E.g. <code>(a*)(\1|b)</code> will be parsed as <code>(a*)(([])|b)</code> which is equivalent to <code>a*b</code>.</p>
 							</li>
 							<li><p><code>&quot;throw&quot;</code></p>
 								<p>The parser will throw an error when encountering a backreference that cannot be removed.</p>
@@ -166,11 +166,14 @@
 						</div>
 						<p>If set to <code>true</code>, all trivial optimizations will be disabled. This includes:</p>
 						<ul>
-							<li>Removing alternatives where all paths go through an empty character class.</li>
+							<li>Removing alternatives where all paths go through an empty character class, an alternation with 0 alternatives,
+							or a disabled backreference/assertion.</li>
 							<li>Removing constant 0 and constant 1 quantifiers.</li>
 							<li>Inlining single-alternative groups.</li>
 						</ul>
-						<p>These optimization might prevent that certain backreferences or assertions from throwing an error.</p>
+						<p>These optimization might prevent that certain backreferences or assertions from throwing an error. It&#39;s usually
+						good to have them enabled since parsing is usually faster and the produced RE AST is smaller.</p>
+						<p>If the produced RE AST is supposed to be a literal translation, then optimization have to be disabled.</p>
 						<dl class="tsd-comment-tags">
 							<dt>default</dt>
 							<dd><p>false</p>

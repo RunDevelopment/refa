@@ -163,6 +163,7 @@
 								<div class="lead">
 									<p>Parsed the entire literal.</p>
 								</div>
+								<p>For more information on parsing, see <a href="js.parser.html#parseelement">parseElement</a>.</p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -188,6 +189,18 @@
 								<div class="lead">
 									<p>Parses a specific element of the literal.</p>
 								</div>
+								<p>Use <a href="../interfaces/js.parseoptions.html">ParseOptions</a> to control how the element is parsed.</p>
+								<a href="#disabled-elements" id="disabled-elements" style="color: inherit; text-decoration: none;">
+									<h2>Disabled elements</h2>
+								</a>
+								<p>The parser allows for certain elements to be disabled. This means that the element will be replaced with the
+								empty set. Hence, all paths that contain the disabled element can never accept.</p>
+								<p>With optimizations enabled (see <a href="../interfaces/js.parseoptions.html#disableoptimizations">ParseOptions.disableOptimizations</a>), disabled elements will always be
+								removed from the returned RE AST. To keep disabled element, it is necessary to disable optimizations.</p>
+								<p>Disabled elements are always guaranteed to be represented by an empty alternation (an alternation with 0
+									alternatives). Empty alternations (assuming that optimizations are disabled and that the Regexpp Ast hasn&#39;t been
+									modified) are unique to disabled elements and can be used to identify them. The source of the empty alternations
+								can then be used to determine the Regexpp Ast element (a backreference or assertion) that was disabled.</p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
