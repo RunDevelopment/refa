@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 module.exports["ENFA >> union >> /a/ ∪ /b/ (left)"] = `
 (0) -> (1) : ε
     -> (2) : ε

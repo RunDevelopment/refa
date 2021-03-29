@@ -52,14 +52,10 @@ function toStringLiteral(value: string): string {
 }
 
 function createSnapshot(values: Map<string, string>): string {
-	let s = "";
+	let s = "/* eslint-disable */\n";
 
 	for (const [title, value] of values) {
-		if (s) {
-			s += "\n";
-		}
-
-		s += `module.exports[${JSON.stringify(title)}] = ${toStringLiteral(value)};\n`;
+		s += `\nmodule.exports[${JSON.stringify(title)}] = ${toStringLiteral(value)};\n`;
 	}
 
 	return s;
