@@ -48,7 +48,7 @@ function getRoot(test: Mocha.Runnable): Mocha.Suite {
 const toUpdate = new Map<string, Map<string, string>>();
 
 function toStringLiteral(value: string): string {
-	return "`\n" + value.replace(/[`\\]/g, m => "\\" + m) + "\n`.slice(1, -1)";
+	return "`\n" + value.replace(/[`\\$]/g, m => "\\" + m) + "\n`.slice(1, -1)";
 }
 
 function createSnapshot(values: Map<string, string>): string {
