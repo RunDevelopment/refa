@@ -74,8 +74,6 @@ function register(suite: Mocha.Suite): void {
 
 	suite.afterAll(() => {
 		for (const [file, values] of toUpdate) {
-			console.log(file);
-
 			mkdirSync(dirname(file), { recursive: true });
 			writeFileSync(file, createSnapshot(values), "utf8");
 		}
