@@ -12,7 +12,9 @@ describe("toDot", function () {
 			/\d+(?:\.\d+)?(?:e[+-]?\d+)/i,
 			/\/\*[\s\S]*?\*\//,
 			/((ab)+){3,}/,
-			/<\/?[^\s\d>/=$<%][^\s>/=$<%]*(?:\s+[^\s>/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/,
+			// We need to escape the front slashes here to workaround a NodeJS <= v10 bug.
+			// eslint-disable-next-line no-useless-escape
+			/<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/,
 		];
 
 		const toStringFuncs: { name: string; fn?: (cs: CharSet) => string }[] = [
