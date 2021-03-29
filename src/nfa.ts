@@ -132,6 +132,13 @@ export class NFA implements ReadonlyNFA {
 		return Iter.toRegex(this.transitionIterator(), options);
 	}
 
+	toDot(charSetToString?: (charSet: CharSet) => string): string {
+		return Iter.toDot(
+			this.transitionIterator(),
+			Iter.toDot.simpleOptions(charSetToString || rangesToString, false)
+		);
+	}
+
 	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 

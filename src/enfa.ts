@@ -174,6 +174,20 @@ export class ENFA implements ReadonlyENFA {
 		return Iter.toRegex(this.transitionIterator(), options);
 	}
 
+	toDot(charSetToString?: (charSet: CharSet) => string): string {
+		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
+			initial: this.nodes.initial,
+			getOut: n => n.out,
+			isFinal: n => n === this.nodes.final,
+		};
+
+		const toString: (charSet: null | CharSet) => string = charSetToString
+			? cs => (cs === null ? "" : charSetToString!(cs))
+			: cs => (cs === null ? "" : rangesToString(cs));
+
+		return Iter.toDot(Iter.markPureOut(iter), Iter.toDot.simpleOptions(toString, true));
+	}
+
 	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
 		checkCompatibility(this, other);
 
