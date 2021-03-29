@@ -9,6 +9,7 @@
     "lint": "npx eslint --ignore-path .gitignore **/*.ts",
     "test": "cd tests && mocha -r ts-node/register '**/*.ts'",
     "test:fast": "cd tests && mocha -r ts-node/register '**/*.ts' --exclude regex-stress-test.ts",
+    "test:update": "cd tests && mocha -r ts-node/register '**/*.ts' --exclude regex-stress-test.ts -- --update",
     "build": "npx rimraf ./index.* .out/** && npx tsc && rollup -c && npm run build:dts",
     "build:dts": "dts-bundle --main ./.out/index.d.ts --name refa --out ../index.d.ts && npm run scripts:flat-dts && prettier --write ./index.d.ts",
     "build:docs": "typedoc",

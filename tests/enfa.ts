@@ -8,6 +8,7 @@ import { Literal } from "../src/js";
 import { prefixes, suffixes } from "./helper/util";
 import { wordTestData, testWordTestCases } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
+import { assertEqualSnapshot } from "./helper/snapshot";
 
 describe("ENFA", function () {
 	describe("fromRegex", function () {
@@ -680,225 +681,45 @@ describe("ENFA", function () {
 			{
 				literal: /a/,
 				other: /b/,
-				expectedLeft: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 62
-
-					(2) -> (4) : 61
-
-					(3) -> [5] : ε
-
-					(4) -> [5] : ε
-
-					[5] -> none`,
-				expectedRight: `
-					(0) -> [1] : 61
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : 62
-
-					(3) -> [1] : ε`,
 			},
 			{
 				literal: /ab|ba/,
 				other: /aa|bb/,
-				expectedLeft: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-					    -> (4) : 62
-
-					(2) -> (5) : 61
-					    -> (6) : 62
-
-					(3) -> (7) : 61
-
-					(4) -> (8) : 62
-
-					(5) -> (9) : 62
-
-					(6) -> (10) : 61
-
-					(7) -> (11) : ε
-
-					(8) -> (11) : ε
-
-					(9) -> (12) : ε
-
-					(10) -> (12) : ε
-
-					(11) -> [13] : ε
-
-					(12) -> [13] : ε
-
-					[13] -> none`,
-				expectedRight: `
-					(0) -> (1) : 61
-					    -> (2) : 62
-					    -> (3) : ε
-
-					(1) -> (4) : 62
-
-					(2) -> (5) : 61
-
-					(3) -> (6) : 61
-					    -> (7) : 62
-
-					(4) -> [8] : ε
-
-					(5) -> [8] : ε
-
-					(6) -> (9) : 61
-
-					(7) -> (10) : 62
-
-					[8] -> none
-
-					(9) -> (11) : ε
-
-					(10) -> (11) : ε
-
-					(11) -> [8] : ε`,
 			},
 			{
 				literal: /a/,
 				other: /()/,
-				expectedLeft: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : ε
-
-					(2) -> (4) : 61
-
-					(3) -> [5] : ε
-
-					(4) -> [5] : ε
-
-					[5] -> none`,
-				expectedRight: `
-					(0) -> [1] : 61
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-
-					(3) -> [1] : ε`,
 			},
 			{
 				literal: /a/,
 				other: /b*/,
-				expectedLeft: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : ε
-					    -> (4) : ε
-
-					(2) -> (5) : 61
-
-					(3) -> (6) : 62
-
-					(4) -> [7] : ε
-
-					(5) -> [7] : ε
-
-					(6) -> (3) : ε
-					    -> (4) : ε
-
-					[7] -> none`,
-				expectedRight: `
-					(0) -> [1] : 61
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-					    -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> [1] : ε
-
-					(5) -> (3) : ε
-					    -> (4) : ε`,
 			},
 			{
 				literal: /a+/,
 				other: /b+/,
-				expectedLeft: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : ε
-
-					(2) -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> (6) : 61
-
-					(5) -> (3) : ε
-					    -> (7) : ε
-
-					(6) -> (4) : ε
-					    -> (8) : ε
-
-					(7) -> [9] : ε
-
-					(8) -> [9] : ε
-
-					[9] -> none`,
-				expectedRight: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (1) : ε
-					    -> [5] : ε
-
-					(4) -> (6) : 62
-
-					[5] -> none
-
-					(6) -> (4) : ε
-					    -> (7) : ε
-
-					(7) -> [5] : ε`,
 			},
 		]);
 
 		interface TestCase {
 			literal: Literal;
 			other: Literal;
-			expectedLeft: string;
-			expectedRight: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { literal, other, expectedLeft, expectedRight } of cases) {
+			for (const { literal, other } of cases) {
 				it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
 					const enfa = literalToENFA(literal);
 					const enfaOther = literalToENFA(other);
 					enfa.union(enfaOther, "left");
 					const actual = enfa.toString();
-					assert.strictEqual(actual, removeIndentation(expectedLeft), "Actual:\n" + actual + "\n");
+					assertEqualSnapshot(this, actual);
 				});
 				it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
 					const enfa = literalToENFA(literal);
 					const enfaOther = literalToENFA(other);
 					enfa.union(enfaOther, "right");
 					const actual = enfa.toString();
-					assert.strictEqual(actual, removeIndentation(expectedRight), "Actual:\n" + actual + "\n");
+					assertEqualSnapshot(this, actual);
 				});
 			}
 		}
@@ -909,80 +730,24 @@ describe("ENFA", function () {
 			{
 				left: /foo/,
 				right: /bar/,
-				expected: `
-					(0) -> (1) : 66
-
-					(1) -> (2) : 6f
-
-					(2) -> (3) : 6f
-
-					(3) -> (4) : ε
-
-					(4) -> (5) : 62
-
-					(5) -> (6) : 61
-
-					(6) -> [7] : 72
-
-					[7] -> none`,
 			},
 			{
 				left: /a*/,
 				right: /b*/,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (1) : ε
-					    -> (2) : ε
-
-					(4) -> (5) : ε
-					    -> [6] : ε
-
-					(5) -> (7) : 62
-
-					[6] -> none
-
-					(7) -> (5) : ε
-					    -> [6] : ε`,
 			},
 			{
 				left: /a*/,
 				right: /b+/,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (1) : ε
-					    -> (2) : ε
-
-					(4) -> (5) : ε
-
-					(5) -> (6) : 62
-
-					(6) -> (5) : ε
-					    -> [7] : ε
-
-					[7] -> none`,
 			},
 		]);
 
 		interface TestCase {
 			left: Literal;
 			right: Literal;
-			expected: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { left, right, expected } of cases) {
+			for (const { left, right } of cases) {
 				it(`${literalToString(left)} * ${literalToString(right)}`, function () {
 					const enfaLeft = literalToENFA(left);
 					const enfaRight = literalToENFA(right);
@@ -992,7 +757,7 @@ describe("ENFA", function () {
 					assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
 
 					const actual = enfaLeft.toString();
-					assert.strictEqual(actual, removeIndentation(expected));
+					assertEqualSnapshot(this, actual);
 				});
 			}
 		}
@@ -1003,80 +768,24 @@ describe("ENFA", function () {
 			{
 				left: /foo/,
 				right: /bar/,
-				expected: `
-					(0) -> (1) : 62
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 72
-
-					(3) -> (4) : ε
-
-					(4) -> (5) : 66
-
-					(5) -> (6) : 6f
-
-					(6) -> [7] : 6f
-
-					[7] -> none`,
 			},
 			{
 				left: /a*/,
 				right: /b*/,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 62
-
-					(2) -> (4) : ε
-
-					(3) -> (1) : ε
-					    -> (2) : ε
-
-					(4) -> (5) : ε
-					    -> [6] : ε
-
-					(5) -> (7) : 61
-
-					[6] -> none
-
-					(7) -> (5) : ε
-					    -> [6] : ε`,
 			},
 			{
 				left: /a*/,
 				right: /b+/,
-				expected: `
-					(0) -> (1) : ε
-
-					(1) -> (2) : 62
-
-					(2) -> (1) : ε
-					    -> (3) : ε
-
-					(3) -> (4) : ε
-
-					(4) -> (5) : ε
-					    -> [6] : ε
-
-					(5) -> (7) : 61
-
-					[6] -> none
-
-					(7) -> (5) : ε
-					    -> [6] : ε`,
 			},
 		]);
 
 		interface TestCase {
 			left: Literal;
 			right: Literal;
-			expected: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { left, right, expected } of cases) {
+			for (const { left, right } of cases) {
 				it(`${literalToString(right)} * ${literalToString(left)}`, function () {
 					const enfaLeft = literalToENFA(left);
 					const enfaRight = literalToENFA(right);
@@ -1086,7 +795,7 @@ describe("ENFA", function () {
 					assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
 
 					const actual = enfaLeft.toString();
-					assert.strictEqual(actual, removeIndentation(expected));
+					assertEqualSnapshot(this, actual);
 				});
 			}
 		}
@@ -1135,26 +844,12 @@ describe("ENFA", function () {
 				min: 1,
 				max: 1,
 				lazy: false,
-				expected: `
-					(0) -> [1] : 61
-
-					[1] -> none`,
 			},
 			{
 				literal: /a*/,
 				min: 1,
 				max: 1,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : 61
-
-					[2] -> none
-
-					(3) -> (1) : ε
-					    -> [2] : ε`,
 			},
 
 			{
@@ -1162,26 +857,12 @@ describe("ENFA", function () {
 				min: 1,
 				max: 1,
 				lazy: true,
-				expected: `
-					(0) -> [1] : 61
-
-					[1] -> none`,
 			},
 			{
 				literal: /a*/,
 				min: 1,
 				max: 1,
 				lazy: true,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : 61
-
-					[2] -> none
-
-					(3) -> (1) : ε
-					    -> [2] : ε`,
 			},
 
 			{
@@ -1189,54 +870,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: 1,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> [2] : 61
-
-					[2] -> none`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: 1,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-					    -> [2] : ε
-
-					[2] -> none
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> [2] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 1,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-
-					[2] -> none
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> [2] : ε`,
 			},
 
 			{
@@ -1244,54 +889,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: 1,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> [1] : 61`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: 1,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-					    -> [1] : ε
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> [1] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 1,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> [1] : ε`,
 			},
 
 			{
@@ -1299,99 +908,18 @@ describe("ENFA", function () {
 				min: 3,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> (2) : ε
-
-					(2) -> (3) : 61
-
-					(3) -> (4) : ε
-
-					(4) -> [5] : 61
-
-					[5] -> none`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 3,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> (6) : ε
-					    -> (7) : ε
-
-					(5) -> (1) : ε
-					    -> (2) : ε
-
-					(6) -> (8) : 61
-
-					(7) -> (9) : ε
-
-					(8) -> (10) : 62
-
-					(9) -> (11) : ε
-					    -> [12] : ε
-
-					(10) -> (6) : ε
-					     -> (7) : ε
-
-					(11) -> (13) : 61
-
-					[12] -> none
-
-					(13) -> (14) : 62
-
-					(14) -> (11) : ε
-					     -> [12] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 62
-
-					(3) -> (1) : ε
-					    -> (4) : ε
-
-					(4) -> (5) : ε
-
-					(5) -> (6) : ε
-
-					(6) -> (7) : 61
-
-					(7) -> (8) : 62
-
-					(8) -> (6) : ε
-					    -> (9) : ε
-
-					(9) -> (10) : ε
-
-					(10) -> (11) : ε
-
-					(11) -> (12) : 61
-
-					(12) -> (13) : 62
-
-					(13) -> (11) : ε
-					     -> [14] : ε
-
-					[14] -> none`,
 			},
 
 			{
@@ -1399,99 +927,18 @@ describe("ENFA", function () {
 				min: 3,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> (2) : ε
-
-					(2) -> (3) : 61
-
-					(3) -> (4) : ε
-
-					(4) -> [5] : 61
-
-					[5] -> none`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 3,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> (6) : ε
-					    -> (7) : ε
-
-					(5) -> (1) : ε
-					    -> (2) : ε
-
-					(6) -> (8) : 61
-
-					(7) -> (9) : ε
-
-					(8) -> (10) : 62
-
-					(9) -> (11) : ε
-					    -> [12] : ε
-
-					(10) -> (6) : ε
-					     -> (7) : ε
-
-					(11) -> (13) : 61
-
-					[12] -> none
-
-					(13) -> (14) : 62
-
-					(14) -> (11) : ε
-					     -> [12] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> (1) : ε
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 62
-
-					(3) -> (1) : ε
-					    -> (4) : ε
-
-					(4) -> (5) : ε
-
-					(5) -> (6) : ε
-
-					(6) -> (7) : 61
-
-					(7) -> (8) : 62
-
-					(8) -> (6) : ε
-					    -> (9) : ε
-
-					(9) -> (10) : ε
-
-					(10) -> (11) : ε
-
-					(11) -> (12) : 61
-
-					(12) -> (13) : 62
-
-					(13) -> (11) : ε
-					     -> [14] : ε
-
-					[14] -> none`,
 			},
 
 			{
@@ -1499,114 +946,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : 61
-
-					[2] -> none
-
-					(3) -> (4) : ε
-					    -> [2] : ε
-
-					(4) -> (5) : 61
-
-					(5) -> (6) : ε
-					    -> [2] : ε
-
-					(6) -> [2] : 61`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-					    -> (4) : ε
-
-					[2] -> none
-
-					(3) -> (5) : 61
-
-					(4) -> (6) : ε
-					    -> [2] : ε
-
-					(5) -> (7) : 62
-
-					(6) -> (8) : ε
-					    -> (9) : ε
-
-					(7) -> (3) : ε
-					    -> (4) : ε
-
-					(8) -> (10) : 61
-
-					(9) -> (11) : ε
-					    -> [2] : ε
-
-					(10) -> (12) : 62
-
-					(11) -> (13) : ε
-					     -> [2] : ε
-
-					(12) -> (8) : ε
-					     -> (9) : ε
-
-					(13) -> (14) : 61
-
-					(14) -> (15) : 62
-
-					(15) -> (13) : ε
-					     -> [2] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 3,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-
-					[2] -> none
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> (6) : ε
-
-					(6) -> (7) : ε
-					    -> [2] : ε
-
-					(7) -> (8) : ε
-
-					(8) -> (9) : 61
-
-					(9) -> (10) : 62
-
-					(10) -> (8) : ε
-					     -> (11) : ε
-
-					(11) -> (12) : ε
-					     -> [2] : ε
-
-					(12) -> (13) : ε
-
-					(13) -> (14) : 61
-
-					(14) -> (15) : 62
-
-					(15) -> (13) : ε
-					     -> [2] : ε`,
 			},
 
 			{
@@ -1614,114 +965,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : 61
-
-					(3) -> [1] : ε
-					    -> (4) : ε
-
-					(4) -> (5) : 61
-
-					(5) -> [1] : ε
-					    -> (6) : ε
-
-					(6) -> [1] : 61`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-					    -> (4) : ε
-
-					(3) -> (5) : 61
-
-					(4) -> [1] : ε
-					    -> (6) : ε
-
-					(5) -> (7) : 62
-
-					(6) -> (8) : ε
-					    -> (9) : ε
-
-					(7) -> (3) : ε
-					    -> (4) : ε
-
-					(8) -> (10) : 61
-
-					(9) -> [1] : ε
-					    -> (11) : ε
-
-					(10) -> (12) : 62
-
-					(11) -> (13) : ε
-					     -> [1] : ε
-
-					(12) -> (8) : ε
-					     -> (9) : ε
-
-					(13) -> (14) : 61
-
-					(14) -> (15) : 62
-
-					(15) -> (13) : ε
-					     -> [1] : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 3,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> (6) : ε
-
-					(6) -> [1] : ε
-					    -> (7) : ε
-
-					(7) -> (8) : ε
-
-					(8) -> (9) : 61
-
-					(9) -> (10) : 62
-
-					(10) -> (8) : ε
-					     -> (11) : ε
-
-					(11) -> [1] : ε
-					     -> (12) : ε
-
-					(12) -> (13) : ε
-
-					(13) -> (14) : 61
-
-					(14) -> (15) : 62
-
-					(15) -> (13) : ε
-					     -> [1] : ε`,
 			},
 
 			{
@@ -1729,63 +984,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : 61
-
-					[2] -> none
-
-					(3) -> (1) : ε
-					    -> [2] : ε`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-					    -> (4) : ε
-
-					[2] -> none
-
-					(3) -> (5) : 61
-
-					(4) -> (1) : ε
-					    -> [2] : ε
-
-					(5) -> (6) : 62
-
-					(6) -> (3) : ε
-					    -> (4) : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> [2] : ε
-
-					(1) -> (3) : ε
-
-					[2] -> none
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> (6) : ε
-
-					(6) -> (1) : ε
-					    -> [2] : ε`,
 			},
 
 			{
@@ -1793,63 +1003,18 @@ describe("ENFA", function () {
 				min: 0,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : 61
-
-					(3) -> [1] : ε
-					    -> (2) : ε`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-					    -> (4) : ε
-
-					(3) -> (5) : 61
-
-					(4) -> [1] : ε
-					    -> (2) : ε
-
-					(5) -> (6) : 62
-
-					(6) -> (3) : ε
-					    -> (4) : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> [1] : ε
-					    -> (2) : ε
-
-					[1] -> none
-
-					(2) -> (3) : ε
-
-					(3) -> (4) : 61
-
-					(4) -> (5) : 62
-
-					(5) -> (3) : ε
-					    -> (6) : ε
-
-					(6) -> [1] : ε
-					    -> (2) : ε`,
 			},
 
 			{
@@ -1857,108 +1022,18 @@ describe("ENFA", function () {
 				min: 3,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> (2) : ε
-
-					(2) -> (3) : 61
-
-					(3) -> (4) : ε
-
-					(4) -> (5) : 61
-
-					(5) -> (4) : ε
-					    -> [6] : ε
-
-					[6] -> none`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 3,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> (6) : ε
-					    -> (7) : ε
-
-					(5) -> (1) : ε
-					    -> (2) : ε
-
-					(6) -> (8) : 61
-
-					(7) -> (9) : ε
-
-					(8) -> (10) : 62
-
-					(9) -> (11) : ε
-					    -> (12) : ε
-
-					(10) -> (6) : ε
-					     -> (7) : ε
-
-					(11) -> (13) : 61
-
-					(12) -> (9) : ε
-					     -> [14] : ε
-
-					(13) -> (15) : 62
-
-					[14] -> none
-
-					(15) -> (11) : ε
-					     -> (12) : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: Infinity,
 				lazy: false,
-				expected: `
-					(0) -> (1) : ε
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 62
-
-					(3) -> (1) : ε
-					    -> (4) : ε
-
-					(4) -> (5) : ε
-
-					(5) -> (6) : ε
-
-					(6) -> (7) : 61
-
-					(7) -> (8) : 62
-
-					(8) -> (6) : ε
-					    -> (9) : ε
-
-					(9) -> (10) : ε
-
-					(10) -> (11) : ε
-
-					(11) -> (12) : 61
-
-					(12) -> (13) : 62
-
-					(13) -> (11) : ε
-					     -> (14) : ε
-
-					(14) -> (10) : ε
-					     -> [15] : ε
-
-					[15] -> none`,
 			},
 
 			{
@@ -1966,108 +1041,18 @@ describe("ENFA", function () {
 				min: 3,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> (2) : ε
-
-					(2) -> (3) : 61
-
-					(3) -> (4) : ε
-
-					(4) -> (5) : 61
-
-					(5) -> [6] : ε
-					    -> (4) : ε
-
-					[6] -> none`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 3,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> (1) : ε
-					    -> (2) : ε
-
-					(1) -> (3) : 61
-
-					(2) -> (4) : ε
-
-					(3) -> (5) : 62
-
-					(4) -> (6) : ε
-					    -> (7) : ε
-
-					(5) -> (1) : ε
-					    -> (2) : ε
-
-					(6) -> (8) : 61
-
-					(7) -> (9) : ε
-
-					(8) -> (10) : 62
-
-					(9) -> (11) : ε
-					    -> (12) : ε
-
-					(10) -> (6) : ε
-					     -> (7) : ε
-
-					(11) -> (13) : 61
-
-					(12) -> [14] : ε
-					     -> (9) : ε
-
-					(13) -> (15) : 62
-
-					[14] -> none
-
-					(15) -> (11) : ε
-					     -> (12) : ε`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: Infinity,
 				lazy: true,
-				expected: `
-					(0) -> (1) : ε
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 62
-
-					(3) -> (1) : ε
-					    -> (4) : ε
-
-					(4) -> (5) : ε
-
-					(5) -> (6) : ε
-
-					(6) -> (7) : 61
-
-					(7) -> (8) : 62
-
-					(8) -> (6) : ε
-					    -> (9) : ε
-
-					(9) -> (10) : ε
-
-					(10) -> (11) : ε
-
-					(11) -> (12) : 61
-
-					(12) -> (13) : 62
-
-					(13) -> (11) : ε
-					     -> (14) : ε
-
-					(14) -> [15] : ε
-					     -> (10) : ε
-
-					[15] -> none`,
 			},
 		]);
 
@@ -2076,7 +1061,7 @@ describe("ENFA", function () {
 			min: number;
 			max: number;
 			lazy: boolean;
-			expected: string | typeof Error;
+			expected?: typeof Error;
 		}
 
 		function test(cases: TestCase[]): void {
@@ -2084,9 +1069,9 @@ describe("ENFA", function () {
 				it(`${literalToString(literal)}{${min},${max === Infinity ? "" : max}}${lazy ? "?" : ""}`, function () {
 					const enfa = literalToENFA(literal);
 
-					if (typeof expected === "string") {
+					if (!expected) {
 						enfa.quantify(min, max, lazy);
-						assert.strictEqual(enfa.toString(), removeIndentation(expected));
+						assertEqualSnapshot(this, enfa.toString());
 					} else {
 						assert.throws(() => enfa.quantify(min, max, lazy));
 					}
