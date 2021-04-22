@@ -2,6 +2,9 @@
 import { assert } from "chai";
 import { Parser, toLiteral, ToLiteralOptions, Literal } from "../../src/js";
 import { literalToString } from "../helper/fa";
+import { assertEqualSnapshot } from "../helper/snapshot";
+import { PrismRegexes } from "../helper/prism-regex-data";
+import { TooManyNodesError } from "../../src/finite-automaton";
 
 describe("JS.toLiteral", function () {
 	interface TestCase {
@@ -321,5 +324,32 @@ describe("JS.toLiteral", function () {
 				expected: /[\0-\x09\x0b\f\x0e-\u2027\u202a-\uffff]/,
 			},
 		]);
+	});
+
+	describe("Prism regexes", function () {
+		this.timeout(60 * 1000); // timeout after a minute
+
+		const literals = PrismRegexes.map(re => {
+			try {
+				return literalToString(
+					toLiteral(Parser.fromLiteral(re).parse({ backreferences: "disable" }).expression)
+				);
+			} catch (e) {
+				if (e instanceof TooManyNodesError) {
+					return "TooManyNodesError";
+				}
+				throw e;
+			}
+		});
+
+		it("should not contain line ends", function () {
+			for (const l of literals) {
+				assert.notMatch(l, /[\r\n]/);
+			}
+		});
+
+		it("snapshot", function () {
+			assertEqualSnapshot(this, literals.join("\n"));
+		});
 	});
 });
