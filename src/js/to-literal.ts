@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { NoParent, Node, Expression, Concatenation, visitAst, Element, Assertion, Alternation } from "../ast";
+import { NoParent, Node, Expression, Concatenation, visitAst, Assertion, Alternation } from "../ast";
 import { assertNever } from "../util";
 import { CharSet, CharRange } from "../char-set";
 import {
@@ -49,14 +49,13 @@ export interface ToLiteralOptions {
  * The returned literal will be a literal representation of the given AST. However, assertions maybe converted to
  * builtin JS RegExp assertions (e.g `\b`, `$`) instead of using the literal lookahead/lookbehind form.
  */
-export function toLiteral(concat: NoParent<Concatenation>, options?: Readonly<ToLiteralOptions>): Literal;
-export function toLiteral(expression: NoParent<Expression>, options?: Readonly<ToLiteralOptions>): Literal;
+export function toLiteral(node: NoParent<Node>, options?: Readonly<ToLiteralOptions>): Literal;
 export function toLiteral(
 	alternatives: readonly NoParent<Concatenation>[],
 	options?: Readonly<ToLiteralOptions>
 ): Literal;
 export function toLiteral(
-	value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
+	value: NoParent<Node> | readonly NoParent<Concatenation>[],
 	options?: Readonly<ToLiteralOptions>
 ): Literal {
 	const fastCharacters = options?.fastCharacters ?? false;
@@ -95,92 +94,108 @@ interface PrintOptions {
 }
 
 function toSource(
-	value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
+	value: NoParent<Node> | readonly NoParent<Concatenation>[],
 	flags: Flags,
 	options: PrintOptions
 ): string {
 	if (Array.isArray(value)) {
-		const alternatives: readonly NoParent<Concatenation>[] = value;
-
-		if (alternatives.length === 0) {
-			return "[]";
-		} else {
-			return alternatives.map(c => toSource(c, flags, options)).join("|");
-		}
+		return alternativesToSource(value as readonly NoParent<Concatenation>[], flags, options);
 	} else {
-		const node = value as NoParent<Expression> | NoParent<Concatenation>;
-		if (node.type === "Concatenation") {
-			let s = "";
-			for (const element of node.elements) {
-				s += elementToSource(element, flags, options);
-			}
-			return s;
-		} else {
-			return toSource(node.alternatives, flags, options);
-		}
+		return nodeToSource(value as NoParent<Node>, flags, options);
 	}
 }
-function elementToSource(element: NoParent<Element>, flags: Flags, options: PrintOptions): string {
+function alternativesToSource(
+	alternatives: readonly NoParent<Concatenation>[],
+	flags: Flags,
+	options: PrintOptions
+): string {
+	if (alternatives.length === 0) {
+		return "[]";
+	} else {
+		let s = "";
+		let first = true;
+		for (const a of alternatives) {
+			if (first) {
+				first = false;
+			} else {
+				s += "|";
+			}
+			s += nodeToSource(a, flags, options);
+		}
+		return s;
+	}
+}
+function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions): string {
 	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 
-	switch (element.type) {
+	switch (node.type) {
 		case "Alternation": {
-			const assertion = isBoundaryAssertion(element, flags);
+			const assertion = isBoundaryAssertion(node, flags);
 			if (assertion) {
 				return assertion;
 			}
 
-			return "(?:" + toSource(element.alternatives, flags, options) + ")";
+			return "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
 		}
 		case "Assertion": {
-			if (isEdgeAssertion(element, flags)) {
-				return element.kind === "behind" ? "^" : "$";
+			if (isEdgeAssertion(node, flags)) {
+				return node.kind === "behind" ? "^" : "$";
 			}
 			let s = "(?";
-			if (element.kind === "behind") s += "<";
-			s += element.negate ? "!" : "=";
-			s += toSource(element.alternatives, flags, options);
+			if (node.kind === "behind") s += "<";
+			s += node.negate ? "!" : "=";
+			s += alternativesToSource(node.alternatives, flags, options);
 			s += ")";
 			return s;
 		}
 		case "CharacterClass": {
-			if (element.characters.maximum !== maximum) {
+			if (node.characters.maximum !== maximum) {
 				throw new Error(`All characters were expected to have a maximum of ${maximum}.`);
 			}
 
 			if (options.fastCharacters) {
-				return printCharactersFast(element.characters);
+				return printCharactersFast(node.characters);
 			} else {
-				return printCharacters(element.characters, flags, options.predefinedCS);
+				return printCharacters(node.characters, flags, options.predefinedCS);
 			}
+		}
+		case "Concatenation": {
+			let s = "";
+			for (const element of node.elements) {
+				s += nodeToSource(element, flags, options);
+			}
+			return s;
+		}
+		case "Expression": {
+			return alternativesToSource(node.alternatives, flags, options);
 		}
 		case "Quantifier": {
 			let s;
-			if (element.alternatives.length === 1 && element.alternatives[0].elements.length === 1) {
-				const e = element.alternatives[0].elements[0];
+			if (node.alternatives.length === 1 && node.alternatives[0].elements.length === 1) {
+				const e = node.alternatives[0].elements[0];
 				if (e.type === "Alternation" || e.type === "CharacterClass") {
-					s = toSource(element.alternatives[0], flags, options);
+					s = nodeToSource(node.alternatives[0], flags, options);
 				} else {
-					s = "(?:" + toSource(element.alternatives, flags, options) + ")";
+					s = "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
 				}
 			} else {
-				s = "(?:" + toSource(element.alternatives, flags, options) + ")";
+				s = "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
 			}
 
-			if (element.min === 0 && element.max === Infinity) {
+			if (node.min === 0 && node.max === Infinity) {
 				s += "*";
-			} else if (element.min === 1 && element.max === Infinity) {
+			} else if (node.min === 1 && node.max === Infinity) {
 				s += "+";
-			} else if (element.min === 0 && element.max === 1) {
+			} else if (node.min === 0 && node.max === 1) {
 				s += "?";
-			} else if (element.max === Infinity) {
-				s += `{${element.min},}`;
-			} else if (element.min === element.max) {
-				s += `{${element.min}}`;
+			} else if (node.max === Infinity) {
+				s += `{${node.min},}`;
+			} else if (node.min === node.max) {
+				s += `{${node.min}}`;
 			} else {
-				s += `{${element.min},${element.max}}`;
+				s += `{${node.min},${node.max}}`;
 			}
-			if (element.lazy) {
+			if (node.lazy) {
 				s += "?";
 			}
 			return s;
@@ -196,7 +211,7 @@ function elementToSource(element: NoParent<Element>, flags: Flags, options: Prin
 			);
 		}
 		default:
-			throw assertNever(element);
+			throw assertNever(node);
 	}
 }
 function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags): boolean {
