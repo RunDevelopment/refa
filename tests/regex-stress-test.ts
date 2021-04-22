@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { Parser } from "../src/js";
+import { ParseOptions, Parser } from "../src/js";
 import { PrismRegexes } from "./helper/prism-regex-data";
 import { NFA } from "../src/nfa";
 import { DFA, ReadonlyDFA } from "../src/dfa";
@@ -18,6 +18,14 @@ import { TooManyNodesError } from "../src/finite-automaton";
  */
 const CHECK_RE_LANGUAGE = false;
 
+/**
+ * Setting this to `true` will cause each regex to be parsed with all possible (interesting) parse options.
+ *
+ * Since there are quite a number of combinations, the test will then take minutes. Only enable this if you want to
+ * verify that the parser behaves correctly.
+ */
+const ALL_PARSE_OPTIONS = false;
+
 const maxNodes = 100_000;
 
 function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
@@ -28,6 +36,27 @@ function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxChara
 	assert.isTrue(expected.structurallyEqual(dfa));
 }
 
+const parseOptions: ParseOptions[] = [];
+if (ALL_PARSE_OPTIONS) {
+	for (const assertions of ["parse", "disable", "unknown"] as ParseOptions["assertions"][]) {
+		for (const backreferences of ["disable", "unknown"] as ParseOptions["backreferences"][]) {
+			for (const maxBackreferenceWords of [0, 1, 10, 100]) {
+				for (const disableOptimizations of [true, false]) {
+					parseOptions.push({
+						assertions,
+						backreferences,
+						maxBackreferenceWords,
+						maxNodes,
+						disableOptimizations,
+					});
+				}
+			}
+		}
+	}
+} else {
+	parseOptions.push({ backreferences: "disable", maxNodes });
+}
+
 describe("Regex stress test", function () {
 	this.timeout(60 * 1000); // timeout after a minute
 
@@ -36,35 +65,38 @@ describe("Regex stress test", function () {
 		if (patternPreview.length > 80) {
 			patternPreview = patternPreview.substr(0, 80) + "...";
 		}
-		it(`[${index}]: ${patternPreview}`, function () {
-			try {
-				const { expression, maxCharacter } = Parser.fromLiteral(literal).parse({
-					backreferences: "disable",
-					maxNodes,
-				});
-				const nfa = NFA.fromRegex(expression, { maxCharacter }, { assertions: "disable", maxNodes });
-				nfa.nodes.count();
+		parseOptions.forEach((options, i) => {
+			it(`[${index}](${i}): ${patternPreview}`, function () {
+				try {
+					const { expression, maxCharacter } = Parser.fromLiteral(literal).parse(options);
+					const nfa = NFA.fromRegex(
+						expression,
+						{ maxCharacter },
+						{ assertions: "disable", unknowns: "disable", maxNodes }
+					);
+					nfa.nodes.count();
 
-				const re1 = nfa.toRegex({ maxNodes });
+					const re1 = nfa.toRegex({ maxNodes });
 
-				const dfa = DFA.fromFA(nfa, { maxNodes });
-				const dfaOriginalCount = dfa.nodes.count();
-				dfa.minimize();
-				assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
+					const dfa = DFA.fromFA(nfa, { maxNodes });
+					const dfaOriginalCount = dfa.nodes.count();
+					dfa.minimize();
+					assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
 
-				if (CHECK_RE_LANGUAGE) {
-					equalLanguage(dfa, re1, maxCharacter);
+					if (CHECK_RE_LANGUAGE) {
+						equalLanguage(dfa, re1, maxCharacter);
+					}
+
+					const re2 = dfa.toRegex({ maxNodes });
+					if (CHECK_RE_LANGUAGE) {
+						equalLanguage(dfa, re2, maxCharacter);
+					}
+				} catch (e) {
+					if (!(e instanceof TooManyNodesError)) {
+						throw e;
+					}
 				}
-
-				const re2 = dfa.toRegex({ maxNodes });
-				if (CHECK_RE_LANGUAGE) {
-					equalLanguage(dfa, re2, maxCharacter);
-				}
-			} catch (e) {
-				if (!(e instanceof TooManyNodesError)) {
-					throw e;
-				}
-			}
+			});
 		});
 	});
 });

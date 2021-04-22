@@ -769,6 +769,20 @@ export namespace NFA {
 		 */
 		assertions?: "disable" | "throw";
 		/**
+		 * How to handle unknowns when construction the NFA.
+		 *
+		 * - `"throw"`
+		 *
+		 *   This method will throw an error when encountering an unknown.
+		 *
+		 * - `"disable"`
+		 *
+		 *   This method will replace any unknown with an empty character class, effectively removing it.
+		 *
+		 * @default "throw"
+		 */
+		unknowns?: "disable" | "throw";
+		/**
 		 * The number at which the maximum of a quantifier will be assumed to be infinity.
 		 *
 		 * Quantifiers with a large finite maximum (e.g. `a{1,10000}`) can create huge NFAs with thousands of states.
@@ -912,6 +926,14 @@ function createNodeList(
 						baseAppend(nodeList, base, handleQuantifier(element));
 					}
 					break;
+
+				case "Unknown":
+					if (creationOptions.unknowns === "disable") {
+						baseMakeEmpty(nodeList, base);
+						break;
+					} else {
+						throw new Error("Unknowns are not supported.");
+					}
 
 				default:
 					throw assertNever(element);

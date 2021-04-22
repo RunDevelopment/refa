@@ -1,4 +1,14 @@
-import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Quantifier, NoParent, Node } from "./nodes";
+import {
+	Alternation,
+	Assertion,
+	CharacterClass,
+	Concatenation,
+	Expression,
+	Quantifier,
+	NoParent,
+	Node,
+	Unknown,
+} from "./nodes";
 
 export interface VisitAstHandler {
 	onAlternationEnter?(node: Alternation): void;
@@ -13,6 +23,8 @@ export interface VisitAstHandler {
 	onExpressionLeave?(node: Expression): void;
 	onQuantifierEnter?(node: Quantifier): void;
 	onQuantifierLeave?(node: Quantifier): void;
+	onUnknownEnter?(node: Unknown): void;
+	onUnknownLeave?(node: Unknown): void;
 }
 export interface VisitNoParentAstHandler {
 	onAlternationEnter?(node: NoParent<Alternation>): void;
@@ -27,6 +39,8 @@ export interface VisitNoParentAstHandler {
 	onExpressionLeave?(node: NoParent<Expression>): void;
 	onQuantifierEnter?(node: NoParent<Quantifier>): void;
 	onQuantifierLeave?(node: NoParent<Quantifier>): void;
+	onUnknownEnter?(node: NoParent<Unknown>): void;
+	onUnknownLeave?(node: NoParent<Unknown>): void;
 }
 /**
  * Calls the given visitor on the given node and all of its children.

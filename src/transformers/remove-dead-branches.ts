@@ -9,7 +9,8 @@ function isDead(node: NoParent<Node>): boolean {
 			return node.alternatives.every(a => isDead(a));
 
 		case "Assertion":
-			// this transformer doesn't deal with assertions
+		case "Unknown":
+			// this transformer doesn't deal with assertions and unknowns
 			return false;
 
 		case "CharacterClass":

@@ -211,6 +211,8 @@ class TransitionCreator {
 				);
 			case "Assertion":
 				throw new Error("Assertions should not have been part of the created regex.");
+			case "Unknown":
+				throw new Error("Unknowns should not have been part of the created regex.");
 
 			default:
 				throw assertNever(t);

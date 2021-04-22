@@ -11,9 +11,9 @@ export interface NodeBase {
 	source?: SourceLocation;
 }
 
-export type Element = CharacterClass | Alternation | Quantifier | Assertion;
+export type Element = CharacterClass | Alternation | Quantifier | Assertion | Unknown;
 export type Parent = Expression | Alternation | Quantifier | Assertion;
-export type Node = Expression | CharacterClass | Alternation | Quantifier | Assertion | Concatenation;
+export type Node = Expression | CharacterClass | Alternation | Quantifier | Assertion | Concatenation | Unknown;
 
 export interface Alternation extends NodeBase {
 	type: "Alternation";
@@ -42,6 +42,12 @@ export interface CharacterClass extends NodeBase {
 	type: "CharacterClass";
 	parent: Concatenation;
 	characters: CharSet;
+}
+
+export interface Unknown extends NodeBase {
+	type: "Unknown";
+	parent: Concatenation;
+	id: string;
 }
 
 export interface Expression extends NodeBase {

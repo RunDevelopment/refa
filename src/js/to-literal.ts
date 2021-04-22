@@ -185,6 +185,16 @@ function elementToSource(element: NoParent<Element>, flags: Flags, options: Prin
 			}
 			return s;
 		}
+		case "Unknown": {
+			return (
+				"[]Unknown:" +
+				element.id
+					.replace(/[\\/|[\](){}+*?^$.]/g, m => "\\" + m)
+					// eslint-disable-next-line no-control-regex
+					.replace(/[\0-\x1F]/g, m => "\\x" + m.charCodeAt(0).toString(16).padStart(2, "0")) +
+				"[]"
+			);
+		}
 		default:
 			throw assertNever(element);
 	}

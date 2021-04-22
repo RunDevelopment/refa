@@ -868,6 +868,20 @@ export namespace ENFA {
 		 */
 		assertions?: "disable" | "throw";
 		/**
+		 * How to handle unknowns when construction the ENFA.
+		 *
+		 * - `"throw"`
+		 *
+		 *   This method will throw an error when encountering an unknown.
+		 *
+		 * - `"disable"`
+		 *
+		 *   This method will replace any unknown with an empty character class, effectively removing it.
+		 *
+		 * @default "throw"
+		 */
+		unknowns?: "disable" | "throw";
+		/**
 		 * The number at which the maximum of a quantifier will be assumed to be infinity.
 		 *
 		 * Quantifiers with a large finite maximum (e.g. `a{1,10000}`) can create huge NFAs with thousands of states.
@@ -888,6 +902,7 @@ function createNodeList(
 		const { initial, final } = ThompsonOptimized.create(nodeList, expression, {
 			maxCharacter: options.maxCharacter,
 			assertions: creationOptions.assertions ?? "throw",
+			unknowns: creationOptions.unknowns ?? "throw",
 			infinityThreshold: creationOptions.infinityThreshold ?? Infinity,
 		});
 
@@ -910,6 +925,7 @@ namespace ThompsonOptimized {
 	interface Options {
 		readonly maxCharacter: Char;
 		readonly assertions: "disable" | "throw";
+		readonly unknowns: "disable" | "throw";
 		readonly infinityThreshold: number;
 	}
 
@@ -943,6 +959,8 @@ namespace ThompsonOptimized {
 				return handleChar(nodeList, element.characters, initial, options);
 			case "Quantifier":
 				return handleQuantifier(nodeList, element, initial, options);
+			case "Unknown":
+				return handleUnknown(nodeList, options);
 			default:
 				assertNever(element);
 		}
@@ -1064,6 +1082,12 @@ namespace ThompsonOptimized {
 	function handleAssertion(nodeList: ENFA.NodeList, options: Options): ENFA.Node {
 		if (options.assertions === "throw") {
 			throw new Error("Assertions are not supported yet.");
+		}
+		return nodeList.createNode();
+	}
+	function handleUnknown(nodeList: ENFA.NodeList, options: Options): ENFA.Node {
+		if (options.unknowns === "throw") {
+			throw new Error("Unknowns are not supported.");
 		}
 		return nodeList.createNode();
 	}

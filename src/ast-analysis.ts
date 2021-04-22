@@ -10,6 +10,7 @@ import {
 	Quantifier,
 	Parent,
 } from "./ast";
+import { Unknown } from "./ast/nodes";
 import { CharSet } from "./char-set";
 import { assertNever } from "./util";
 
@@ -44,6 +45,9 @@ export function isZeroLength(node: NoParent<Node> | NoParent<Concatenation>[]): 
 		case "Quantifier":
 			return node.max === 0 || isZeroLength(node.alternatives);
 
+		case "Unknown":
+			return false;
+
 		default:
 			assertNever(node);
 	}
@@ -73,6 +77,9 @@ export function isPotentiallyZeroLength(node: NoParent<Node> | NoParent<Concaten
 
 		case "Quantifier":
 			return node.min === 0 || isPotentiallyZeroLength(node.alternatives);
+
+		case "Unknown":
+			return false;
 
 		default:
 			assertNever(node);
@@ -109,6 +116,9 @@ export function isEmpty(node: NoParent<Node> | NoParent<Concatenation>[]): boole
 		case "Quantifier":
 			return node.max === 0 || isEmpty(node.alternatives);
 
+		case "Unknown":
+			return false;
+
 		default:
 			assertNever(node);
 	}
@@ -139,6 +149,9 @@ export function isPotentiallyEmpty(node: NoParent<Node> | NoParent<Concatenation
 
 		case "Quantifier":
 			return node.min === 0 || isPotentiallyEmpty(node.alternatives);
+
+		case "Unknown":
+			return false;
 
 		default:
 			assertNever(node);
@@ -376,6 +389,9 @@ export function getLengthRange(element: NoParent<Node> | NoParent<Concatenation>
 			return { min: elementRange.min * element.min, max: elementRange.max * element.max };
 		}
 
+		case "Unknown":
+			return undefined;
+
 		default:
 			throw assertNever(element);
 	}
@@ -486,6 +502,9 @@ export function getAssertRange(
 						: max + elementRange.assertMax - elementRange.max,
 			};
 		}
+
+		case "Unknown":
+			return undefined;
 
 		default:
 			throw assertNever(element);
@@ -650,6 +669,13 @@ export function getFirstCharConsumedBy(
 				return firstChar;
 			}
 		}
+
+		case "Unknown":
+			// Since we have no information about this node, we will return a first character
+			// that accepts everything but is inexact.
+			// While the unknown may also accept the empty word, we will not make it empty because the results of
+			// `isEmpty` and this method should be consistent.
+			return { char: CharSet.all(maxCharacter), empty: false, exact: false };
 
 		default:
 			throw assertNever(node);
@@ -1225,6 +1251,10 @@ export function structurallyEqual(
 			const other = b as NoParent<Quantifier>;
 			if (a.min !== other.min || a.max !== other.max || a.lazy !== other.lazy) return false;
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
+		}
+		case "Unknown": {
+			const other = b as NoParent<Unknown>;
+			return a.id === other.id;
 		}
 		default:
 			throw assertNever(a);

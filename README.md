@@ -76,6 +76,7 @@ It supports:
 - Quantifiers (greedy and lazy) (e.g. `a{4,6}`, `a{2,}?`, `a?`, `a*`)
 - Assertions (e.g. `(?=a)`, `(?<!a)`)
 - Characters/character sets (represented by interval sets)
+- Unknowns
 
 Some features like atomic groups and capturing groups are not supported (but might be added in the future).
 
