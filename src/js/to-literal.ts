@@ -203,7 +203,7 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 		case "Unknown": {
 			return (
 				"[]Unknown:" +
-				element.id
+				node.id
 					.replace(/[\\/|[\](){}+*?^$.]/g, m => "\\" + m)
 					// eslint-disable-next-line no-control-regex
 					.replace(/[\0-\x1F]/g, m => "\\x" + m.charCodeAt(0).toString(16).padStart(2, "0")) +
