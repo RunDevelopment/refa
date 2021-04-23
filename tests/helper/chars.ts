@@ -4,7 +4,7 @@ import { Literal, Parser } from "../../src/js";
 
 export function charsFromRegex(literal: Literal): CharSet {
 	const parser = Parser.fromLiteral(literal);
-	const { expression } = parser.parse({ disableOptimizations: true });
+	const { expression } = parser.parse({ simplify: false });
 
 	assert.equal(expression.alternatives.length, 1);
 	const elements = expression.alternatives[0].elements;

@@ -50,7 +50,7 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /a(b|(?:c|d)(?:))(e)/,
-				options: { disableOptimizations: true },
+				options: { simplify: false },
 				expected: "[61](?:[62]|(?:[63]|[64])(?:))(?:[65])",
 			},
 			{
@@ -64,7 +64,7 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /(?!a*)/,
-				options: { disableOptimizations: true },
+				options: { simplify: false },
 				expected: "(?![61]*)",
 			},
 			{

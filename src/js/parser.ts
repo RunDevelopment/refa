@@ -110,23 +110,23 @@ export interface ParseOptions {
 	assertions?: "parse" | "disable" | "throw" | "unknown";
 
 	/**
-	 * By default, the parser will try to optimize the generated RE as much as possible.
+	 * By default, the parser will try to simplify the generated RE as much as possible.
 	 *
-	 * If set to `true`, all trivial optimizations will be disabled. This includes:
+	 * If set to `false`, all trivial simplifications will be disabled. This includes:
 	 *
 	 * - Removing alternatives where all paths go through an empty character class, an alternation with 0 alternatives,
 	 *   or a disabled backreference/assertion.
 	 * - Removing constant 0 and constant 1 quantifiers.
 	 * - Inlining single-alternative groups.
 	 *
-	 * These optimization might prevent that certain backreferences or assertions from throwing an error. It's usually
-	 * good to have them enabled since parsing is usually faster and the produced RE AST is smaller.
+	 * These simplifications might prevent that certain backreferences or assertions from throwing an error. It's
+	 * usually good to have them enabled since parsing is usually faster and the produced RE AST is smaller.
 	 *
-	 * If the produced RE AST is supposed to be a literal translation, then optimization have to be disabled.
+	 * If the produced RE AST is supposed to be a literal translation, then simplifications have to be disabled.
 	 *
-	 * @default false
+	 * @default true
 	 */
-	disableOptimizations?: boolean;
+	simplify?: boolean;
 
 	/**
 	 * The maximum number of nodes the parser is allowed to create.
@@ -261,26 +261,13 @@ export class Parser {
 	 * Parses a specific element of the literal.
 	 *
 	 * Use {@link ParseOptions} to control how the element is parsed.
-	 *
-	 * ## Disabled elements
-	 *
-	 * The parser allows for certain elements to be disabled. This means that the element will be replaced with the
-	 * empty set. Hence, all paths that contain the disabled element can never accept.
-	 *
-	 * With optimizations enabled (see {@link ParseOptions.disableOptimizations}), disabled elements will always be
-	 * removed from the returned RE AST. To keep disabled element, it is necessary to disable optimizations.
-	 *
-	 * Disabled elements are always guaranteed to be represented by an empty alternation (an alternation with 0
-	 * alternatives). Empty alternations (assuming that optimizations are disabled and that the Regexpp Ast hasn't been
-	 * modified) are unique to disabled elements and can be used to identify them. The source of the empty alternations
-	 * can then be used to determine the Regexpp Ast element (a backreference or assertion) that was disabled.
 	 */
 	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const context: ParserContext = {
 			maxBackreferenceWords: Math.round(options?.maxBackreferenceWords ?? DEFAULT_BACK_REF_MAX_WORDS),
 			backreferences: options?.backreferences ?? "throw",
 			assertions: options?.assertions ?? "parse",
-			disableSimplification: options?.disableOptimizations ?? false,
+			disableSimplification: !(options?.simplify ?? true),
 			getUnknownId: options?.getUnknownId ?? (e => e.raw),
 
 			nc: new NodeCreator(options?.maxNodes ?? DEFAULT_MAX_NODES),

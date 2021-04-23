@@ -34,13 +34,13 @@ if (CONFIG_ALL_PARSE_OPTIONS) {
 	for (const assertions of ["parse", "disable", "unknown"] as ParseOptions["assertions"][]) {
 		for (const backreferences of ["disable", "unknown"] as ParseOptions["backreferences"][]) {
 			for (const maxBackreferenceWords of [0, 1, 10, 100]) {
-				for (const disableOptimizations of [true, false]) {
+				for (const simplify of [true, false]) {
 					parseOptions.push({
 						assertions,
 						backreferences,
 						maxBackreferenceWords,
 						maxNodes,
-						disableOptimizations,
+						simplify,
 					});
 				}
 			}

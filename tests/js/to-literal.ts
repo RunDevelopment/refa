@@ -16,7 +16,7 @@ describe("JS.toLiteral", function () {
 	function test(cases: TestCase[]): void {
 		for (const { literal, options, expected } of cases) {
 			it(`${literalToString(literal)} ${options ? `\t(${JSON.stringify(options)})` : ""}`, function () {
-				const { expression } = Parser.fromLiteral(literal).parse({ disableOptimizations: true });
+				const { expression } = Parser.fromLiteral(literal).parse({ simplify: false });
 				try {
 					const actual = toLiteral(expression, options);
 					if ("source" in expected && "flags" in expected) {
