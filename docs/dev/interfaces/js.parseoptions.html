@@ -84,6 +84,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#assertions" class="tsd-kind-icon">assertions</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#backreferences" class="tsd-kind-icon">backreferences</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#getunknownid" class="tsd-kind-icon">get<wbr>Unknown<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maxbackreferencewords" class="tsd-kind-icon">max<wbr>Backreference<wbr>Words</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="js.parseoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
 							</ul>
@@ -96,7 +97,7 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="assertions" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> assertions</h3>
-					<div class="tsd-signature tsd-kind-icon">assertions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;parse&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">assertions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;parse&quot;</span></div>
 					<aside class="tsd-sources">
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -116,6 +117,10 @@
 								<p>The parser will throw an error when encountering a assertion that cannot be removed.</p>
 								<p>E.g. <code>a\B</code> will throw but <code>a([]\b)(\b){0}</code> will not because none of the <code>\b</code>s can be reached.</p>
 							</li>
+							<li><p><code>&quot;unknown&quot;</code></p>
+								<p>The parser will create a <code>Unknown</code> node for each assertion. The id of the node will be raw string of the
+								assertion.</p>
+							</li>
 						</ul>
 						<dl class="tsd-comment-tags">
 							<dt>default</dt>
@@ -127,7 +132,7 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="backreferences" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> backreferences</h3>
-					<div class="tsd-signature tsd-kind-icon">backreferences<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">backreferences<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;unknown&quot;</span></div>
 					<aside class="tsd-sources">
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -144,6 +149,10 @@
 								<p>The parser will throw an error when encountering a backreference that cannot be removed.</p>
 								<p>E.g. <code>(a*)b\1</code> will throw but <code>(a*)[^\s\S]\1</code> will not because the backreference will be removed anyway because
 								of the empty character class.</p>
+							</li>
+							<li><p><code>&quot;unknown&quot;</code></p>
+								<p>The parser will create a <code>Unknown</code> node for each backreference that cannot be removed. The id of the node will
+								be raw string of the backreference.</p>
 							</li>
 						</ul>
 						<p>Backreferences that have been resolved are not affected by this option.</p>
@@ -179,6 +188,20 @@
 							<dd><p>false</p>
 							</dd>
 						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="getunknownid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> get<wbr>Unknown<wbr>Id</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Unknown<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Backreference</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">EdgeAssertion</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">WordBoundaryAssertion</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">LookaheadAssertion</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">LookbehindAssertion</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p><code>Unknown</code> nodes have an <code>id</code> property that can be used to identify the element that created the unknown. This
+							function can be used to control the <code>id</code> value.</p>
+						</div>
+						<p>By default, the raw of the element will be used as its id.</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
@@ -275,6 +298,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#disableoptimizations" class="tsd-kind-icon">disable<wbr>Optimizations</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="js.parseoptions.html#getunknownid" class="tsd-kind-icon">get<wbr>Unknown<wbr>Id</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="js.parseoptions.html#maxbackreferencewords" class="tsd-kind-icon">max<wbr>Backreference<wbr>Words</a>

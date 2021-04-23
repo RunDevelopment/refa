@@ -89,6 +89,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="enfa.fromregexoptions.html#assertions" class="tsd-kind-icon">assertions</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="enfa.fromregexoptions.html#infinitythreshold" class="tsd-kind-icon">infinity<wbr>Threshold</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="enfa.fromregexoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="enfa.fromregexoptions.html#unknowns" class="tsd-kind-icon">unknowns</a></li>
 							</ul>
 						</section>
 					</div>
@@ -164,6 +165,31 @@
 						</dl>
 					</div>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="unknowns" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> unknowns</h3>
+					<div class="tsd-signature tsd-kind-icon">unknowns<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;disable&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;throw&quot;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>How to handle unknowns when construction the ENFA.</p>
+						</div>
+						<ul>
+							<li><p><code>&quot;throw&quot;</code></p>
+								<p>This method will throw an error when encountering an unknown.</p>
+							</li>
+							<li><p><code>&quot;disable&quot;</code></p>
+								<p>This method will replace any unknown with an empty character class, effectively removing it.</p>
+							</li>
+						</ul>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>&quot;throw&quot;</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -213,6 +239,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 								<a href="enfa.fromregexoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="enfa.fromregexoptions.html#unknowns" class="tsd-kind-icon">unknowns</a>
 							</li>
 						</ul>
 					</li>
