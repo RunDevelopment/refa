@@ -1,8 +1,7 @@
 import { assert } from "chai";
 import { join, basename, dirname } from "path";
 import { writeFileSync, mkdirSync } from "fs";
-
-const UPDATE = process.argv.indexOf("--update") >= 0;
+import { CONFIG_UPDATE } from "./config";
 
 function getSnapshotFilePath(testFile: string): string {
 	return join(dirname(testFile), "__snapshots__", basename(testFile));
@@ -100,7 +99,7 @@ export function assertEqualSnapshot(context: Mocha.Context, actual: string, mess
 	const file = getSnapshotFilePath(test.file!);
 	const title = getTitlePath(test);
 
-	if (UPDATE) {
+	if (CONFIG_UPDATE) {
 		updateSnapshot(test, file, title, actual);
 	} else {
 		assert.strictEqual(actual, getSnapshot(file, title), message);

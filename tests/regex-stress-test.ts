@@ -5,6 +5,7 @@ import { NFA } from "../src/nfa";
 import { DFA, ReadonlyDFA } from "../src/dfa";
 import { Expression, NoParent } from "../src/ast";
 import { TooManyNodesError } from "../src/finite-automaton";
+import { CONFIG_RUN_STRESS_TEST } from "./helper/config";
 
 /**
  * Setting this to `true` will enable the check that verifies that the language of the generated RE from `toRegex` is
@@ -29,6 +30,10 @@ function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxChara
 }
 
 describe("Regex stress test", function () {
+	if (!CONFIG_RUN_STRESS_TEST) {
+		return;
+	}
+
 	this.timeout(60 * 1000); // timeout after a minute
 
 	PrismRegexes.forEach((literal, index) => {
