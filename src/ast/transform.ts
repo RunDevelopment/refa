@@ -1,5 +1,15 @@
 import { Char } from "../core-types";
-import { Alternation, Assertion, CharacterClass, Concatenation, Expression, NoParent, Node, Quantifier } from "./nodes";
+import {
+	Alternation,
+	Assertion,
+	CharacterClass,
+	Concatenation,
+	Expression,
+	NoParent,
+	Node,
+	Quantifier,
+	Unknown,
+} from "./nodes";
 import { visitAst } from "./visit";
 
 /**
@@ -19,6 +29,7 @@ export interface Transformer {
 	onConcatenation?(node: NoParent<Concatenation>, context: TransformContext): void;
 	onExpression?(node: NoParent<Expression>, context: TransformContext): void;
 	onQuantifier?(node: NoParent<Quantifier>, context: TransformContext): void;
+	onUnknown?(node: NoParent<Unknown>, context: TransformContext): void;
 }
 
 export interface TransformContext {
@@ -90,6 +101,7 @@ export function combineTransformers(transformers: Iterable<Transformer>): Transf
 		onConcatenation: toFunction("onConcatenation"),
 		onExpression: toFunction("onExpression"),
 		onQuantifier: toFunction("onQuantifier"),
+		onUnknown: toFunction("onUnknown"),
 	};
 }
 
@@ -189,6 +201,7 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 		onConcatenationLeave: leaveNode,
 		onExpressionLeave: leaveNode,
 		onQuantifierLeave: leaveNode,
+		onUnknownLeave: leaveNode,
 	});
 
 	return changed;

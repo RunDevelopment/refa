@@ -50,7 +50,7 @@ export function regexSnapshot(context: Mocha.Context, transformer: Transformer):
 
 	const actual = PrismRegexes.map(re => {
 		try {
-			const { expression } = Parser.fromLiteral(re).parse({ backreferences: "disable" });
+			const { expression } = Parser.fromLiteral(re).parse({ backreferences: "unknown" });
 			return literalToString(toLiteral(transform(transformer, expression)));
 		} catch (e) {
 			if (e instanceof TooManyNodesError) {

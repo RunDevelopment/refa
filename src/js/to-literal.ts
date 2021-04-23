@@ -126,8 +126,6 @@ function alternativesToSource(
 	}
 }
 function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions): string {
-	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
-
 	switch (node.type) {
 		case "Alternation": {
 			const assertion = isBoundaryAssertion(node, flags);
@@ -149,6 +147,7 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 			return s;
 		}
 		case "CharacterClass": {
+			const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
 			if (node.characters.maximum !== maximum) {
 				throw new Error(`All characters were expected to have a maximum of ${maximum}.`);
 			}
@@ -199,6 +198,16 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 				s += "?";
 			}
 			return s;
+		}
+		case "Unknown": {
+			return (
+				"[]Unknown:" +
+				node.id
+					.replace(/[\\/|[\](){}+*?^$.]/g, m => "\\" + m)
+					// eslint-disable-next-line no-control-regex
+					.replace(/[\0-\x1F]/g, m => "\\x" + m.charCodeAt(0).toString(16).padStart(2, "0")) +
+				"[]"
+			);
 		}
 		default:
 			throw assertNever(node);

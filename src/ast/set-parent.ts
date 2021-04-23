@@ -37,6 +37,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 		case "Assertion":
 		case "CharacterClass":
 		case "Quantifier":
+		case "Unknown":
 			if (parent === null) throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
 
 			if (parent.type === "Concatenation") {
@@ -45,7 +46,7 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 				throw new Error(`A(n) ${parent.type} cannot be parent of a(n) ${node.type}.`);
 			}
 
-			if (node.type !== "CharacterClass") {
+			if (node.type !== "CharacterClass" && node.type !== "Unknown") {
 				node.alternatives.forEach(c => setParentImpl(c, node));
 			}
 			break;

@@ -65,6 +65,9 @@ function toPatternElement(element: NoParent<Element>): string {
 
 			return content + quant;
 		}
+		case "Unknown": {
+			return `[]Unknown:${element.id}[]`;
+		}
 		default:
 			throw assertNever(element, "Invalid element");
 	}

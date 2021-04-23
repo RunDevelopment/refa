@@ -83,6 +83,12 @@ function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
 				source: copySource(n.source),
 				alternatives: n.alternatives.map(e => copyNode(e)),
 			};
+		case "Unknown":
+			return {
+				type: "Unknown",
+				id: n.id,
+				source: copySource(n.source),
+			};
 		default:
 			assertNever(n);
 	}
@@ -297,6 +303,9 @@ export function tryRemoveRejectingAssertionBranches(
 						return EliminationResult.KEEP;
 					}
 				}
+			}
+			case "Unknown": {
+				return EliminationResult.KEEP;
 			}
 			default:
 				assertNever(element);

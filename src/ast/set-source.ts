@@ -44,6 +44,7 @@ function setSourceImpl(node: NoParent<Node>, getSource: () => SourceLocation, ov
 			break;
 
 		case "CharacterClass":
+		case "Unknown":
 			// no children
 			break;
 

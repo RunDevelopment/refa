@@ -12,6 +12,7 @@ import {
 	Parent,
 	Quantifier,
 	SourceLocation,
+	Unknown,
 	setParent,
 	setSource,
 } from "../ast";
@@ -69,11 +70,16 @@ export interface ParseOptions {
 	 *   E.g. `(a*)b\1` will throw but `(a*)[^\s\S]\1` will not because the backreference will be removed anyway because
 	 *   of the empty character class.
 	 *
+	 * - `"unknown"`
+	 *
+	 *   The parser will create a `Unknown` node for each backreference that cannot be removed. The id of the node will
+	 *   be raw string of the backreference.
+	 *
 	 * Backreferences that have been resolved are not affected by this option.
 	 *
 	 * @default "throw"
 	 */
-	backreferences?: "disable" | "throw";
+	backreferences?: "disable" | "throw" | "unknown";
 
 	/**
 	 * How the parser will handle assertions.
@@ -94,9 +100,14 @@ export interface ParseOptions {
 	 *
 	 *   E.g. `a\B` will throw but `a([]\b)(\b){0}` will not because none of the `\b`s can be reached.
 	 *
+	 * - `"unknown"`
+	 *
+	 *   The parser will create a `Unknown` node for each assertion. The id of the node will be raw string of the
+	 *   assertion.
+	 *
 	 * @default "parse"
 	 */
-	assertions?: "parse" | "disable" | "throw";
+	assertions?: "parse" | "disable" | "throw" | "unknown";
 
 	/**
 	 * By default, the parser will try to optimize the generated RE as much as possible.
@@ -125,6 +136,14 @@ export interface ParseOptions {
 	 * @default 10000
 	 */
 	maxNodes?: number;
+
+	/**
+	 * `Unknown` nodes have an `id` property that can be used to identify the element that created the unknown. This
+	 * function can be used to control the `id` value.
+	 *
+	 * By default, the raw of the element will be used as its id.
+	 */
+	getUnknownId?: (element: AST.Backreference | AST.Assertion) => string;
 }
 
 export interface RegexppAst {
@@ -148,6 +167,7 @@ interface ParserContext {
 	readonly backreferences: NonNullable<ParseOptions["backreferences"]>;
 	readonly assertions: NonNullable<ParseOptions["assertions"]>;
 	readonly disableSimplification: boolean;
+	readonly getUnknownId: NonNullable<ParseOptions["getUnknownId"]>;
 
 	readonly nc: NodeCreator;
 	readonly matchingDir: MatchingDirection;
@@ -261,6 +281,7 @@ export class Parser {
 			backreferences: options?.backreferences ?? "throw",
 			assertions: options?.assertions ?? "parse",
 			disableSimplification: options?.disableOptimizations ?? false,
+			getUnknownId: options?.getUnknownId ?? (e => e.raw),
 
 			nc: new NodeCreator(options?.maxNodes ?? DEFAULT_MAX_NODES),
 			matchingDir: inheritedMatchingDirection(element),
@@ -584,13 +605,24 @@ export class Parser {
 	}
 
 	private _createAssertion(element: AST.Assertion, context: ParserContext): NoParent<Element> | Empty {
-		if (context.assertions === "throw") {
-			throw new Error("Assertions are not supported.");
-		}
-		if (context.assertions === "disable") {
-			return this._createDisabledElement(element, context);
-		}
+		switch (context.assertions) {
+			case "throw":
+				throw new Error("Assertions are not supported.");
 
+			case "disable":
+				return this._createDisabledElement(element, context);
+
+			case "unknown":
+				return this._createUnknownElement(element, context);
+
+			case "parse":
+				return this._parseAssertion(element, context);
+
+			default:
+				assertNever(context.assertions);
+		}
+	}
+	private _parseAssertion(element: AST.Assertion, context: ParserContext): NoParent<Element> | Empty {
 		switch (element.kind) {
 			case "lookahead":
 			case "lookbehind": {
@@ -757,6 +789,13 @@ export class Parser {
 		return quant;
 	}
 
+	private _createUnknownElement(
+		element: AST.Assertion | AST.Backreference,
+		context: ParserContext
+	): NoParent<Element> | EmptySet {
+		return context.nc.newUnknown(element, context.getUnknownId(element));
+	}
+
 	private _createDisabledElement(node: SourceLocation, context: ParserContext): NoParent<Element> | EmptySet {
 		if (context.disableSimplification) {
 			return context.nc.newAlt(node);
@@ -788,12 +827,19 @@ export class Parser {
 			}
 		}
 
-		if (context.backreferences === "throw") {
-			throw new Error("Backreferences are not supported.");
-		}
+		switch (context.backreferences) {
+			case "throw":
+				throw new Error("Backreferences are not supported.");
 
-		// disable
-		return this._createDisabledElement(element, context);
+			case "unknown":
+				return this._createUnknownElement(element, context);
+
+			case "disable":
+				return this._createDisabledElement(element, context);
+
+			default:
+				assertNever(context.backreferences);
+		}
 	}
 	private _constantResolveGroup(element: AST.CapturingGroup, context: ParserContext): ReadonlyLogicalWord | null {
 		const cached = this._constantResolveCache.get(element);
@@ -803,7 +849,7 @@ export class Parser {
 
 		const expression = this._parseElement(element, {
 			...context,
-			backreferences: "throw",
+			backreferences: "unknown",
 			disableSimplification: false,
 		});
 
@@ -990,6 +1036,15 @@ class NodeCreator {
 			source: copySource(source),
 		};
 	}
+	newUnknown(source: Readonly<SourceLocation>, id: string): NoParent<Unknown> {
+		this._checkLimit();
+
+		return {
+			type: "Unknown",
+			id,
+			source: copySource(source),
+		};
+	}
 }
 
 function withResolved(context: ParserContext, group: AST.CapturingGroup, word: ReadonlyLogicalWord): ParserContext {
@@ -1151,6 +1206,7 @@ function iterateWordSets(node: NoParent<Node>): UnionIterable<CharSet[]> {
 			return unionSequences(node.alternatives.map(iterateWordSets));
 
 		case "Assertion":
+		case "Unknown":
 			throw new Error();
 
 		case "CharacterClass":
