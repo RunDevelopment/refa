@@ -1,6 +1,6 @@
 /* eslint-disable no-control-regex */
 import { assert } from "chai";
-import { Parser, toLiteral, ToLiteralOptions, Literal } from "../../src/js";
+import { Literal, Parser, ToLiteralOptions, toLiteral } from "../../src/js";
 import { literalToString } from "../helper/fa";
 import { assertEqualSnapshot } from "../helper/snapshot";
 import { PrismRegexes } from "../helper/prism-regex-data";

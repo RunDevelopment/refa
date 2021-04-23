@@ -6,11 +6,11 @@ import {
 	DIGIT,
 	LINE_TERMINATOR,
 	SPACE,
+	UNICODE_MAXIMUM,
+	UTF16_MAXIMUM,
 	WORD,
 	WORD_IU,
 	withCaseVaryingCharacters,
-	UNICODE_MAXIMUM,
-	UTF16_MAXIMUM,
 } from "./util";
 import {
 	Alias,
@@ -18,10 +18,10 @@ import {
 	General_Category,
 	Script,
 	Script_Extensions,
-	UnicodeCaseVarying,
 	UnicodeCaseFolding,
+	UnicodeCaseVarying,
 } from "./unicode";
-import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
+import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
 import { isChar } from "../char-util";
 
 export type PredefinedCharacterSet =

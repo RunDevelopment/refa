@@ -1,6 +1,6 @@
 import { assert } from "chai";
-import { join, basename, dirname } from "path";
-import { writeFileSync, mkdirSync } from "fs";
+import { basename, dirname, join } from "path";
+import { mkdirSync, writeFileSync } from "fs";
 import { CONFIG_UPDATE } from "./config";
 
 function getSnapshotFilePath(testFile: string): string {

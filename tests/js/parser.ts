@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { Parser, ParseOptions, Literal, toLiteral } from "../../src/js";
+import { Literal, ParseOptions, Parser, toLiteral } from "../../src/js";
 import { literalToString } from "../helper/fa";
 import { toPatternString } from "../helper/literal-to-string";
 

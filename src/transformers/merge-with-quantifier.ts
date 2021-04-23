@@ -1,4 +1,4 @@
-import { Element, Quantifier, NoParent, TransformContext, Transformer } from "../ast";
+import { Element, NoParent, Quantifier, TransformContext, Transformer } from "../ast";
 import { MatchingDirection, structurallyEqual, structurallyEqualToQuantifiedElement } from "../ast-analysis";
 import { filterMut } from "../util";
 import { CreationOptions } from "./creation-options";

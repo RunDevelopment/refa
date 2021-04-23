@@ -1,4 +1,4 @@
-import { CharacterClass, Concatenation, Parent, NoParent, TransformContext, Transformer } from "../ast";
+import { CharacterClass, Concatenation, NoParent, Parent, TransformContext, Transformer } from "../ast";
 import { filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
 

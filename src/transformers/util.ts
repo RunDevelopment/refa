@@ -4,18 +4,18 @@ import {
 	CharacterClass,
 	Concatenation,
 	Element,
-	Node,
 	NoParent,
+	Node,
 	Parent,
 	SourceLocation,
 } from "../ast";
 import {
+	MatchingDirection,
 	getFirstCharConsumedBy,
 	getLengthRange,
 	hasSomeDescendant,
 	isPotentiallyEmpty,
 	isZeroLength,
-	MatchingDirection,
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";

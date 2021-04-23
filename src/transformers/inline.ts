@@ -1,4 +1,4 @@
-import { Concatenation, Parent, Assertion, NoParent, TransformContext, Transformer } from "../ast";
+import { Assertion, Concatenation, NoParent, Parent, TransformContext, Transformer } from "../ast";
 import { CreationOptions } from "./creation-options";
 import { tryInlineAssertions } from "./util";
 

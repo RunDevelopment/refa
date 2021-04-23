@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { transform, TransformOptions, Transformer } from "../../src/ast";
+import { TransformOptions, Transformer, transform } from "../../src/ast";
 import { TooManyNodesError } from "../../src/finite-automaton";
 import { Literal, Parser, toLiteral } from "../../src/js";
 import { CONFIG_RUN_TRANSFORMERS } from "./config";

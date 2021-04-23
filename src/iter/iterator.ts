@@ -1,5 +1,5 @@
 import { FAIterator } from "../finite-automaton";
-import { iterateBFS, iterToArray, traverse as traverseGraph } from "../util";
+import { iterToArray, iterateBFS, traverse as traverseGraph } from "../util";
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.

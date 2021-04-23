@@ -1,4 +1,4 @@
-import { Element, Assertion, NoParent } from "../ast";
+import { Assertion, Element, NoParent } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./util";

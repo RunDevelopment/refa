@@ -1,7 +1,7 @@
 import { DFA } from "../src/dfa";
 import { assert } from "chai";
-import { literalToString, literalToDFA, removeIndentation } from "./helper/fa";
-import { FINITE_LITERALS, NON_FINITE_LITERALS, EMPTY_LITERALS, NON_EMPTY_LITERALS } from "./helper/regexp-literals";
+import { literalToDFA, literalToString, removeIndentation } from "./helper/fa";
+import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal } from "../src/js";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { prefixes } from "./helper/util";

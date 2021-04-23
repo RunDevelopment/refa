@@ -4,11 +4,11 @@ import { Char, ReadonlyWord, Word } from "./core-types";
 import {
 	FAIterator,
 	FiniteAutomaton,
-	TransitionIterableFA,
-	TooManyNodesError,
-	ToRegexOptions,
-	TransitionIterable,
 	IntersectionOptions,
+	ToRegexOptions,
+	TooManyNodesError,
+	TransitionIterable,
+	TransitionIterableFA,
 } from "./finite-automaton";
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";

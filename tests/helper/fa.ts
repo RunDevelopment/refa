@@ -1,7 +1,7 @@
 import { DFA } from "../../src/dfa";
 import { NFA, ReadonlyNFA } from "../../src/nfa";
 import { ENFA } from "../../src/enfa";
-import { Parser, Literal } from "../../src/js";
+import { Literal, Parser } from "../../src/js";
 import * as Iter from "../../src/iter";
 
 export function literalToString(literal: Literal): string {

@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Node, NoParent, Quantifier } from "./nodes";
+import { Alternation, Assertion, CharacterClass, Concatenation, Expression, NoParent, Node, Quantifier } from "./nodes";
 import { visitAst } from "./visit";
 
 /**

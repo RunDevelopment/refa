@@ -1,14 +1,14 @@
-import { Concatenation, Quantifier, Element, NoParent, Expression } from "./ast";
+import { Concatenation, Element, Expression, NoParent, Quantifier } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
 import {
+	FAIterator,
 	FiniteAutomaton,
+	IntersectionOptions,
+	ToRegexOptions,
+	TooManyNodesError,
 	TransitionIterable,
 	TransitionIterableFA,
-	ToRegexOptions,
-	FAIterator,
-	TooManyNodesError,
-	IntersectionOptions,
 } from "./finite-automaton";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";

@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { CharSet } from "../../src/char-set";
-import { Parser, Literal } from "../../src/js";
+import { Literal, Parser } from "../../src/js";
 
 export function charsFromRegex(literal: Literal): CharSet {
 	const parser = Parser.fromLiteral(literal);

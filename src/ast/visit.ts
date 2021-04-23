@@ -1,4 +1,4 @@
-import { Alternation, Assertion, CharacterClass, Concatenation, Expression, Quantifier, NoParent, Node } from "./nodes";
+import { Alternation, Assertion, CharacterClass, Concatenation, Expression, NoParent, Node, Quantifier } from "./nodes";
 
 export interface VisitAstHandler {
 	onAlternationEnter?(node: Alternation): void;

@@ -3,32 +3,32 @@ import {
 	Concatenation,
 	Element,
 	Expression,
-	Node,
 	NoParent,
+	Node,
 	Parent,
-	visitAst,
-	Transformer,
 	TransformContext,
+	Transformer,
+	visitAst,
 } from "../ast";
 import {
+	MatchingDirection,
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
 	getLengthRange,
 	hasSomeDescendant,
 	invertMatchingDirection,
 	isPotentiallyEmpty,
-	MatchingDirection,
 	stackPath,
 	toMatchingDirection,
 } from "../ast-analysis";
 import {
+	SingleCharacterParent,
 	at,
 	emptyAlternation,
 	firstIndexFor,
-	incrementFor,
 	inRange,
+	incrementFor,
 	isSingleCharacterParent,
-	SingleCharacterParent,
 	tryRemoveRejectingAssertionBranches,
 } from "./util";
 import { CharSet } from "../char-set";

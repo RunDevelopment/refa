@@ -1,27 +1,27 @@
 import {
-	NoParent,
-	Expression,
-	Concatenation,
 	Alternation,
 	CharacterClass,
-	Quantifier,
+	Concatenation,
 	Element,
-	combineTransformers,
+	Expression,
+	NoParent,
+	Quantifier,
 	TransformContext,
+	combineTransformers,
 	transform,
 } from "../ast";
 import { CharSet } from "../char-set";
-import { cachedFunc, DFS, firstOf, minOf, assertNever } from "../util";
-import { ToRegexOptions, TooManyNodesError, FAIterator } from "../finite-automaton";
+import { DFS, assertNever, cachedFunc, firstOf, minOf } from "../util";
+import { FAIterator, ToRegexOptions, TooManyNodesError } from "../finite-automaton";
 import { structurallyEqual } from "../ast-analysis";
 import {
 	CreationOptions,
-	mergeWithQuantifier,
 	factorOut,
-	moveUpEmpty,
 	inline,
-	unionCharacters,
+	mergeWithQuantifier,
+	moveUpEmpty,
 	nestedQuantifiers,
+	unionCharacters,
 } from "../transformers";
 
 const TRANSFORMER_CREATION_OPTIONS: CreationOptions = { ignoreAmbiguity: true, ignoreOrder: true };
