@@ -1,5 +1,6 @@
-import { itTest } from "../helper/transform";
-import { factorOut } from "../../src/transformers";
+import { itTest, regexSnapshot } from "../helper/transform";
+import { factorOut, inline, removeDeadBranches } from "../../src/transformers";
+import { combineTransformers } from "../../src/ast";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
@@ -37,5 +38,11 @@ describe("Transformers", function () {
 				expected: /\w{2}(?:\w{0,2}|\w?)/i,
 			},
 		]);
+
+		it("Prism regex snapshot", function () {
+			const transformer = combineTransformers([factorOut(), inline(), removeDeadBranches()]);
+
+			regexSnapshot(this, transformer);
+		});
 	});
 });

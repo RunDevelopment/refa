@@ -1,4 +1,4 @@
-import { itTest } from "../helper/transform";
+import { itTest, regexSnapshot } from "../helper/transform";
 import { combineTransformers } from "../../src/ast";
 import { inline, removeDeadBranches, removeUnnecessaryAssertions } from "../../src/transformers";
 
@@ -133,5 +133,11 @@ describe("Transformers", function () {
 				expected: /^(?:foo|bar)$/,
 			},
 		]);
+
+		it("Prism regex snapshot", function () {
+			const transformer = combineTransformers([removeUnnecessaryAssertions(), inline(), removeDeadBranches()]);
+
+			regexSnapshot(this, transformer);
+		});
 	});
 });
