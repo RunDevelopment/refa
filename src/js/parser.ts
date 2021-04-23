@@ -1,28 +1,28 @@
 import { Char } from "../core-types";
 import { CharSet } from "../char-set";
 import {
-	Node,
-	Element,
-	Assertion,
 	Alternation,
-	Expression,
-	Concatenation,
-	Parent,
-	SourceLocation,
-	Quantifier,
+	Assertion,
 	CharacterClass,
-	setSource,
-	setParent,
+	Concatenation,
+	Element,
+	Expression,
 	NoParent,
+	Node,
+	Parent,
+	Quantifier,
+	SourceLocation,
 	Unknown,
+	setParent,
+	setSource,
 } from "../ast";
-import { RegExpParser, AST, visitRegExpAST } from "regexpp";
+import { AST, RegExpParser, visitRegExpAST } from "regexpp";
 import {
+	UnionIterable,
 	assertNever,
 	concatSequences,
 	flatConcatSequences,
 	repeatSequences,
-	UnionIterable,
 	unionSequences,
 } from "../util";
 import { charSetToChars } from "../char-util";
@@ -31,7 +31,7 @@ import { createCharSet } from "./create-char-set";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
 import { Literal } from "./literal";
 import { TooManyNodesError } from "../finite-automaton";
-import { isPotentiallyEmpty, MatchingDirection } from "../ast-analysis";
+import { MatchingDirection, isPotentiallyEmpty } from "../ast-analysis";
 import {
 	backreferenceAlwaysAfterGroup,
 	hasSomeAncestor,

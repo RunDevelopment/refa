@@ -1,5 +1,5 @@
 import { Char } from "../core-types";
-import { CharSet, CharRange } from "../char-set";
+import { CharRange, CharSet } from "../char-set";
 import { runEncodeCharacters } from "../char-util";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 

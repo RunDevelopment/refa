@@ -1,20 +1,20 @@
 import { Char } from "../core-types";
-import { NoParent, Node, Expression, Concatenation, visitAst, Assertion, Alternation } from "../ast";
+import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
 import { assertNever } from "../util";
-import { CharSet, CharRange } from "../char-set";
+import { CharRange, CharSet } from "../char-set";
 import {
 	DIGIT,
-	WORD,
-	SPACE,
 	LINE_TERMINATOR,
-	withCaseVaryingCharacters,
-	WORD_IU,
+	SPACE,
 	UNICODE_MAXIMUM,
 	UTF16_MAXIMUM,
+	WORD,
+	WORD_IU,
+	withCaseVaryingCharacters,
 } from "./util";
 import { Flags } from "./flags";
-import { UnicodeCaseVarying, UnicodeCaseFolding } from "./unicode";
-import { UTF16CaseVarying, UTF16CaseFolding } from "./utf16-case-folding";
+import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
+import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
 import { Literal } from "./literal";
 
 export interface ToLiteralOptions {

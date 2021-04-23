@@ -1,5 +1,6 @@
-import { itTest } from "../helper/transform";
-import { unionCharacters } from "../../src/transformers";
+import { itTest, regexSnapshot } from "../helper/transform";
+import { inline, removeDeadBranches, unionCharacters } from "../../src/transformers";
+import { combineTransformers } from "../../src/ast";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
@@ -25,5 +26,11 @@ describe("Transformers", function () {
 				expected: /(?:[abc]) (?:[ab]|dd|\w) (?:a||b) (?:[a-d]|do|[c-f])/,
 			},
 		]);
+
+		it("Prism regex snapshot", function () {
+			const transformer = combineTransformers([unionCharacters(), inline(), removeDeadBranches()]);
+
+			regexSnapshot(this, transformer);
+		});
 	});
 });

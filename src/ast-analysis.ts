@@ -1,14 +1,14 @@
 import {
 	Alternation,
 	Assertion,
-	Element,
 	CharacterClass,
 	Concatenation,
+	Element,
 	Expression,
-	Node,
 	NoParent,
-	Quantifier,
+	Node,
 	Parent,
+	Quantifier,
 } from "./ast";
 import { Unknown } from "./ast/nodes";
 import { CharSet } from "./char-set";

@@ -4,9 +4,9 @@ import {
 	CharacterClass,
 	Concatenation,
 	Expression,
-	Quantifier,
 	NoParent,
 	Node,
+	Quantifier,
 	Unknown,
 } from "./nodes";
 

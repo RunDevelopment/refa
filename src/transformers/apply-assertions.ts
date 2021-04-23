@@ -6,30 +6,30 @@ import {
 	Element,
 	NoParent,
 	Quantifier,
-	Transformer,
 	TransformContext,
+	Transformer,
 } from "../ast";
 import {
+	MatchingDirection,
 	getFirstCharConsumedBy,
 	isTriviallyAccepting,
 	isZeroLength,
-	MatchingDirection,
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
 import { filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
 import {
+	SingleCharacterParent,
 	at,
 	copyNode,
 	copySource,
 	firstIndexFor,
-	incrementFor,
 	inRange,
+	incrementFor,
+	isSingleCharacterParent,
 	lastIndexFor,
 	setAt,
-	SingleCharacterParent,
-	isSingleCharacterParent,
 	tryRemoveRejectingAssertionBranches,
 } from "./util";
 

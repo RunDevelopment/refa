@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { FiniteAutomaton } from "../../src/finite-automaton";
 import { Literal } from "../../src/js";
-import { fromStringToUTF16, fromUnicodeToString, fromUTF16ToString } from "../../src/words";
+import { fromStringToUTF16, fromUTF16ToString, fromUnicodeToString } from "../../src/words";
 
 export interface WordTestCaseData {
 	accept: number[][];

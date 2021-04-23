@@ -1,4 +1,4 @@
-import { Concatenation, Element, Node, NoParent } from "../../src/ast";
+import { Concatenation, Element, NoParent, Node } from "../../src/ast";
 import { rangesToString } from "../../src/char-util";
 import { assertNever } from "../../src/util";
 

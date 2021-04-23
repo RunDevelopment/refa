@@ -1,4 +1,4 @@
-import { Node, NoParent, SourceLocation } from "./nodes";
+import { NoParent, Node, SourceLocation } from "./nodes";
 import { assertNever } from "../util";
 
 /**

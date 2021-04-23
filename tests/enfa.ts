@@ -2,11 +2,11 @@ import { ENFA } from "../src/enfa";
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
-import { literalToString, removeIndentation, literalToENFA } from "./helper/fa";
-import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
+import { literalToENFA, literalToString, removeIndentation } from "./helper/fa";
+import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal } from "../src/js";
 import { prefixes, suffixes } from "./helper/util";
-import { wordTestData, testWordTestCases } from "./helper/word-test-data";
+import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
 import { assertEqualSnapshot } from "./helper/snapshot";
 

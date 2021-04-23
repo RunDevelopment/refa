@@ -5,8 +5,8 @@ import {
 	CharacterClass,
 	Concatenation,
 	Expression,
-	Node,
 	NoParent,
+	Node,
 	Quantifier,
 	Unknown,
 } from "./nodes";

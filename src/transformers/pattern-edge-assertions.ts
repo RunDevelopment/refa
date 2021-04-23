@@ -1,5 +1,5 @@
-import { Assertion, Concatenation, Node, NoParent, Transformer } from "../ast";
-import { followPaths, getAssertRange, invertMatchingDirection, isZeroLength, Path, stackPath } from "../ast-analysis";
+import { Assertion, Concatenation, NoParent, Node, Transformer } from "../ast";
+import { Path, followPaths, getAssertRange, invertMatchingDirection, isZeroLength, stackPath } from "../ast-analysis";
 import { CreationOptions } from "./creation-options";
 import { at, inRange, tryInlineAssertions } from "./util";
 

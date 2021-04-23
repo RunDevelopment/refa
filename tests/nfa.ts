@@ -1,13 +1,13 @@
 import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
-import { literalToString, literalToNFA, removeIndentation, reachableFinalStates, literalToDFA } from "./helper/fa";
-import { FINITE_LITERALS, NON_FINITE_LITERALS, NON_EMPTY_LITERALS, EMPTY_LITERALS } from "./helper/regexp-literals";
+import { literalToDFA, literalToNFA, literalToString, reachableFinalStates, removeIndentation } from "./helper/fa";
+import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal, Parser, toLiteral } from "../src/js";
 import { RegExpParser } from "regexpp";
 import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
-import { wordTestData, testWordTestCases } from "./helper/word-test-data";
+import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 
 describe("NFA", function () {
 	describe("fromRegex", function () {

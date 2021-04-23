@@ -1,4 +1,4 @@
-import { Element, Parent, NoParent, Concatenation, TransformContext, Transformer } from "../ast";
+import { Concatenation, Element, NoParent, Parent, TransformContext, Transformer } from "../ast";
 import { MatchingDirection, structurallyEqual } from "../ast-analysis";
 import { CharSet } from "../char-set";
 import { minOf } from "../util";

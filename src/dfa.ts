@@ -1,25 +1,25 @@
 import { Char, ReadonlyWord, Word } from "./core-types";
-import { withoutSet, firstOf, intersectSet, cachedFunc, filterMut, traverse } from "./util";
+import { cachedFunc, filterMut, firstOf, intersectSet, traverse, withoutSet } from "./util";
 import {
 	FAIterator,
 	FiniteAutomaton,
 	IntersectionOptions,
-	TooManyNodesError,
 	ToRegexOptions,
+	TooManyNodesError,
 	TransitionIterable,
 	TransitionIterableFA,
 } from "./finite-automaton";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import {
-	invertCharMap,
-	getBaseSets,
 	decomposeIntoBaseSets,
+	getBaseSets,
+	invertCharMap,
+	isChar,
 	rangesToString,
 	wordSetsToWords,
-	isChar,
 } from "./char-util";
-import { NoParent, Expression } from "./ast";
+import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 
 const DEFAULT_MAX_NODES = 10_000;

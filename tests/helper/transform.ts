@@ -1,7 +1,11 @@
 import { assert } from "chai";
-import { transform, TransformOptions, Transformer } from "../../src/ast";
+import { TransformOptions, Transformer, transform } from "../../src/ast";
+import { TooManyNodesError } from "../../src/finite-automaton";
 import { Literal, Parser, toLiteral } from "../../src/js";
+import { CONFIG_RUN_TRANSFORMERS } from "./config";
 import { literalToString } from "./fa";
+import { PrismRegexes } from "./prism-regex-data";
+import { assertEqualSnapshot } from "./snapshot";
 
 export type TransformTestCase = LiteralTestCase;
 
@@ -35,4 +39,26 @@ export function itTest(cases: Iterable<TransformTestCase>): void {
 			assert.strictEqual(actualStr, expectedStr);
 		});
 	}
+}
+
+export function regexSnapshot(context: Mocha.Context, transformer: Transformer): void {
+	if (!CONFIG_RUN_TRANSFORMERS) {
+		return;
+	}
+
+	context.timeout(60 * 1000); // timeout after 1 minute
+
+	const actual = PrismRegexes.map(re => {
+		try {
+			const { expression } = Parser.fromLiteral(re).parse({ backreferences: "disable" });
+			return literalToString(toLiteral(transform(transformer, expression)));
+		} catch (e) {
+			if (e instanceof TooManyNodesError) {
+				return "TooManyNodesError";
+			}
+			throw e;
+		}
+	}).join("\n");
+
+	assertEqualSnapshot(context, actual);
 }

@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { literalToString, literalToNFA, nfaEqual } from "../helper/fa";
+import { literalToNFA, literalToString, nfaEqual } from "../helper/fa";
 import { Literal, toLiteral } from "../../src/js";
 import { NFA } from "../../src/nfa";
 import { ToRegexOptions } from "../../src/finite-automaton";

@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { CharSet, CharRange } from "../src/char-set";
+import { CharRange, CharSet } from "../src/char-set";
 import { rangesToString } from "../src/char-util";
 import { charsFromRegex } from "./helper/chars";
 

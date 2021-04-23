@@ -1,4 +1,4 @@
-import { Quantifier, NoParent, TransformContext, Transformer } from "../ast";
+import { NoParent, Quantifier, TransformContext, Transformer } from "../ast";
 import { CreationOptions } from "./creation-options";
 
 function combineNestedQuantifiers(
