@@ -1,11 +1,12 @@
 import { DFA } from "../src/dfa";
 import { assert } from "chai";
-import { literalToDFA, literalToString, removeIndentation } from "./helper/fa";
+import { literalToDFA, literalToNFA, literalToString, removeIndentation } from "./helper/fa";
 import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal } from "../src/js";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { prefixes } from "./helper/util";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
+import { NFA } from "../src/nfa";
 
 describe("DFA", function () {
 	describe("fromWords", function () {
@@ -793,6 +794,32 @@ describe("DFA", function () {
 			assert.throws(() => {
 				DFA.fromWords(testDfa.words(), testDfa.options, { maxNodes: 100 });
 			});
+		});
+	});
+
+	describe("fromIntersection", function () {
+		it("should work", function () {
+			const r1 = /\d+(?:ab|ba|.)+\w+/;
+			const r2 = /\w*(?:abc?|abba|\S)+\d+/;
+
+			const r1Nfa = literalToNFA(r1);
+			const r2Nfa = literalToNFA(r2);
+			const r1Dfa = literalToDFA(r1);
+			const r2Dfa = literalToDFA(r2);
+
+			const d1 = DFA.fromFA(NFA.fromIntersection(r1Dfa, r2Dfa));
+			const d2 = DFA.fromFA(NFA.fromIntersection(r1Nfa, r2Nfa));
+			const d3 = DFA.fromIntersection(r1Dfa, r2Dfa);
+			const d4 = DFA.fromIntersection(r1Nfa, r2Nfa);
+
+			d1.minimize();
+			d2.minimize();
+			d3.minimize();
+			d4.minimize();
+
+			assert.isTrue(d1.structurallyEqual(d2));
+			assert.isTrue(d2.structurallyEqual(d3));
+			assert.isTrue(d3.structurallyEqual(d4));
 		});
 	});
 });

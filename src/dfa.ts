@@ -308,22 +308,42 @@ export class DFA implements ReadonlyDFA {
 	static fromIntersection(
 		left: TransitionIterable,
 		right: TransitionIterable,
-		options?: Readonly<IntersectionOptions>
+		options?: Readonly<IntersectionOptions & DFA.CreationOptions>
 	): DFA {
 		checkCompatibility(left, right);
 
-		const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+		if (left instanceof DFA && right instanceof DFA) {
+			// the intersection of two DFA is also a DFA, so we can directly construct it
 
-			// traverse the whole iterator to create our NodeList
-			Iter.traverse(Iter.mapOut(iter, n => n.out.values()));
+			const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+				const iter = Iter.intersection(
+					nodeList,
+					left.transitionIterator(),
+					right.transitionIterator(),
+					options
+				);
 
-			// A cleanup still has to be performed because while all states are connected to the initial state, they might
-			// not be able to reach a final state. This will remove such trap states.
-			nodeList.removeUnreachable();
-		});
+				// traverse the whole iterator to create our NodeList
+				Iter.traverse(Iter.mapOut(iter, n => n.out.values()));
 
-		return new DFA(nodeList, left.maxCharacter);
+				// A cleanup still has to be performed because while all states are connected to the initial state, they
+				// might not be able to reach a final state. This will remove such trap states.
+				nodeList.removeUnreachable();
+			});
+
+			return new DFA(nodeList, left.maxCharacter);
+		} else {
+			// the intersection of two non-DFA is likely a NFA, so we have to make it deterministic.
+
+			const iter = Iter.intersection(
+				new Iter.TransitionMapBuilder(),
+				left.transitionIterator(),
+				right.transitionIterator(),
+				options
+			);
+
+			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
+		}
 	}
 
 	/**
