@@ -39,6 +39,8 @@ export function* runEncodeCharacters(chars: Iterable<Char>): Iterable<CharRange>
  *
  * If the union of all given character sets is empty, the empty array will be returned.
  *
+ * This algorithm run in O(n*log(n)) where n is the number of ranges in the given character sets.
+ *
  * @param sets
  */
 export function getBaseSets(charSets: Iterable<CharSet>): readonly CharSet[] {
@@ -88,15 +90,16 @@ export function getBaseSets(charSets: Iterable<CharSet>): readonly CharSet[] {
 	for (let i = 1, l = sortedCuts.length; i < l; i++) {
 		const min = sortedCuts[i - 1];
 		if (union.has(min)) {
-			const range = { min, max: sortedCuts[i] - 1 };
 			let key = "";
-			for (const set of sets) {
+			for (let setIndex = 0; setIndex < sets.length; setIndex++) {
+				const set = sets[setIndex];
 				if (set.has(min)) {
-					key += rangesToKey(set.ranges) + "\n";
+					key += setIndex + " ";
 				}
 			}
 
 			const value = baseRanges.get(key);
+			const range = { min, max: sortedCuts[i] - 1 };
 			if (value) {
 				value.push(range);
 			} else {
@@ -112,14 +115,6 @@ export function getBaseSets(charSets: Iterable<CharSet>): readonly CharSet[] {
 	}
 
 	return baseSets;
-}
-function rangesToKey(ranges: readonly CharRange[]): string {
-	let key = "";
-	for (let i = 0, l = ranges.length; i < l; i++) {
-		const { min, max } = ranges[i];
-		key += min.toString(16) + "," + max.toString(16) + ";";
-	}
-	return key;
 }
 
 /**
