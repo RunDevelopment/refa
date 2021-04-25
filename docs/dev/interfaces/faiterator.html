@@ -128,10 +128,12 @@
 							<p>Whether the <a href="faiterator.html#getout">getOut</a> function is deterministic during the lifetime of the iterator.</p>
 						</div>
 						<p>Deterministic means that if the <code>getOut</code> gets called for the same state twice (or more), it will always return
-							equal values. Equality is defined by
-						<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality">the key equality of the Map class</a>.</p>
-						<p>The only exception to this rule are iterators and iterables. Iterators and iterables that can only be iterated
-						once may also be returned from deterministic <code>getOut</code> functions.</p>
+							equal values. The equality of states is defined by
+							<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality">the key equality of the Map class</a>.
+						Value equality depends on the iterator.</p>
+						<p>The equality relation of returned values is not defined by this interface. I.e. a deterministic <code>getOut</code> function
+							may return new collections/iterators on subsequent invocations as long as the collections/iterators are
+						considered equal (e.g. equal could be defined as &quot;same elements&quot;).</p>
 						<p>It is also assumed that deterministic <code>getOut</code> functions are sufficiently fast for subsequent invocations
 						(usually <code>O(1)</code> can be assumed).</p>
 						<dl class="tsd-comment-tags">
