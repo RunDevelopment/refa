@@ -65,33 +65,11 @@ export function filterOutIter<S, O>(
 	};
 }
 
-const PURE_OUT_SYMBOL = Symbol();
 /**
- * Marks the given iterator as having a cheap `getOut` function. This means that `getOut` will have a very efficient
- * implementation. More formally: For every given input, the implementation of `getOut` is allowed to have any time
- * complexity on the first invocation of that input but must guarantee O(1) time on subsequent invocations for that
- * input. The implementation must also guarantee that `getOut` is a pure function.
- *
- * Examples of efficient implementations are functions that only access a field or function that lazily compute the
- * output and cache previously computed results.
- *
- * The returned iterator is the input iterator.
- *
- * @param iter
+ * The returned iterator is guaranteed to be deterministic.
  */
-export function markPureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	iter[PURE_OUT_SYMBOL] = true;
-	return iter;
-}
-function hasPureOut<S, O>(iter: FAIterator<S, O>): boolean {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	return iter[PURE_OUT_SYMBOL] === true;
-}
-export function ensurePureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	if (hasPureOut(iter)) {
+export function ensureDeterministicOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+	if (iter.deterministicOut) {
 		return iter;
 	} else {
 		return cacheOut(iter);
@@ -103,11 +81,11 @@ export function ensurePureOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
  *
  * @param iter
  */
-export function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	const outCache = new Map<S, O>();
 	const oldGetUncached = iter.getOut;
 
-	return markPureOut({
+	return {
 		initial: iter.initial,
 		getOut: (state: S) => {
 			let cached = outCache.get(state);
@@ -117,8 +95,9 @@ export function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 			}
 			return cached;
 		},
+		deterministicOut: true,
 		isFinal: iter.isFinal,
-	});
+	};
 }
 
 /**
@@ -245,7 +224,7 @@ export function languageIsFinite<T>(iter: FAIterator<T>): boolean {
 	 * many words as we like making the language infinite.
 	 */
 
-	iter = cacheOut(mapOut(iter, i => [...i]));
+	iter = ensureDeterministicOut(mapOut(iter, iterToArray));
 
 	const states = [...iterateStates(iter)];
 	const finals = states.filter(iter.isFinal);

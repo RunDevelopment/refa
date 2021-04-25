@@ -430,7 +430,7 @@ export class DFA implements ReadonlyDFA {
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			iter = Iter.ensurePureOut(iter);
+			iter = Iter.ensureDeterministicOut(iter);
 
 			const transitionSets = new Set<CharSet>();
 			traverse(iter.initial, n => {

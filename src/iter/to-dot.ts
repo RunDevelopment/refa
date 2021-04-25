@@ -1,11 +1,11 @@
 import { FAIterator } from "../finite-automaton";
 import { iterToArray } from "../util";
-import { cacheOut, iterateStates, mapOut, mapOutIter } from "./iterator";
+import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
 export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDot.Options<S, T>): string {
 	const { getEdgeAttributes, getGraphAttributes, getNodeAttributes = DEFAULT_GET_NODE_ATTRIBUTES } = options;
 
-	const stableIter = cacheOut(mapOut(iter, iterToArray));
+	const stableIter = ensureDeterministicOut(mapOut(iter, iterToArray));
 	const states: S[] = [...iterateStates(mapOutIter(stableIter, ([s]) => s))];
 
 	const index = new Map<S, number>(states.map((s, i) => [s, i]));

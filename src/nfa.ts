@@ -72,20 +72,22 @@ export class NFA implements ReadonlyNFA {
 	stateIterator(): FAIterator<NFA.ReadonlyNode> {
 		const initial: NFA.ReadonlyNode = this.nodes.initial;
 		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
-		return Iter.markPureOut({
+		return {
 			initial,
 			getOut: n => n.out.keys(),
+			deterministicOut: true,
 			isFinal: n => finals.has(n),
-		});
+		};
 	}
 	transitionIterator(): FAIterator<NFA.ReadonlyNode, ReadonlyMap<NFA.ReadonlyNode, CharSet>> {
 		const initial: NFA.ReadonlyNode = this.nodes.initial;
 		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
-		return Iter.markPureOut({
+		return {
 			initial,
 			getOut: n => n.out,
+			deterministicOut: true,
 			isFinal: n => finals.has(n),
-		});
+		};
 	}
 
 	copy(): NFA {

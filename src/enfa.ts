@@ -66,11 +66,12 @@ export class ENFA implements ReadonlyENFA {
 		} else {
 			const initial: ENFA.ReadonlyNode = this.nodes.initial;
 			const final: ENFA.ReadonlyNode = this.nodes.final;
-			return Iter.markPureOut({
+			return {
 				initial,
 				getOut: n => n.out.keys(),
+				deterministicOut: true,
 				isFinal: n => n === final,
-			});
+			};
 		}
 	}
 	transitionIterator(): FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet>> {
@@ -154,11 +155,12 @@ export class ENFA implements ReadonlyENFA {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.nodes.initial,
 			getOut: n => n.out,
+			deterministicOut: true,
 			isFinal: n => n === this.nodes.final,
 		};
 
 		return Iter.toString(
-			Iter.markPureOut(iter),
+			iter,
 			cs => {
 				if (cs === null) {
 					return "ε";
@@ -178,6 +180,7 @@ export class ENFA implements ReadonlyENFA {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.nodes.initial,
 			getOut: n => n.out,
+			deterministicOut: true,
 			isFinal: n => n === this.nodes.final,
 		};
 
@@ -185,7 +188,7 @@ export class ENFA implements ReadonlyENFA {
 			? cs => (cs === null ? "" : charSetToString!(cs))
 			: cs => (cs === null ? "" : rangesToString(cs));
 
-		return Iter.toDot(Iter.markPureOut(iter), Iter.toDot.simpleOptions(toString, true));
+		return Iter.toDot(iter, Iter.toDot.simpleOptions(toString, true));
 	}
 
 	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {

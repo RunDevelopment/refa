@@ -105,12 +105,25 @@ export interface FAIterator<S, O = Iterable<S>> {
 	/**
 	 * Returns the value a state maps to.
 	 *
-	 * This function is guaranteed to be deterministic during the time the iterator is used. Subsequent invocations will
-	 * always return values that are equal to the first returned value. Equality is defined by
-	 * [the key equality of the Map class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality).
-	 * This function is also guaranteed to be sufficiently fast, usually `O(1)` can be assumed.
+	 * @see {@link deterministicOut}
 	 */
 	readonly getOut: (state: S) => O;
+	/**
+	 * Whether the {@link getOut} function is deterministic during the lifetime of the iterator.
+	 *
+	 * Deterministic means that if the `getOut` gets called for the same state twice (or more), it will always return
+	 * equal values. Equality is defined by
+	 * [the key equality of the Map class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality).
+	 *
+	 * The only exception to this rule are iterators and iterables. Iterators and iterables that can only be iterated
+	 * once may also be returned from deterministic `getOut` functions.
+	 *
+	 * It is also assumed that deterministic `getOut` functions are sufficiently fast for subsequent invocations
+	 * (usually `O(1)` can be assumed).
+	 *
+	 * @default false
+	 */
+	readonly deterministicOut?: boolean;
 	/**
 	 * Returns whether the given state is a final state.
 	 *

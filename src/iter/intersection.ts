@@ -1,5 +1,5 @@
 import { CharSet } from "../char-set";
-import { ensurePureOut } from "./iterator";
+import { ensureDeterministicOut } from "./iterator";
 import { FAIterator, IntersectionOptions, TooManyNodesError } from "../finite-automaton";
 
 /**
@@ -56,8 +56,8 @@ export function intersection<S, L, R>(
 	right: FAIterator<R, ReadonlyMap<R, CharSet>>,
 	options: undefined | Readonly<IntersectionOptions>
 ): FAIterator<S, S> {
-	left = ensurePureOut(left);
-	right = ensurePureOut(right);
+	left = ensureDeterministicOut(left);
+	right = ensureDeterministicOut(right);
 
 	const maxNodes = options?.maxNodes ?? Infinity;
 
