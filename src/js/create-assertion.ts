@@ -1,8 +1,8 @@
 import { Assertion, Element, NoParent } from "../ast";
 import { CharSet } from "../char-set";
 import { assertNever } from "../util";
-import { LINE_TERMINATOR, UNICODE_MAXIMUM, UTF16_MAXIMUM, WORD, WORD_IU } from "./util";
 import { Flags } from "./flags";
+import { getCharEnv } from "./char-env";
 
 export type BoundaryAssertion = WordBoundaryAssertion | TextBoundaryAssertion;
 export interface WordBoundaryAssertion {
@@ -14,7 +14,7 @@ export interface TextBoundaryAssertion {
 }
 
 export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: Readonly<Flags>): NoParent<Element> {
-	const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+	const env = getCharEnv(flags);
 
 	switch (assertion.kind) {
 		case "end":
@@ -24,9 +24,7 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 			// /^/m == /(?<!.)/
 			// /^/  == /(?<![^])/
 
-			const charSet: CharSet = flags.multiline
-				? CharSet.empty(maximum).union(LINE_TERMINATOR).negate()
-				: CharSet.all(maximum);
+			const charSet: CharSet = flags.multiline ? env.nonLineTerminator : env.all;
 			return newAssertion(true, assertion.kind === "start" ? "behind" : "ahead", charSet);
 		}
 
@@ -34,23 +32,21 @@ export function createAssertion(assertion: Readonly<BoundaryAssertion>, flags: R
 			// /\b/ == /(?:(?<!\w)(?=\w)|(?<=\w)(?!\w))/
 			// /\B/ == /(?:(?<=\w)(?=\w)|(?<!\w)(?!\w))/
 
-			const charRanges = flags.ignoreCase && flags.unicode ? WORD_IU : WORD;
-			const charSet: CharSet = CharSet.empty(maximum).union(charRanges);
 			return {
 				type: "Alternation",
 				alternatives: [
 					{
 						type: "Concatenation",
 						elements: [
-							newAssertion(!assertion.negate, "behind", charSet),
-							newAssertion(false, "ahead", charSet),
+							newAssertion(!assertion.negate, "behind", env.word),
+							newAssertion(false, "ahead", env.word),
 						],
 					},
 					{
 						type: "Concatenation",
 						elements: [
-							newAssertion(assertion.negate, "behind", charSet),
-							newAssertion(true, "ahead", charSet),
+							newAssertion(assertion.negate, "behind", env.word),
+							newAssertion(true, "ahead", env.word),
 						],
 					},
 				],

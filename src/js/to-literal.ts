@@ -2,20 +2,9 @@ import { Char } from "../core-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
 import { assertNever } from "../util";
 import { CharRange, CharSet } from "../char-set";
-import {
-	DIGIT,
-	LINE_TERMINATOR,
-	SPACE,
-	UNICODE_MAXIMUM,
-	UTF16_MAXIMUM,
-	WORD,
-	WORD_IU,
-	withCaseVaryingCharacters,
-} from "./util";
 import { Flags } from "./flags";
-import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
-import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
 import { Literal } from "./literal";
+import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
 
 export interface ToLiteralOptions {
 	/**
@@ -79,7 +68,7 @@ export function toLiteral(
 
 	const printOptions: PrintOptions = {
 		fastCharacters,
-		predefinedCS: getPredefinedCharacterSets(flags),
+		env: getCharEnv(flags),
 	};
 
 	return {
@@ -90,7 +79,7 @@ export function toLiteral(
 
 interface PrintOptions {
 	readonly fastCharacters: boolean;
-	readonly predefinedCS: PredefinedCharacterSets;
+	readonly env: CharEnv;
 }
 
 function toSource(
@@ -128,7 +117,7 @@ function alternativesToSource(
 function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions): string {
 	switch (node.type) {
 		case "Alternation": {
-			const assertion = isBoundaryAssertion(node, flags);
+			const assertion = isBoundaryAssertion(node, options.env);
 			if (assertion) {
 				return assertion;
 			}
@@ -136,7 +125,7 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 			return "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
 		}
 		case "Assertion": {
-			if (isEdgeAssertion(node, flags)) {
+			if (isEdgeAssertion(node, flags, options.env)) {
 				return node.kind === "behind" ? "^" : "$";
 			}
 			let s = "(?";
@@ -147,15 +136,14 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 			return s;
 		}
 		case "CharacterClass": {
-			const maximum = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
-			if (node.characters.maximum !== maximum) {
-				throw new Error(`All characters were expected to have a maximum of ${maximum}.`);
+			if (node.characters.maximum !== options.env.maxCharacter) {
+				throw new Error(`All characters were expected to have a maximum of ${options.env.maxCharacter}.`);
 			}
 
 			if (options.fastCharacters) {
 				return printCharactersFast(node.characters);
 			} else {
-				return printCharacters(node.characters, flags, options.predefinedCS);
+				return printCharacters(node.characters, flags, options.env);
 			}
 		}
 		case "Concatenation": {
@@ -213,16 +201,16 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 			throw assertNever(node);
 	}
 }
-function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags): boolean {
+function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags, env: CharEnv): boolean {
 	if (assertion.negate) {
 		const chars = getSingleCharSetInAssertion(assertion);
 		if (chars) {
-			return (flags.multiline && isNonLineTerminator(chars, flags.unicode)) || (!flags.multiline && chars.isAll);
+			return (flags.multiline && env.nonLineTerminator.equals(chars)) || (!flags.multiline && chars.isAll);
 		}
 	}
 	return false;
 }
-function isBoundaryAssertion(alternation: NoParent<Alternation>, flags: Flags): "\\b" | "\\B" | false {
+function isBoundaryAssertion(alternation: NoParent<Alternation>, env: CharEnv): "\\b" | "\\B" | false {
 	// \b == (?<!\w)(?=\w)|(?<=\w)(?!\w)
 	// \B == (?<=\w)(?=\w)|(?<!\w)(?!\w)
 
@@ -255,13 +243,8 @@ function isBoundaryAssertion(alternation: NoParent<Alternation>, flags: Flags): 
 		return false;
 	}
 
-	const word = flags.unicode && flags.ignoreCase ? WORD_IU : WORD;
-	if (
-		!rangeEqual(c00.ranges, word) ||
-		!rangeEqual(c01.ranges, word) ||
-		!rangeEqual(c10.ranges, word) ||
-		!rangeEqual(c11.ranges, word)
-	) {
+	const word = env.word;
+	if (!c00.equals(word) || !c01.equals(word) || !c10.equals(word) || !c11.equals(word)) {
 		return false;
 	}
 
@@ -290,18 +273,10 @@ function getSingleCharSetInAssertion(assertion: NoParent<Assertion>): CharSet | 
 	return undefined;
 }
 
-function makeIgnoreCase(cs: CharSet, unicode: boolean): CharSet {
-	if (unicode) {
-		return withCaseVaryingCharacters(cs, UnicodeCaseFolding, UnicodeCaseVarying);
-	} else {
-		return withCaseVaryingCharacters(cs, UTF16CaseFolding, UTF16CaseVarying);
-	}
-}
-function makeIgnoreCaseSingleChar(char: Char, unicode: boolean): CharSet | null {
-	const caseFoldingMap = unicode ? UnicodeCaseFolding : UTF16CaseFolding;
-	const folding: undefined | readonly Char[] = caseFoldingMap[char];
+function makeIgnoreCaseSingleChar(char: Char, env: CharEnv & CharEnvIgnoreCase): CharSet | null {
+	const folding = env.caseFolding[char];
 	if (folding) {
-		return CharSet.empty(unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM).union(folding.map(c => ({ min: c, max: c })));
+		return env.empty.union(folding.map(c => ({ min: c, max: c })));
 	} else {
 		return null;
 	}
@@ -332,6 +307,11 @@ function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 	return undefined; // no characters
 }
 function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): false | undefined {
+	const env = getCharEnv({ unicode, ignoreCase: true });
+	if (!env.ignoreCase) {
+		throw new Error();
+	}
+
 	let ignoreCase: false | undefined = undefined;
 
 	try {
@@ -339,7 +319,7 @@ function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): 
 			visitAst(node, {
 				onCharacterClassEnter(node) {
 					const cs = node.characters;
-					if (!cs.equals(makeIgnoreCase(cs, unicode))) {
+					if (!cs.equals(env.withCaseVaryingCharacters(cs))) {
 						ignoreCase = false;
 						throw new Error();
 					}
@@ -352,7 +332,7 @@ function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): 
 
 	return ignoreCase;
 }
-function getMultilineFlag(value: readonly NoParent<Node>[], unicode: boolean): boolean | undefined {
+function getMultilineFlag(value: readonly NoParent<Node>[], env: CharEnv): boolean | undefined {
 	let stringStartAssertion = false;
 	let stringEndAssertion = false;
 	let lineStartAssertion = false;
@@ -373,7 +353,7 @@ function getMultilineFlag(value: readonly NoParent<Node>[], unicode: boolean): b
 								} else {
 									stringStartAssertion = true;
 								}
-							} else if (isNonLineTerminator(chars, unicode)) {
+							} else if (env.nonLineTerminator.equals(chars)) {
 								if (assertion.kind === "ahead") {
 									lineEndAssertion = true;
 								} else {
@@ -433,72 +413,10 @@ function getFlags(
 		dotAll: template?.dotAll,
 		global: template?.global,
 		ignoreCase: ignoreCase ?? true,
-		multiline: template?.multiline ?? getMultilineFlag(value, !!unicode),
+		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
 		sticky: template?.sticky,
 		unicode,
 	};
-}
-
-interface PredefinedCharacterSets {
-	readonly digit: CharSet;
-	readonly notDigit: CharSet;
-	readonly space: CharSet;
-	readonly notSpace: CharSet;
-	readonly word: CharSet;
-	readonly notWord: CharSet;
-	readonly lineTerminator: CharSet;
-	readonly notLineTerminator: CharSet;
-}
-const PREDEFINED_CS_UTF16: PredefinedCharacterSets = {
-	digit: CharSet.empty(UTF16_MAXIMUM).union(DIGIT),
-	notDigit: CharSet.empty(UTF16_MAXIMUM).union(DIGIT).negate(),
-	space: CharSet.empty(UTF16_MAXIMUM).union(SPACE),
-	notSpace: CharSet.empty(UTF16_MAXIMUM).union(SPACE).negate(),
-	word: CharSet.empty(UTF16_MAXIMUM).union(WORD),
-	notWord: CharSet.empty(UTF16_MAXIMUM).union(WORD).negate(),
-	lineTerminator: CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR),
-	notLineTerminator: CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate(),
-};
-const PREDEFINED_CS_UNICODE_CASE_SENSITIVE: PredefinedCharacterSets = {
-	digit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT),
-	notDigit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT).negate(),
-	space: CharSet.empty(UNICODE_MAXIMUM).union(SPACE),
-	notSpace: CharSet.empty(UNICODE_MAXIMUM).union(SPACE).negate(),
-	word: CharSet.empty(UNICODE_MAXIMUM).union(WORD),
-	notWord: CharSet.empty(UNICODE_MAXIMUM).union(WORD).negate(),
-	lineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR),
-	notLineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate(),
-};
-const PREDEFINED_CS_UNICODE_IGNORE_CASE: PredefinedCharacterSets = {
-	digit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT),
-	notDigit: CharSet.empty(UNICODE_MAXIMUM).union(DIGIT).negate(),
-	space: CharSet.empty(UNICODE_MAXIMUM).union(SPACE),
-	notSpace: CharSet.empty(UNICODE_MAXIMUM).union(SPACE).negate(),
-	word: CharSet.empty(UNICODE_MAXIMUM).union(WORD_IU),
-	notWord: CharSet.empty(UNICODE_MAXIMUM).union(WORD_IU).negate(),
-	lineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR),
-	notLineTerminator: CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate(),
-};
-function getPredefinedCharacterSets(flags: Flags): PredefinedCharacterSets {
-	if (flags.unicode) {
-		if (flags.ignoreCase) {
-			return PREDEFINED_CS_UNICODE_IGNORE_CASE;
-		} else {
-			return PREDEFINED_CS_UNICODE_CASE_SENSITIVE;
-		}
-	} else {
-		return PREDEFINED_CS_UTF16;
-	}
-}
-
-const UNICODE_NON_LINE_TERMINATOR = CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR).negate();
-const NON_LINE_TERMINATOR = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR).negate();
-function isNonLineTerminator(chars: CharSet, unicode: boolean | undefined): boolean {
-	if (unicode) {
-		return chars.equals(UNICODE_NON_LINE_TERMINATOR);
-	} else {
-		return chars.equals(NON_LINE_TERMINATOR);
-	}
 }
 
 const PRINTABLE_CONTROL_CHARACTERS = new Map<Char, string>([
@@ -621,15 +539,14 @@ function printCharClassContentSimple(set: CharSet): string {
 	}
 	return s;
 }
-function printCharClassContentSimpleIgnoreCase(set: CharSet): string {
-	const unicode = set.maximum === UNICODE_MAXIMUM;
-	let hasAlready = CharSet.empty(set.maximum);
+function printCharClassContentSimpleIgnoreCase(set: CharSet, env: CharEnv & CharEnvIgnoreCase): string {
+	let hasAlready = env.empty;
 
 	let s = "";
 	for (const range of set.ranges) {
 		if (!hasAlready.isSupersetOf(range)) {
 			s += printCharRange(range);
-			hasAlready = hasAlready.union(makeIgnoreCase(CharSet.empty(set.maximum).union([range]), unicode));
+			hasAlready = hasAlready.union(env.withCaseVaryingCharacters(env.empty.union([range])));
 		}
 	}
 	return s;
@@ -639,13 +556,13 @@ function shortest(a: string, b: string): string {
 	return a.length <= b.length ? a : b;
 }
 
-function printCharClassContent(set: CharSet, flags: Flags, predefinedCS: PredefinedCharacterSets): string {
+function printCharClassContent(set: CharSet, env: CharEnv): string {
 	type CandidateCreator = (set: CharSet) => string;
 
 	const simpleCreator: CandidateCreator = set => {
 		let s = printCharClassContentSimple(set);
-		if (flags.ignoreCase) {
-			s = shortest(s, printCharClassContentSimpleIgnoreCase(set));
+		if (env.ignoreCase) {
+			s = shortest(s, printCharClassContentSimpleIgnoreCase(set, env));
 		}
 		return s;
 	};
@@ -655,17 +572,17 @@ function printCharClassContent(set: CharSet, flags: Flags, predefinedCS: Predefi
 
 		let reducedSet = set;
 		let reducedPrefix = "";
-		if (reducedSet.isSupersetOf(predefinedCS.space)) {
+		if (reducedSet.isSupersetOf(env.space)) {
 			reducedPrefix += "\\s";
-			reducedSet = reducedSet.without(predefinedCS.space);
+			reducedSet = reducedSet.without(env.space);
 		}
-		if (reducedSet.isSupersetOf(predefinedCS.word)) {
+		if (reducedSet.isSupersetOf(env.word)) {
 			reducedPrefix += "\\w";
-			reducedSet = reducedSet.without(predefinedCS.word);
+			reducedSet = reducedSet.without(env.word);
 		}
-		if (reducedSet.isSupersetOf(predefinedCS.digit)) {
+		if (reducedSet.isSupersetOf(env.digit)) {
 			reducedPrefix += "\\d";
-			reducedSet = reducedSet.without(predefinedCS.digit);
+			reducedSet = reducedSet.without(env.digit);
 		}
 
 		if (set === reducedSet || reducedSet.ranges.length > set.ranges.length * 2 + 2) {
@@ -702,7 +619,7 @@ function printCharClassContent(set: CharSet, flags: Flags, predefinedCS: Predefi
 	return moveCaretCreator(set);
 }
 
-function printCharacters(chars: CharSet, flags: Flags, predefinedCS: PredefinedCharacterSets): string {
+function printCharacters(chars: CharSet, flags: Flags, env: CharEnv): string {
 	// print
 	if (chars.isAll) return flags.dotAll ? "." : "[^]";
 	if (chars.isEmpty) return "[]";
@@ -711,8 +628,8 @@ function printCharacters(chars: CharSet, flags: Flags, predefinedCS: PredefinedC
 	if (chars.ranges.length === 1 && min === chars.ranges[0].max) {
 		// a single character
 		return printOutsideOfCharClass(min);
-	} else if (flags.ignoreCase) {
-		const minIgnoreCase = makeIgnoreCaseSingleChar(min, !!flags.unicode);
+	} else if (env.ignoreCase) {
+		const minIgnoreCase = makeIgnoreCaseSingleChar(min, env);
 		if (minIgnoreCase && minIgnoreCase.equals(chars)) {
 			// single character because
 			return printOutsideOfCharClass(min);
@@ -721,18 +638,18 @@ function printCharacters(chars: CharSet, flags: Flags, predefinedCS: PredefinedC
 
 	// if the first min is 0, then it's most likely negated, so don't even bother checking non-negated char sets
 	if (min !== 0) {
-		if (rangeEqual(chars.ranges, predefinedCS.digit.ranges)) return "\\d";
-		if (rangeEqual(chars.ranges, predefinedCS.space.ranges)) return "\\s";
-		if (rangeEqual(chars.ranges, predefinedCS.word.ranges)) return "\\w";
+		if (rangeEqual(chars.ranges, env.digit.ranges)) return "\\d";
+		if (rangeEqual(chars.ranges, env.space.ranges)) return "\\s";
+		if (rangeEqual(chars.ranges, env.word.ranges)) return "\\w";
 	} else {
-		if (rangeEqual(chars.ranges, predefinedCS.notDigit.ranges)) return "\\D";
-		if (rangeEqual(chars.ranges, predefinedCS.notSpace.ranges)) return "\\S";
-		if (rangeEqual(chars.ranges, predefinedCS.notWord.ranges)) return "\\W";
-		if (!flags.dotAll && rangeEqual(chars.ranges, predefinedCS.notLineTerminator.ranges)) return ".";
+		if (rangeEqual(chars.ranges, env.nonDigit.ranges)) return "\\D";
+		if (rangeEqual(chars.ranges, env.nonSpace.ranges)) return "\\S";
+		if (rangeEqual(chars.ranges, env.nonWord.ranges)) return "\\W";
+		if (!flags.dotAll && rangeEqual(chars.ranges, env.nonLineTerminator.ranges)) return ".";
 	}
 
-	const source = printCharClassContent(chars, flags, predefinedCS);
-	const negatedSource = printCharClassContent(chars.negate(), flags, predefinedCS);
+	const source = printCharClassContent(chars, env);
+	const negatedSource = printCharClassContent(chars.negate(), env);
 
 	if (source.length <= negatedSource.length) {
 		return `[${source}]`;

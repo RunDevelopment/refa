@@ -28,7 +28,6 @@ import {
 import { charSetToChars } from "../char-util";
 import { createAssertion } from "./create-assertion";
 import { createCharSet } from "./create-char-set";
-import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
 import { Literal } from "./literal";
 import { TooManyNodesError } from "../errors";
 import { MatchingDirection, isPotentiallyEmpty } from "../ast-analysis";
@@ -38,8 +37,7 @@ import {
 	inheritedMatchingDirection,
 	somePathToBackreference,
 } from "./regexpp-util";
-import { UTF16CaseFolding } from "./utf16-case-folding";
-import { UnicodeCaseFolding } from "./unicode";
+import { UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
 
 const DEFAULT_MAX_NODES = 10_000;
 const DEFAULT_BACK_REF_MAX_WORDS = 100;
@@ -1139,8 +1137,10 @@ function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 	if (!flags.ignoreCase) {
 		return charSetToChars;
 	} else {
-		const caseFolding = flags.unicode ? UnicodeCaseFolding : UTF16CaseFolding;
-		const maxCharacter = flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+		const env = getCharEnv(flags);
+		if (!env.ignoreCase) {
+			throw new Error();
+		}
 
 		const charSetCache = new Map<readonly number[], CharSet>();
 
@@ -1152,7 +1152,7 @@ function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 					continue;
 				}
 
-				const equivalenceClass: readonly number[] | undefined = caseFolding[c];
+				const equivalenceClass: readonly number[] | undefined = env.caseFolding[c];
 				if (equivalenceClass) {
 					for (const char of equivalenceClass) {
 						seen.add(char);
@@ -1160,7 +1160,7 @@ function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 
 					let cached = charSetCache.get(equivalenceClass);
 					if (cached === undefined) {
-						cached = CharSet.empty(maxCharacter).union(equivalenceClass.map(c => ({ min: c, max: c })));
+						cached = CharSet.empty(env.maxCharacter).union(equivalenceClass.map(c => ({ min: c, max: c })));
 						charSetCache.set(equivalenceClass, cached);
 					}
 					yield cached;
