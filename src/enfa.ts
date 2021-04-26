@@ -1,28 +1,20 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
 import { Char, ReadonlyWord, Word } from "./core-types";
-import {
-	FAIterator,
-	FiniteAutomaton,
-	IntersectionOptions,
-	ToRegexOptions,
-	TooManyNodesError,
-	TransitionIterable,
-	TransitionIterableFA,
-} from "./finite-automaton";
+import { FAIterator, FiniteAutomaton, ToRegexOptions, TransitionIterable, TransitionIterator } from "./common-types";
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Quantifier } from "./ast";
 import { rangesToString, wordSetsToWords } from "./char-util";
+import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 const DEFAULT_MAX_NODES = 10_000;
 
-export interface ReadonlyENFA extends TransitionIterableFA {
+export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.ReadonlyNode> {
 	readonly nodes: ENFA.ReadonlyNodeList;
 	readonly options: Readonly<ENFA.Options>;
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
-	transitionIterator(): FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet>>;
 
 	/**
 	 * Create a mutable copy of this ENFA.
@@ -74,7 +66,7 @@ export class ENFA implements ReadonlyENFA {
 			};
 		}
 	}
-	transitionIterator(): FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet>> {
+	transitionIterator(): TransitionIterator<ENFA.ReadonlyNode> {
 		const initial: ENFA.ReadonlyNode = this.nodes.initial;
 		const effectivelyFinal: Set<ENFA.ReadonlyNode> = ENFA.NodeList.reachableViaEpsilon(this.nodes.final, "in");
 
@@ -191,35 +183,7 @@ export class ENFA implements ReadonlyENFA {
 		return Iter.toDot(iter, Iter.toDot.simpleOptions(toString, true));
 	}
 
-	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
-	}
-	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return Iter.iterateWordSets(iter);
-	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
-		return wordSetsToWords(this.intersectionWordSets(other, options));
-	}
-
-	private _localCopy(other: TransitionIterable): SubList {
+	private _localCopy<O>(other: TransitionIterable<O>): SubList {
 		if (other instanceof ENFA) {
 			return localCopy(this.nodes, other.nodes);
 		} else {
@@ -232,8 +196,8 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * @param other
 	 */
-	append(other: TransitionIterable): void {
-		checkCompatibility(this, other);
+	append<O>(other: TransitionIterable<O>): void {
+		MaxCharacterError.assert(this, other);
 		baseAppend(this.nodes, this.nodes, this._localCopy(other));
 	}
 
@@ -242,8 +206,8 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * @param other
 	 */
-	prepend(other: TransitionIterable): void {
-		checkCompatibility(this, other);
+	prepend<O>(other: TransitionIterable<O>): void {
+		MaxCharacterError.assert(this, other);
 		basePrepend(this.nodes, this.nodes, this._localCopy(other));
 	}
 
@@ -256,8 +220,8 @@ export class ENFA implements ReadonlyENFA {
 	 * @param other
 	 * @param kind
 	 */
-	union(other: TransitionIterable, kind: "left" | "right" = "right"): void {
-		checkCompatibility(this, other);
+	union<O>(other: TransitionIterable<O>, kind: "left" | "right" = "right"): void {
+		MaxCharacterError.assert(this, other);
 
 		if (kind === "left") {
 			baseUnionLeft(this.nodes, this.nodes, this._localCopy(other));
@@ -430,12 +394,15 @@ export class ENFA implements ReadonlyENFA {
 		return new ENFA(nodeList, maxCharacter);
 	}
 
-	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<ENFA.CreationOptions>): ENFA {
-		return ENFA.fromTransitionIterator(fa.transitionIterator(), { maxCharacter: fa.maxCharacter }, creationOptions);
+	static fromFA<InputNode>(
+		fa: TransitionIterable<InputNode>,
+		creationOptions?: Readonly<ENFA.CreationOptions>
+	): ENFA {
+		return ENFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
 	}
 
 	static fromTransitionIterator<InputNode>(
-		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
+		iter: TransitionIterator<InputNode>,
 		options: Readonly<ENFA.Options>,
 		creationOptions?: Readonly<ENFA.CreationOptions>
 	): ENFA {
@@ -551,9 +518,7 @@ export namespace ENFA {
 		 */
 		createNode(): Node {
 			const id = this._nodeCounter++;
-			if (id > this._nodeLimit) {
-				throw new TooManyNodesError(`The ENFA is not allowed to create more than ${this._nodeLimit} nodes.`);
-			}
+			TooManyNodesError.assert(id, this._nodeLimit, "ENFA");
 
 			const node: Node & { id: number } = {
 				id, // for debugging
@@ -1206,12 +1171,6 @@ function baseMakeEffectivelyInitial(nodeList: ENFA.NodeList, base: SubList, node
 	}
 }
 
-function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
-	if (a.maxCharacter !== b.maxCharacter) {
-		throw new RangeError("Both NFAs have to have the same max character.");
-	}
-}
-
 function localCopy(nodeList: ENFA.NodeList, toCopy: ReadonlySubList): SubList {
 	const initial = nodeList.createNode();
 	const final = nodeList.createNode();
@@ -1231,7 +1190,7 @@ function localCopy(nodeList: ENFA.NodeList, toCopy: ReadonlySubList): SubList {
 
 	return { initial, final };
 }
-function localCopyOfIterator<T>(nodeList: ENFA.NodeList, iter: FAIterator<T, ReadonlyMap<T, CharSet>>): SubList {
+function localCopyOfIterator<T>(nodeList: ENFA.NodeList, iter: TransitionIterator<T>): SubList {
 	const initial = nodeList.createNode();
 	const final = nodeList.createNode();
 

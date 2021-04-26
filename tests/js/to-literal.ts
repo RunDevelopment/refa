@@ -4,7 +4,7 @@ import { Literal, Parser, ToLiteralOptions, toLiteral } from "../../src/js";
 import { literalToString } from "../helper/fa";
 import { assertEqualSnapshot } from "../helper/snapshot";
 import { PrismRegexes } from "../helper/prism-regex-data";
-import { TooManyNodesError } from "../../src/finite-automaton";
+import { TooManyNodesError } from "../../src/errors";
 
 describe("JS.toLiteral", function () {
 	interface TestCase {

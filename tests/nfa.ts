@@ -8,6 +8,7 @@ import { RegExpParser } from "regexpp";
 import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
+import { intersectionWordSets, isDisjointWith } from "../src/intersection";
 
 describe("NFA", function () {
 	describe("fromRegex", function () {
@@ -1209,7 +1210,7 @@ describe("NFA", function () {
 					const intersect = NFA.fromIntersection(nfaLeft, nfaRight);
 
 					const expected = toArray(intersect.wordSets());
-					const actual = toArray(nfaLeft.intersectionWordSets(nfaRight));
+					const actual = toArray(intersectionWordSets(nfaLeft, nfaRight));
 
 					assert.strictEqual(actual.length, expected.length, "Number of word sets");
 					for (let i = 0; i < actual.length; i++) {
@@ -1568,7 +1569,7 @@ describe("NFA", function () {
 			if (!total) {
 				total = nfa;
 			} else {
-				if (total.isDisjointWith(nfa)) {
+				if (isDisjointWith(total, nfa)) {
 					total.union(nfa);
 				} else {
 					// do something

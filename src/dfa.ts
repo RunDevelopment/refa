@@ -5,10 +5,9 @@ import {
 	FiniteAutomaton,
 	IntersectionOptions,
 	ToRegexOptions,
-	TooManyNodesError,
 	TransitionIterable,
-	TransitionIterableFA,
-} from "./finite-automaton";
+	TransitionIterator,
+} from "./common-types";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import {
@@ -21,15 +20,15 @@ import {
 } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
+import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 const DEFAULT_MAX_NODES = 10_000;
 
-export interface ReadonlyDFA extends TransitionIterableFA {
+export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.ReadonlyNode> {
 	readonly nodes: DFA.ReadonlyNodeList;
 	readonly options: Readonly<DFA.Options>;
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode>;
-	transitionIterator(): FAIterator<DFA.ReadonlyNode, ReadonlyMap<DFA.ReadonlyNode, CharSet>>;
 
 	/**
 	 * Creates a new DFA equivalent to this one.
@@ -71,7 +70,7 @@ export class DFA implements ReadonlyDFA {
 	stateIterator(): FAIterator<DFA.ReadonlyNode> {
 		return iterStates(this.nodes);
 	}
-	transitionIterator(): FAIterator<DFA.ReadonlyNode, ReadonlyMap<DFA.ReadonlyNode, CharSet>> {
+	transitionIterator(): TransitionIterator<DFA.ReadonlyNode> {
 		const finals: ReadonlySet<DFA.ReadonlyNode> = this.nodes.finals;
 		const maximum = this.maxCharacter;
 
@@ -122,34 +121,6 @@ export class DFA implements ReadonlyDFA {
 			this.transitionIterator(),
 			Iter.toDot.simpleOptions(charSetToString || rangesToString, false)
 		);
-	}
-
-	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
-	}
-	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return Iter.iterateWordSets(iter);
-	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
-		return wordSetsToWords(this.intersectionWordSets(other, options));
 	}
 
 	copy(): DFA {
@@ -305,12 +276,12 @@ export class DFA implements ReadonlyDFA {
 	 * @param right
 	 * @param options
 	 */
-	static fromIntersection(
-		left: TransitionIterable,
-		right: TransitionIterable,
+	static fromIntersection<L, R>(
+		left: TransitionIterable<L>,
+		right: TransitionIterable<R>,
 		options?: Readonly<IntersectionOptions & DFA.CreationOptions>
 	): DFA {
-		checkCompatibility(left, right);
+		MaxCharacterError.assert(left, right, "TransitionIterable");
 
 		if (left instanceof DFA && right instanceof DFA) {
 			// the intersection of two DFA is also a DFA, so we can directly construct it
@@ -409,23 +380,19 @@ export class DFA implements ReadonlyDFA {
 		return new DFA(nodeList, maxCharacter);
 	}
 
-	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
+	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
 		if (fa instanceof DFA) {
 			const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 				copyTo(fa.nodes, nodeList);
 			});
 			return new DFA(nodeList, fa.maxCharacter);
 		} else {
-			return DFA.fromTransitionIterator(
-				fa.transitionIterator(),
-				{ maxCharacter: fa.maxCharacter },
-				creationOptions
-			);
+			return DFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
 		}
 	}
 
 	static fromTransitionIterator<InputNode>(
-		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
+		iter: TransitionIterator<InputNode>,
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
@@ -598,9 +565,7 @@ export namespace DFA {
 
 		createNode(): Node {
 			const id = this._nodeCounter++;
-			if (id > this._nodeLimit) {
-				throw new TooManyNodesError(`The DFA is not allowed to create more than ${this._nodeLimit} nodes.`);
-			}
+			TooManyNodesError.assert(id, this._nodeLimit, "DFA");
 
 			const node: Node & { id: number } = {
 				id, // for debugging
@@ -766,12 +731,6 @@ export namespace DFA {
 		 * This will be the maximum of all underlying {@link CharSet}s.
 		 */
 		maxCharacter: Char;
-	}
-}
-
-function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
-	if (a.maxCharacter !== b.maxCharacter) {
-		throw new RangeError("Both NFAs have to have the same max character.");
 	}
 }
 

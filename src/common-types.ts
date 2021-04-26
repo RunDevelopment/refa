@@ -70,27 +70,6 @@ export interface FiniteAutomaton {
 	toDot(charSetToString?: (charSet: CharSet) => string): string;
 }
 
-export interface ToRegexOptions {
-	/**
-	 * The maximum number of RE AST nodes the implementation is allowed to create.
-	 *
-	 * If the implementation has to create more nodes to create the RE, a `TooManyNodesError` will be thrown. This
-	 * maximum will be check before any optimization passes.
-	 *
-	 * @default 10000
-	 */
-	maxNodes?: number;
-	/**
-	 * The maximum number of optimization passes that will be done after the initial RE AST was created.
-	 *
-	 * The initial AST is usually a lot more complex than necessary. Optimizations are then applied in order to minimize
-	 * the AST until this limit is reached or the AST can be optimized no further.
-	 *
-	 * The default number of passes is implementation defined.
-	 */
-	maxOptimizationPasses?: number;
-}
-
 /**
  * A graph iterator for all states of an FA with final states.
  *
@@ -135,33 +114,40 @@ export interface FAIterator<S, O = Iterable<S>> {
 	readonly isFinal: (state: S) => boolean;
 }
 
-export interface TransitionIterable {
+/**
+ * An {@link FAIterator} where transitions are map of states to character sets.
+ *
+ * This a commonly used interface when dealing with FA. It's common core all currently implemented FA support.
+ */
+export type TransitionIterator<T> = FAIterator<T, ReadonlyMap<T, CharSet>>;
+
+/**
+ * A graph or FA that con create a {@link TransitionIterator}.
+ */
+export interface TransitionIterable<T> {
 	readonly maxCharacter: Char;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	readonly transitionIterator: () => FAIterator<any, ReadonlyMap<unknown, CharSet>>;
+	readonly transitionIterator: () => TransitionIterator<T>;
 }
 
-export interface TransitionIterableFA extends FiniteAutomaton, TransitionIterable {
+export interface ToRegexOptions {
 	/**
-	 * Returns whether the languages of this and the other FA are disjoint.
+	 * The maximum number of RE AST nodes the implementation is allowed to create.
 	 *
-	 * The runtime of this algorithm is `O(n * m)` (n = number of states of this NFA, m = number of states of the other
-	 * FA) but it's a lot faster in practice with the worst case being very rare.
+	 * If the implementation has to create more nodes to create the RE, a `TooManyNodesError` will be thrown. This
+	 * maximum will be check before any optimization passes.
 	 *
-	 * Since this uses the intersection operation, you can supply intersection options.
-	 *
-	 * @param other
-	 * @param options
+	 * @default 10000
 	 */
-	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean;
+	maxNodes?: number;
 	/**
-	 * This is equivalent to `NFA.fromIntersection(this, other).wordSets()` but implemented more efficiently.
+	 * The maximum number of optimization passes that will be done after the initial RE AST was created.
+	 *
+	 * The initial AST is usually a lot more complex than necessary. Optimizations are then applied in order to minimize
+	 * the AST until this limit is reached or the AST can be optimized no further.
+	 *
+	 * The default number of passes is implementation defined.
 	 */
-	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]>;
-	/**
-	 * This is equivalent to `NFA.fromIntersection(this, other).words()` but implemented more efficiently.
-	 */
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word>;
+	maxOptimizationPasses?: number;
 }
 
 export interface IntersectionOptions {
@@ -176,12 +162,3 @@ export interface IntersectionOptions {
 	 */
 	maxNodes?: number;
 }
-
-/**
- * An error that is thrown when an operation causes too many nodes to be created.
- *
- * Many FA operation have the potential to create a huge number of nodes (thousands and millions) which may result in
- * the JavaScript runtime running out of memory and/or crashing. This error will thrown before that happens to safely
- * abort an otherwise resource-intensive operation.
- */
-export class TooManyNodesError extends Error {}

@@ -9,6 +9,7 @@ import { prefixes, suffixes } from "./helper/util";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
 import { assertEqualSnapshot } from "./helper/snapshot";
+import { intersectionWordSets } from "../src/intersection";
 
 describe("ENFA", function () {
 	describe("fromRegex", function () {
@@ -1130,7 +1131,7 @@ describe("ENFA", function () {
 					const intersect = NFA.fromIntersection(enfaLeft, enfaRight);
 
 					const expected = toArray(intersect.wordSets());
-					const actual = toArray(enfaLeft.intersectionWordSets(enfaRight));
+					const actual = toArray(intersectionWordSets(enfaLeft, enfaRight));
 
 					assert.strictEqual(actual.length, expected.length, "Number of word sets");
 					for (let i = 0; i < actual.length; i++) {

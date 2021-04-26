@@ -1,4 +1,4 @@
-import { FAIterator } from "../finite-automaton";
+import { FAIterator } from "../common-types";
 import { iterToArray } from "../util";
 import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 

@@ -1,4 +1,4 @@
-import { FAIterator } from "../finite-automaton";
+import { FAIterator } from "../common-types";
 import { iterToArray, iterateBFS, traverse as traverseGraph } from "../util";
 
 /**

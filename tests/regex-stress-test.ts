@@ -4,8 +4,8 @@ import { PrismRegexes } from "./helper/prism-regex-data";
 import { NFA } from "../src/nfa";
 import { DFA, ReadonlyDFA } from "../src/dfa";
 import { Expression, NoParent } from "../src/ast";
-import { TooManyNodesError } from "../src/finite-automaton";
 import { CONFIG_ALL_PARSE_OPTIONS, CONFIG_RUN_STRESS_TEST } from "./helper/config";
+import { TooManyNodesError } from "../src/errors";
 
 /**
  * Setting this to `true` will enable the check that verifies that the language of the generated RE from `toRegex` is

@@ -12,7 +12,7 @@ import {
 } from "../ast";
 import { CharSet } from "../char-set";
 import { DFS, assertNever, cachedFunc, firstOf, minOf } from "../util";
-import { FAIterator, ToRegexOptions, TooManyNodesError } from "../finite-automaton";
+import { FAIterator, ToRegexOptions } from "../common-types";
 import { structurallyEqual } from "../ast-analysis";
 import {
 	CreationOptions,
@@ -23,6 +23,7 @@ import {
 	nestedQuantifiers,
 	unionCharacters,
 } from "../transformers";
+import { TooManyNodesError } from "../errors";
 
 const TRANSFORMER_CREATION_OPTIONS: CreationOptions = { ignoreAmbiguity: true, ignoreOrder: true };
 const CONCAT_TRANSFORMER = combineTransformers([mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS)]);
@@ -94,9 +95,7 @@ class TransitionCreator {
 	constructor(public readonly max: number) {}
 
 	private _incrementCounter(): void {
-		if (++this._counter > this.max) {
-			throw new TooManyNodesError(`Too many RE AST nodes. Reached maximum of ${this.max}.`);
-		}
+		TooManyNodesError.assert(++this._counter, this.max, "toRegex operation");
 	}
 
 	concat(elements: NoParent<Concatenation>["elements"]): NoParent<Concatenation> {

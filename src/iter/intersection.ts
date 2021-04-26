@@ -1,6 +1,7 @@
 import { CharSet } from "../char-set";
 import { ensureDeterministicOut } from "./iterator";
-import { FAIterator, IntersectionOptions, TooManyNodesError } from "../finite-automaton";
+import { FAIterator, IntersectionOptions, TransitionIterator } from "../common-types";
+import { TooManyNodesError } from "../errors";
 
 /**
  * An FA builder has the responsibility of constructing a finite automata.
@@ -52,8 +53,8 @@ export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
  */
 export function intersection<S, L, R>(
 	builder: FABuilder<S, CharSet>,
-	left: FAIterator<L, ReadonlyMap<L, CharSet>>,
-	right: FAIterator<R, ReadonlyMap<R, CharSet>>,
+	left: TransitionIterator<L>,
+	right: TransitionIterator<R>,
 	options: undefined | Readonly<IntersectionOptions>
 ): FAIterator<S, S> {
 	left = ensureDeterministicOut(left);
@@ -86,9 +87,7 @@ export function intersection<S, L, R>(
 
 		let node = indexTranslatorCache[key];
 		if (node === undefined) {
-			if (createdNodes > maxNodes) {
-				throw new TooManyNodesError();
-			}
+			TooManyNodesError.assert(createdNodes, maxNodes, "intersection operation");
 			createdNodes++;
 
 			node = builder.createNode(createdNodes);

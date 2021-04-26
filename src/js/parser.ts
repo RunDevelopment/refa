@@ -30,7 +30,7 @@ import { createAssertion } from "./create-assertion";
 import { createCharSet } from "./create-char-set";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./util";
 import { Literal } from "./literal";
-import { TooManyNodesError } from "../finite-automaton";
+import { TooManyNodesError } from "../errors";
 import { MatchingDirection, isPotentiallyEmpty } from "../ast-analysis";
 import {
 	backreferenceAlwaysAfterGroup,
@@ -968,9 +968,7 @@ class NodeCreator {
 	}
 
 	private _checkLimit(): void {
-		if (++this._nodeCounter > this._nodeLimit) {
-			throw new TooManyNodesError(`The parser is not allowed to create more than ${this._nodeLimit} nodes.`);
-		}
+		TooManyNodesError.assert(++this._nodeCounter, this._nodeLimit, "JS.Parser");
 	}
 
 	newAlt(source: Readonly<SourceLocation>): NoParent<Alternation> {

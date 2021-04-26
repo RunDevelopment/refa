@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { literalToNFA, literalToString, nfaEqual } from "../helper/fa";
 import { Literal, toLiteral } from "../../src/js";
 import { NFA } from "../../src/nfa";
-import { ToRegexOptions } from "../../src/finite-automaton";
+import { ToRegexOptions } from "../../src/common-types";
 
 describe("toRegex", function () {
 	describe("Literals", function () {

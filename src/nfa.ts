@@ -6,13 +6,13 @@ import {
 	FiniteAutomaton,
 	IntersectionOptions,
 	ToRegexOptions,
-	TooManyNodesError,
 	TransitionIterable,
-	TransitionIterableFA,
-} from "./finite-automaton";
+	TransitionIterator,
+} from "./common-types";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./core-types";
+import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 /*
  * ####################################################################################################################
@@ -31,12 +31,11 @@ import { Char, ReadonlyWord, Word } from "./core-types";
 
 const DEFAULT_MAX_NODES = 10_000;
 
-export interface ReadonlyNFA extends TransitionIterableFA {
+export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.ReadonlyNode> {
 	readonly nodes: NFA.ReadonlyNodeList;
 	readonly options: Readonly<NFA.Options>;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
-	transitionIterator(): FAIterator<NFA.ReadonlyNode, ReadonlyMap<NFA.ReadonlyNode, CharSet>>;
 
 	/**
 	 * Create a mutable copy of this NFA.
@@ -79,7 +78,7 @@ export class NFA implements ReadonlyNFA {
 			isFinal: n => finals.has(n),
 		};
 	}
-	transitionIterator(): FAIterator<NFA.ReadonlyNode, ReadonlyMap<NFA.ReadonlyNode, CharSet>> {
+	transitionIterator(): TransitionIterator<NFA.ReadonlyNode> {
 		const initial: NFA.ReadonlyNode = this.nodes.initial;
 		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
 		return {
@@ -141,53 +140,17 @@ export class NFA implements ReadonlyNFA {
 		);
 	}
 
-	isDisjointWith(other: TransitionIterable, options?: Readonly<IntersectionOptions>): boolean {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
-	}
-	intersectionWordSets(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<CharSet[]> {
-		checkCompatibility(this, other);
-
-		const iter = Iter.intersection(
-			new Iter.TransitionMapBuilder(),
-			this.transitionIterator(),
-			other.transitionIterator(),
-			options
-		);
-
-		return Iter.iterateWordSets(iter);
-	}
-	intersectionWords(other: TransitionIterable, options?: Readonly<IntersectionOptions>): Iterable<Word> {
-		return wordSetsToWords(this.intersectionWordSets(other, options));
-	}
-
-	private _localCopy(other: TransitionIterable): SubList {
-		if (other instanceof NFA) {
-			return localCopy(this.nodes, other.nodes);
-		} else {
-			return localCopyOfIterator(this.nodes, other.transitionIterator());
-		}
-	}
-
 	/**
 	 * Modifies this NFA to accept all words from this NFA and the given FA.
 	 *
 	 * @param other
 	 */
-	union(other: TransitionIterable): void {
-		if (other === this) {
+	union<O>(other: TransitionIterable<O>): void {
+		if (this === (other as unknown)) {
 			// do nothing
 		} else {
-			checkCompatibility(this, other);
-			baseUnion(this.nodes, this.nodes, this._localCopy(other));
+			MaxCharacterError.assert(this, other);
+			baseUnion(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
 		}
 	}
 
@@ -196,12 +159,12 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param other
 	 */
-	append(other: TransitionIterable): void {
-		if (this === other) {
+	append<O>(other: TransitionIterable<O>): void {
+		if (this === (other as unknown)) {
 			this.quantify(2, 2);
 		} else {
-			checkCompatibility(this, other);
-			baseAppend(this.nodes, this.nodes, this._localCopy(other));
+			MaxCharacterError.assert(this, other);
+			baseAppend(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
 		}
 	}
 
@@ -210,12 +173,12 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param other
 	 */
-	prepend(other: TransitionIterable): void {
-		if (this === other) {
+	prepend<O>(other: TransitionIterable<O>): void {
+		if (this === (other as unknown)) {
 			this.quantify(2, 2);
 		} else {
-			checkCompatibility(this, other);
-			basePrepend(this.nodes, this.nodes, this._localCopy(other));
+			MaxCharacterError.assert(this, other);
+			basePrepend(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
 		}
 	}
 
@@ -321,12 +284,12 @@ export class NFA implements ReadonlyNFA {
 	 * @param right
 	 * @param options
 	 */
-	static fromIntersection(
-		left: TransitionIterable,
-		right: TransitionIterable,
+	static fromIntersection<L, R>(
+		left: TransitionIterable<L>,
+		right: TransitionIterable<R>,
 		options?: Readonly<IntersectionOptions & NFA.CreationOptions>
 	): NFA {
-		checkCompatibility(left, right);
+		MaxCharacterError.assert(left, right, "TransitionIterable");
 
 		const nodeList = NFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
@@ -459,12 +422,12 @@ export class NFA implements ReadonlyNFA {
 		return new NFA(nodeList, maxCharacter);
 	}
 
-	static fromFA(fa: TransitionIterable, creationOptions?: Readonly<NFA.CreationOptions>): NFA {
-		return NFA.fromTransitionIterator(fa.transitionIterator(), { maxCharacter: fa.maxCharacter }, creationOptions);
+	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<NFA.CreationOptions>): NFA {
+		return NFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
 	}
 
 	static fromTransitionIterator<InputNode>(
-		iter: FAIterator<InputNode, ReadonlyMap<InputNode, CharSet>>,
+		iter: TransitionIterator<InputNode>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
@@ -571,9 +534,7 @@ export namespace NFA {
 		 */
 		createNode(): Node {
 			const id = this._nodeCounter++;
-			if (id > this._nodeLimit) {
-				throw new TooManyNodesError(`The NFA is not allowed to create more than ${this._nodeLimit} nodes.`);
-			}
+			TooManyNodesError.assert(id, this._nodeLimit, "NFA");
 
 			const node: Node & { id: number } = {
 				id, // for debugging
@@ -944,12 +905,6 @@ function createNodeList(
 	});
 }
 
-function checkCompatibility(a: FiniteAutomaton | TransitionIterable, b: FiniteAutomaton | TransitionIterable): void {
-	if (a.maxCharacter !== b.maxCharacter) {
-		throw new RangeError("Both NFAs have to have the same max character.");
-	}
-}
-
 /**
  * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
  *
@@ -963,7 +918,7 @@ function localCopy(nodeList: NFA.NodeList, toCopy: ReadonlySubList): SubList {
 		isFinal: n => toCopy.finals.has(n),
 	});
 }
-function localCopyOfIterator<T>(nodeList: NFA.NodeList, iter: FAIterator<T, ReadonlyMap<T, CharSet>>): SubList {
+function localCopyOfIterator<T>(nodeList: NFA.NodeList, iter: TransitionIterator<T>): SubList {
 	const initial = nodeList.createNode();
 	const finals = new Set<NFA.Node>();
 

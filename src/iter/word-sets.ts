@@ -1,5 +1,5 @@
 import { CharSet } from "../char-set";
-import { FAIterator } from "../finite-automaton";
+import { FAIterator } from "../common-types";
 import { cachedFunc } from "../util";
 
 /**
