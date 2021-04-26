@@ -67,7 +67,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="transitioniterablefa.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterableFA</a>
+						<a href="finiteautomaton.html" class="tsd-signature-type" data-tsd-kind="Interface">FiniteAutomaton</a>
+					</li>
+					<li>
+						<a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span>
 						<ul class="tsd-hierarchy">
 							<li>
 								<span class="target">ReadonlyENFA</span>
@@ -94,21 +97,18 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#maxcharacter" class="tsd-kind-icon">max<wbr>Character</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="readonlyenfa.html#nodes" class="tsd-kind-icon">nodes</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="readonlyenfa.html#options" class="tsd-kind-icon">options</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#transitioniterator" class="tsd-kind-icon">transition<wbr>Iterator</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlyenfa.html#copy" class="tsd-kind-icon">copy</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#intersectionwordsets" class="tsd-kind-icon">intersection<wbr>Word<wbr>Sets</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#intersectionwords" class="tsd-kind-icon">intersection<wbr>Words</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#isdisjointwith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlyenfa.html#stateiterator" class="tsd-kind-icon">state<wbr>Iterator</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#test" class="tsd-kind-icon">test</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#todot" class="tsd-kind-icon">to<wbr>Dot</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#toregex" class="tsd-kind-icon">to<wbr>Regex</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#tostring" class="tsd-kind-icon">to<wbr>String</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-overwrite"><a href="readonlyenfa.html#transitioniterator" class="tsd-kind-icon">transition<wbr>Iterator</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#wordsets" class="tsd-kind-icon">word<wbr>Sets</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="readonlyenfa.html#words" class="tsd-kind-icon">words</a></li>
 							</ul>
@@ -123,7 +123,7 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> is<wbr>Empty</h3>
 					<div class="tsd-signature tsd-kind-icon">is<wbr>Empty<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#isempty">isEmpty</a></p>
+						<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#isempty">isEmpty</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -136,7 +136,7 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> is<wbr>Finite</h3>
 					<div class="tsd-signature tsd-kind-icon">is<wbr>Finite<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#isfinite">isFinite</a></p>
+						<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#isfinite">isFinite</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -151,7 +151,7 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> max<wbr>Character</h3>
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Character<span class="tsd-signature-symbol">:</span> <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#maxcharacter">maxCharacter</a></p>
+						<p>Inherited from <a href="transitioniterable.html">TransitionIterable</a>.<a href="transitioniterable.html#maxcharacter">maxCharacter</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -173,6 +173,29 @@
 					<aside class="tsd-sources">
 					</aside>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="transitioniterator" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> transition<wbr>Iterator</h3>
+					<div class="tsd-signature tsd-kind-icon">transition<wbr>Iterator<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="transitioniterable.html">TransitionIterable</a>.<a href="transitioniterable.html#transitioniterator">transitionIterator</a></p>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-interface">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-returns-title">Returns <a href="../modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
@@ -192,98 +215,6 @@
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/enfa.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-					<a name="intersectionwordsets" class="tsd-anchor"></a>
-					<h3>intersection<wbr>Word<wbr>Sets</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">intersection<wbr>Word<wbr>Sets<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#intersectionwordsets">intersectionWordSets</a></p>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>This is equivalent to <code>NFA.fromIntersection(this, other).wordSets()</code> but implemented more efficiently.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>other: <a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-					<a name="intersectionwords" class="tsd-anchor"></a>
-					<h3>intersection<wbr>Words</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">intersection<wbr>Words<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#intersectionwords">intersectionWords</a></p>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>This is equivalent to <code>NFA.fromIntersection(this, other).words()</code> but implemented more efficiently.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>other: <a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-					<a name="isdisjointwith" class="tsd-anchor"></a>
-					<h3>is<wbr>Disjoint<wbr>With</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Disjoint<wbr>With<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#isdisjointwith">isDisjointWith</a></p>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Returns whether the languages of this and the other FA are disjoint.</p>
-								</div>
-								<p>The runtime of this algorithm is <code>O(n * m)</code> (n = number of states of this NFA, m = number of states of the other
-								FA) but it&#39;s a lot faster in practice with the worst case being very rare.</p>
-								<p>Since this uses the intersection operation, you can supply intersection options.</p>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>other: <a href="transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -316,7 +247,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#test">test</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#test">test</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -345,7 +276,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#todot">toDot</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#todot">toDot</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -396,7 +327,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#toregex">toRegex</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#toregex">toRegex</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -424,7 +355,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#tostring">toString</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#tostring">toString</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -432,20 +363,6 @@
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-overwrite">
-					<a name="transitioniterator" class="tsd-anchor"></a>
-					<h3>transition<wbr>Iterator</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">transition<wbr>Iterator<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ReadonlyMap</span><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ReadonlyMap</span><span class="tsd-signature-symbol">&lt;</span><a href="enfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -458,7 +375,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#wordsets">wordSets</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#wordsets">wordSets</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -482,7 +399,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="transitioniterablefa.html">TransitionIterableFA</a>.<a href="transitioniterablefa.html#words">words</a></p>
+								<p>Inherited from <a href="finiteautomaton.html">FiniteAutomaton</a>.<a href="finiteautomaton.html#words">words</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
@@ -526,17 +443,11 @@
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="readonlyenfa.html#options" class="tsd-kind-icon">options</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="readonlyenfa.html#transitioniterator" class="tsd-kind-icon">transition<wbr>Iterator</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="readonlyenfa.html#copy" class="tsd-kind-icon">copy</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-								<a href="readonlyenfa.html#intersectionwordsets" class="tsd-kind-icon">intersection<wbr>Word<wbr>Sets</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-								<a href="readonlyenfa.html#intersectionwords" class="tsd-kind-icon">intersection<wbr>Words</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-								<a href="readonlyenfa.html#isdisjointwith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="readonlyenfa.html#stateiterator" class="tsd-kind-icon">state<wbr>Iterator</a>
@@ -552,9 +463,6 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
 								<a href="readonlyenfa.html#tostring" class="tsd-kind-icon">to<wbr>String</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-overwrite">
-								<a href="readonlyenfa.html#transitioniterator" class="tsd-kind-icon">transition<wbr>Iterator</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
 								<a href="readonlyenfa.html#wordsets" class="tsd-kind-icon">word<wbr>Sets</a>
