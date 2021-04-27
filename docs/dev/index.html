@@ -69,7 +69,7 @@
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
-				<p>Get refa from NPM:</p>
+				<p>Get <a href="https://www.npmjs.com/package/refa">refa from NPM</a>:</p>
 				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">i</span><span style="color: #000000"> --</span><span style="color: #001080">save</span><span style="color: #000000"> </span><span style="color: #001080">refa</span>
 </code></pre>
 				<p>or</p>
@@ -81,18 +81,18 @@
 				<ul>
 					<li><p>Conversions</p>
 						<ul>
-							<li>RE to NFA (<em>assertions are not implemented yet</em>)</li>
-							<li>NFA to DFA and DFA to NFA</li>
-							<li>NFA to RE and DFA to RE</li>
+							<li>RE AST to NFA and ENFA (<em>assertions are not implemented yet</em>)</li>
+							<li>DFA, NFA, and ENFA can all be converted into each other</li>
+							<li>DFA, NFA, and ENFA to RE AST</li>
 						</ul>
 					</li>
-					<li><p>DFA and NFA operations</p>
+					<li><p>DFA, NFA, and ENFA operations</p>
 						<ul>
 							<li>Construction from other FA, the intersection of two FA, or a finite set of words</li>
-							<li>Print internal representation in a human-readable form</li>
+							<li>Print graph in <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT</a> format or a human-readable form</li>
 							<li>Test whether a word is accepted</li>
-							<li>Test whether the language of an FA is the empty set/a finite set</li>
-							<li>Accept all prefixes of a language</li>
+							<li>Test whether the accepted language is the empty set/a finite set</li>
+							<li>Accept all prefixes/suffixes of a language</li>
 						</ul>
 					</li>
 					<li><p>DFA specific operations</p>
@@ -102,17 +102,16 @@
 							<li>Structural equality</li>
 						</ul>
 					</li>
-					<li><p>NFA specific operations</p>
+					<li><p>NFA and ENFA specific operations</p>
 						<ul>
 							<li>Union and Concatenation with other FA</li>
 							<li>Quantification</li>
 							<li>Reverse</li>
-							<li>Accept all suffixes of a language</li>
 						</ul>
 					</li>
 					<li><p>JavaScript RegExp</p>
 						<ul>
-							<li>RegExp to RE and RE to RegExp<ul>
+							<li>RegExp to RE AST and RE AST to RegExp<ul>
 									<li>All flags are fully supported</li>
 									<li>Unicode properties</li>
 									<li>Change flags</li>
@@ -134,20 +133,17 @@
 					<li>Quantifiers (greedy and lazy) (e.g. <code>a{4,6}</code>, <code>a{2,}?</code>, <code>a?</code>, <code>a*</code>)</li>
 					<li>Assertions (e.g. <code>(?=a)</code>, <code>(?&lt;!a)</code>)</li>
 					<li>Characters/character sets (represented by interval sets)</li>
-					<li>Unknowns</li>
+					<li>Unknowns (elements that cannot be represented otherwise. E.g. backreferences)</li>
 				</ul>
 				<p>Some features like atomic groups and capturing groups are not supported (but might be added in the future).</p>
-				<a href="#converting-to-and-from-the-re-ast-format" id="converting-to-and-from-the-re-ast-format" style="color: inherit; text-decoration: none;">
-					<h4>Converting to and from the RE AST format</h4>
-				</a>
-				<p>JavaScript RegExp can be converted to the RE AST format by using <code>JS.Parser</code>. <code>JS.toLiteral</code> converts into the other direction. (Note that the conversion from JS RegExp to the RE AST format is lossy (capturing groups) and sometime impossible due to the limitations of the RE AST format.)</p>
-				<p>Converters for other regex dialects might be added in the future as separate packages.</p>
+				<p>For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules/js.html"><code>JS</code> namespace</a>.</p>
 				<a href="#universal-characters" id="universal-characters" style="color: inherit; text-decoration: none;">
 					<h3>Universal characters</h3>
 				</a>
-				<p>refa does not use JavaScript string represent characters or a sequence of characters. Instead it uses integers to represent characters (see the <code>Char</code> type) and arrays of numbers to represent words/strings (see the <code>Word</code> type).</p>
+				<p>refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#char"><code>Char</code> type</a>) and arrays of numbers to represent words/strings (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#word"><code>Word</code> type</a>).</p>
 				<p>This means that any text encoding can be used.</p>
-				<p>The <code>Words</code> namespace contains functions to convert JavaScript data into refa-compatible words and characters.</p>
+				<p>The <a href="https://rundevelopment.github.io/refa/docs/latest/modules/words.html"><code>Words</code> namespace</a> contains functions to convert JavaScript data into refa-compatible words and characters.</p>
+				<p>For the sets of characters, the <a href="https://rundevelopment.github.io/refa/docs/latest/classes/charset.html"><code>CharSet</code> class</a> is used.</p>
 				<a href="#general-limitations" id="general-limitations" style="color: inherit; text-decoration: none;">
 					<h3>General limitations</h3>
 				</a>

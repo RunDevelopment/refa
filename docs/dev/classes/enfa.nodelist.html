@@ -396,7 +396,7 @@
 									<p>Calls the given consumer function on every non-epsilon transition directly reachable from the given node.</p>
 								</div>
 								<p>Epsilon transitions will be resolved using a DFS algorithm. This means that for the following graph:</p>
-								<pre><code class="language-txt">(0) -&gt; (1) : &quot;a&quot;
+								<pre><code class="language-text">(0) -&gt; (1) : &quot;a&quot;
     -&gt; (2) : epsilon
     -&gt; (3) : &quot;b&quot;
 
@@ -411,7 +411,7 @@
 (4) -&gt; empty
 </code></pre>
 								<p>The node <code>(0)</code> will return the resolved list:</p>
-								<pre><code class="language-txt">[(1), &quot;a&quot;]
+								<pre><code class="language-text">[(1), &quot;a&quot;]
 [(4), &quot;d&quot;]
 [(1), &quot;e&quot;]
 [(3), &quot;b&quot;]
