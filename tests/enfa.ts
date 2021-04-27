@@ -1,5 +1,4 @@
 import { ENFA } from "../src/enfa";
-import { NFA } from "../src/nfa";
 import { assert } from "chai";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { literalToENFA, literalToString, removeIndentation } from "./helper/fa";
@@ -9,7 +8,6 @@ import { prefixes, suffixes } from "./helper/util";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
 import { assertEqualSnapshot } from "./helper/snapshot";
-import { intersectionWordSets } from "../src/intersection";
 
 describe("ENFA", function () {
 	describe("fromRegex", function () {
@@ -1075,79 +1073,6 @@ describe("ENFA", function () {
 						assertEqualSnapshot(this, enfa.toString());
 					} else {
 						assert.throws(() => enfa.quantify(min, max, lazy));
-					}
-				});
-			}
-		}
-	});
-
-	describe("intersectionWordSets", function () {
-		test([
-			{
-				left: /a/,
-				right: /b/,
-			},
-			{
-				left: /a*/,
-				right: /a/,
-			},
-			{
-				left: /b*(ab+)*a/,
-				right: /a*(ba+)*/,
-			},
-			{
-				left: /a+/,
-				right: /(?:a+){2,}/,
-			},
-			{
-				left: /(?:[^>"'[\]]|"[^"]*"|'[^']*')/,
-				right: /(?:[^>"'[\]]|"[^"]*"|'[^']*'){2,}/,
-			},
-		]);
-
-		interface TestCase {
-			left: Literal;
-			right: Literal;
-		}
-
-		function toArray<T>(iter: Iterable<T>, max: number = 100): T[] {
-			const array: T[] = [];
-			let i = 0;
-			for (const item of iter) {
-				if (i++ >= max) {
-					break;
-				}
-				array.push(item);
-			}
-			return array;
-		}
-
-		function test(cases: TestCase[]): void {
-			for (const { left, right } of cases) {
-				it(`${literalToString(left)} ∩ ${literalToString(right)}`, function () {
-					const enfaLeft = literalToENFA(left);
-					const enfaRight = literalToENFA(right);
-
-					const intersect = NFA.fromIntersection(enfaLeft, enfaRight);
-
-					const expected = toArray(intersect.wordSets());
-					const actual = toArray(intersectionWordSets(enfaLeft, enfaRight));
-
-					assert.strictEqual(actual.length, expected.length, "Number of word sets");
-					for (let i = 0; i < actual.length; i++) {
-						const actualWordSet = actual[i];
-						const expectedWordSet = expected[i];
-						assert.strictEqual(
-							actualWordSet.length,
-							expectedWordSet.length,
-							`Number of characters of word set ${i}.`
-						);
-
-						for (let j = 0; j < actualWordSet.length; j++) {
-							const actualCharSet = actualWordSet[j];
-							const expectedCharSet = expectedWordSet[j];
-							assert.isTrue(actualCharSet.equals(expectedCharSet), "Char sets");
-						}
 					}
 				});
 			}
