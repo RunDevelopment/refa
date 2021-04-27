@@ -128,8 +128,8 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function"><a href="modules.html#combinetransformers" class="tsd-kind-icon">combine<wbr>Transformers</a></li>
-								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#intersectionwordsets" class="tsd-kind-icon">intersection<wbr>Word<wbr>Sets</a></li>
-								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#intersectionwords" class="tsd-kind-icon">intersection<wbr>Words</a></li>
+								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#getintersectionwordsets" class="tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets</a></li>
+								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#getintersectionwords" class="tsd-kind-icon">get<wbr>Intersection<wbr>Words</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#isdisjointwith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#setparent" class="tsd-kind-icon">set<wbr>Parent</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#setsource" class="tsd-kind-icon">set<wbr>Source</a></li>
@@ -284,10 +284,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter">
-					<a name="intersectionwordsets" class="tsd-anchor"></a>
-					<h3>intersection<wbr>Word<wbr>Sets</h3>
+					<a name="getintersectionwordsets" class="tsd-anchor"></a>
+					<h3>get<wbr>Intersection<wbr>Word<wbr>Sets</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -301,8 +301,6 @@
 								<ol>
 									<li>Word sets are guaranteed to be yielded in the order of increasing length. (Word sets of equal lengths may be
 									yielded in any order.)</li>
-									<li>Word sets are guaranteed to be disjoint. (There are no two yielded word sets A and B such that a word in A is also
-									a word in B.)</li>
 									<li>No character set of the yielded word sets is empty.</li>
 								</ol>
 								<p>This is roughly equivalent to <code>NFA.fromIntersection(left, right).wordSets()</code> but implemented more efficiently.</p>
@@ -333,10 +331,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter">
-					<a name="intersectionwords" class="tsd-anchor"></a>
-					<h3>intersection<wbr>Words</h3>
+					<a name="getintersectionwords" class="tsd-anchor"></a>
+					<h3>get<wbr>Intersection<wbr>Words</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">intersection<wbr>Words&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Words&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -350,7 +348,6 @@
 								<ol>
 									<li>Words are guaranteed to be yielded in the order of increasing length. (Words of equal lengths may be yielded in
 									any order.)</li>
-									<li>Words are guaranteed to not be repeated.</li>
 								</ol>
 								<p>This is roughly equivalent to <code>NFA.fromIntersection(left, right).words()</code> but implemented more efficiently.</p>
 							</div>
@@ -728,10 +725,10 @@
 						<a href="modules.html#combinetransformers" class="tsd-kind-icon">combine<wbr>Transformers</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#intersectionwordsets" class="tsd-kind-icon">intersection<wbr>Word<wbr>Sets</a>
+						<a href="modules.html#getintersectionwordsets" class="tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#intersectionwords" class="tsd-kind-icon">intersection<wbr>Words</a>
+						<a href="modules.html#getintersectionwords" class="tsd-kind-icon">get<wbr>Intersection<wbr>Words</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="modules.html#isdisjointwith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a>
