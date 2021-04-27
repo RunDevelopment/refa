@@ -3,7 +3,11 @@ import { iterToArray } from "../util";
 import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
 export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDot.Options<S, T>): string {
-	const { getEdgeAttributes, getGraphAttributes, getNodeAttributes = DEFAULT_GET_NODE_ATTRIBUTES } = options;
+	const {
+		getEdgeAttributes,
+		getGraphAttributes = DEFAULT_GRAPH_ATTRIBUTES,
+		getNodeAttributes = DEFAULT_GET_NODE_ATTRIBUTES,
+	} = options;
 
 	const stableIter = ensureDeterministicOut(mapOut(iter, iterToArray));
 	const states: S[] = [...iterateStates(mapOutIter(stableIter, ([s]) => s))];
@@ -73,7 +77,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 
 	// graph attributes
 	s += "\t// graph attributes\n";
-	const graphAttrs = getGraphAttributes?.() || {};
+	const graphAttrs = getGraphAttributes() || {};
 	for (const key in graphAttrs) {
 		if (Object.prototype.hasOwnProperty.call(graphAttrs, key)) {
 			const value = graphAttrs[key];
@@ -98,6 +102,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 
 	// nodes
 	s += "\n\t// nodes\n";
+	s += "\tnull [shape=point];\n";
 	states.forEach((node, i) => {
 		s += "\t";
 		writeNodeLabelFromIndex(i);
@@ -108,6 +113,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 
 	// edges
 	s += "\n\t// edges\n";
+	s += "\tnull -> n0;\n";
 	states.forEach((node, i) => {
 		stableIter.getOut(node).forEach(([to, trans], nth) => {
 			s += "\t";
@@ -162,7 +168,11 @@ export namespace toDot {
 
 const DEFAULT_GET_NODE_ATTRIBUTES: NonNullable<toDot.Options<unknown, never>["getNodeAttributes"]> = (node, info) => {
 	return {
-		label: info.isInitial(node) ? "X" : String(info.getId(node)),
-		peripheries: info.isFinal(node) ? 2 : undefined,
+		label: String(info.getId(node)),
+		shape: info.isFinal(node) ? "doublecircle" : "circle",
 	};
+};
+
+const DEFAULT_GRAPH_ATTRIBUTES: NonNullable<toDot.Options<unknown, never>["getGraphAttributes"]> = () => {
+	return { rankdir: "LR" };
 };

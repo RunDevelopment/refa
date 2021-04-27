@@ -3,12 +3,15 @@
 module.exports["toDot >> from regexes >> DFA (default): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 }
 `.slice(1, -1);
@@ -16,12 +19,15 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 }
 `.slice(1, -1);
@@ -29,12 +35,15 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 }
 `.slice(1, -1);
@@ -42,12 +51,15 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 }
 `.slice(1, -1);
@@ -55,12 +67,15 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 }
 `.slice(1, -1);
@@ -68,12 +83,15 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /a/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 }
 `.slice(1, -1);
@@ -81,14 +99,17 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="41, 61"];
 	n1 -> n2 [label="42, 62"];
 	n2 -> n3 [label="43, 63"];
@@ -98,14 +119,17 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="41, 61"];
 	n1 -> n2 [label="42, 62"];
 	n2 -> n3 [label="43, 63"];
@@ -115,14 +139,17 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="41, 61"];
 	n1 -> n2 [label="42, 62"];
 	n2 -> n3 [label="43, 63"];
@@ -132,14 +159,17 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="[Aa]"];
 	n1 -> n2 [label="[Bb]"];
 	n2 -> n3 [label="[Cc]"];
@@ -149,14 +179,17 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="[Aa]"];
 	n1 -> n2 [label="[Bb]"];
 	n2 -> n3 [label="[Cc]"];
@@ -166,14 +199,17 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /abc/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="[Aa]"];
 	n1 -> n2 [label="[Bb]"];
 	n2 -> n3 [label="[Cc]"];
@@ -183,13 +219,16 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
-	n2 [label="2", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
+	n2 [label="2", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n0 [label="61"];
 	n0 -> n1 [label="62"];
 	n1 -> n1 [label="62"];
@@ -201,20 +240,23 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8", peripheries=2];
-	n9 [label="9"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=doublecircle];
+	n9 [label="9", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="", taillabel="1"];
 	n0 -> n2 [label="", taillabel="2"];
 	n1 -> n3 [label="61"];
@@ -235,14 +277,17 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2", peripheries=2];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=doublecircle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 	n0 -> n2 [label="62"];
 	n1 -> n1 [label="61"];
@@ -256,13 +301,16 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1", peripheries=2];
-	n2 [label="2", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=doublecircle];
+	n2 [label="2", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n0 [label=a];
 	n0 -> n1 [label=b];
 	n1 -> n1 [label=b];
@@ -274,20 +322,23 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8", peripheries=2];
-	n9 [label="9"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=doublecircle];
+	n9 [label="9", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="", taillabel="1"];
 	n0 -> n2 [label="", taillabel="2"];
 	n1 -> n3 [label=a];
@@ -308,14 +359,17 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /a*b+c*/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2", peripheries=2];
-	n3 [label="3", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=doublecircle];
+	n3 [label="3", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 	n0 -> n2 [label=b];
 	n1 -> n1 [label=a];
@@ -329,17 +383,20 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="30..39"];
 	n1 -> n2 [label="2e"];
 	n1 -> n1 [label="30..39"];
@@ -357,25 +414,28 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=""];
 	n1 -> n2 [label="30..39"];
 	n2 -> n1 [label="", taillabel="1"];
@@ -401,17 +461,20 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="30..39"];
 	n1 -> n1 [label="30..39"];
 	n1 -> n2 [label="2e"];
@@ -429,17 +492,20 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="\\\\d"];
 	n1 -> n2 [label="\\\\."];
 	n1 -> n1 [label="\\\\d"];
@@ -457,25 +523,28 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=""];
 	n1 -> n2 [label="\\\\d"];
 	n2 -> n1 [label="", taillabel="1"];
@@ -501,17 +570,20 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="\\\\d"];
 	n1 -> n1 [label="\\\\d"];
 	n1 -> n2 [label="\\\\."];
@@ -529,15 +601,18 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="2f"];
 	n1 -> n2 [label="2a"];
 	n2 -> n2 [label="0..29, 2b..ffff"];
@@ -553,18 +628,21 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="2f"];
 	n1 -> n2 [label="2a"];
 	n2 -> n3 [label="", taillabel="1"];
@@ -580,16 +658,19 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="2f"];
 	n1 -> n2 [label="2a"];
 	n2 -> n3 [label="0..ffff"];
@@ -603,15 +684,18 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="\\\\/"];
 	n1 -> n2 [label="\\\\*"];
 	n2 -> n2 [label="[^*]"];
@@ -627,18 +711,21 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="\\\\/"];
 	n1 -> n2 [label="\\\\*"];
 	n2 -> n3 [label="", taillabel="1"];
@@ -654,16 +741,19 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="\\\\/"];
 	n1 -> n2 [label="\\\\*"];
 	n2 -> n3 [label="[^]"];
@@ -677,17 +767,20 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 	n1 -> n2 [label="62"];
 	n2 -> n3 [label="61"];
@@ -701,25 +794,28 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=""];
 	n1 -> n2 [label="61"];
 	n2 -> n3 [label="62"];
@@ -744,17 +840,20 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="61"];
 	n1 -> n2 [label="62"];
 	n2 -> n3 [label="61"];
@@ -768,17 +867,20 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 	n1 -> n2 [label=b];
 	n2 -> n3 [label=a];
@@ -792,25 +894,28 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=""];
 	n1 -> n2 [label=a];
 	n2 -> n3 [label=b];
@@ -835,17 +940,20 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /((ab)+){3,}/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label=a];
 	n1 -> n2 [label=b];
 	n2 -> n3 [label=a];
@@ -859,165 +967,168 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18"];
-	n19 [label="19"];
-	n20 [label="20", peripheries=2];
-	n21 [label="21"];
-	n22 [label="22"];
-	n23 [label="23"];
-	n24 [label="24"];
-	n25 [label="25"];
-	n26 [label="26"];
-	n27 [label="27"];
-	n28 [label="28"];
-	n29 [label="29"];
-	n30 [label="30"];
-	n31 [label="31"];
-	n32 [label="32"];
-	n33 [label="33"];
-	n34 [label="34"];
-	n35 [label="35"];
-	n36 [label="36", peripheries=2];
-	n37 [label="37"];
-	n38 [label="38"];
-	n39 [label="39"];
-	n40 [label="40"];
-	n41 [label="41"];
-	n42 [label="42"];
-	n43 [label="43"];
-	n44 [label="44"];
-	n45 [label="45", peripheries=2];
-	n46 [label="46"];
-	n47 [label="47"];
-	n48 [label="48"];
-	n49 [label="49"];
-	n50 [label="50", peripheries=2];
-	n51 [label="51"];
-	n52 [label="52"];
-	n53 [label="53"];
-	n54 [label="54"];
-	n55 [label="55"];
-	n56 [label="56"];
-	n57 [label="57"];
-	n58 [label="58"];
-	n59 [label="59"];
-	n60 [label="60"];
-	n61 [label="61"];
-	n62 [label="62"];
-	n63 [label="63", peripheries=2];
-	n64 [label="64"];
-	n65 [label="65"];
-	n66 [label="66"];
-	n67 [label="67"];
-	n68 [label="68"];
-	n69 [label="69"];
-	n70 [label="70"];
-	n71 [label="71", peripheries=2];
-	n72 [label="72"];
-	n73 [label="73"];
-	n74 [label="74"];
-	n75 [label="75"];
-	n76 [label="76"];
-	n77 [label="77"];
-	n78 [label="78", peripheries=2];
-	n79 [label="79"];
-	n80 [label="80"];
-	n81 [label="81"];
-	n82 [label="82"];
-	n83 [label="83"];
-	n84 [label="84"];
-	n85 [label="85"];
-	n86 [label="86", peripheries=2];
-	n87 [label="87"];
-	n88 [label="88"];
-	n89 [label="89"];
-	n90 [label="90"];
-	n91 [label="91", peripheries=2];
-	n92 [label="92"];
-	n93 [label="93"];
-	n94 [label="94"];
-	n95 [label="95"];
-	n96 [label="96"];
-	n97 [label="97"];
-	n98 [label="98"];
-	n99 [label="99"];
-	n100 [label="100", peripheries=2];
-	n101 [label="101"];
-	n102 [label="102"];
-	n103 [label="103"];
-	n104 [label="104"];
-	n105 [label="105"];
-	n106 [label="106"];
-	n107 [label="107"];
-	n108 [label="108"];
-	n109 [label="109"];
-	n110 [label="110"];
-	n111 [label="111"];
-	n112 [label="112"];
-	n113 [label="113", peripheries=2];
-	n114 [label="114"];
-	n115 [label="115"];
-	n116 [label="116"];
-	n117 [label="117"];
-	n118 [label="118"];
-	n119 [label="119"];
-	n120 [label="120"];
-	n121 [label="121", peripheries=2];
-	n122 [label="122"];
-	n123 [label="123"];
-	n124 [label="124"];
-	n125 [label="125"];
-	n126 [label="126"];
-	n127 [label="127"];
-	n128 [label="128"];
-	n129 [label="129"];
-	n130 [label="130"];
-	n131 [label="131"];
-	n132 [label="132"];
-	n133 [label="133"];
-	n134 [label="134", peripheries=2];
-	n135 [label="135"];
-	n136 [label="136"];
-	n137 [label="137"];
-	n138 [label="138"];
-	n139 [label="139", peripheries=2];
-	n140 [label="140"];
-	n141 [label="141"];
-	n142 [label="142"];
-	n143 [label="143"];
-	n144 [label="144"];
-	n145 [label="145"];
-	n146 [label="146"];
-	n147 [label="147"];
-	n148 [label="148"];
-	n149 [label="149", peripheries=2];
-	n150 [label="150"];
-	n151 [label="151"];
-	n152 [label="152"];
-	n153 [label="153"];
-	n154 [label="154"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=circle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=doublecircle];
+	n21 [label="21", shape=circle];
+	n22 [label="22", shape=circle];
+	n23 [label="23", shape=circle];
+	n24 [label="24", shape=circle];
+	n25 [label="25", shape=circle];
+	n26 [label="26", shape=circle];
+	n27 [label="27", shape=circle];
+	n28 [label="28", shape=circle];
+	n29 [label="29", shape=circle];
+	n30 [label="30", shape=circle];
+	n31 [label="31", shape=circle];
+	n32 [label="32", shape=circle];
+	n33 [label="33", shape=circle];
+	n34 [label="34", shape=circle];
+	n35 [label="35", shape=circle];
+	n36 [label="36", shape=doublecircle];
+	n37 [label="37", shape=circle];
+	n38 [label="38", shape=circle];
+	n39 [label="39", shape=circle];
+	n40 [label="40", shape=circle];
+	n41 [label="41", shape=circle];
+	n42 [label="42", shape=circle];
+	n43 [label="43", shape=circle];
+	n44 [label="44", shape=circle];
+	n45 [label="45", shape=doublecircle];
+	n46 [label="46", shape=circle];
+	n47 [label="47", shape=circle];
+	n48 [label="48", shape=circle];
+	n49 [label="49", shape=circle];
+	n50 [label="50", shape=doublecircle];
+	n51 [label="51", shape=circle];
+	n52 [label="52", shape=circle];
+	n53 [label="53", shape=circle];
+	n54 [label="54", shape=circle];
+	n55 [label="55", shape=circle];
+	n56 [label="56", shape=circle];
+	n57 [label="57", shape=circle];
+	n58 [label="58", shape=circle];
+	n59 [label="59", shape=circle];
+	n60 [label="60", shape=circle];
+	n61 [label="61", shape=circle];
+	n62 [label="62", shape=circle];
+	n63 [label="63", shape=doublecircle];
+	n64 [label="64", shape=circle];
+	n65 [label="65", shape=circle];
+	n66 [label="66", shape=circle];
+	n67 [label="67", shape=circle];
+	n68 [label="68", shape=circle];
+	n69 [label="69", shape=circle];
+	n70 [label="70", shape=circle];
+	n71 [label="71", shape=doublecircle];
+	n72 [label="72", shape=circle];
+	n73 [label="73", shape=circle];
+	n74 [label="74", shape=circle];
+	n75 [label="75", shape=circle];
+	n76 [label="76", shape=circle];
+	n77 [label="77", shape=circle];
+	n78 [label="78", shape=doublecircle];
+	n79 [label="79", shape=circle];
+	n80 [label="80", shape=circle];
+	n81 [label="81", shape=circle];
+	n82 [label="82", shape=circle];
+	n83 [label="83", shape=circle];
+	n84 [label="84", shape=circle];
+	n85 [label="85", shape=circle];
+	n86 [label="86", shape=doublecircle];
+	n87 [label="87", shape=circle];
+	n88 [label="88", shape=circle];
+	n89 [label="89", shape=circle];
+	n90 [label="90", shape=circle];
+	n91 [label="91", shape=doublecircle];
+	n92 [label="92", shape=circle];
+	n93 [label="93", shape=circle];
+	n94 [label="94", shape=circle];
+	n95 [label="95", shape=circle];
+	n96 [label="96", shape=circle];
+	n97 [label="97", shape=circle];
+	n98 [label="98", shape=circle];
+	n99 [label="99", shape=circle];
+	n100 [label="100", shape=doublecircle];
+	n101 [label="101", shape=circle];
+	n102 [label="102", shape=circle];
+	n103 [label="103", shape=circle];
+	n104 [label="104", shape=circle];
+	n105 [label="105", shape=circle];
+	n106 [label="106", shape=circle];
+	n107 [label="107", shape=circle];
+	n108 [label="108", shape=circle];
+	n109 [label="109", shape=circle];
+	n110 [label="110", shape=circle];
+	n111 [label="111", shape=circle];
+	n112 [label="112", shape=circle];
+	n113 [label="113", shape=doublecircle];
+	n114 [label="114", shape=circle];
+	n115 [label="115", shape=circle];
+	n116 [label="116", shape=circle];
+	n117 [label="117", shape=circle];
+	n118 [label="118", shape=circle];
+	n119 [label="119", shape=circle];
+	n120 [label="120", shape=circle];
+	n121 [label="121", shape=doublecircle];
+	n122 [label="122", shape=circle];
+	n123 [label="123", shape=circle];
+	n124 [label="124", shape=circle];
+	n125 [label="125", shape=circle];
+	n126 [label="126", shape=circle];
+	n127 [label="127", shape=circle];
+	n128 [label="128", shape=circle];
+	n129 [label="129", shape=circle];
+	n130 [label="130", shape=circle];
+	n131 [label="131", shape=circle];
+	n132 [label="132", shape=circle];
+	n133 [label="133", shape=circle];
+	n134 [label="134", shape=doublecircle];
+	n135 [label="135", shape=circle];
+	n136 [label="136", shape=circle];
+	n137 [label="137", shape=circle];
+	n138 [label="138", shape=circle];
+	n139 [label="139", shape=doublecircle];
+	n140 [label="140", shape=circle];
+	n141 [label="141", shape=circle];
+	n142 [label="142", shape=circle];
+	n143 [label="143", shape=circle];
+	n144 [label="144", shape=circle];
+	n145 [label="145", shape=circle];
+	n146 [label="146", shape=circle];
+	n147 [label="147", shape=circle];
+	n148 [label="148", shape=circle];
+	n149 [label="149", shape=doublecircle];
+	n150 [label="150", shape=circle];
+	n151 [label="151", shape=circle];
+	n152 [label="152", shape=circle];
+	n153 [label="153", shape=circle];
+	n154 [label="154", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="3c"];
 	n1 -> n2 [label="0..8, e..1f, 21..23, 26..2e, 3a..3b, 3f..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff"];
 	n1 -> n3 [label="2f"];
@@ -1884,63 +1995,66 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18", peripheries=2];
-	n19 [label="19"];
-	n20 [label="20"];
-	n21 [label="21"];
-	n22 [label="22"];
-	n23 [label="23"];
-	n24 [label="24"];
-	n25 [label="25"];
-	n26 [label="26"];
-	n27 [label="27"];
-	n28 [label="28"];
-	n29 [label="29"];
-	n30 [label="30"];
-	n31 [label="31"];
-	n32 [label="32"];
-	n33 [label="33"];
-	n34 [label="34"];
-	n35 [label="35"];
-	n36 [label="36"];
-	n37 [label="37"];
-	n38 [label="38"];
-	n39 [label="39"];
-	n40 [label="40"];
-	n41 [label="41"];
-	n42 [label="42"];
-	n43 [label="43"];
-	n44 [label="44"];
-	n45 [label="45"];
-	n46 [label="46"];
-	n47 [label="47"];
-	n48 [label="48"];
-	n49 [label="49"];
-	n50 [label="50"];
-	n51 [label="51"];
-	n52 [label="52"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=doublecircle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=circle];
+	n21 [label="21", shape=circle];
+	n22 [label="22", shape=circle];
+	n23 [label="23", shape=circle];
+	n24 [label="24", shape=circle];
+	n25 [label="25", shape=circle];
+	n26 [label="26", shape=circle];
+	n27 [label="27", shape=circle];
+	n28 [label="28", shape=circle];
+	n29 [label="29", shape=circle];
+	n30 [label="30", shape=circle];
+	n31 [label="31", shape=circle];
+	n32 [label="32", shape=circle];
+	n33 [label="33", shape=circle];
+	n34 [label="34", shape=circle];
+	n35 [label="35", shape=circle];
+	n36 [label="36", shape=circle];
+	n37 [label="37", shape=circle];
+	n38 [label="38", shape=circle];
+	n39 [label="39", shape=circle];
+	n40 [label="40", shape=circle];
+	n41 [label="41", shape=circle];
+	n42 [label="42", shape=circle];
+	n43 [label="43", shape=circle];
+	n44 [label="44", shape=circle];
+	n45 [label="45", shape=circle];
+	n46 [label="46", shape=circle];
+	n47 [label="47", shape=circle];
+	n48 [label="48", shape=circle];
+	n49 [label="49", shape=circle];
+	n50 [label="50", shape=circle];
+	n51 [label="51", shape=circle];
+	n52 [label="52", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="3c"];
 	n1 -> n2 [label="2f", taillabel="1"];
 	n1 -> n3 [label="", taillabel="2"];
@@ -2023,32 +2137,35 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8", peripheries=2];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18"];
-	n19 [label="19"];
-	n20 [label="20"];
-	n21 [label="21"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=doublecircle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=circle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=circle];
+	n21 [label="21", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="3c"];
 	n1 -> n2 [label="2f"];
 	n1 -> n3 [label="0..8, e..1f, 21..23, 26..2e, 3a..3b, 3f..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff"];
@@ -2116,165 +2233,168 @@ digraph {
 module.exports["toDot >> from regexes >> DFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6", peripheries=2];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18"];
-	n19 [label="19"];
-	n20 [label="20", peripheries=2];
-	n21 [label="21"];
-	n22 [label="22"];
-	n23 [label="23"];
-	n24 [label="24"];
-	n25 [label="25"];
-	n26 [label="26"];
-	n27 [label="27"];
-	n28 [label="28"];
-	n29 [label="29"];
-	n30 [label="30"];
-	n31 [label="31"];
-	n32 [label="32"];
-	n33 [label="33"];
-	n34 [label="34"];
-	n35 [label="35"];
-	n36 [label="36", peripheries=2];
-	n37 [label="37"];
-	n38 [label="38"];
-	n39 [label="39"];
-	n40 [label="40"];
-	n41 [label="41"];
-	n42 [label="42"];
-	n43 [label="43"];
-	n44 [label="44"];
-	n45 [label="45", peripheries=2];
-	n46 [label="46"];
-	n47 [label="47"];
-	n48 [label="48"];
-	n49 [label="49"];
-	n50 [label="50", peripheries=2];
-	n51 [label="51"];
-	n52 [label="52"];
-	n53 [label="53"];
-	n54 [label="54"];
-	n55 [label="55"];
-	n56 [label="56"];
-	n57 [label="57"];
-	n58 [label="58"];
-	n59 [label="59"];
-	n60 [label="60"];
-	n61 [label="61"];
-	n62 [label="62"];
-	n63 [label="63", peripheries=2];
-	n64 [label="64"];
-	n65 [label="65"];
-	n66 [label="66"];
-	n67 [label="67"];
-	n68 [label="68"];
-	n69 [label="69"];
-	n70 [label="70"];
-	n71 [label="71", peripheries=2];
-	n72 [label="72"];
-	n73 [label="73"];
-	n74 [label="74"];
-	n75 [label="75"];
-	n76 [label="76"];
-	n77 [label="77"];
-	n78 [label="78", peripheries=2];
-	n79 [label="79"];
-	n80 [label="80"];
-	n81 [label="81"];
-	n82 [label="82"];
-	n83 [label="83"];
-	n84 [label="84"];
-	n85 [label="85"];
-	n86 [label="86", peripheries=2];
-	n87 [label="87"];
-	n88 [label="88"];
-	n89 [label="89"];
-	n90 [label="90"];
-	n91 [label="91", peripheries=2];
-	n92 [label="92"];
-	n93 [label="93"];
-	n94 [label="94"];
-	n95 [label="95"];
-	n96 [label="96"];
-	n97 [label="97"];
-	n98 [label="98"];
-	n99 [label="99"];
-	n100 [label="100", peripheries=2];
-	n101 [label="101"];
-	n102 [label="102"];
-	n103 [label="103"];
-	n104 [label="104"];
-	n105 [label="105"];
-	n106 [label="106"];
-	n107 [label="107"];
-	n108 [label="108"];
-	n109 [label="109"];
-	n110 [label="110"];
-	n111 [label="111"];
-	n112 [label="112"];
-	n113 [label="113", peripheries=2];
-	n114 [label="114"];
-	n115 [label="115"];
-	n116 [label="116"];
-	n117 [label="117"];
-	n118 [label="118"];
-	n119 [label="119"];
-	n120 [label="120"];
-	n121 [label="121", peripheries=2];
-	n122 [label="122"];
-	n123 [label="123"];
-	n124 [label="124"];
-	n125 [label="125"];
-	n126 [label="126"];
-	n127 [label="127"];
-	n128 [label="128"];
-	n129 [label="129"];
-	n130 [label="130"];
-	n131 [label="131"];
-	n132 [label="132"];
-	n133 [label="133"];
-	n134 [label="134", peripheries=2];
-	n135 [label="135"];
-	n136 [label="136"];
-	n137 [label="137"];
-	n138 [label="138"];
-	n139 [label="139", peripheries=2];
-	n140 [label="140"];
-	n141 [label="141"];
-	n142 [label="142"];
-	n143 [label="143"];
-	n144 [label="144"];
-	n145 [label="145"];
-	n146 [label="146"];
-	n147 [label="147"];
-	n148 [label="148"];
-	n149 [label="149", peripheries=2];
-	n150 [label="150"];
-	n151 [label="151"];
-	n152 [label="152"];
-	n153 [label="153"];
-	n154 [label="154"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=doublecircle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=circle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=doublecircle];
+	n21 [label="21", shape=circle];
+	n22 [label="22", shape=circle];
+	n23 [label="23", shape=circle];
+	n24 [label="24", shape=circle];
+	n25 [label="25", shape=circle];
+	n26 [label="26", shape=circle];
+	n27 [label="27", shape=circle];
+	n28 [label="28", shape=circle];
+	n29 [label="29", shape=circle];
+	n30 [label="30", shape=circle];
+	n31 [label="31", shape=circle];
+	n32 [label="32", shape=circle];
+	n33 [label="33", shape=circle];
+	n34 [label="34", shape=circle];
+	n35 [label="35", shape=circle];
+	n36 [label="36", shape=doublecircle];
+	n37 [label="37", shape=circle];
+	n38 [label="38", shape=circle];
+	n39 [label="39", shape=circle];
+	n40 [label="40", shape=circle];
+	n41 [label="41", shape=circle];
+	n42 [label="42", shape=circle];
+	n43 [label="43", shape=circle];
+	n44 [label="44", shape=circle];
+	n45 [label="45", shape=doublecircle];
+	n46 [label="46", shape=circle];
+	n47 [label="47", shape=circle];
+	n48 [label="48", shape=circle];
+	n49 [label="49", shape=circle];
+	n50 [label="50", shape=doublecircle];
+	n51 [label="51", shape=circle];
+	n52 [label="52", shape=circle];
+	n53 [label="53", shape=circle];
+	n54 [label="54", shape=circle];
+	n55 [label="55", shape=circle];
+	n56 [label="56", shape=circle];
+	n57 [label="57", shape=circle];
+	n58 [label="58", shape=circle];
+	n59 [label="59", shape=circle];
+	n60 [label="60", shape=circle];
+	n61 [label="61", shape=circle];
+	n62 [label="62", shape=circle];
+	n63 [label="63", shape=doublecircle];
+	n64 [label="64", shape=circle];
+	n65 [label="65", shape=circle];
+	n66 [label="66", shape=circle];
+	n67 [label="67", shape=circle];
+	n68 [label="68", shape=circle];
+	n69 [label="69", shape=circle];
+	n70 [label="70", shape=circle];
+	n71 [label="71", shape=doublecircle];
+	n72 [label="72", shape=circle];
+	n73 [label="73", shape=circle];
+	n74 [label="74", shape=circle];
+	n75 [label="75", shape=circle];
+	n76 [label="76", shape=circle];
+	n77 [label="77", shape=circle];
+	n78 [label="78", shape=doublecircle];
+	n79 [label="79", shape=circle];
+	n80 [label="80", shape=circle];
+	n81 [label="81", shape=circle];
+	n82 [label="82", shape=circle];
+	n83 [label="83", shape=circle];
+	n84 [label="84", shape=circle];
+	n85 [label="85", shape=circle];
+	n86 [label="86", shape=doublecircle];
+	n87 [label="87", shape=circle];
+	n88 [label="88", shape=circle];
+	n89 [label="89", shape=circle];
+	n90 [label="90", shape=circle];
+	n91 [label="91", shape=doublecircle];
+	n92 [label="92", shape=circle];
+	n93 [label="93", shape=circle];
+	n94 [label="94", shape=circle];
+	n95 [label="95", shape=circle];
+	n96 [label="96", shape=circle];
+	n97 [label="97", shape=circle];
+	n98 [label="98", shape=circle];
+	n99 [label="99", shape=circle];
+	n100 [label="100", shape=doublecircle];
+	n101 [label="101", shape=circle];
+	n102 [label="102", shape=circle];
+	n103 [label="103", shape=circle];
+	n104 [label="104", shape=circle];
+	n105 [label="105", shape=circle];
+	n106 [label="106", shape=circle];
+	n107 [label="107", shape=circle];
+	n108 [label="108", shape=circle];
+	n109 [label="109", shape=circle];
+	n110 [label="110", shape=circle];
+	n111 [label="111", shape=circle];
+	n112 [label="112", shape=circle];
+	n113 [label="113", shape=doublecircle];
+	n114 [label="114", shape=circle];
+	n115 [label="115", shape=circle];
+	n116 [label="116", shape=circle];
+	n117 [label="117", shape=circle];
+	n118 [label="118", shape=circle];
+	n119 [label="119", shape=circle];
+	n120 [label="120", shape=circle];
+	n121 [label="121", shape=doublecircle];
+	n122 [label="122", shape=circle];
+	n123 [label="123", shape=circle];
+	n124 [label="124", shape=circle];
+	n125 [label="125", shape=circle];
+	n126 [label="126", shape=circle];
+	n127 [label="127", shape=circle];
+	n128 [label="128", shape=circle];
+	n129 [label="129", shape=circle];
+	n130 [label="130", shape=circle];
+	n131 [label="131", shape=circle];
+	n132 [label="132", shape=circle];
+	n133 [label="133", shape=circle];
+	n134 [label="134", shape=doublecircle];
+	n135 [label="135", shape=circle];
+	n136 [label="136", shape=circle];
+	n137 [label="137", shape=circle];
+	n138 [label="138", shape=circle];
+	n139 [label="139", shape=doublecircle];
+	n140 [label="140", shape=circle];
+	n141 [label="141", shape=circle];
+	n142 [label="142", shape=circle];
+	n143 [label="143", shape=circle];
+	n144 [label="144", shape=circle];
+	n145 [label="145", shape=circle];
+	n146 [label="146", shape=circle];
+	n147 [label="147", shape=circle];
+	n148 [label="148", shape=circle];
+	n149 [label="149", shape=doublecircle];
+	n150 [label="150", shape=circle];
+	n151 [label="151", shape=circle];
+	n152 [label="152", shape=circle];
+	n153 [label="153", shape=circle];
+	n154 [label="154", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="<"];
 	n1 -> n2 [label="[^\\\\s\\\\d\$%/<=>]"];
 	n1 -> n3 [label="\\\\/"];
@@ -3141,63 +3261,66 @@ digraph {
 module.exports["toDot >> from regexes >> ENFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8"];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18", peripheries=2];
-	n19 [label="19"];
-	n20 [label="20"];
-	n21 [label="21"];
-	n22 [label="22"];
-	n23 [label="23"];
-	n24 [label="24"];
-	n25 [label="25"];
-	n26 [label="26"];
-	n27 [label="27"];
-	n28 [label="28"];
-	n29 [label="29"];
-	n30 [label="30"];
-	n31 [label="31"];
-	n32 [label="32"];
-	n33 [label="33"];
-	n34 [label="34"];
-	n35 [label="35"];
-	n36 [label="36"];
-	n37 [label="37"];
-	n38 [label="38"];
-	n39 [label="39"];
-	n40 [label="40"];
-	n41 [label="41"];
-	n42 [label="42"];
-	n43 [label="43"];
-	n44 [label="44"];
-	n45 [label="45"];
-	n46 [label="46"];
-	n47 [label="47"];
-	n48 [label="48"];
-	n49 [label="49"];
-	n50 [label="50"];
-	n51 [label="51"];
-	n52 [label="52"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=circle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=doublecircle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=circle];
+	n21 [label="21", shape=circle];
+	n22 [label="22", shape=circle];
+	n23 [label="23", shape=circle];
+	n24 [label="24", shape=circle];
+	n25 [label="25", shape=circle];
+	n26 [label="26", shape=circle];
+	n27 [label="27", shape=circle];
+	n28 [label="28", shape=circle];
+	n29 [label="29", shape=circle];
+	n30 [label="30", shape=circle];
+	n31 [label="31", shape=circle];
+	n32 [label="32", shape=circle];
+	n33 [label="33", shape=circle];
+	n34 [label="34", shape=circle];
+	n35 [label="35", shape=circle];
+	n36 [label="36", shape=circle];
+	n37 [label="37", shape=circle];
+	n38 [label="38", shape=circle];
+	n39 [label="39", shape=circle];
+	n40 [label="40", shape=circle];
+	n41 [label="41", shape=circle];
+	n42 [label="42", shape=circle];
+	n43 [label="43", shape=circle];
+	n44 [label="44", shape=circle];
+	n45 [label="45", shape=circle];
+	n46 [label="46", shape=circle];
+	n47 [label="47", shape=circle];
+	n48 [label="48", shape=circle];
+	n49 [label="49", shape=circle];
+	n50 [label="50", shape=circle];
+	n51 [label="51", shape=circle];
+	n52 [label="52", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="<"];
 	n1 -> n2 [label="\\\\/", taillabel="1"];
 	n1 -> n3 [label="", taillabel="2"];
@@ -3280,32 +3403,35 @@ digraph {
 module.exports["toDot >> from regexes >> NFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
 digraph {
 	// graph attributes
+	rankdir=LR;
 
 	// nodes
-	n0 [label=X];
-	n1 [label="1"];
-	n2 [label="2"];
-	n3 [label="3"];
-	n4 [label="4"];
-	n5 [label="5"];
-	n6 [label="6"];
-	n7 [label="7"];
-	n8 [label="8", peripheries=2];
-	n9 [label="9"];
-	n10 [label="10"];
-	n11 [label="11"];
-	n12 [label="12"];
-	n13 [label="13"];
-	n14 [label="14"];
-	n15 [label="15"];
-	n16 [label="16"];
-	n17 [label="17"];
-	n18 [label="18"];
-	n19 [label="19"];
-	n20 [label="20"];
-	n21 [label="21"];
+	null [shape=point];
+	n0 [label="0", shape=circle];
+	n1 [label="1", shape=circle];
+	n2 [label="2", shape=circle];
+	n3 [label="3", shape=circle];
+	n4 [label="4", shape=circle];
+	n5 [label="5", shape=circle];
+	n6 [label="6", shape=circle];
+	n7 [label="7", shape=circle];
+	n8 [label="8", shape=doublecircle];
+	n9 [label="9", shape=circle];
+	n10 [label="10", shape=circle];
+	n11 [label="11", shape=circle];
+	n12 [label="12", shape=circle];
+	n13 [label="13", shape=circle];
+	n14 [label="14", shape=circle];
+	n15 [label="15", shape=circle];
+	n16 [label="16", shape=circle];
+	n17 [label="17", shape=circle];
+	n18 [label="18", shape=circle];
+	n19 [label="19", shape=circle];
+	n20 [label="20", shape=circle];
+	n21 [label="21", shape=circle];
 
 	// edges
+	null -> n0;
 	n0 -> n1 [label="<"];
 	n1 -> n2 [label="\\\\/"];
 	n1 -> n3 [label="[^\\\\s\\\\d\$%/<=>]"];
