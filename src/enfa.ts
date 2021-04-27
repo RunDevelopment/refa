@@ -658,7 +658,7 @@ export namespace ENFA {
 		 *
 		 * Epsilon transitions will be resolved using a DFS algorithm. This means that for the following graph:
 		 *
-		 * ```txt
+		 * ```text
 		 * (0) -> (1) : "a"
 		 *     -> (2) : epsilon
 		 *     -> (3) : "b"
@@ -676,7 +676,7 @@ export namespace ENFA {
 		 *
 		 * The node `(0)` will return the resolved list:
 		 *
-		 * ```txt
+		 * ```text
 		 * [(1), "a"]
 		 * [(4), "d"]
 		 * [(1), "e"]

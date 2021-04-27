@@ -13,7 +13,7 @@ refa is a general library for [DFA](https://en.wikipedia.org/wiki/Deterministic_
 
 ## Installation
 
-Get refa from NPM:
+Get [refa from NPM](https://www.npmjs.com/package/refa):
 
 ```
 npm i --save refa
@@ -30,17 +30,17 @@ yarn add refa
 
 - Conversions
 
-  * RE to NFA (_assertions are not implemented yet_)
-  * NFA to DFA and DFA to NFA
-  * NFA to RE and DFA to RE
+  * RE AST to NFA and ENFA (_assertions are not implemented yet_)
+  * DFA, NFA, and ENFA can all be converted into each other
+  * DFA, NFA, and ENFA to RE AST
 
-- DFA and NFA operations
+- DFA, NFA, and ENFA operations
 
   * Construction from other FA, the intersection of two FA, or a finite set of words
-  * Print internal representation in a human-readable form
+  * Print graph in [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format or a human-readable form
   * Test whether a word is accepted
-  * Test whether the language of an FA is the empty set/a finite set
-  * Accept all prefixes of a language
+  * Test whether the accepted language is the empty set/a finite set
+  * Accept all prefixes/suffixes of a language
 
 - DFA specific operations
 
@@ -48,16 +48,15 @@ yarn add refa
   * Complement
   * Structural equality
 
-- NFA specific operations
+- NFA and ENFA specific operations
 
   * Union and Concatenation with other FA
   * Quantification
   * Reverse
-  * Accept all suffixes of a language
 
 - JavaScript RegExp
 
-  * RegExp to RE and RE to RegExp
+  * RegExp to RE AST and RE AST to RegExp
     * All flags are fully supported
     * Unicode properties
     * Change flags
@@ -76,23 +75,21 @@ It supports:
 - Quantifiers (greedy and lazy) (e.g. `a{4,6}`, `a{2,}?`, `a?`, `a*`)
 - Assertions (e.g. `(?=a)`, `(?<!a)`)
 - Characters/character sets (represented by interval sets)
-- Unknowns
+- Unknowns (elements that cannot be represented otherwise. E.g. backreferences)
 
 Some features like atomic groups and capturing groups are not supported (but might be added in the future).
 
-#### Converting to and from the RE AST format
-
-JavaScript RegExp can be converted to the RE AST format by using `JS.Parser`. `JS.toLiteral` converts into the other direction. (Note that the conversion from JS RegExp to the RE AST format is lossy (capturing groups) and sometime impossible due to the limitations of the RE AST format.)
-
-Converters for other regex dialects might be added in the future as separate packages.
+For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the [`JS` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/js.html).
 
 ### Universal characters
 
-refa does not use JavaScript string represent characters or a sequence of characters. Instead it uses integers to represent characters (see the `Char` type) and arrays of numbers to represent words/strings (see the `Word` type).
+refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the [`Char` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#char)) and arrays of numbers to represent words/strings (see the [`Word` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#word)).
 
 This means that any text encoding can be used.
 
-The `Words` namespace contains functions to convert JavaScript data into refa-compatible words and characters.
+The [`Words` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/words.html) contains functions to convert JavaScript data into refa-compatible words and characters.
+
+For the sets of characters, the [`CharSet` class](https://rundevelopment.github.io/refa/docs/latest/classes/charset.html) is used.
 
 ### General limitations
 
