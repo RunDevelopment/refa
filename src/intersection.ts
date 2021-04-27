@@ -41,13 +41,11 @@ export function isDisjointWith<L, R>(
  *
  * 1. Word sets are guaranteed to be yielded in the order of increasing length. (Word sets of equal lengths may be
  *    yielded in any order.)
- * 2. Word sets are guaranteed to be disjoint. (There are no two yielded word sets A and B such that a word in A is also
- *    a word in B.)
  * 3. No character set of the yielded word sets is empty.
  *
  * This is roughly equivalent to `NFA.fromIntersection(left, right).wordSets()` but implemented more efficiently.
  */
-export function intersectionWordSets<L, R>(
+export function getIntersectionWordSets<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
 	options?: Readonly<IntersectionOptions>
@@ -70,14 +68,13 @@ export function intersectionWordSets<L, R>(
  *
  * 1. Words are guaranteed to be yielded in the order of increasing length. (Words of equal lengths may be yielded in
  *    any order.)
- * 2. Words are guaranteed to not be repeated.
  *
  * This is roughly equivalent to `NFA.fromIntersection(left, right).words()` but implemented more efficiently.
  */
-export function intersectionWords<L, R>(
+export function getIntersectionWords<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
 	options?: Readonly<IntersectionOptions>
 ): Iterable<Word> {
-	return wordSetsToWords(intersectionWordSets(left, right, options));
+	return wordSetsToWords(getIntersectionWordSets(left, right, options));
 }
