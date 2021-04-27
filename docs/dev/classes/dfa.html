@@ -68,6 +68,24 @@
 					<div class="lead">
 						<p>A <a href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">deterministic finite automaton</a>.</p>
 					</div>
+					<p>This class implements DFAs with the following properties:</p>
+					<ul>
+						<li><p>There is exactly one initial state.</p>
+						</li>
+						<li><p>There may be any number of final states.</p>
+							<p>This is implemented using a <code>Set</code> of states.</p>
+						</li>
+						<li><p>No epsilon transitions.</p>
+						</li>
+						<li><p>A transitions always consumes a character.</p>
+							<p>(All character sets are guaranteed to be non-empty.)</p>
+						</li>
+						<li><p>Transitions are unordered.</p>
+							<p>As a consequence, <code>/aa|bb/</code> and <code>/bb|aa/</code> have the same state machine.</p>
+						</li>
+						<li><p>Between any two states, there can at most be one transition.</p>
+						</li>
+					</ul>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">

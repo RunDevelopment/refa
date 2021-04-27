@@ -68,7 +68,27 @@
 					<div class="lead">
 						<p>A <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">nondeterministic finite automaton</a>.</p>
 					</div>
-					<p>This class implements epsilon-free NFAs.</p>
+					<p>This class implements NFAs with the following properties:</p>
+					<ul>
+						<li><p>There is exactly one initial state.</p>
+						</li>
+						<li><p>There may be any number of final states.</p>
+							<p>This is implemented using a <code>Set</code> of states.</p>
+						</li>
+						<li><p>No epsilon transitions.</p>
+						</li>
+						<li><p>A transitions always consumes a character.</p>
+							<p>(All character sets are guaranteed to be non-empty.)</p>
+						</li>
+						<li><p>Transitions are unordered.</p>
+							<p>As a consequence, <code>/aa|bb/</code> and <code>/bb|aa/</code> have the same state machine in this NFA implementation.</p>
+							<p>(The underlying data structure may be a JavaScript <code>Map</code> but the key order is ignored.)</p>
+						</li>
+						<li><p>Between any two states, there can at most be one transition.</p>
+							<p>This means that all transitions between two nodes will be merged into one. This is implemented as a simple
+							<code>CharSet#union</code>. As a consequence, <code>/a|a/</code> and <code>/a/</code> have the same state machine in this NFA implementation.</p>
+						</li>
+					</ul>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
