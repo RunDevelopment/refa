@@ -117,7 +117,7 @@ export interface FAIterator<S, O = Iterable<S>> {
 /**
  * An {@link FAIterator} where transitions are map of states to character sets.
  *
- * This a commonly used interface when dealing with FA. It's common core all currently implemented FA support.
+ * This is a commonly used interface when dealing with FA. It's the common core all currently implemented FA support.
  */
 export type TransitionIterator<T> = FAIterator<T, ReadonlyMap<T, CharSet>>;
 

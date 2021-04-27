@@ -10,6 +10,9 @@ import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 const DEFAULT_MAX_NODES = 10_000;
 
+/**
+ * A readonly {@link ENFA}.
+ */
 export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.ReadonlyNode> {
 	readonly nodes: ENFA.ReadonlyNodeList;
 	readonly options: Readonly<ENFA.Options>;
@@ -22,6 +25,34 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	copy(): ENFA;
 }
 
+/**
+ * A [nondeterministic finite automaton](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton) with epsilon
+ * transitions.
+ *
+ * This class implements NFAs with the following properties:
+ *
+ * - There is exactly one initial state.
+ *
+ * - There is exactly one final state.
+ *
+ * - There are epsilon transitions.
+ *
+ * - A transitions either an epsilon transition or consumes a character.
+ *
+ *   Epsilon transition are represented using `null` and characters are represented using non-empty `CharSet`s.
+ *
+ * - Transitions are ordered.
+ *
+ *   As a consequence, `/aa|bb/` and `/bb|aa/` have different state machines in this NFA implementation.
+ *
+ *   Order is only guaranteed as long as no transitions are removed. Order is defined by the key order of the JavaScript
+ *   `Map` class.
+ *
+ * - Between any two states, there can at most be one transition.
+ *
+ *   Unlike the {@link NFA} class, transition cannot be merged. As a consequence, `/a|a/` and `/a/` have different
+ *   state machines in this NFA implementation.
+ */
 export class ENFA implements ReadonlyENFA {
 	readonly nodes: ENFA.NodeList;
 	readonly maxCharacter: Char;
@@ -436,6 +467,11 @@ export class ENFA implements ReadonlyENFA {
 	}
 }
 
+/**
+ * A namespace for ENFA-specific classes and interfaces.
+ *
+ * @see {@link ENFA} (class)
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ENFA {
 	export interface ReadonlyNode {

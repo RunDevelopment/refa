@@ -31,6 +31,9 @@ import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 const DEFAULT_MAX_NODES = 10_000;
 
+/**
+ * A readonly {@link NFA}.
+ */
 export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.ReadonlyNode> {
 	readonly nodes: NFA.ReadonlyNodeList;
 	readonly options: Readonly<NFA.Options>;
@@ -46,7 +49,30 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 /**
  * A [nondeterministic finite automaton](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton).
  *
- * This class implements epsilon-free NFAs.
+ * This class implements NFAs with the following properties:
+ *
+ * - There is exactly one initial state.
+ *
+ * - There may be any number of final states.
+ *
+ *   This is implemented using a `Set` of states.
+ *
+ * - No epsilon transitions.
+ *
+ * - A transitions always consumes a character.
+ *
+ *   (All character sets are guaranteed to be non-empty.)
+ *
+ * - Transitions are unordered.
+ *
+ *   As a consequence, `/aa|bb/` and `/bb|aa/` have the same state machine in this NFA implementation.
+ *
+ *   (The underlying data structure may be a JavaScript `Map` but the key order is ignored.)
+ *
+ * - Between any two states, there can at most be one transition.
+ *
+ *   This means that all transitions between two nodes will be merged into one. This is implemented as a simple
+ *   `CharSet#union`. As a consequence, `/a|a/` and `/a/` have the same state machine in this NFA implementation.
  */
 export class NFA implements ReadonlyNFA {
 	readonly nodes: NFA.NodeList;

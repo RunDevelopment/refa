@@ -24,6 +24,9 @@ import { MaxCharacterError, TooManyNodesError } from "./errors";
 
 const DEFAULT_MAX_NODES = 10_000;
 
+/**
+ * A readonly {@link DFA}.
+ */
 export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.ReadonlyNode> {
 	readonly nodes: DFA.ReadonlyNodeList;
 	readonly options: Readonly<DFA.Options>;
@@ -46,6 +49,26 @@ export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.Rea
 
 /**
  * A [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton).
+ *
+ * This class implements DFAs with the following properties:
+ *
+ * - There is exactly one initial state.
+ *
+ * - There may be any number of final states.
+ *
+ *   This is implemented using a `Set` of states.
+ *
+ * - No epsilon transitions.
+ *
+ * - A transitions always consumes a character.
+ *
+ *   (All character sets are guaranteed to be non-empty.)
+ *
+ * - Transitions are unordered.
+ *
+ *   As a consequence, `/aa|bb/` and `/bb|aa/` have the same state machine.
+ *
+ * - Between any two states, there can at most be one transition.
  */
 export class DFA implements ReadonlyDFA {
 	readonly nodes: DFA.NodeList;

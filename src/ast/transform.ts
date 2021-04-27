@@ -56,7 +56,7 @@ const TRANSFORMER_KEYS: readonly (keyof Transformer)[] = [
 	"onQuantifier",
 ];
 /**
- * Creates a new transformer that performs all given transformers in sequentially in order for each node.
+ * Creates a new transformer that performs all given transformers in sequentially order.
  *
  * If only one transformer is given, the returned transformer will be functionally equivalent. If no transformers are
  * given, the returned transformer will be equivalent to a noop transformer.
