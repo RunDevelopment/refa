@@ -78,6 +78,8 @@
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
 					<li><a href="../interfaces/dfa.readonlynodelist.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNodeList</a></li>
+					<li><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li><a href="../interfaces/fabuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">, </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -149,8 +151,13 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> initial</h3>
 					<div class="tsd-signature tsd-kind-icon">initial<span class="tsd-signature-symbol">:</span> <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/dfa.readonlynodelist.html">ReadonlyNodeList</a>.<a href="../interfaces/dfa.readonlynodelist.html#initial">initial</a></p>
+						<p>Implementation of <a href="../interfaces/fabuilder.html">FABuilder</a>.<a href="../interfaces/fabuilder.html#initial">initial</a></p>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The initial state of the FA.</p>
+						</div>
+					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -297,6 +304,11 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a new state owned by the builder.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></h4>
 						</li>
 					</ul>
@@ -311,6 +323,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns whether the given state is a final state.</p>
+								</div>
+								<p>This operation is assumed to be semantically equivalent to {@link FAIterator#isFinal}.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -331,6 +349,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Links to the two given states using the given transition.</p>
+								</div>
+								<p>Calling this operations more than once for the given <code>from</code> and <code>to</code> states is not guaranteed to succeed.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -357,6 +381,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Makes the given state behave like a final state of this FA.</p>
+								</div>
+								<p>This does not necessarily mean that the given state will be a final state. I.e. calling <code>makeFinal(s)</code> does not
+								necessitate that <code>isFinal(s)</code> is true.</p>
+								<p>The implementation has to guarantee that calling this method for the same state more than once is allowed.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
