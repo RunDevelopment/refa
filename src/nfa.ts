@@ -322,7 +322,7 @@ export class NFA implements ReadonlyNFA {
 			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
 
 			// traverse the whole iterator to create our NodeList
-			Iter.traverse(Iter.mapOut(iter, n => n.out.keys()));
+			Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));
 
 			// A cleanup still has to be performed because while all states are connected to the initial state, they might
 			// not be able to reach a final state. This will remove such trap states.

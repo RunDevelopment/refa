@@ -1,5 +1,5 @@
 import { FAIterator } from "../common-types";
-import { iterToArray, iterateBFS, traverse as traverseGraph } from "../util";
+import { iterToArray, iterateBFS, traverse } from "../util";
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -66,6 +66,25 @@ export function filterOutIter<S, O>(
 }
 
 /**
+ * This will traverse the whole iterator can call the given consumer function (optional) on each reachable state
+ * exactly once.
+ *
+ * The order in which states are traversed is implementation-defined.
+ *
+ * @param iter
+ */
+export function forEach<S>(iter: FAIterator<S>, consumerFn?: (state: S) => void): void {
+	if (consumerFn) {
+		traverse(iter.initial, s => {
+			consumerFn(s);
+			return iter.getOut(s);
+		});
+	} else {
+		traverse(iter.initial, iter.getOut);
+	}
+}
+
+/**
  * The returned iterator is guaranteed to be deterministic.
  */
 export function ensureDeterministicOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
@@ -111,17 +130,6 @@ export function iterateStates<S>(iter: FAIterator<S>): Iterable<S> {
 	const { initial, getOut } = iter;
 
 	return iterateBFS([initial], getOut);
-}
-
-/**
- * This will traverse the whole iterator.
- *
- * The order in which states are traversed is implementation-defined.
- *
- * @param iter
- */
-export function traverse<S>(iter: FAIterator<S>): void {
-	traverseGraph(iter.initial, iter.getOut);
 }
 
 /**

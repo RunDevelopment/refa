@@ -319,7 +319,7 @@ export class DFA implements ReadonlyDFA {
 				);
 
 				// traverse the whole iterator to create our NodeList
-				Iter.traverse(Iter.mapOut(iter, n => n.out.values()));
+				Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
 
 				// A cleanup still has to be performed because while all states are connected to the initial state, they
 				// might not be able to reach a final state. This will remove such trap states.
