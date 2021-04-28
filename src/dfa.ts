@@ -645,6 +645,14 @@ export namespace DFA {
 			}
 		}
 
+		makeFinal(state: Node): void {
+			this.finals.add(state);
+		}
+
+		isFinal(state: Node): boolean {
+			return this.finals.has(state);
+		}
+
 		removeUnreachable(): void {
 			/**
 			 * Remove all non-initial states which are

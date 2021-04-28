@@ -10,7 +10,8 @@ import { TooManyNodesError } from "../errors";
  */
 export interface FABuilder<S, T> {
 	readonly initial: S;
-	readonly finals: Set<S>;
+	readonly makeFinal: (state: S) => void;
+	readonly isFinal: (state: S) => boolean;
 	readonly createNode: (id: number) => S;
 	readonly linkNodes: (from: S, to: S, transition: T) => void;
 }
@@ -22,6 +23,12 @@ type TransitionMap = Map<TransitionMap, CharSet>;
 export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
 	readonly initial: TransitionMap = new Map();
 	readonly finals = new Set<TransitionMap>();
+	makeFinal(state: TransitionMap): void {
+		this.finals.add(state);
+	}
+	isFinal(state: TransitionMap): boolean {
+		return this.finals.has(state);
+	}
 	createNode(): TransitionMap {
 		return new Map();
 	}
@@ -65,18 +72,16 @@ export function intersection<S, L, R>(
 	const leftToIndex = createIndexer<L>();
 	const rightToIndex = createIndexer<R>();
 
-	const { initial, finals } = builder;
-
 	if (left.isFinal(left.initial) && right.isFinal(right.initial)) {
-		finals.add(initial);
+		builder.makeFinal(builder.initial);
 	}
 
 	// node pair translation
 	type Tuple<L, R> = readonly [L, R];
 	const indexBackTranslatorMap = new Map<S, Tuple<L, R>>();
-	indexBackTranslatorMap.set(initial, [left.initial, right.initial]);
+	indexBackTranslatorMap.set(builder.initial, [left.initial, right.initial]);
 	const indexTranslatorCache: Record<string, S | undefined> = {
-		[`${leftToIndex(left.initial)};${rightToIndex(right.initial)}`]: initial,
+		[`${leftToIndex(left.initial)};${rightToIndex(right.initial)}`]: builder.initial,
 	};
 
 	let createdNodes = 0;
@@ -95,7 +100,7 @@ export function intersection<S, L, R>(
 			indexBackTranslatorMap.set(node, [leftNode, rightNode]);
 
 			if (left.isFinal(leftNode) && right.isFinal(rightNode)) {
-				finals.add(node);
+				builder.makeFinal(node);
 			}
 		}
 		return node;
@@ -129,13 +134,13 @@ export function intersection<S, L, R>(
 	}
 
 	return {
-		initial,
+		initial: builder.initial,
 		getOut(node: S): S {
 			addOutgoing(node);
 			return node;
 		},
 		isFinal(node: S): boolean {
-			return finals.has(node);
+			return builder.isFinal(node);
 		},
 	};
 }

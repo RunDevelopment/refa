@@ -627,6 +627,14 @@ export namespace NFA {
 			to.in.delete(from);
 		}
 
+		makeFinal(state: Node): void {
+			this.finals.add(state);
+		}
+
+		isFinal(state: Node): boolean {
+			return this.finals.has(state);
+		}
+
 		/**
 		 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
 		 * removed.
