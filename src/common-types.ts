@@ -165,7 +165,7 @@ export interface FABuilder<S, T> {
 export type TransitionIterator<T> = FAIterator<T, ReadonlyMap<T, CharSet>>;
 
 /**
- * A graph or FA that con create a {@link TransitionIterator}.
+ * A graph or FA that can create a {@link TransitionIterator}.
  */
 export interface TransitionIterable<T> {
 	readonly maxCharacter: Char;
