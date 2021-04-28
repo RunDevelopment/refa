@@ -1,6 +1,7 @@
 import { Char, ReadonlyWord, Word } from "./core-types";
 import { cachedFunc, filterMut, firstOf, intersectSet, traverse, withoutSet } from "./util";
 import {
+	FABuilder,
 	FAIterator,
 	FiniteAutomaton,
 	IntersectionOptions,
@@ -553,7 +554,7 @@ export namespace DFA {
 		 */
 		count(): number;
 	}
-	export class NodeList implements ReadonlyNodeList {
+	export class NodeList implements ReadonlyNodeList, FABuilder<Node, CharSet> {
 		private _nodeCounter: number = 0;
 		private _nodeLimit: number = Infinity;
 

@@ -1,7 +1,14 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
 import { Char, ReadonlyWord, Word } from "./core-types";
-import { FAIterator, FiniteAutomaton, ToRegexOptions, TransitionIterable, TransitionIterator } from "./common-types";
+import {
+	FABuilder,
+	FAIterator,
+	FiniteAutomaton,
+	ToRegexOptions,
+	TransitionIterable,
+	TransitionIterator,
+} from "./common-types";
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
@@ -530,7 +537,7 @@ export namespace ENFA {
 		 */
 		count(): number;
 	}
-	export class NodeList implements ReadonlyNodeList, Iterable<Node> {
+	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet | null> {
 		private _nodeCounter: number = 0;
 		private _nodeLimit: number = Infinity;
 
@@ -629,6 +636,15 @@ export namespace ENFA {
 
 			from.out.delete(to);
 			to.in.delete(from);
+		}
+
+		makeFinal(state: Node): void {
+			if (state !== this.final && !state.out.has(this.final)) {
+				this.linkNodes(state, this.final, null);
+			}
+		}
+		isFinal(state: Node): boolean {
+			return state === this.final;
 		}
 
 		/**

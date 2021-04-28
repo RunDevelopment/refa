@@ -115,6 +115,49 @@ export interface FAIterator<S, O = Iterable<S>> {
 }
 
 /**
+ * An FA builder has the responsibility of constructing a finite automata.
+ *
+ * The constructed FA is always owned by the builder.
+ *
+ * @template S The type of a state.
+ * @template O The type of the value each state maps to.
+ */
+export interface FABuilder<S, T> {
+	/**
+	 * The initial state of the FA.
+	 */
+	readonly initial: S;
+	/**
+	 * Makes the given state behave like a final state of this FA.
+	 *
+	 * This does not necessarily mean that the given state will be a final state. I.e. calling `makeFinal(s)` does not
+	 * necessitate that `isFinal(s)` is true.
+	 *
+	 * The implementation has to guarantee that calling this method for the same state more than once is allowed.
+	 */
+	readonly makeFinal: (state: S) => void;
+	/**
+	 * Returns whether the given state is a final state.
+	 *
+	 * This operation is assumed to be semantically equivalent to {@link FAIterator#isFinal}.
+	 */
+	readonly isFinal: (state: S) => boolean;
+	/**
+	 * Creates a new state owned by the builder.
+	 *
+	 * @throws {@link TooManyNodesError}
+	 * May be thrown if the number of created nodes exceeds some limit.
+	 */
+	readonly createNode: () => S;
+	/**
+	 * Links to the two given states using the given transition.
+	 *
+	 * Calling this operations more than once for the given `from` and `to` states is not guaranteed to succeed.
+	 */
+	readonly linkNodes: (from: S, to: S, transition: T) => void;
+}
+
+/**
  * An {@link FAIterator} where transitions are map of states to character sets.
  *
  * This is a commonly used interface when dealing with FA. It's the common core all currently implemented FA support.

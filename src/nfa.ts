@@ -2,6 +2,7 @@ import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
 import {
+	FABuilder,
 	FAIterator,
 	FiniteAutomaton,
 	IntersectionOptions,
@@ -522,7 +523,7 @@ export namespace NFA {
 		 */
 		count(): number;
 	}
-	export class NodeList implements ReadonlyNodeList, Iterable<Node> {
+	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet> {
 		private _nodeCounter: number = 0;
 		private _nodeLimit: number = Infinity;
 

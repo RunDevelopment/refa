@@ -1,20 +1,7 @@
 import { CharSet } from "../char-set";
 import { ensureDeterministicOut } from "./iterator";
-import { FAIterator, IntersectionOptions, TransitionIterator } from "../common-types";
+import { FABuilder, FAIterator, IntersectionOptions, TransitionIterator } from "../common-types";
 import { TooManyNodesError } from "../errors";
-
-/**
- * An FA builder has the responsibility of constructing a finite automata.
- *
- * The constructed FA is always owned by the builder.
- */
-export interface FABuilder<S, T> {
-	readonly initial: S;
-	readonly makeFinal: (state: S) => void;
-	readonly isFinal: (state: S) => boolean;
-	readonly createNode: (id: number) => S;
-	readonly linkNodes: (from: S, to: S, transition: T) => void;
-}
 
 type TransitionMap = Map<TransitionMap, CharSet>;
 /**
@@ -48,9 +35,9 @@ export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
  *
  * To construct the whole intersection FA use:
  *
- * ```js
- * const iter = lazyIntersection(...);
- * faTraverse(faMapOut(iter, n => n.out.keys()));
+ * ```ts
+ * const iter = intersection(...);
+ * traverse(mapOut(iter, n => n.out.keys()));
  * ```
  *
  * @param builder
@@ -95,7 +82,7 @@ export function intersection<S, L, R>(
 			TooManyNodesError.assert(createdNodes, maxNodes, "intersection operation");
 			createdNodes++;
 
-			node = builder.createNode(createdNodes);
+			node = builder.createNode();
 			indexTranslatorCache[key] = node;
 			indexBackTranslatorMap.set(node, [leftNode, rightNode]);
 
