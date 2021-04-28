@@ -85,6 +85,15 @@ export function forEach<S>(iter: FAIterator<S>, consumerFn?: (state: S) => void)
 }
 
 /**
+ * Returns the number of nodes reachable from the initial state (including the initial state itself).
+ */
+export function count<S>(iter: FAIterator<S>): number {
+	let count = 0;
+	forEach(iter, () => count++);
+	return count;
+}
+
+/**
  * The returned iterator is guaranteed to be deterministic.
  */
 export function ensureDeterministicOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
