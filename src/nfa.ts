@@ -163,7 +163,7 @@ export class NFA implements ReadonlyNFA {
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
 		return Iter.toDot(
 			this.transitionIterator(),
-			Iter.toDot.simpleOptions(charSetToString || rangesToString, false)
+			Iter.createSimpleToDotOptions(charSetToString || rangesToString, false)
 		);
 	}
 

@@ -225,7 +225,7 @@ export class ENFA implements ReadonlyENFA {
 			? cs => (cs === null ? "" : charSetToString!(cs))
 			: cs => (cs === null ? "" : rangesToString(cs));
 
-		return Iter.toDot(iter, Iter.toDot.simpleOptions(toString, true));
+		return Iter.toDot(iter, Iter.createSimpleToDotOptions(toString, true));
 	}
 
 	private _localCopy<O>(other: TransitionIterable<O>): SubList {

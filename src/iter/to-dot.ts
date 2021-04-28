@@ -2,7 +2,7 @@ import { FAIterator } from "../common-types";
 import { iterToArray } from "../util";
 import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
-export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDot.Options<S, T>): string {
+export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDotOptions<S, T>): string {
 	const {
 		getEdgeAttributes,
 		getGraphAttributes = DEFAULT_GRAPH_ATTRIBUTES,
@@ -42,7 +42,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 			writeID(value);
 		}
 	}
-	function writeAttrs(attrs: Readonly<toDot.Attrs>): void {
+	function writeAttrs(attrs: Readonly<ToDotAttrs>): void {
 		s += "[";
 		let first = true;
 		for (const key in attrs) {
@@ -93,7 +93,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 		}
 	}
 
-	const info: toDot.Info<S> = {
+	const info: ToDotInfo<S> = {
 		isInitial: s => s === stableIter.initial,
 		isFinal: stableIter.isFinal,
 		getId: indexOf,
@@ -131,48 +131,45 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: toDo
 	return s;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace toDot {
-	export type Attrs = Record<string, string | number | undefined>;
-	export interface Options<S, T> {
-		getEdgeAttributes: (transition: T, nth: number, from: S, to: S, info: Info<S>) => Readonly<Attrs>;
-		getGraphAttributes?: () => Readonly<Attrs>;
-		getNodeAttributes?: (node: S, info: Info<S>) => Readonly<Attrs>;
-	}
-	export interface Info<S> {
-		isInitial(node: S): boolean;
-		isFinal(node: S): boolean;
-		getId(node: S): number;
-		getNumberOfOutgoingEdges(node: S): number;
-	}
-
-	export function simpleOptions<T>(
-		toString: (transition: T) => string,
-		ordered: boolean = false
-	): Options<unknown, T> {
-		return {
-			getEdgeAttributes(trans, nth, from, _, info) {
-				const attrs: Attrs = {
-					label: toString(trans),
-				};
-
-				if (ordered && info.getNumberOfOutgoingEdges(from) > 1) {
-					attrs["tail" + "label"] = String(nth + 1);
-				}
-
-				return attrs;
-			},
-		};
-	}
+export type ToDotAttrs = Record<string, string | number | undefined>;
+export interface ToDotOptions<S, T> {
+	getEdgeAttributes: (transition: T, nth: number, from: S, to: S, info: ToDotInfo<S>) => Readonly<ToDotAttrs>;
+	getGraphAttributes?: () => Readonly<ToDotAttrs>;
+	getNodeAttributes?: (node: S, info: ToDotInfo<S>) => Readonly<ToDotAttrs>;
+}
+export interface ToDotInfo<S> {
+	isInitial(node: S): boolean;
+	isFinal(node: S): boolean;
+	getId(node: S): number;
+	getNumberOfOutgoingEdges(node: S): number;
 }
 
-const DEFAULT_GET_NODE_ATTRIBUTES: NonNullable<toDot.Options<unknown, never>["getNodeAttributes"]> = (node, info) => {
+export function createSimpleToDotOptions<S, T>(
+	toString: (transition: T) => string,
+	ordered: boolean = false
+): ToDotOptions<S, T> {
+	return {
+		getEdgeAttributes(trans, nth, from, _, info) {
+			const attrs: ToDotAttrs = {
+				label: toString(trans),
+			};
+
+			if (ordered && info.getNumberOfOutgoingEdges(from) > 1) {
+				attrs["tail" + "label"] = String(nth + 1);
+			}
+
+			return attrs;
+		},
+	};
+}
+
+const DEFAULT_GET_NODE_ATTRIBUTES: NonNullable<ToDotOptions<unknown, never>["getNodeAttributes"]> = (node, info) => {
 	return {
 		label: String(info.getId(node)),
 		shape: info.isFinal(node) ? "doublecircle" : "circle",
 	};
 };
 
-const DEFAULT_GRAPH_ATTRIBUTES: NonNullable<toDot.Options<unknown, never>["getGraphAttributes"]> = () => {
+const DEFAULT_GRAPH_ATTRIBUTES: NonNullable<ToDotOptions<unknown, never>["getGraphAttributes"]> = () => {
 	return { rankdir: "LR" };
 };
