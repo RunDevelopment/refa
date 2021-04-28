@@ -639,9 +639,7 @@ export namespace ENFA {
 		}
 
 		makeFinal(state: Node): void {
-			if (state !== this.final && !state.out.has(this.final)) {
-				this.linkNodes(state, this.final, null);
-			}
+			baseMakeEffectivelyFinal(this, this, state);
 		}
 		isFinal(state: Node): boolean {
 			return state === this.final;
