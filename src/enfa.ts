@@ -4,7 +4,7 @@ import { Char, ReadonlyWord, Word } from "./core-types";
 import { FAIterator, FiniteAutomaton, ToRegexOptions, TransitionIterable, TransitionIterator } from "./common-types";
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
-import { Concatenation, Element, Expression, NoParent, Quantifier } from "./ast";
+import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 
@@ -341,12 +341,7 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	static fromRegex(
-		concat: NoParent<Concatenation>,
-		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.FromRegexOptions>
-	): ENFA;
-	static fromRegex(
-		expression: NoParent<Expression>,
+		concat: NoParent<Node>,
 		options: Readonly<ENFA.Options>,
 		creationOptions?: Readonly<ENFA.FromRegexOptions>
 	): ENFA;
@@ -356,7 +351,7 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions?: Readonly<ENFA.FromRegexOptions>
 	): ENFA;
 	static fromRegex(
-		value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
+		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<ENFA.Options>,
 		creationOptions?: Readonly<ENFA.FromRegexOptions>
 	): ENFA {
@@ -364,11 +359,24 @@ export class ENFA implements ReadonlyENFA {
 		if (Array.isArray(value)) {
 			nodeList = createNodeList(value as readonly NoParent<Concatenation>[], options, creationOptions || {});
 		} else {
-			const node = value as NoParent<Expression> | NoParent<Concatenation>;
-			if (node.type === "Concatenation") {
-				nodeList = createNodeList([node], options, creationOptions || {});
-			} else {
-				nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+			const node = value as NoParent<Node>;
+
+			switch (node.type) {
+				case "Expression":
+					nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+					break;
+
+				case "Concatenation":
+					nodeList = createNodeList([node], options, creationOptions || {});
+					break;
+
+				default:
+					nodeList = createNodeList(
+						[{ type: "Concatenation", elements: [node] }],
+						options,
+						creationOptions || {}
+					);
+					break;
 			}
 		}
 		return new ENFA(nodeList, options.maxCharacter);

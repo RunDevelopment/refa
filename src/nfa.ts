@@ -1,4 +1,4 @@
-import { Concatenation, Element, Expression, NoParent, Quantifier } from "./ast";
+import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
 import {
@@ -364,12 +364,7 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	static fromRegex(
-		concat: NoParent<Concatenation>,
-		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.FromRegexOptions>
-	): NFA;
-	static fromRegex(
-		expression: NoParent<Expression>,
+		concat: NoParent<Node>,
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
@@ -379,7 +374,7 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA;
 	static fromRegex(
-		value: NoParent<Concatenation> | NoParent<Expression> | readonly NoParent<Concatenation>[],
+		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
 		creationOptions?: Readonly<NFA.FromRegexOptions>
 	): NFA {
@@ -387,11 +382,24 @@ export class NFA implements ReadonlyNFA {
 		if (Array.isArray(value)) {
 			nodeList = createNodeList(value as readonly NoParent<Concatenation>[], options, creationOptions || {});
 		} else {
-			const node = value as NoParent<Expression> | NoParent<Concatenation>;
-			if (node.type === "Concatenation") {
-				nodeList = createNodeList([node], options, creationOptions || {});
-			} else {
-				nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+			const node = value as NoParent<Node>;
+
+			switch (node.type) {
+				case "Expression":
+					nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+					break;
+
+				case "Concatenation":
+					nodeList = createNodeList([node], options, creationOptions || {});
+					break;
+
+				default:
+					nodeList = createNodeList(
+						[{ type: "Concatenation", elements: [node] }],
+						options,
+						creationOptions || {}
+					);
+					break;
 			}
 		}
 		return new NFA(nodeList, options.maxCharacter);
