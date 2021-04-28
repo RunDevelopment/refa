@@ -125,7 +125,7 @@ export function traverse<S>(iter: FAIterator<S>): void {
 }
 
 /**
- * Returns whether there is a final state reachable from the initial state.
+ * Returns whether the initial state can reach (or is) a final state.
  *
  * @param iter
  */
@@ -141,7 +141,7 @@ export function canReachFinal<S>(iter: FAIterator<S>): boolean {
 }
 
 /**
- * Returns whether the given states form a cycle.
+ * Returns whether the given graph contains a cycle reachable from the initial state.
  *
  * @param iter
  */
