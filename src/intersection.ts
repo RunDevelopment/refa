@@ -26,7 +26,7 @@ export function isDisjointWith<L, R>(
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
 	const iter = Iter.intersection(
-		new Iter.TransitionMapBuilder(),
+		new Iter.MapFABuilder(),
 		left.transitionIterator(),
 		right.transitionIterator(),
 		options
@@ -53,7 +53,7 @@ export function getIntersectionWordSets<L, R>(
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
 	const iter = Iter.intersection(
-		new Iter.TransitionMapBuilder(),
+		new Iter.MapFABuilder(),
 		left.transitionIterator(),
 		right.transitionIterator(),
 		options

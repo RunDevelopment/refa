@@ -3,32 +3,6 @@ import { ensureDeterministicOut } from "./iterator";
 import { FABuilder, FAIterator, IntersectionOptions, TransitionIterator } from "../common-types";
 import { TooManyNodesError } from "../errors";
 
-type TransitionMap = Map<TransitionMap, CharSet>;
-/**
- * An FA builder that uses `Map` objects as nodes. Each node is the map of its outgoing transitions.
- */
-export class TransitionMapBuilder implements FABuilder<TransitionMap, CharSet> {
-	readonly initial: TransitionMap = new Map();
-	readonly finals = new Set<TransitionMap>();
-	makeFinal(state: TransitionMap): void {
-		this.finals.add(state);
-	}
-	isFinal(state: TransitionMap): boolean {
-		return this.finals.has(state);
-	}
-	createNode(): TransitionMap {
-		return new Map();
-	}
-	linkNodes(from: TransitionMap, to: TransitionMap, transition: CharSet): void {
-		const current = from.get(to);
-		if (current === undefined) {
-			from.set(to, transition);
-		} else {
-			from.set(to, current.union(transition));
-		}
-	}
-}
-
 /**
  * A lazy intersection algorithm that will use the given FA builder to construct the intersection FA as the returned
  * iterator is used to traverse the FA.

@@ -331,7 +331,7 @@ export class DFA implements ReadonlyDFA {
 			// the intersection of two non-DFA is likely a NFA, so we have to make it deterministic.
 
 			const iter = Iter.intersection(
-				new Iter.TransitionMapBuilder(),
+				new Iter.MapFABuilder(),
 				left.transitionIterator(),
 				right.transitionIterator(),
 				options
