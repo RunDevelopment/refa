@@ -17,7 +17,7 @@ import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./ite
  *
  * Example output for an NFA of `a*d|bb*`
  *
- * ```txt
+ * ```text
  * (0) -> (1) : 'a'
  *     -> [2] : 'b'
  *     -> [3] : 'd'
