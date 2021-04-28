@@ -220,7 +220,7 @@ class TransitionCreator {
 }
 
 function createNodeList<T>(
-	iter: FAIterator<T, Iterable<[T, CharSet]>>,
+	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
 	tc: TransitionCreator
 ): { nodeList: NodeList; maxCharacter: number } | null {
 	const nodeList = new NodeList();
@@ -243,6 +243,13 @@ function createNodeList<T>(
 
 		// out transitions sorted by char set
 		const out = [...iter.getOut(n)].sort(([, a], [, b]) => {
+			if (a === null) {
+				return b === null ? 0 : -1;
+			}
+			if (b === null) {
+				return 1;
+			}
+
 			const diff = Number(a.isEmpty) - Number(b.isEmpty);
 			if (diff !== 0) return diff;
 
@@ -256,12 +263,16 @@ function createNodeList<T>(
 		});
 
 		out.forEach(([outNode, charSet]) => {
-			if (maxCharacter === undefined) {
-				maxCharacter = charSet.maximum;
-			} else if (charSet.maximum !== maxCharacter) {
-				throw new Error("All character sets have to have to same maximum.");
+			if (charSet === null) {
+				nodeList.linkNodes(translate(n), translate(outNode), tc.emptyConcat());
+			} else {
+				if (maxCharacter === undefined) {
+					maxCharacter = charSet.maximum;
+				} else if (charSet.maximum !== maxCharacter) {
+					throw new Error("All character sets have to have to same maximum.");
+				}
+				nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet));
 			}
-			nodeList.linkNodes(translate(n), translate(outNode), tc.char(charSet));
 		});
 
 		return out.map(x => x[0]);
@@ -641,7 +652,10 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 	}
 }
 
-function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAstNodes: number): NoParent<Expression> {
+function stateElimination<T>(
+	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
+	maxAstNodes: number
+): NoParent<Expression> {
 	const tc = new TransitionCreator(maxAstNodes);
 
 	const result = createNodeList(iter, tc);
@@ -670,7 +684,7 @@ function stateElimination<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>, maxAst
 }
 
 export function toRegex<T>(
-	iter: FAIterator<T, Iterable<[T, CharSet]>>,
+	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
 	options?: Readonly<ToRegexOptions>
 ): NoParent<Expression> {
 	const maxAstNodes = options?.maxNodes ?? 10000;

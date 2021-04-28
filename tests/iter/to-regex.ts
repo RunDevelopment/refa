@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { assert } from "chai";
-import { literalToNFA, literalToString, nfaEqual } from "../helper/fa";
+import { faEqual, literalToENFA, literalToNFA, literalToString } from "../helper/fa";
 import { Literal, toLiteral } from "../../src/js";
 import { NFA } from "../../src/nfa";
-import { ToRegexOptions } from "../../src/common-types";
+import { FiniteAutomaton, ToRegexOptions, TransitionIterable } from "../../src/common-types";
 
 describe("toRegex", function () {
 	describe("Literals", function () {
@@ -37,31 +38,48 @@ describe("toRegex", function () {
 				expected: String.raw`/(?:a+b*)?/`,
 			},
 			{
+				literal: /(?:a+b+|a*)/,
+				toFA: literalToENFA,
+				expected: String.raw`/a*(?:ab+)?/`,
+			},
+			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
 				expected: String.raw`/\d+(?:(?:\.|(?:\.\d*)?E[-+]\d)\d*)?/i`,
+			},
+			{
+				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
+				toFA: literalToENFA,
+				expected: String.raw`/\d+(?:\.\d*)?(?:E[-+]\d+)?/i`,
 			},
 			{
 				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
 				options: { maxOptimizationPasses: 0 },
 				expected: String.raw`/\d+(?:\.\d*|(?:|\.(?:|\d+))E[-+]\d+)?/i`,
 			},
+			{
+				literal: /\d+(?:\.\d*)?(?:[eE][+-]\d+)?/,
+				options: { maxOptimizationPasses: 0 },
+				toFA: literalToENFA,
+				expected: String.raw`/\d+(?:|\.(?:|\d+))(?:E[-+]\d+)?/i`,
+			},
 		]);
 
 		interface TestCase {
 			literal: Literal;
 			options?: ToRegexOptions;
+			toFA?: (literal: Literal) => FiniteAutomaton & TransitionIterable<any>;
 			expected: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { literal, options, expected } of cases) {
+			for (const { literal, options, expected, toFA } of cases) {
 				it(literalToString(literal), function () {
-					const nfa = literalToNFA(literal);
+					const nfa = (toFA ?? literalToNFA)(literal);
 					const re = nfa.toRegex(options);
 					const actual = toLiteral(re);
 					assert.strictEqual(`/${actual.source}/${actual.flags}`, expected);
-					assert.isTrue(nfaEqual(nfa, NFA.fromRegex(re, nfa.options)));
-					assert.isTrue(nfaEqual(nfa, literalToNFA(actual)));
+					assert.isTrue(faEqual(nfa, NFA.fromRegex(re, nfa)));
+					assert.isTrue(faEqual(nfa, literalToNFA(actual)));
 				});
 			}
 		}
@@ -111,8 +129,8 @@ describe("toRegex", function () {
 					const re = inter.toRegex(options);
 					const actual = toLiteral(re);
 					assert.strictEqual(`/${actual.source}/${actual.flags}`, expected);
-					assert.isTrue(nfaEqual(inter, NFA.fromRegex(re, inter.options)));
-					assert.isTrue(nfaEqual(inter, literalToNFA(actual)));
+					assert.isTrue(faEqual(inter, NFA.fromRegex(re, inter.options)));
+					assert.isTrue(faEqual(inter, literalToNFA(actual)));
 				});
 			}
 		}

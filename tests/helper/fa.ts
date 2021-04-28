@@ -3,6 +3,7 @@ import { NFA, ReadonlyNFA } from "../../src/nfa";
 import { ENFA } from "../../src/enfa";
 import { Literal, Parser } from "../../src/js";
 import * as Iter from "../../src/iter";
+import { TransitionIterable } from "../../src/common-types";
 
 export function literalToString(literal: Literal): string {
 	return `/${literal.source}/${literal.flags}`;
@@ -63,7 +64,7 @@ export function reachableFinalStates(nfa: ReadonlyNFA): number {
 	return count;
 }
 
-export function nfaEqual(a: ReadonlyNFA, b: ReadonlyNFA): boolean {
+export function faEqual<A, B>(a: TransitionIterable<A>, b: TransitionIterable<B>): boolean {
 	const dfaA = DFA.fromFA(a);
 	const dfaB = DFA.fromFA(b);
 	dfaA.minimize();

@@ -196,7 +196,14 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
-		return Iter.toRegex(this.transitionIterator(), options);
+		const { initial, final } = this.nodes;
+		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
+			initial,
+			getOut: n => n.out,
+			deterministicOut: true,
+			isFinal: n => n === final,
+		};
+		return Iter.toRegex(iter, options);
 	}
 
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
