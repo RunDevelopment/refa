@@ -218,7 +218,7 @@ export function hasCycle<S>(iter: FAIterator<S>): boolean {
  *
  * @param iter
  */
-export function languageIsFinite<T>(iter: FAIterator<T>): boolean {
+export function languageIsFinite<S>(iter: FAIterator<S>): boolean {
 	/**
 	 * The goal is to find a cycle from which we can reach any final state. If we can find such a cycle, we can pump as
 	 * many words as we like making the language infinite.

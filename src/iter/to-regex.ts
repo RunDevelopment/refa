@@ -219,8 +219,8 @@ class TransitionCreator {
 	}
 }
 
-function createNodeList<T>(
-	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
+function createNodeList<S>(
+	iter: FAIterator<S, Iterable<[S, CharSet | null]>>,
 	tc: TransitionCreator
 ): { nodeList: NodeList; maxCharacter: number } | null {
 	const nodeList = new NodeList();
@@ -230,7 +230,7 @@ function createNodeList<T>(
 	const tempInitial = nodeList.createNode();
 	nodeList.linkNodes(nodeList.initial, tempInitial, tc.emptyConcat());
 
-	const translate = cachedFunc<T, RegexFANode>(() => nodeList.createNode());
+	const translate = cachedFunc<S, RegexFANode>(() => nodeList.createNode());
 	translate.cache.set(iter.initial, tempInitial);
 
 	let maxCharacter: number | undefined = undefined;
@@ -652,8 +652,8 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 	}
 }
 
-function stateElimination<T>(
-	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
+function stateElimination<S>(
+	iter: FAIterator<S, Iterable<[S, CharSet | null]>>,
 	maxAstNodes: number
 ): NoParent<Expression> {
 	const tc = new TransitionCreator(maxAstNodes);
@@ -683,8 +683,13 @@ function stateElimination<T>(
 	}
 }
 
-export function toRegex<T>(
-	iter: FAIterator<T, Iterable<[T, CharSet | null]>>,
+/**
+ * Returns a regular expression for the given iterator.
+ *
+ * `null` transitions are assumed to be epsilon transitions.
+ */
+export function toRegex<S>(
+	iter: FAIterator<S, Iterable<[S, CharSet | null]>>,
 	options?: Readonly<ToRegexOptions>
 ): NoParent<Expression> {
 	const maxAstNodes = options?.maxNodes ?? 10000;

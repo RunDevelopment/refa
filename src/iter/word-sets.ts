@@ -1,18 +1,18 @@
 import { CharSet } from "../char-set";
 import { FAIterator } from "../common-types";
 import { ensureDeterministicOut } from "./iterator";
-import { removeDead } from "./remove-dead";
+import { removeDeadStates } from "./remove-dead-states";
 
 /**
  * Iterates all word sets of the given FA.
  *
  * @param iter
  */
-export function* iterateWordSets<T>(iter: FAIterator<T, Iterable<[T, CharSet]>>): Iterable<CharSet[]> {
-	const { initial, getOut, isFinal } = ensureDeterministicOut(removeDead(iter, i => i[0]));
+export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Iterable<CharSet[]> {
+	const { initial, getOut, isFinal } = ensureDeterministicOut(removeDeadStates(iter, i => i[0]));
 
 	interface BFSNode {
-		state: T;
+		state: S;
 		parent: BFSNode | null;
 		value: CharSet | null;
 	}
