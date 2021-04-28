@@ -5,7 +5,7 @@ export interface SourceLocation {
 	end: number;
 }
 
-export interface NodeBase {
+interface NodeBase {
 	type: Node["type"];
 	parent: Node["parent"];
 	source?: SourceLocation;
