@@ -554,7 +554,7 @@ export namespace DFA {
 		 */
 		count(): number;
 	}
-	export class NodeList implements ReadonlyNodeList, FABuilder<Node, CharSet> {
+	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet> {
 		private _nodeCounter: number = 0;
 		private _nodeLimit: number = Infinity;
 
