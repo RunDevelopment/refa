@@ -10,5 +10,6 @@ export * from "./intersection";
 export * from "./nfa";
 
 export * as Transformers from "./transformers";
+export * as FAIterators from "./iter";
 export * as JS from "./js/index";
 export * as Words from "./words";
