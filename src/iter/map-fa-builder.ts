@@ -4,19 +4,19 @@ import { FABuilder } from "../common-types";
 /**
  * An FA builder that uses `Map` objects as nodes. Each node is the map of its outgoing transitions.
  */
-export class MapFABuilder implements FABuilder<MapFABuilder.Node, CharSet> {
-	readonly initial: MapFABuilder.Node = new Map();
-	readonly finals = new Set<MapFABuilder.Node>();
-	makeFinal(state: MapFABuilder.Node): void {
+export class MapFABuilder implements FABuilder<MapFABuilderNode, CharSet> {
+	readonly initial: MapFABuilderNode = new Map();
+	readonly finals = new Set<MapFABuilderNode>();
+	makeFinal(state: MapFABuilderNode): void {
 		this.finals.add(state);
 	}
-	isFinal(state: MapFABuilder.Node): boolean {
+	isFinal(state: MapFABuilderNode): boolean {
 		return this.finals.has(state);
 	}
-	createNode(): MapFABuilder.Node {
+	createNode(): MapFABuilderNode {
 		return new Map();
 	}
-	linkNodes(from: MapFABuilder.Node, to: MapFABuilder.Node, transition: CharSet): void {
+	linkNodes(from: MapFABuilderNode, to: MapFABuilderNode, transition: CharSet): void {
 		const current = from.get(to);
 		if (current === undefined) {
 			from.set(to, transition);
@@ -25,7 +25,4 @@ export class MapFABuilder implements FABuilder<MapFABuilder.Node, CharSet> {
 		}
 	}
 }
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace MapFABuilder {
-	export type Node = Map<Node, CharSet>;
-}
+export type MapFABuilderNode = Map<MapFABuilderNode, CharSet>;
