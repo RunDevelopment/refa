@@ -137,6 +137,7 @@ describe("toRegex", function () {
 	});
 
 	it("should limit the number of AST nodes", function () {
+		this.timeout(60 * 1000);
 		this.slow(1000);
 
 		const a = literalToNFA(
