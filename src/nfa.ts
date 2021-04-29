@@ -14,6 +14,7 @@ import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./core-types";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
+import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 
 /*
  * ####################################################################################################################
@@ -40,6 +41,22 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	readonly options: Readonly<NFA.Options>;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
+
+	/**
+	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
+	 */
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean;
+	/**
+	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
+	 */
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word>;
+	/**
+	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
+	 */
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]>;
 
 	/**
 	 * Create a mutable copy of this NFA.
@@ -165,6 +182,19 @@ export class NFA implements ReadonlyNFA {
 			this.transitionIterator(),
 			Iter.createSimpleToDotOptions(charSetToString || rangesToString, false)
 		);
+	}
+
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean {
+		return isDisjointWith(this, other, options);
+	}
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word> {
+		return getIntersectionWords(this, other, options);
+	}
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]> {
+		return getIntersectionWordSets(this, other, options);
 	}
 
 	/**

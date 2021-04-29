@@ -22,6 +22,7 @@ import {
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
+import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 
 const DEFAULT_MAX_NODES = 10_000;
 
@@ -33,6 +34,22 @@ export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.Rea
 	readonly options: Readonly<DFA.Options>;
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode>;
+
+	/**
+	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
+	 */
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean;
+	/**
+	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
+	 */
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word>;
+	/**
+	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
+	 */
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]>;
 
 	/**
 	 * Creates a new DFA equivalent to this one.
@@ -145,6 +162,19 @@ export class DFA implements ReadonlyDFA {
 			this.transitionIterator(),
 			Iter.createSimpleToDotOptions(charSetToString || rangesToString, false)
 		);
+	}
+
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean {
+		return isDisjointWith(this, other, options);
+	}
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word> {
+		return getIntersectionWords(this, other, options);
+	}
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]> {
+		return getIntersectionWordSets(this, other, options);
 	}
 
 	copy(): DFA {

@@ -5,6 +5,7 @@ import {
 	FABuilder,
 	FAIterator,
 	FiniteAutomaton,
+	IntersectionOptions,
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
@@ -14,6 +15,7 @@ import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
+import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 
 const DEFAULT_MAX_NODES = 10_000;
 
@@ -25,6 +27,22 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	readonly options: Readonly<ENFA.Options>;
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
+
+	/**
+	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
+	 */
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean;
+	/**
+	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
+	 */
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word>;
+	/**
+	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
+	 */
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]>;
 
 	/**
 	 * Create a mutable copy of this ENFA.
@@ -125,6 +143,19 @@ export class ENFA implements ReadonlyENFA {
 			},
 			isFinal: n => effectivelyFinal.has(n),
 		};
+	}
+
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean {
+		return isDisjointWith(this, other, options);
+	}
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word> {
+		return getIntersectionWords(this, other, options);
+	}
+	getIntersectionWordSets<O>(
+		other: TransitionIterable<O>,
+		options?: Readonly<IntersectionOptions>
+	): Iterable<CharSet[]> {
+		return getIntersectionWordSets(this, other, options);
 	}
 
 	copy(): ENFA {
