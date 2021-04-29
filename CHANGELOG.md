@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.8.0 (2021-04-29)
+
+### Breaking changes
+
+- New RE AST node: `Unknown`. This node is used to represent parts of a regex that cannot be represented using RE AST.
+- Removed `JS.ParseOptions.disableOptimizations`. Use `JS.ParseOptions.simplify` instead.
+- Removed `TransitionIterableFA` interface.
+- `TransitionIterable` is now generic over the state type.
+- Renamed `{DFA,NFA}.intersectionWordSets` to `getIntersectionWordSets`.
+- Renamed `{DFA,NFA}.intersectionWords` to `getIntersectionWords`.
+
+### Added
+
+- ENFA - a non-deterministic finite automaton with epsilon transitions.
+- FAIterators - a new namespace containing methods can consume and produce FA iterators.
+- New `toDot` method for finite automata. This will make it easier to visualize the state machines.
+- New `isDisjointWith`, `getIntersectionWordSets`, and `getIntersectionWords` functions. These free functions can be used with any FA types.
+- New `JS.ParseOptions.simplify` option.
+- New `FAIterator.deterministicOut` property.
+- New `TransitionIterator`. (This only gives an already commonly used type a name.)
+- New `MaxCharacterError` for incompatible finite automata.
+- New `FABuilder` interface to allow algorithms to construct FA without knowing the actual FA implementation.
+- `{DFA,ENFA,NFA}.NodeList`: Added static `withLimit` method to be able to limit the number of nodes a `NodeList` is allowed to create.
+
+### Changed
+
+- `JS.Parser.parseElement` now accepts more parsable elements.
+- `JS.toLiteral` now accepts any RE AST node.
+- `NFA.fromRegex` now accepts any RE AST node.
+- `{DFA,ENFA,NFA}.NodeList` now implement the `FABuilder` interface.
+- Many, many internal changes that do not affect the API.
+
+### Fixed
+
+- `DFA.fromIntersection` now correctly computes the intersection for non-DFA arguments.
+- `getBaseSets` (a util function) now guarantees _O(n*log n)_ run time. I accidentally implemented this in _O(n^2)_ before which caused some DFA operations to be extremely slow.
+- `iterateWordSets` (a util function) now correctly eliminates dead states. This fixes the bug that some FA with infinite languages only yielded finitely many words when iterating over them.
+
+
 ## 0.7.1 (2021-03-09)
 
 ### Fixed
