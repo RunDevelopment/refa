@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>TooManyNodesError | refa - v0.8.0</title>
+	<title>MaxCharacterError | refa - v0.8.0</title>
 	<meta name="description" content="Documentation for refa - v0.8.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,10 +53,10 @@
 					<a href="../modules.html">refa - v0.8.0</a>
 				</li>
 				<li>
-					<a href="toomanynodeserror.html">TooManyNodesError</a>
+					<a href="maxcharactererror.html">MaxCharacterError</a>
 				</li>
 			</ul>
-			<h1>Class TooManyNodesError</h1>
+			<h1>Class MaxCharacterError</h1>
 		</div>
 	</div>
 </header>
@@ -66,11 +66,10 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>An error that is thrown when an operation causes too many nodes to be created.</p>
+						<p>An error that is thrown when the max characters of two or more FA or transition iterables is not the same.</p>
 					</div>
-					<p>Many FA operation have the potential to create a huge number of nodes (thousands and millions) which may result in
-						the JavaScript runtime running out of memory and/or crashing. This error will thrown before that happens to safely
-					abort an otherwise resource-intensive operation.</p>
+					<p>Operations on FA and transition iterables require the max characters of all given FA and transition iterables to be
+					the same and will throw this error if they are not.</p>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
@@ -80,7 +79,7 @@
 						<span class="tsd-signature-type">Error</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">TooManyNodesError</span>
+								<span class="target">MaxCharacterError</span>
 							</li>
 						</ul>
 					</li>
@@ -93,13 +92,13 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="toomanynodeserror.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="maxcharactererror.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="toomanynodeserror.html#assert" class="tsd-kind-icon">assert</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="maxcharactererror.html#assert" class="tsd-kind-icon">assert</a></li>
 							</ul>
 						</section>
 					</div>
@@ -111,7 +110,7 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Too<wbr>Many<wbr>Nodes<wbr>Error<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="toomanynodeserror.html" class="tsd-signature-type" data-tsd-kind="Class">TooManyNodesError</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Max<wbr>Character<wbr>Error<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="maxcharactererror.html" class="tsd-signature-type" data-tsd-kind="Class">MaxCharacterError</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -123,7 +122,7 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> message: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="toomanynodeserror.html" class="tsd-signature-type" data-tsd-kind="Class">TooManyNodesError</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="maxcharactererror.html" class="tsd-signature-type" data-tsd-kind="Class">MaxCharacterError</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -134,7 +133,7 @@
 					<a name="assert" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> assert</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">assert<span class="tsd-signature-symbol">(</span>current<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, limit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, kind<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">assert<span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> }</span>, b<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> }</span>, kind<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -142,19 +141,19 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Asserts that the current number of created nodes does not exceed the limit.</p>
+									<p>Asserts the two given max characters are the same.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>current: <span class="tsd-signature-type">number</span></h5>
+									<h5>a: <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> }</span></h5>
 								</li>
 								<li>
-									<h5>limit: <span class="tsd-signature-type">number</span></h5>
+									<h5>b: <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> }</span></h5>
 								</li>
 								<li>
-									<h5>kind: <span class="tsd-signature-type">string</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> kind: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -176,13 +175,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="toomanynodeserror.html" class="tsd-kind-icon">Too<wbr>Many<wbr>Nodes<wbr>Error</a>
+						<a href="maxcharactererror.html" class="tsd-kind-icon">Max<wbr>Character<wbr>Error</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="toomanynodeserror.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="maxcharactererror.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="toomanynodeserror.html#assert" class="tsd-kind-icon">assert</a>
+								<a href="maxcharactererror.html#assert" class="tsd-kind-icon">assert</a>
 							</li>
 						</ul>
 					</li>

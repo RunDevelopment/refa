@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>NodeList | refa - v0.7.1</title>
-	<meta name="description" content="Documentation for refa - v0.7.1">
+	<title>NodeList | refa - v0.8.0</title>
+	<meta name="description" content="Documentation for refa - v0.8.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">refa - v0.7.1</a>
+					<a href="../index.html" class="title">refa - v0.8.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -50,7 +50,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">refa - v0.7.1</a>
+					<a href="../modules.html">refa - v0.8.0</a>
 				</li>
 				<li>
 					<a href="../modules/dfa.html">DFA</a>
@@ -78,6 +78,8 @@
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
 					<li><a href="../interfaces/dfa.readonlynodelist.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNodeList</a></li>
+					<li><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li><a href="../interfaces/fabuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">, </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -106,9 +108,12 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#_uncheckedlinknodeswithcharacter" class="tsd-kind-icon">_unchecked<wbr>Link<wbr>Nodes<wbr>With<wbr>Character</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#count" class="tsd-kind-icon">count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#createnode" class="tsd-kind-icon">create<wbr>Node</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#isfinal" class="tsd-kind-icon">is<wbr>Final</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#linknodes" class="tsd-kind-icon">link<wbr>Nodes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#makefinal" class="tsd-kind-icon">make<wbr>Final</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#removeunreachable" class="tsd-kind-icon">remove<wbr>Unreachable</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="dfa.nodelist.html#unlinknodes" class="tsd-kind-icon">unlink<wbr>Nodes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="dfa.nodelist.html#withlimit" class="tsd-kind-icon">with<wbr>Limit</a></li>
 							</ul>
 						</section>
 					</div>
@@ -146,8 +151,13 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> initial</h3>
 					<div class="tsd-signature tsd-kind-icon">initial<span class="tsd-signature-symbol">:</span> <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/dfa.readonlynodelist.html">ReadonlyNodeList</a>.<a href="../interfaces/dfa.readonlynodelist.html#initial">initial</a></p>
+						<p>Implementation of <a href="../interfaces/fabuilder.html">FABuilder</a>.<a href="../interfaces/fabuilder.html#initial">initial</a></p>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The initial state of the FA.</p>
+						</div>
+					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -294,7 +304,38 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a new state owned by the builder.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="isfinal" class="tsd-anchor"></a>
+					<h3>is<wbr>Final</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Final<span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns whether the given state is a final state.</p>
+								</div>
+								<p>This operation is assumed to be semantically equivalent to {@link FAIterator#isFinal}.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>state: <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -302,12 +343,18 @@
 					<a name="linknodes" class="tsd-anchor"></a>
 					<h3>link<wbr>Nodes</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">link<wbr>Nodes<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a>, to<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a>, characters<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/charrange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol"> | </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">link<wbr>Nodes<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a>, to<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a>, characters<span class="tsd-signature-symbol">: </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/charrange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Links to the two given states using the given transition.</p>
+								</div>
+								<p>Calling this operations more than once for the given <code>from</code> and <code>to</code> states is not guaranteed to succeed.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -317,7 +364,35 @@
 									<h5>to: <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></h5>
 								</li>
 								<li>
-									<h5>characters: <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/charrange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol"> | </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
+									<h5>characters: <a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/charrange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="makefinal" class="tsd-anchor"></a>
+					<h3>make<wbr>Final</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Final<span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Makes the given state behave like a final state of this FA.</p>
+								</div>
+								<p>This does not necessarily mean that the given state will be a final state. I.e. calling <code>makeFinal(s)</code> does not
+								necessitate that <code>isFinal(s)</code> is true.</p>
+								<p>The implementation has to guarantee that calling this method for the same state more than once is allowed.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>state: <a href="../interfaces/dfa.node.html" class="tsd-signature-type" data-tsd-kind="Interface">Node</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -361,6 +436,56 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="withlimit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> with<wbr>Limit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">with<wbr>Limit<span class="tsd-signature-symbol">(</span>maxNodes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, consumerFn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>nodeList<span class="tsd-signature-symbol">: </span><a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates and returns a new node list that is only allowed to create a certain number of nodes during the
+									execution of the given consumer function.</p>
+								</div>
+								<p>After this function returns, the limit no longer applies.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>maxNodes: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>consumerFn: <span class="tsd-signature-symbol">(</span>nodeList<span class="tsd-signature-symbol">: </span><a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>nodeList<span class="tsd-signature-symbol">: </span><a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>nodeList: <a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="dfa.nodelist.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></h4>
+						</li>
+					</ul>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -371,6 +496,12 @@
 					</li>
 					<li class="current tsd-kind-namespace">
 						<a href="../modules/dfa.html">DFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/enfa.html">ENFA</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="../modules/faiterators.html">FAIterators</a>
 					</li>
 					<li class=" tsd-kind-namespace">
 						<a href="../modules/js.html">JS</a>
@@ -421,13 +552,22 @@
 								<a href="dfa.nodelist.html#createnode" class="tsd-kind-icon">create<wbr>Node</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="dfa.nodelist.html#isfinal" class="tsd-kind-icon">is<wbr>Final</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="dfa.nodelist.html#linknodes" class="tsd-kind-icon">link<wbr>Nodes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="dfa.nodelist.html#makefinal" class="tsd-kind-icon">make<wbr>Final</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="dfa.nodelist.html#removeunreachable" class="tsd-kind-icon">remove<wbr>Unreachable</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="dfa.nodelist.html#unlinknodes" class="tsd-kind-icon">unlink<wbr>Nodes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="dfa.nodelist.html#withlimit" class="tsd-kind-icon">with<wbr>Limit</a>
 							</li>
 						</ul>
 					</li>
