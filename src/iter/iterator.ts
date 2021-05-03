@@ -275,3 +275,30 @@ function createInTransitionMap<T>(
 
 	return inTransitions;
 }
+
+/**
+ * Creates a new iterator that is equivalent to the given iterator expect that the initial state is guaranteed to be
+ * final.
+ */
+export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+	const { initial, getOut, deterministicOut, isFinal } = iter;
+	return {
+		initial: initial,
+		getOut,
+		deterministicOut,
+		isFinal: s => s === initial || isFinal(s),
+	};
+}
+/**
+ * Creates a new iterator that is equivalent to the given iterator expect that the initial state is guaranteed to be
+ * non-final.
+ */
+export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+	const { initial, getOut, deterministicOut, isFinal } = iter;
+	return {
+		initial: initial,
+		getOut,
+		deterministicOut,
+		isFinal: s => s !== initial && isFinal(s),
+	};
+}
