@@ -1,0 +1,88 @@
+import { CharSet } from "../../src/char-set";
+import { TransitionIterable } from "../../src/common-types";
+import { iterateWordSets, shortestWordSet } from "../../src/iter";
+import { literalToDFA, literalToENFA, literalToNFA } from "../helper/fa";
+import { assertEqualSnapshot } from "../helper/snapshot";
+
+describe("word sets", function () {
+	const regexes: RegExp[] = [
+		/[]/,
+		/(?:)/,
+		/a/,
+		/a|b/,
+		/aa|b/,
+		/a+/,
+		/a*/,
+		/a*b*c*/,
+		/a+b*c+/,
+		/a+b+c+/,
+		/a+(?:d+|e+)?/,
+		/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i,
+	];
+
+	function wordSetToString(wordSet: CharSet[]): string {
+		return JSON.stringify(wordSet.map(rangesToString));
+	}
+
+	function firstN<T>(iter: Iterable<T>, n: number): T[] {
+		const result: T[] = [];
+
+		for (const item of iter) {
+			result.push(item);
+			if (result.length >= n) {
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	describe(iterateWordSets.name, function () {
+		function runTests<T>(name: string, toFA: (regex: RegExp) => TransitionIterable<T>): void {
+			describe(name, function () {
+				for (const regex of regexes) {
+					it(`${regex}`, function () {
+						const fa = toFA(regex);
+						const wordSets = firstN(iterateWordSets(fa.transitionIterator()), 10);
+						assertEqualSnapshot(this, wordSets.map(wordSetToString).join("\n"));
+					});
+				}
+			});
+		}
+
+		runTests("NFA", literalToNFA);
+		runTests("ENFA", literalToENFA);
+		runTests("DFA", literalToDFA);
+	});
+
+	describe(shortestWordSet.name, function () {
+		function runTests<T>(name: string, toFA: (regex: RegExp) => TransitionIterable<T>): void {
+			describe(name, function () {
+				for (const regex of regexes) {
+					it(`${regex}`, function () {
+						const fa = toFA(regex);
+						const wordSet = shortestWordSet(fa.transitionIterator());
+						assertEqualSnapshot(this, wordSet ? wordSetToString(wordSet) : "none");
+					});
+				}
+			});
+		}
+
+		runTests("NFA", literalToNFA);
+		runTests("ENFA", literalToENFA);
+		runTests("DFA", literalToDFA);
+	});
+});
+
+function rangesToString(ranges: CharSet): string {
+	let s = "";
+	for (const { min, max } of ranges.ranges) {
+		if (s !== "") s += " ";
+		if (min == max) {
+			s += min.toString(16);
+		} else {
+			s += min.toString(16) + "-" + max.toString(16);
+		}
+	}
+	return s;
+}
