@@ -111,6 +111,7 @@
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#mapout" class="tsd-kind-icon">map<wbr>Out</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#mapoutiter" class="tsd-kind-icon">map<wbr>Out<wbr>Iter</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#removedeadstates" class="tsd-kind-icon">remove<wbr>Dead<wbr>States</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#shortestwordset" class="tsd-kind-icon">shortest<wbr>Word<wbr>Set</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#todot" class="tsd-kind-icon">to<wbr>Dot</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#toregex" class="tsd-kind-icon">to<wbr>Regex</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#tostring" class="tsd-kind-icon">to<wbr>String</a></li>
@@ -531,6 +532,8 @@
 								<div class="lead">
 									<p>Iterates all word sets of the given FA.</p>
 								</div>
+								<p>Word sets are guaranteed to be iterated ordered by ascending length. Word sets might overlap.</p>
+								<p>This function assumes that all character sets in the given iterator are non-empty.</p>
 							</div>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
 							<ul class="tsd-type-parameters">
@@ -756,6 +759,41 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+					<a name="shortestwordset" class="tsd-anchor"></a>
+					<h3>shortest<wbr>Word<wbr>Set</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">shortest<wbr>Word<wbr>Set&lt;S&gt;<span class="tsd-signature-symbol">(</span>iter<span class="tsd-signature-symbol">: </span><a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns any one of the shortest word sets accepted by the given iterator.</p>
+								</div>
+								<p>If the iterator does not accept any words, <code>undefined</code> will be returned.</p>
+								<p>This function assumes that all character sets in the given iterator are non-empty.</p>
+								<hr>
+								<p>This operation is roughly equivalent to <code>firstOf(iterateWordSets(iter))</code> but implemented <strong>much more</strong> efficiently.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>S</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>iter: <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -991,6 +1029,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#removedeadstates" class="tsd-kind-icon">remove<wbr>Dead<wbr>States</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<a href="faiterators.html#shortestwordset" class="tsd-kind-icon">shortest<wbr>Word<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#todot" class="tsd-kind-icon">to<wbr>Dot</a>
