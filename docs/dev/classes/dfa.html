@@ -500,7 +500,18 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/readonlydfa.html">ReadonlyDFA</a>.<a href="../interfaces/readonlydfa.html#todot">toDot</a></p>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the string representation of this FA in the
+									<a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT format</a>.</p>
+								</div>
+								<p>The output of this function can passed to any graph visualization program. This can be a
+								<a href="https://graphviz.org/download/">local installation</a> or an <a href="https://edotor.net/">online editor</a>.</p>
+								<p>By default, a hexadecimal range form will be used to represent <a href="charset.html">CharSet</a>s. It&#39;s possible to provide a
+								custom stringify function using the <code>charSetToString</code> parameter.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -584,6 +595,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of ReadonlyDFA.transitionIterator</p>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="../modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/dfa.readonlynode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
@@ -929,13 +941,15 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
