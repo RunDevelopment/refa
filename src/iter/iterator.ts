@@ -1,5 +1,5 @@
 import { FAIterator } from "../common-types";
-import { iterToArray, iterateBFS, traverse } from "../util";
+import { debugAssert, iterToArray, iterateBFS, traverse } from "../util";
 
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -301,4 +301,78 @@ export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S,
 		deterministicOut,
 		isFinal: s => s !== initial && isFinal(s),
 	};
+}
+
+/**
+ * Returns any one of the shortest paths accepted by the given iterator.
+ *
+ * If the iterator does not accept any path, `undefined` will be returned.
+ */
+export function shortestAcceptingPath<S, T>(
+	iter: FAIterator<S, Iterable<T>>,
+	selectState: (item: T) => S
+): T[] | undefined {
+	const { initial, getOut, isFinal } = iter;
+
+	if (isFinal(initial)) {
+		// trivial
+		return [];
+	}
+
+	// The idea here is to do a BFS and write down from which state we could first reach any previously unseen state.
+	// Once we see a final state, we just have to trace back the path to the initial state.
+	//
+	// The nice thing here is that we do not have to cache the `getOut` method. BFS guarantees that we call it at most
+	// once for every state.
+
+	const shortestPathTo = new Map<S, { item: T; from: S } | null>();
+	shortestPathTo.set(iter.initial, null); // null to mark the initial state
+
+	function getShortestPath(to: S): T[] {
+		const revPath: T[] = [];
+
+		while (true) {
+			const from = shortestPathTo.get(to);
+
+			// this _should_ never happen
+			debugAssert(from !== undefined);
+
+			if (from === null) {
+				// reached initial state
+				return revPath.reverse();
+			}
+
+			revPath.push(from.item);
+
+			to = from.from;
+		}
+	}
+
+	let current: readonly S[] = [iter.initial];
+	while (current.length > 0) {
+		const next: S[] = [];
+
+		for (const state of current) {
+			for (const item of getOut(state)) {
+				const to = selectState(item);
+
+				if (shortestPathTo.has(to)) {
+					continue;
+				}
+
+				shortestPathTo.set(to, { item, from: state });
+
+				if (isFinal(to)) {
+					// we found the shortest accepting path
+					return getShortestPath(to);
+				}
+
+				next.push(to);
+			}
+		}
+
+		current = next;
+	}
+
+	return undefined;
 }
