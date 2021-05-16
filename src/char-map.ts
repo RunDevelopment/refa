@@ -89,7 +89,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 
 	has(char: Char): boolean {
-		if (!Number.isFinite(char)) return false;
+		if (!Number.isFinite(char)) {
+			return false;
+		}
 		return this._tree.nodeOf(char) !== null;
 	}
 	hasEvery(chars: CharRange): boolean {
@@ -100,7 +102,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		const minNode = this._tree.nodeOf(min);
 		const maxNode = this._tree.nodeOf(max);
 
-		if (minNode === null || maxNode === null) return false;
+		if (minNode === null || maxNode === null) {
+			return false;
+		}
 
 		// iterate all nodes from min to max and look for gaps
 		let node: Node<T> = minNode;
@@ -108,7 +112,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 			// this cannot be null because maxNode
 			const next = rightNeighbor(node)!;
 
-			if (node.key.max + 1 !== next.key.min) return false; // a gap
+			if (node.key.max + 1 !== next.key.min) {
+				return false; // a gap
+			}
 
 			node = next;
 		}
@@ -121,7 +127,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 
 	get(char: Char): T | undefined {
-		if (!Number.isFinite(char)) return undefined; // char is NaN, Inf, or -Inf
+		if (!Number.isFinite(char)) {
+			return undefined; // char is NaN, Inf, or -Inf
+		}
 		const node = this._tree.nodeOf(char);
 		return node ? node.value : undefined;
 	}
@@ -147,7 +155,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 
 	delete(char: Char): boolean {
-		if (!Number.isFinite(char)) return false;
+		if (!Number.isFinite(char)) {
+			return false;
+		}
 		const result = this._tree.deleteCharacter(char);
 		return result;
 	}
@@ -346,7 +356,9 @@ function rightmostNode<T>(root: ReadonlyNode<T>): Node<T> {
 function leftmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null;
 function leftmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null;
 function leftmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null {
-	if (node === null) return null;
+	if (node === null) {
+		return null;
+	}
 
 	const { min, max } = range;
 
@@ -380,7 +392,9 @@ function leftmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange):
 function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null;
 function rightmostNodeInRange<T>(node: ReadonlyNode<T> | null, range: CharRange): ReadonlyNode<T> | null;
 function rightmostNodeInRange<T>(node: Node<T> | null, range: CharRange): Node<T> | null {
-	if (node === null) return null;
+	if (node === null) {
+		return null;
+	}
 
 	const { min, max } = range;
 

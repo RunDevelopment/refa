@@ -13,7 +13,9 @@ export function setParent<T extends Node>(node: T | NoParent<T>, parent: T["pare
 function setParentImpl(node: Node, parent: Node["parent"]): void {
 	switch (node.type) {
 		case "Concatenation":
-			if (parent === null) throw new Error("The parent of a concatenation cannot be null.");
+			if (parent === null) {
+				throw new Error("The parent of a concatenation cannot be null.");
+			}
 
 			switch (parent.type) {
 				case "Alternation":
@@ -38,7 +40,9 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 		case "CharacterClass":
 		case "Quantifier":
 		case "Unknown":
-			if (parent === null) throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
+			if (parent === null) {
+				throw new Error(`The parent of a(n) ${node.type} cannot be null.`);
+			}
 
 			if (parent.type === "Concatenation") {
 				node.parent = parent;
@@ -52,8 +56,9 @@ function setParentImpl(node: Node, parent: Node["parent"]): void {
 			break;
 
 		case "Expression":
-			if (parent !== null)
+			if (parent !== null) {
 				throw new Error(`The parent of an expression has to be null and cannot be a(n) ${parent.type}.`);
+			}
 
 			node.parent = null;
 

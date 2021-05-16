@@ -1227,7 +1227,9 @@ export function structurallyEqual(
 		}
 		case "Assertion": {
 			const other = b as NoParent<Assertion>;
-			if (a.kind !== other.kind || a.negate !== other.negate) return false;
+			if (a.kind !== other.kind || a.negate !== other.negate) {
+				return false;
+			}
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		case "CharacterClass": {
@@ -1249,7 +1251,9 @@ export function structurallyEqual(
 		}
 		case "Quantifier": {
 			const other = b as NoParent<Quantifier>;
-			if (a.min !== other.min || a.max !== other.max || a.lazy !== other.lazy) return false;
+			if (a.min !== other.min || a.max !== other.max || a.lazy !== other.lazy) {
+				return false;
+			}
 			return structurallyEqualAlternatives(a.alternatives, other.alternatives);
 		}
 		case "Unknown": {

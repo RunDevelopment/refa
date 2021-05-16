@@ -86,7 +86,9 @@ export class CharSet {
 	toString(): string {
 		let s = "";
 		for (const { min, max } of this.ranges) {
-			if (s !== "") s += ", ";
+			if (s !== "") {
+				s += ", ";
+			}
 			if (min == max) {
 				s += min.toString(16);
 			} else {
@@ -144,9 +146,12 @@ export class CharSet {
 	}
 
 	private _checkRange(range: CharRange): CharRange {
-		if (range.min < 0 || range.min > range.max || range.max > this.maximum)
+		if (range.min < 0 || range.min > range.max || range.max > this.maximum) {
 			throw new RangeError(`min=${range.min} has to be >= 0 and <= max.`);
-		if (range.max > this.maximum) throw new RangeError(`max=${range.max} has to be <= maximum=${this.maximum}.`);
+		}
+		if (range.max > this.maximum) {
+			throw new RangeError(`max=${range.max} has to be <= maximum=${this.maximum}.`);
+		}
 		return range;
 	}
 
@@ -163,14 +168,22 @@ export class CharSet {
 	 * @param other
 	 */
 	equals(other: CharSet): boolean {
-		if (other === this) return true;
-		if (this.maximum !== other.maximum) return false;
-		if (this.ranges.length !== other.ranges.length) return false;
+		if (other === this) {
+			return true;
+		}
+		if (this.maximum !== other.maximum) {
+			return false;
+		}
+		if (this.ranges.length !== other.ranges.length) {
+			return false;
+		}
 
 		for (let i = 0, l = this.ranges.length; i < l; i++) {
 			const thisR = this.ranges[i];
 			const otherR = other.ranges[i];
-			if (thisR.min !== otherR.min || thisR.max !== otherR.max) return false;
+			if (thisR.min !== otherR.min || thisR.max !== otherR.max) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -184,21 +197,37 @@ export class CharSet {
 	 * @param other
 	 */
 	compare(other: CharSet): number {
-		if (other === this) return 0;
-		if (this.maximum !== other.maximum) return this.maximum - other.maximum;
+		if (other === this) {
+			return 0;
+		}
+		if (this.maximum !== other.maximum) {
+			return this.maximum - other.maximum;
+		}
 
 		// we want to guarantee that disjoint character sets are sorted by their smallest character.
-		if (this.isEmpty) return other.isEmpty ? 0 : -1;
-		if (other.isEmpty) return 1;
-		if (this.ranges[0].min !== other.ranges[0].min) return this.ranges[0].min - other.ranges[0].min;
+		if (this.isEmpty) {
+			return other.isEmpty ? 0 : -1;
+		}
+		if (other.isEmpty) {
+			return 1;
+		}
+		if (this.ranges[0].min !== other.ranges[0].min) {
+			return this.ranges[0].min - other.ranges[0].min;
+		}
 
-		if (this.ranges.length !== other.ranges.length) return this.ranges.length - other.ranges.length;
+		if (this.ranges.length !== other.ranges.length) {
+			return this.ranges.length - other.ranges.length;
+		}
 
 		for (let i = 0, l = this.ranges.length; i < l; i++) {
 			const thisR = this.ranges[i];
 			const otherR = other.ranges[i];
-			if (thisR.min !== otherR.min) return thisR.min - otherR.min;
-			if (thisR.max !== otherR.max) return thisR.max - otherR.max;
+			if (thisR.min !== otherR.min) {
+				return thisR.min - otherR.min;
+			}
+			if (thisR.max !== otherR.max) {
+				return thisR.max - otherR.max;
+			}
 		}
 		return 0;
 	}
@@ -414,13 +443,19 @@ function hasEveryOfRange(ranges: readonly CharRange[], min: Char, max: Char): bo
 	const l = ranges.length;
 
 	// this is empty
-	if (l == 0) return false;
+	if (l == 0) {
+		return false;
+	}
 
 	// out of range
-	if (min < ranges[0].min || max > ranges[l - 1].max) return false;
+	if (min < ranges[0].min || max > ranges[l - 1].max) {
+		return false;
+	}
 
 	// the out of range check is enough in this case
-	if (l == 1) return true;
+	if (l == 1) {
+		return true;
+	}
 
 	let low = 0; // inclusive
 	let high = l; // exclusive
@@ -432,7 +467,9 @@ function hasEveryOfRange(ranges: readonly CharRange[], min: Char, max: Char): bo
 		if (mMin == min) {
 			return max <= mRange.max;
 		} else if (mMin < min) {
-			if (max <= mRange.max) return true;
+			if (max <= mRange.max) {
+				return true;
+			}
 			low = m + 1;
 		} /* if (mMin > min) */ else {
 			high = m;
@@ -448,10 +485,14 @@ function commonCharacterOfRange(ranges: readonly CharRange[], min: Char, max: Ch
 	const l = ranges.length;
 
 	// this is empty
-	if (l == 0) return undefined;
+	if (l == 0) {
+		return undefined;
+	}
 
 	// out of range
-	if (max < ranges[0].min || min > ranges[l - 1].max) return undefined;
+	if (max < ranges[0].min || min > ranges[l - 1].max) {
+		return undefined;
+	}
 
 	let low = 0; // inclusive
 	let high = l; // exclusive
@@ -463,10 +504,14 @@ function commonCharacterOfRange(ranges: readonly CharRange[], min: Char, max: Ch
 		if (mMin == min) {
 			return min; // range.min is in this set
 		} else if (mMin < min) {
-			if (min <= mRange.max) return min;
+			if (min <= mRange.max) {
+				return min;
+			}
 			low = m + 1;
 		} /* if (mMin > min) */ else {
-			if (mMin <= max) return mMin;
+			if (mMin <= max) {
+				return mMin;
+			}
 			high = m;
 		}
 	}

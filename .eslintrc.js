@@ -63,6 +63,8 @@ module.exports = {
 			}
 		],
 
+		"curly": "error",
+
 		"no-constant-condition": ["error", { checkLoops: false }],
 		"sort-imports": ["error", { ignoreDeclarationSort: true }],
 		"@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true, ignoreProperties: true }],

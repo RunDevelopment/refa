@@ -65,14 +65,18 @@ export function firstOf<T>(iter: Iterable<T>): T | undefined {
 export function withoutSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	const s = new Set<T>();
 	for (const x of s1) {
-		if (!s2.has(x)) s.add(x);
+		if (!s2.has(x)) {
+			s.add(x);
+		}
 	}
 	return s;
 }
 export function intersectSet<T>(s1: Iterable<T>, s2: ReadonlySet<T>): Set<T> {
 	const s = new Set<T>();
 	for (const x of s1) {
-		if (s2.has(x)) s.add(x);
+		if (s2.has(x)) {
+			s.add(x);
+		}
 	}
 	return s;
 }

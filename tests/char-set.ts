@@ -10,7 +10,9 @@ function toRanges(input: (string | number | CharRange | [number, number])[]): Ch
 			ranges.push({ min: i, max: i });
 		} else if (typeof i === "string") {
 			const cp = i.codePointAt(0);
-			if (cp === undefined) throw new Error("Invalid string");
+			if (cp === undefined) {
+				throw new Error("Invalid string");
+			}
 			ranges.push({ min: cp, max: cp });
 		} else if (Array.isArray(i)) {
 			ranges.push({ min: i[0], max: i[1] });

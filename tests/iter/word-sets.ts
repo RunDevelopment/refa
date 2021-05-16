@@ -77,7 +77,9 @@ describe("word sets", function () {
 function rangesToString(ranges: CharSet): string {
 	let s = "";
 	for (const { min, max } of ranges.ranges) {
-		if (s !== "") s += " ";
+		if (s !== "") {
+			s += " ";
+		}
 		if (min == max) {
 			s += min.toString(16);
 		} else {

@@ -251,13 +251,19 @@ function createNodeList<S>(
 			}
 
 			const diff = Number(a.isEmpty) - Number(b.isEmpty);
-			if (diff !== 0) return diff;
+			if (diff !== 0) {
+				return diff;
+			}
 
 			for (let i = 0, l = Math.min(a.ranges.length, b.ranges.length); i < l; i++) {
 				const aR = a.ranges[i];
 				const bR = b.ranges[i];
-				if (aR.min !== bR.min) return aR.min - bR.min;
-				if (aR.max !== bR.max) return aR.max - bR.max;
+				if (aR.min !== bR.min) {
+					return aR.min - bR.min;
+				}
+				if (aR.max !== bR.max) {
+					return aR.max - bR.max;
+				}
 			}
 			return a.ranges.length - b.ranges.length;
 		});
@@ -366,7 +372,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 		let result: NoParent<Concatenation>;
 
 		if (a.type === "Concatenation") {
-			if (a.elements.length === 0) return b;
+			if (a.elements.length === 0) {
+				return b;
+			}
 			if (b.type === "Concatenation") {
 				a.elements.push(...b.elements);
 			} else {
@@ -374,7 +382,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 			}
 			result = a;
 		} else if (b.type === "Concatenation") {
-			if (b.elements.length === 0) return a;
+			if (b.elements.length === 0) {
+				return a;
+			}
 			b.elements.unshift(a);
 			result = b;
 		} else {
@@ -403,17 +413,23 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 
 		let result: NoParent<Alternation>;
 		if (a.type === "Alternation") {
-			if (a.alternatives.length === 0) return b;
+			if (a.alternatives.length === 0) {
+				return b;
+			}
 
 			if (b.type === "Alternation") {
-				if (b.alternatives.length === 0) return a;
+				if (b.alternatives.length === 0) {
+					return a;
+				}
 				a.alternatives.push(...b.alternatives);
 			} else {
 				a.alternatives.push(toConcatenation(b));
 			}
 			result = a;
 		} else if (b.type === "Alternation") {
-			if (b.alternatives.length === 0) return a;
+			if (b.alternatives.length === 0) {
+				return a;
+			}
 
 			b.alternatives.push(toConcatenation(a));
 			result = b;
@@ -431,7 +447,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 
 		switch (a.type) {
 			case "Quantifier": {
-				if (a.max === 0) return tc.emptyConcat();
+				if (a.max === 0) {
+					return tc.emptyConcat();
+				}
 				if (a.min === 0 || a.min === 1) {
 					a.min = 0;
 					a.max = Infinity;
@@ -445,7 +463,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 				break;
 			}
 			case "Concatenation": {
-				if (a.elements.length === 0) return a;
+				if (a.elements.length === 0) {
+					return a;
+				}
 				result = tc.quantStar([a]);
 				break;
 			}
@@ -465,7 +485,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 
 		switch (a.type) {
 			case "Quantifier": {
-				if (a.max === 0) return tc.emptyConcat();
+				if (a.max === 0) {
+					return tc.emptyConcat();
+				}
 				if (a.min === 0 || a.min === 1) {
 					a.max = Infinity;
 					return a;
@@ -478,7 +500,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 				break;
 			}
 			case "Concatenation": {
-				if (a.elements.length === 0) return a;
+				if (a.elements.length === 0) {
+					return a;
+				}
 				result = tc.quantPlus([a]);
 				break;
 			}
@@ -568,7 +592,9 @@ function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter
 		while (toProcess.size > 0) {
 			const newToProcess = new Set<RegexFANode>();
 			toProcess.forEach(state => {
-				if (!remainingStates.has(state)) return;
+				if (!remainingStates.has(state)) {
+					return;
+				}
 
 				removeTrivialReflexiveTransition(state);
 

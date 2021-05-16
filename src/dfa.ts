@@ -698,7 +698,9 @@ export namespace DFA {
 
 			const walked = new Set<Node>();
 			const walk = (node: Node): void => {
-				if (walked.has(node)) return;
+				if (walked.has(node)) {
+					return;
+				}
 				walked.add(node);
 
 				// walk all out node
@@ -899,15 +901,21 @@ function findEquivalenceClasses(
 					inArray.forEach(inNode => X.add(inNode));
 				}
 			});
-			if (X.size === 0) continue;
+			if (X.size === 0) {
+				continue;
+			}
 
 			const pToAdd: ReadonlySet<DFA.ReadonlyNode>[] = [];
 			const pToDelete: ReadonlySet<DFA.ReadonlyNode>[] = [];
 			for (const Y of P) {
 				const intersection = intersectSet(X, Y);
-				if (intersection.size === 0) continue;
+				if (intersection.size === 0) {
+					continue;
+				}
 				const without = withoutSet(Y, X);
-				if (without.size === 0) continue;
+				if (without.size === 0) {
+					continue;
+				}
 
 				pToAdd.push(intersection, without);
 				pToDelete.push(Y);

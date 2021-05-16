@@ -59,12 +59,24 @@ export function toLiteral(
 	}
 
 	let flagsString = "";
-	if (flags.global) flagsString += "g";
-	if (flags.ignoreCase) flagsString += "i";
-	if (flags.multiline) flagsString += "m";
-	if (flags.dotAll) flagsString += "s";
-	if (flags.unicode) flagsString += "u";
-	if (flags.sticky) flagsString += "y";
+	if (flags.global) {
+		flagsString += "g";
+	}
+	if (flags.ignoreCase) {
+		flagsString += "i";
+	}
+	if (flags.multiline) {
+		flagsString += "m";
+	}
+	if (flags.dotAll) {
+		flagsString += "s";
+	}
+	if (flags.unicode) {
+		flagsString += "u";
+	}
+	if (flags.sticky) {
+		flagsString += "y";
+	}
 
 	const printOptions: PrintOptions = {
 		fastCharacters,
@@ -129,7 +141,9 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 				return node.kind === "behind" ? "^" : "$";
 			}
 			let s = "(?";
-			if (node.kind === "behind") s += "<";
+			if (node.kind === "behind") {
+				s += "<";
+			}
 			s += node.negate ? "!" : "=";
 			s += alternativesToSource(node.alternatives, flags, options);
 			s += ")";
@@ -523,11 +537,15 @@ function printOutsideOfCharClass(char: Char): string {
 
 function rangeEqual(a: readonly CharRange[], b: readonly CharRange[]): boolean {
 	const l = a.length;
-	if (l !== b.length) return false;
+	if (l !== b.length) {
+		return false;
+	}
 	for (let i = 0; i < l; i++) {
 		const aR = a[i];
 		const bR = b[i];
-		if (aR.min !== bR.min || aR.max !== bR.max) return false;
+		if (aR.min !== bR.min || aR.max !== bR.max) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -621,8 +639,12 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 
 function printCharacters(chars: CharSet, flags: Flags, env: CharEnv): string {
 	// print
-	if (chars.isAll) return flags.dotAll ? "." : "[^]";
-	if (chars.isEmpty) return "[]";
+	if (chars.isAll) {
+		return flags.dotAll ? "." : "[^]";
+	}
+	if (chars.isEmpty) {
+		return "[]";
+	}
 
 	const min: Char = chars.ranges[0].min;
 	if (chars.ranges.length === 1 && min === chars.ranges[0].max) {
@@ -638,14 +660,28 @@ function printCharacters(chars: CharSet, flags: Flags, env: CharEnv): string {
 
 	// if the first min is 0, then it's most likely negated, so don't even bother checking non-negated char sets
 	if (min !== 0) {
-		if (rangeEqual(chars.ranges, env.digit.ranges)) return "\\d";
-		if (rangeEqual(chars.ranges, env.space.ranges)) return "\\s";
-		if (rangeEqual(chars.ranges, env.word.ranges)) return "\\w";
+		if (rangeEqual(chars.ranges, env.digit.ranges)) {
+			return "\\d";
+		}
+		if (rangeEqual(chars.ranges, env.space.ranges)) {
+			return "\\s";
+		}
+		if (rangeEqual(chars.ranges, env.word.ranges)) {
+			return "\\w";
+		}
 	} else {
-		if (rangeEqual(chars.ranges, env.nonDigit.ranges)) return "\\D";
-		if (rangeEqual(chars.ranges, env.nonSpace.ranges)) return "\\S";
-		if (rangeEqual(chars.ranges, env.nonWord.ranges)) return "\\W";
-		if (!flags.dotAll && rangeEqual(chars.ranges, env.nonLineTerminator.ranges)) return ".";
+		if (rangeEqual(chars.ranges, env.nonDigit.ranges)) {
+			return "\\D";
+		}
+		if (rangeEqual(chars.ranges, env.nonSpace.ranges)) {
+			return "\\S";
+		}
+		if (rangeEqual(chars.ranges, env.nonWord.ranges)) {
+			return "\\W";
+		}
+		if (!flags.dotAll && rangeEqual(chars.ranges, env.nonLineTerminator.ranges)) {
+			return ".";
+		}
 	}
 
 	const source = printCharClassContent(chars, env);
