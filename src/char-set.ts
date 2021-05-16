@@ -1,4 +1,4 @@
-import { Char } from "./core-types";
+import type { Char } from "./core-types";
 
 /**
  * An immutable interval of {@link Char}s with inclusive ends.
@@ -164,7 +164,6 @@ export class CharSet {
 	 */
 	equals(other: CharSet): boolean {
 		if (other === this) return true;
-		if (!(other instanceof CharSet)) return false;
 		if (this.maximum !== other.maximum) return false;
 		if (this.ranges.length !== other.ranges.length) return false;
 
@@ -186,7 +185,6 @@ export class CharSet {
 	 */
 	compare(other: CharSet): number {
 		if (other === this) return 0;
-		if (!(other instanceof CharSet)) return -1;
 		if (this.maximum !== other.maximum) return this.maximum - other.maximum;
 
 		// we want to guarantee that disjoint character sets are sorted by their smallest character.
@@ -312,12 +310,12 @@ export class CharSet {
 	 * @param character
 	 */
 	has(character: Char): boolean {
-		return hasEveryOfRange(this.ranges, { min: character, max: character });
+		return hasEveryOfRange(this.ranges, character, character);
 	}
 
 	isSupersetOf(other: CharSet | CharRange): boolean {
 		if (!(other instanceof CharSet)) {
-			return hasEveryOfRange(this.ranges, other);
+			return hasEveryOfRange(this.ranges, other.min, other.max);
 		}
 
 		// runs in O(this.ranges.length + other.ranges.length)
@@ -380,7 +378,7 @@ export class CharSet {
 	 */
 	commonCharacter(other: CharSet | CharRange): Char | undefined {
 		if (!(other instanceof CharSet)) {
-			return commonCharacterOfRange(this.ranges, other);
+			return commonCharacterOfRange(this.ranges, other.min, other.max);
 		}
 
 		// runs in O(this.ranges.length + other.ranges.length)
@@ -410,11 +408,10 @@ export class CharSet {
 	}
 }
 
-function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolean {
+function hasEveryOfRange(ranges: readonly CharRange[], min: Char, max: Char): boolean {
 	// runs in O(log(ranges.length))
 
 	const l = ranges.length;
-	const { min, max } = range;
 
 	// this is empty
 	if (l == 0) return false;
@@ -445,11 +442,10 @@ function hasEveryOfRange(ranges: readonly CharRange[], range: CharRange): boolea
 	return false;
 }
 
-function commonCharacterOfRange(ranges: readonly CharRange[], range: CharRange): Char | undefined {
+function commonCharacterOfRange(ranges: readonly CharRange[], min: Char, max: Char): Char | undefined {
 	// runs in O(log(ranges.length))
 
 	const l = ranges.length;
-	const { min, max } = range;
 
 	// this is empty
 	if (l == 0) return undefined;
