@@ -116,6 +116,11 @@ describe("JS.toLiteral", function () {
 				literal: /[\w-]/,
 				expected: /[-\w]/i,
 			},
+
+			{
+				literal: { source: /(abc)/.source, flags: "d" },
+				expected: { source: /abc/.source, flags: "d" },
+			},
 		]);
 	});
 
@@ -297,6 +302,12 @@ describe("JS.toLiteral", function () {
 				literal: /\w/u,
 				options: { flags: { dotAll: true, multiline: true, sticky: true } },
 				expected: /\w/msuy,
+			},
+
+			{
+				literal: /(abc)/,
+				options: { flags: { hasIndices: true } },
+				expected: { source: "(?:abc)", flags: "d" },
 			},
 		]);
 	});

@@ -59,6 +59,9 @@ export function toLiteral(
 	}
 
 	let flagsString = "";
+	if (flags.hasIndices) {
+		flagsString += "d";
+	}
 	if (flags.global) {
 		flagsString += "g";
 	}
@@ -426,6 +429,7 @@ function getFlags(
 	return {
 		dotAll: template?.dotAll,
 		global: template?.global,
+		hasIndices: template?.hasIndices,
 		ignoreCase: ignoreCase ?? true,
 		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
 		sticky: template?.sticky,
