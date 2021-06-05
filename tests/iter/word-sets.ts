@@ -1,6 +1,6 @@
 import { CharSet } from "../../src/char-set";
 import { TransitionIterable } from "../../src/common-types";
-import { iterateWordSets, shortestWordSet } from "../../src/iter";
+import { iterateWordSets, shortestRejectingWordSet, shortestWordSet } from "../../src/iter";
 import { literalToDFA, literalToENFA, literalToNFA } from "../helper/fa";
 import { assertEqualSnapshot } from "../helper/snapshot";
 
@@ -8,6 +8,11 @@ describe("word sets", function () {
 	const regexes: RegExp[] = [
 		/[]/,
 		/(?:)/,
+		/[^]?/,
+		/[^]*/,
+		/[ab]{0,7}c?[^]+a*b?|d*b*/, // == [^]*
+		/[^]+/,
+		/[^]{0,5}/,
 		/a/,
 		/a|b/,
 		/aa|b/,
@@ -62,6 +67,27 @@ describe("word sets", function () {
 					it(`${regex}`, function () {
 						const fa = toFA(regex);
 						const wordSet = shortestWordSet(fa.transitionIterator());
+						assertEqualSnapshot(this, wordSet ? wordSetToString(wordSet) : "none");
+					});
+				}
+			});
+		}
+
+		runTests("NFA", literalToNFA);
+		runTests("ENFA", literalToENFA);
+		runTests("DFA", literalToDFA);
+	});
+
+	describe(shortestRejectingWordSet.name, function () {
+		function runTests<T>(name: string, toFA: (regex: RegExp) => TransitionIterable<T>): void {
+			describe(name, function () {
+				for (const regex of regexes) {
+					it(`${regex}`, function () {
+						const fa = toFA(regex);
+						const wordSet = shortestRejectingWordSet(
+							fa.transitionIterator(),
+							regex.unicode ? CharSet.all(0x10ffff) : CharSet.all(0xffff)
+						);
 						assertEqualSnapshot(this, wordSet ? wordSetToString(wordSet) : "none");
 					});
 				}

@@ -88,3 +88,119 @@ export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>):
 		return result.map(item => item[1]);
 	}
 }
+
+/**
+ * Returns a set of shortest inputs rejected by the given iterator using the given input character set.
+ *
+ * If the iterator accepts all words, `undefined` will be returned.
+ *
+ * @param iter
+ * @param inputCharacters The set of input characters.
+ *
+ * All character sets in the returned word set will be subsets of the set of input characters.
+ *
+ * If all characters are allowed, use `CharSet.all(maxCharacter)`.
+ * @throws if the set of input characters is empty.
+ */
+export function shortestRejectingWordSet<S>(
+	iter: FAIterator<S, Iterable<[S, CharSet]>>,
+	inputCharacters: CharSet
+): CharSet[] | undefined {
+	if (inputCharacters.isEmpty) {
+		throw new Error("The input character set must contain at least one character.");
+	}
+
+	const { initial, getOut, isFinal } = ensureDeterministicOut(removeDeadStates(iter, i => i[0]));
+
+	// The idea here is to use Thompson's algorithm as described by Russ Cox
+	// (https://swtch.com/~rsc/regexp/regexp1.html) with a slight twist.
+	//
+	// In Thompson's algorithm, we have a set of states and determine the next set of states based on the current
+	// character. Thompson's algorithm will reject an input string if (1) the next set of states is empty or (2) if the
+	// string ended and the current set of states does not contain a final state.
+	//
+	// These two properties are enough to make Thompson's algorithm but they aren't enough for us. For the regex
+	// `/[^]*/`, we simply cannot find a rejecting string because there is none. Condition (1) and (2) will never apply.
+	// Instead of using a max-iterations approach, we will do something smarter. If conditions (1) and (2) do not apply
+	// to the current set of states, we will memorize this set of states. If we ever find any memorized set of states
+	// again, we know that there are no rejecting words.
+	//
+	// Note: The above memorization approach assumes that all states can eventually reach a final state.
+
+	const wordSet: CharSet[] = [];
+
+	let current: readonly S[] = [initial];
+
+	const idCache = new Map<S, number>();
+	function getMemoryKey(states: readonly S[]): string {
+		return states
+			.map(s => {
+				let id = idCache.get(s);
+				if (id === undefined) {
+					id = idCache.size;
+					idCache.set(s, id);
+				}
+				return id;
+			})
+			.sort((a, b) => a - b)
+			.join(" ");
+	}
+	const memory = new Set<string>();
+
+	while (true) {
+		if (!current.some(s => isFinal(s))) {
+			// condition (1)
+			return wordSet;
+		}
+
+		const nextSet = new Set<S>();
+		const transitions: CharSet[] = [];
+
+		for (const state of current) {
+			for (const [to, via] of getOut(state)) {
+				nextSet.add(to);
+				transitions.push(via);
+			}
+		}
+
+		const rejecting = getRejectingCharSet(transitions, inputCharacters);
+		if (rejecting === undefined) {
+			wordSet.push(inputCharacters);
+		} else {
+			wordSet.push(rejecting);
+			// condition (2)
+			return wordSet;
+		}
+
+		const next = [...nextSet];
+
+		// check if the next set of states has been memorized already and if not, memorize it.
+		const memoryKey = getMemoryKey(next);
+		if (memory.has(memoryKey)) {
+			// found loop
+			return undefined;
+		}
+		memory.add(memoryKey);
+
+		current = next;
+	}
+}
+function getRejectingCharSet(acceptingSets: readonly CharSet[], inputCharacters: CharSet): CharSet | undefined {
+	if (acceptingSets.length === 0) {
+		return inputCharacters;
+	} else {
+		const accepting = getTotal(acceptingSets);
+		if (accepting.isAll) {
+			return undefined;
+		} else {
+			return inputCharacters.without(accepting);
+		}
+	}
+}
+function getTotal(sets: readonly CharSet[]): CharSet {
+	if (sets.length === 1) {
+		return sets[0];
+	} else {
+		return sets[0].union(...sets.slice(1));
+	}
+}
