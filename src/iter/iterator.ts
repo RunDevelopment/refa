@@ -306,6 +306,8 @@ export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S,
 /**
  * Returns any one of the shortest paths accepted by the given iterator.
  *
+ * E.g. for the regex `a|b|cd`, the returned path may be `a` or `b` but not `cd`,
+ *
  * If the iterator does not accept any path, `undefined` will be returned.
  */
 export function shortestAcceptingPath<S, T>(
