@@ -1,6 +1,6 @@
 import { CharSet } from "../../src/char-set";
 import { TransitionIterable } from "../../src/common-types";
-import { iterateWordSets, shortestRejectingWordSet, shortestWordSet } from "../../src/iter";
+import { approximateRejectingWordSet, iterateWordSets, shortestWordSet } from "../../src/iter";
 import { literalToDFA, literalToENFA, literalToNFA } from "../helper/fa";
 import { assertEqualSnapshot } from "../helper/snapshot";
 
@@ -16,6 +16,7 @@ describe("word sets", function () {
 		/a/,
 		/a|b/,
 		/aa|b/,
+		/ab|ba/,
 		/a+/,
 		/a*/,
 		/a*b*c*/,
@@ -78,13 +79,13 @@ describe("word sets", function () {
 		runTests("DFA", literalToDFA);
 	});
 
-	describe(shortestRejectingWordSet.name, function () {
+	describe(approximateRejectingWordSet.name, function () {
 		function runTests<T>(name: string, toFA: (regex: RegExp) => TransitionIterable<T>): void {
 			describe(name, function () {
 				for (const regex of regexes) {
 					it(`${regex}`, function () {
 						const fa = toFA(regex);
-						const wordSet = shortestRejectingWordSet(
+						const wordSet = approximateRejectingWordSet(
 							fa.transitionIterator(),
 							regex.unicode ? CharSet.all(0x10ffff) : CharSet.all(0xffff)
 						);
@@ -97,6 +98,11 @@ describe("word sets", function () {
 		runTests("NFA", literalToNFA);
 		runTests("ENFA", literalToENFA);
 		runTests("DFA", literalToDFA);
+		runTests("DFA complement", re => {
+			const dfa = literalToDFA(re);
+			dfa.complement();
+			return dfa;
+		});
 	});
 });
 
