@@ -1,5 +1,5 @@
 import { Char, ReadonlyWord, Word } from "./core-types";
-import { cachedFunc, filterMut, firstOf, intersectSet, traverse, withoutSet } from "./util";
+import { cachedFunc, firstOf, intersectSet, traverse, withoutSet } from "./util";
 import {
 	FABuilder,
 	FAIterator,
@@ -451,105 +451,8 @@ export class DFA implements ReadonlyDFA {
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			iter = Iter.ensureDeterministicOut(iter);
-
-			const transitionSets = new Set<CharSet>();
-			traverse(iter.initial, n => {
-				const out = iter.getOut(n);
-				out.forEach(c => transitionSets.add(c));
-				return out.keys();
-			});
-
-			const alphabet = getBaseSets(transitionSets);
-
-			const idMap = new Map<InputNode, number>();
-			function getId(node: InputNode): number {
-				let value = idMap.get(node);
-				if (value === undefined) {
-					value = idMap.size;
-					idMap.set(node, value);
-				}
-				return value;
-			}
-
-			/**
-			 * This will use the subset method to construct the DFA.
-			 */
-
-			const inputNodesToDfaNodeMap = new Map<string, DFA.Node>();
-			const dfaNodeToInputNodesMap = new Map<DFA.Node, readonly InputNode[]>();
-			function getKey(nodes: readonly InputNode[]): string {
-				let key = "";
-				for (let i = 0, l = nodes.length; i < l; i++) {
-					key += "," + getId(nodes[i]).toString(16);
-				}
-				return key;
-			}
-			function getDfaNode(nodes: InputNode[]): DFA.Node {
-				// sort
-				nodes.sort((a, b) => getId(a) - getId(b));
-				// remove duplicates
-				filterMut(nodes, (n, prev) => n !== prev);
-
-				const key = getKey(nodes);
-				let dfaNode = inputNodesToDfaNodeMap.get(key);
-				if (dfaNode === undefined) {
-					// this will create a new node AND set it as final if it contains a final NFA state
-					dfaNode = nodeList.createNode();
-					if (nodes.some(n => iter.isFinal(n))) {
-						nodeList.finals.add(dfaNode);
-					}
-
-					inputNodesToDfaNodeMap.set(key, dfaNode);
-					dfaNodeToInputNodesMap.set(dfaNode, nodes);
-				}
-				return dfaNode;
-			}
-			function getInputNodes(node: DFA.Node): readonly InputNode[] {
-				const nodes = dfaNodeToInputNodesMap.get(node);
-				if (nodes === undefined) {
-					throw new Error("Unregistered DFA node.");
-				}
-				return nodes;
-			}
-			// set initial states
-			inputNodesToDfaNodeMap.set(getKey([iter.initial]), nodeList.initial);
-			dfaNodeToInputNodesMap.set(nodeList.initial, [iter.initial]);
-			if (iter.isFinal(iter.initial)) {
-				nodeList.finals.add(nodeList.initial);
-			}
-
-			function getOutNode(node: DFA.Node, baseSet: CharSet): DFA.Node | undefined {
-				const baseMin = baseSet.ranges[0].min;
-				const inputNodes = getInputNodes(node);
-				const outNodes: InputNode[] = [];
-				for (const inputNode of inputNodes) {
-					iter.getOut(inputNode).forEach((charSet, outNode) => {
-						if (charSet.has(baseMin)) {
-							outNodes.push(outNode);
-						}
-					});
-				}
-
-				if (outNodes.length === 0) {
-					// this is the most likely event, so we save all transitions which go to trap state
-					return undefined;
-				} else {
-					return getDfaNode(outNodes);
-				}
-			}
-
-			traverse(nodeList.initial, state => {
-				const nodes = new Set<DFA.Node>();
-				for (const set of alphabet) {
-					const out = getOutNode(state, set);
-					if (out) {
-						nodeList._uncheckedLinkNodesWithCharSet(state, out, set);
-						nodes.add(out);
-					}
-				}
-				return nodes;
-			});
+			const deterministicIter = Iter.makeDeterministic(nodeList, iter);
+			Iter.forEach(Iter.mapOut(deterministicIter, s => s.out.values()));
 		});
 
 		return new DFA(nodeList, options.maxCharacter);
