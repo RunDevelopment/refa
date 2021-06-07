@@ -1,6 +1,7 @@
 import { CharSet } from "./char-set";
 import { Word } from "./core-types";
 import * as Iter from "./iter";
+import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";
 import { wordSetsToWords } from "./char-util";
 import { IntersectionOptions, TransitionIterable, TransitionIterator } from "./common-types";
@@ -17,7 +18,7 @@ export function getIntersectionIterator<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
 	options?: Readonly<IntersectionOptions>
-): TransitionIterator<Iter.MapFABuilderNode> {
+): TransitionIterator<MapFABuilderNode> {
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
 	const maxNodes = options?.maxNodes ?? Infinity;
