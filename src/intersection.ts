@@ -3,7 +3,31 @@ import { Word } from "./core-types";
 import * as Iter from "./iter";
 import { MaxCharacterError } from "./errors";
 import { wordSetsToWords } from "./char-util";
-import { IntersectionOptions, TransitionIterable } from "./common-types";
+import { IntersectionOptions, TransitionIterable, TransitionIterator } from "./common-types";
+
+/**
+ * Returns a lazily-created {@link TransitionIterator} for the intersection of the two given FA.
+ *
+ * The iterator will create states as it is traversed.
+ *
+ * @param other
+ * @param options
+ */
+export function getIntersectionIterator<L, R>(
+	left: TransitionIterable<L>,
+	right: TransitionIterable<R>,
+	options?: Readonly<IntersectionOptions>
+): TransitionIterator<Iter.MapFABuilderNode> {
+	MaxCharacterError.assert(left, right, "TransitionIterable");
+
+	const maxNodes = options?.maxNodes ?? Infinity;
+	const builder =
+		maxNodes === Infinity
+			? new Iter.MapFABuilder()
+			: new Iter.MapFABuilder({ maxNodes, kind: "intersection operation" });
+
+	return Iter.intersection(builder, left.transitionIterator(), right.transitionIterator());
+}
 
 /**
  * Returns whether the languages of this and the other FA are disjoint.
@@ -23,14 +47,7 @@ export function isDisjointWith<L, R>(
 	right: TransitionIterable<R>,
 	options?: Readonly<IntersectionOptions>
 ): boolean {
-	MaxCharacterError.assert(left, right, "TransitionIterable");
-
-	const iter = Iter.intersection(
-		new Iter.MapFABuilder(),
-		left.transitionIterator(),
-		right.transitionIterator(),
-		options
-	);
+	const iter = getIntersectionIterator(left, right, options);
 
 	return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
 }
@@ -50,14 +67,7 @@ export function getIntersectionWordSets<L, R>(
 	right: TransitionIterable<R>,
 	options?: Readonly<IntersectionOptions>
 ): Iterable<CharSet[]> {
-	MaxCharacterError.assert(left, right, "TransitionIterable");
-
-	const iter = Iter.intersection(
-		new Iter.MapFABuilder(),
-		left.transitionIterator(),
-		right.transitionIterator(),
-		options
-	);
+	const iter = getIntersectionIterator(left, right, options);
 
 	return Iter.iterateWordSets(iter);
 }

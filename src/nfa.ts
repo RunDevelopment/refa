@@ -349,7 +349,7 @@ export class NFA implements ReadonlyNFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
 		const nodeList = NFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator(), options);
+			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
 
 			// traverse the whole iterator to create our NodeList
 			Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));

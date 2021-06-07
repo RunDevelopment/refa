@@ -1,34 +1,24 @@
 import { CharSet } from "../char-set";
 import { ensureDeterministicOut } from "./iterator";
-import { FABuilder, FAIterator, IntersectionOptions, TransitionIterator } from "../common-types";
-import { TooManyNodesError } from "../errors";
+import { FABuilder, FAIterator, TransitionIterator } from "../common-types";
 
 /**
  * A lazy intersection algorithm that will use the given FA builder to construct the intersection FA as the returned
  * iterator is used to traverse the FA.
  *
- * To construct the whole intersection FA use:
- *
- * ```ts
- * const iter = intersection(...);
- * traverse(mapOut(iter, n => n.out.keys()));
- * ```
+ * To construct the whole intersection FA, simply traverse the entire iterator.
  *
  * @param builder
  * @param left
  * @param right
- * @param options
  */
 export function intersection<S, L, R>(
 	builder: FABuilder<S, CharSet>,
 	left: TransitionIterator<L>,
-	right: TransitionIterator<R>,
-	options: undefined | Readonly<IntersectionOptions>
+	right: TransitionIterator<R>
 ): FAIterator<S, S> {
 	left = ensureDeterministicOut(left);
 	right = ensureDeterministicOut(right);
-
-	const maxNodes = options?.maxNodes ?? Infinity;
 
 	const leftToIndex = createIndexer<L>();
 	const rightToIndex = createIndexer<R>();
@@ -45,7 +35,6 @@ export function intersection<S, L, R>(
 		[`${leftToIndex(left.initial)};${rightToIndex(right.initial)}`]: builder.initial,
 	};
 
-	let createdNodes = 0;
 	function translate(leftNode: L, rightNode: R): S {
 		const leftKey = leftToIndex(leftNode);
 		const rightKey = rightToIndex(rightNode);
@@ -53,9 +42,6 @@ export function intersection<S, L, R>(
 
 		let node = indexTranslatorCache[key];
 		if (node === undefined) {
-			TooManyNodesError.assert(createdNodes, maxNodes, "intersection operation");
-			createdNodes++;
-
 			node = builder.createNode();
 			indexTranslatorCache[key] = node;
 			indexBackTranslatorMap.set(node, [leftNode, rightNode]);

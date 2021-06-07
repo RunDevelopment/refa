@@ -341,12 +341,7 @@ export class DFA implements ReadonlyDFA {
 			// the intersection of two DFA is also a DFA, so we can directly construct it
 
 			const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-				const iter = Iter.intersection(
-					nodeList,
-					left.transitionIterator(),
-					right.transitionIterator(),
-					options
-				);
+				const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
 
 				// traverse the whole iterator to create our NodeList
 				Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
@@ -363,8 +358,7 @@ export class DFA implements ReadonlyDFA {
 			const iter = Iter.intersection(
 				new Iter.MapFABuilder(),
 				left.transitionIterator(),
-				right.transitionIterator(),
-				options
+				right.transitionIterator()
 			);
 
 			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
