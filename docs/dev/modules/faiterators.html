@@ -97,6 +97,7 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#approximaterejectingwordset" class="tsd-kind-icon">approximate<wbr>Rejecting<wbr>Word<wbr>Set</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#canreachfinal" class="tsd-kind-icon">can<wbr>Reach<wbr>Final</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#count" class="tsd-kind-icon">count</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#createsimpletodotoptions" class="tsd-kind-icon">create<wbr>Simple<wbr>ToDot<wbr>Options</a></li>
@@ -114,7 +115,6 @@
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#mapoutiter" class="tsd-kind-icon">map<wbr>Out<wbr>Iter</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#removedeadstates" class="tsd-kind-icon">remove<wbr>Dead<wbr>States</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#shortestacceptingpath" class="tsd-kind-icon">shortest<wbr>Accepting<wbr>Path</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#shortestrejectingwordset" class="tsd-kind-icon">shortest<wbr>Rejecting<wbr>Word<wbr>Set</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#shortestwordset" class="tsd-kind-icon">shortest<wbr>Word<wbr>Set</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#todot" class="tsd-kind-icon">to<wbr>Dot</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#toregex" class="tsd-kind-icon">to<wbr>Regex</a></li>
@@ -143,6 +143,54 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+					<a name="approximaterejectingwordset" class="tsd-anchor"></a>
+					<h3>approximate<wbr>Rejecting<wbr>Word<wbr>Set</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">approximate<wbr>Rejecting<wbr>Word<wbr>Set&lt;S&gt;<span class="tsd-signature-symbol">(</span>iter<span class="tsd-signature-symbol">: </span><a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, inputCharacters<span class="tsd-signature-symbol">: </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a set of inputs rejected by the given iterator using the given input character set.</p>
+								</div>
+								<p>If the iterator accepts all words, <code>undefined</code> will be returned.</p>
+								<p>This algorithm implements an approximation to determine rejecting inputs in order to guarantee non-exponential
+									worst-case execution time. Consequently, the algorithm can&#39;t find rejecting inputs for some iterators and returns
+								<code>undefined</code> instead.</p>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>if the set of input characters is empty.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>S</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>iter: <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>inputCharacters: <a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The set of input characters.</p>
+										<p>All character sets in the returned word set will be subsets of the set of input characters.</p>
+										<p>If all characters are allowed, use <code>CharSet.all(maxCharacter)</code>.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 					<a name="canreachfinal" class="tsd-anchor"></a>
 					<h3>can<wbr>Reach<wbr>Final</h3>
@@ -894,51 +942,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
-					<a name="shortestrejectingwordset" class="tsd-anchor"></a>
-					<h3>shortest<wbr>Rejecting<wbr>Word<wbr>Set</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">shortest<wbr>Rejecting<wbr>Word<wbr>Set&lt;S&gt;<span class="tsd-signature-symbol">(</span>iter<span class="tsd-signature-symbol">: </span><a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, inputCharacters<span class="tsd-signature-symbol">: </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Returns a set of shortest inputs rejected by the given iterator using the given input character set.</p>
-								</div>
-								<p>If the iterator accepts all words, <code>undefined</code> will be returned.</p>
-								<dl class="tsd-comment-tags">
-									<dt>throws</dt>
-									<dd><p>if the set of input characters is empty.</p>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>S</h4>
-								</li>
-							</ul>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>iter: <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-								<li>
-									<h5>inputCharacters: <a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The set of input characters.</p>
-										<p>All character sets in the returned word set will be subsets of the set of input characters.</p>
-										<p>If all characters are allowed, use <code>CharSet.all(maxCharacter)</code>.</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 					<a name="shortestwordset" class="tsd-anchor"></a>
 					<h3>shortest<wbr>Word<wbr>Set</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
@@ -1165,6 +1168,9 @@
 						<a href="faiterators.html#todotattrs" class="tsd-kind-icon">To<wbr>Dot<wbr>Attrs</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<a href="faiterators.html#approximaterejectingwordset" class="tsd-kind-icon">approximate<wbr>Rejecting<wbr>Word<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#canreachfinal" class="tsd-kind-icon">can<wbr>Reach<wbr>Final</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
@@ -1214,9 +1220,6 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#shortestacceptingpath" class="tsd-kind-icon">shortest<wbr>Accepting<wbr>Path</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
-						<a href="faiterators.html#shortestrejectingwordset" class="tsd-kind-icon">shortest<wbr>Rejecting<wbr>Word<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#shortestwordset" class="tsd-kind-icon">shortest<wbr>Word<wbr>Set</a>
