@@ -109,6 +109,7 @@
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#iteratestates" class="tsd-kind-icon">iterate<wbr>States</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#iteratewordsets" class="tsd-kind-icon">iterate<wbr>Word<wbr>Sets</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#languageisfinite" class="tsd-kind-icon">language<wbr>IsFinite</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#makedeterministic" class="tsd-kind-icon">make<wbr>Deterministic</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#makeinitialfinal" class="tsd-kind-icon">make<wbr>Initial<wbr>Final</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#makeinitialnonfinal" class="tsd-kind-icon">make<wbr>Initial<wbr>Non<wbr>Final</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="faiterators.html#mapout" class="tsd-kind-icon">map<wbr>Out</a></li>
@@ -635,6 +636,44 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+					<a name="makedeterministic" class="tsd-anchor"></a>
+					<h3>make<wbr>Deterministic</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Deterministic&lt;B, I&gt;<span class="tsd-signature-symbol">(</span>builder<span class="tsd-signature-symbol">: </span><a href="../interfaces/fabuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span>, iter<span class="tsd-signature-symbol">: </span><a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">I</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">I</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This will return an iterator that iteratively create a DFA using the given <a href="../interfaces/fabuilder.html">FABuilder</a>.</p>
+								</div>
+								<p>This operation may produce up to <em>2^O(n)</em> many states. The builder should limit the number of states created.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>B</h4>
+								</li>
+								<li>
+									<h4>I</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>builder: <a href="../interfaces/fabuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>iter: <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">I</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">I</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/faiterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">B</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1202,6 +1241,9 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#languageisfinite" class="tsd-kind-icon">language<wbr>IsFinite</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<a href="faiterators.html#makedeterministic" class="tsd-kind-icon">make<wbr>Deterministic</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="faiterators.html#makeinitialfinal" class="tsd-kind-icon">make<wbr>Initial<wbr>Final</a>
