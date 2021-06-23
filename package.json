@@ -61,7 +61,7 @@
     "unicode-13.0.0": "^0.8.0"
   },
   "dependencies": {
-    "regexpp": "^3.1.0"
+    "regexpp": "^3.2.0"
   },
   "files": [
     "index.js",

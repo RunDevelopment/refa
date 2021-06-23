@@ -7,6 +7,8 @@ export interface Flags {
 	/** @default false */
 	global?: boolean;
 	/** @default false */
+	hasIndices?: boolean;
+	/** @default false */
 	ignoreCase?: boolean;
 	/** @default false */
 	multiline?: boolean;
