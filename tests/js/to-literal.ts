@@ -119,7 +119,7 @@ describe("JS.toLiteral", function () {
 
 			{
 				literal: { source: /(abc)/.source, flags: "d" },
-				expected: { source: /abc/.source, flags: "d" },
+				expected: { source: /(?:abc)/.source, flags: "" },
 			},
 		]);
 	});
