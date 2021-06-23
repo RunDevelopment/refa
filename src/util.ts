@@ -239,7 +239,7 @@ export function* repeatSequences<T, R>(
 	sequences: UnionIterable<T>,
 	concat: (list: ConcatIterable<UnionIterable<T>>) => UnionIterable<R>
 ): UnionIterable<R> {
-	sequences = LazyStableIterable.from(sequences);
+	sequences = toStableIter(sequences);
 
 	for (const count of counts) {
 		const concatSeq: UnionIterable<T>[] = [];
@@ -254,15 +254,8 @@ class LazyStableIterable<T> implements Iterable<T> {
 	private readonly _iterator: Iterator<T>;
 	private readonly _cache: T[] = [];
 	private _fullyCached = false;
-	private constructor(iter: Iterable<T>) {
+	constructor(iter: Iterable<T>) {
 		this._iterator = iter[Symbol.iterator]();
-	}
-	static from<T>(iter: Iterable<T>): LazyStableIterable<T> {
-		if (iter instanceof LazyStableIterable) {
-			return iter;
-		} else {
-			return new LazyStableIterable(iter);
-		}
 	}
 	[Symbol.iterator](): Iterator<T> {
 		if (this._fullyCached) {
@@ -296,6 +289,23 @@ class LazyStableIterable<T> implements Iterable<T> {
 		}
 	}
 }
+
+/**
+ * Returns an iterable that can be iterated multiple times.
+ *
+ * If the given iterable is already stable, the given parameter will be returned.
+ *
+ * @param iter
+ * @returns
+ */
+function toStableIter<T>(iter: Iterable<T>): Iterable<T> {
+	if (Array.isArray(iter) || iter instanceof Set || iter instanceof LazyStableIterable) {
+		return iter as Iterable<T>;
+	} else {
+		return new LazyStableIterable<T>(iter);
+	}
+}
+
 /**
  * This function only yields one array. You are not allowed to modify the yielded array and you have to make a copy of
  * it before this iterator yields the next value.
@@ -303,7 +313,7 @@ class LazyStableIterable<T> implements Iterable<T> {
  * @param sequences
  */
 function* iterateCombinations<T>(sequences: ConcatIterable<Iterable<T>>): Iterable<ConcatIterable<T>> {
-	const iterables = iterToArray(sequences).map(LazyStableIterable.from);
+	const iterables = iterToArray(sequences).map(toStableIter);
 	const iterators = iterables.map(iter => iter[Symbol.iterator]());
 	const values: T[] = [];
 

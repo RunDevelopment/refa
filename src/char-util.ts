@@ -209,14 +209,115 @@ export function rangesFromString(string: string): CharRange[] {
  * @param wordSet
  */
 export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
-	return concatSequences(wordSet.map(charSetToChars));
-}
-export function* charSetToChars(charSet: CharSet): Iterable<Char> {
-	for (const { min, max } of charSet.ranges) {
-		for (let i = min; i <= max; i++) {
-			yield i;
+	if (wordSet.length === 0) {
+		// simple base case
+		return [[]];
+	} else if (wordSet.length === 1) {
+		// This is about twice as fast as calling `concatSequences`.
+		const ranges = wordSet[0].ranges;
+		return (function* (): Iterable<Word> {
+			for (const { min, max } of ranges) {
+				for (let c = min; c <= max; c++) {
+					yield [c];
+				}
+			}
+		})();
+	}
+
+	// The overhead of `concatSequences` can be **really** high for single-character char sets.
+	// So we will try to find a subtract a non-empty suffix of single-character char sets.
+	const suffix: Word = [];
+	for (let i = wordSet.length - 1; i >= 0; i--) {
+		const ranges = wordSet[i].ranges;
+		if (ranges.length === 1 && ranges[0].min === ranges[0].max) {
+			suffix.push(ranges[0].min);
+		} else {
+			break;
 		}
 	}
+
+	if (suffix.length > 0) {
+		suffix.reverse();
+		if (suffix.length === wordSet.length) {
+			return [suffix];
+		}
+
+		wordSet = wordSet.slice(0, wordSet.length - suffix.length);
+
+		return (function* (): Iterable<Word> {
+			for (const word of wordSetToWords(wordSet)) {
+				word.push(...suffix);
+				yield word;
+			}
+		})();
+	}
+
+	return concatSequences(wordSet.map(charSetToChars));
+}
+
+export function charSetToChars(charSet: CharSet): Iterable<Char> {
+	const ranges = charSet.ranges;
+
+	// For small char sets (only a few characters), it's more efficient to return an array.
+	const charsArray = smallRangesToArray(ranges, 8);
+	if (charsArray) {
+		return charsArray;
+	}
+
+	return {
+		[Symbol.iterator](): Iterator<Char, void> {
+			let currentRangeIndex = 0;
+			let currentChar = ranges[0].min - 1;
+
+			function advance(): void {
+				if (currentRangeIndex >= ranges.length) {
+					// do nothing
+				} else {
+					currentChar++;
+					if (currentChar > ranges[currentRangeIndex].max) {
+						currentRangeIndex++;
+						if (currentRangeIndex < ranges.length) {
+							currentChar = ranges[currentRangeIndex].min;
+						}
+					}
+				}
+			}
+
+			return {
+				next(): IteratorResult<Char, void> {
+					advance();
+
+					if (currentRangeIndex >= ranges.length) {
+						return { done: true, value: undefined };
+					} else {
+						return { done: false, value: currentChar };
+					}
+				},
+			};
+		},
+	};
+}
+function smallRangesToArray(ranges: readonly CharRange[], maxSize: number): Char[] | undefined {
+	if (ranges.length > maxSize) {
+		return undefined;
+	}
+
+	const chars: Char[] = [];
+	for (const { min, max } of ranges) {
+		if (max - min >= maxSize) {
+			return undefined;
+		}
+
+		for (let c = min; c <= max; c++) {
+			chars.push(c);
+		}
+
+		if (chars.length > maxSize) {
+			return undefined;
+		}
+	}
+
+	return chars;
 }
 
 export function* wordSetsToWords(wordSets: Iterable<readonly CharSet[]>): Iterable<Word> {
