@@ -1,4 +1,4 @@
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { CharSet } from "../char-set";
 import {
 	Alternation,

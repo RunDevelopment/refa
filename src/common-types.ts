@@ -1,4 +1,4 @@
-import type { Char, ReadonlyWord, Word } from "./core-types";
+import type { Char, ReadonlyWord, Word } from "./char-types";
 import type { Expression, NoParent } from "./ast";
 import type { CharSet } from "./char-set";
 

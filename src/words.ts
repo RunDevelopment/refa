@@ -1,4 +1,4 @@
-import { Char, ReadonlyWord, Word } from "./core-types";
+import { Char, ReadonlyWord, Word } from "./char-types";
 import { CharRange, CharSet } from "./char-set";
 import { wordSetToWords as wordSetToWordsImpl } from "./char-util";
 

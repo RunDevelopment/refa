@@ -1,4 +1,4 @@
-import type { Char } from "./core-types";
+import type { Char } from "./char-types";
 
 /**
  * An immutable interval of {@link Char}s with inclusive ends.

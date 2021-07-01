@@ -1,4 +1,4 @@
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./flags";

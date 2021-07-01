@@ -1,4 +1,4 @@
-import { Char, ReadonlyWord, Word } from "./core-types";
+import { Char, ReadonlyWord, Word } from "./char-types";
 import { cachedFunc, firstOf, intersectSet, traverse, withoutSet } from "./util";
 import {
 	FABuilder,

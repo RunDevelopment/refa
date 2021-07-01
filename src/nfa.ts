@@ -12,7 +12,7 @@ import {
 } from "./common-types";
 import { rangesToString, wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
-import { Char, ReadonlyWord, Word } from "./core-types";
+import { Char, ReadonlyWord, Word } from "./char-types";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 

@@ -1,7 +1,7 @@
 import { CharSet } from "../char-set";
 import { getBaseSets } from "../char-util";
 import { FABuilder, FAIterator } from "../common-types";
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { debugAssert, filterMut, traverse } from "../util";
 import { ensureDeterministicOut } from "./iterator";
 

@@ -1,4 +1,4 @@
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
 import { assertNever } from "../util";
 import { CharRange, CharSet } from "../char-set";

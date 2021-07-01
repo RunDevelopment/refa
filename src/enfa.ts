@@ -1,6 +1,6 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
-import { Char, ReadonlyWord, Word } from "./core-types";
+import { Char, ReadonlyWord, Word } from "./char-types";
 import {
 	FABuilder,
 	FAIterator,

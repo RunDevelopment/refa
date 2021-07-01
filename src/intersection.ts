@@ -1,5 +1,5 @@
 import { CharSet } from "./char-set";
-import { Word } from "./core-types";
+import { Word } from "./char-types";
 import * as Iter from "./iter";
 import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";

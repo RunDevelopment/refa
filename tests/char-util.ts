@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { CharRange, CharSet } from "../src/char-set";
 import { getBaseSets, runEncodeCharacters } from "../src/char-util";
-import { Char } from "../src/core-types";
+import { Char } from "../src/char-types";
 import { charsFromRegex } from "./helper/chars";
 import { assertEqualSnapshot } from "./helper/snapshot";
 

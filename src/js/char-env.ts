@@ -1,6 +1,6 @@
 import { CharRange, CharSet } from "../char-set";
 import { runEncodeCharacters } from "../char-util";
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { Flags } from "./flags";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";

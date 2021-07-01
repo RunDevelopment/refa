@@ -1,4 +1,4 @@
-import { Char } from "./core-types";
+import { Char } from "./char-types";
 
 /**
  * An error that is thrown when the max characters of two or more FA or transition iterables is not the same.

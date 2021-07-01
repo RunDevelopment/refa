@@ -19,7 +19,7 @@ import {
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
-import { Char } from "../core-types";
+import { Char } from "../char-types";
 import { assertNever, filterMut } from "../util";
 
 export function emptyAlternation(): NoParent<Alternation> {

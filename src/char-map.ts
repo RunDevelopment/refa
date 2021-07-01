@@ -1,4 +1,4 @@
-import { Char } from "./core-types";
+import { Char } from "./char-types";
 import { CharRange } from "./char-set";
 
 function checkRange(range: CharRange): void {

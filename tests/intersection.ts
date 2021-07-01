@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { assert } from "chai";
 import { TransitionIterable } from "../src/common-types";
-import { ReadonlyWord } from "../src/core-types";
+import { ReadonlyWord } from "../src/char-types";
 import { DFA } from "../src/dfa";
 import { ENFA } from "../src/enfa";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "../src/intersection";
