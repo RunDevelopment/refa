@@ -106,10 +106,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="faiterator.html#deterministicout" class="tsd-kind-icon">deterministic<wbr>Out</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="faiterator.html#getout" class="tsd-kind-icon">get<wbr>Out</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="faiterator.html#initial" class="tsd-kind-icon">initial</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="faiterator.html#isfinal" class="tsd-kind-icon">is<wbr>Final</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="faiterator.html#stableout" class="tsd-kind-icon">stable<wbr>Out</a></li>
 							</ul>
 						</section>
 					</div>
@@ -117,32 +117,6 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="deterministicout" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> deterministic<wbr>Out</h3>
-					<div class="tsd-signature tsd-kind-icon">deterministic<wbr>Out<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
-					<aside class="tsd-sources">
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Whether the <a href="faiterator.html#getout">getOut</a> function is deterministic during the lifetime of the iterator.</p>
-						</div>
-						<p>Deterministic means that if the <code>getOut</code> gets called for the same state twice (or more), it will always return
-							equal values. The equality of states is defined by
-							<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality">the key equality of the Map class</a>.
-						Value equality depends on the iterator.</p>
-						<p>The equality relation of returned values is not defined by this interface. I.e. a deterministic <code>getOut</code> function
-							may return new collections/iterators on subsequent invocations as long as the collections/iterators are
-						considered equal (e.g. equal could be defined as &quot;same elements&quot;).</p>
-						<p>It is also assumed that deterministic <code>getOut</code> functions are sufficiently fast for subsequent invocations
-						(usually <code>O(1)</code> can be assumed).</p>
-						<dl class="tsd-comment-tags">
-							<dt>default</dt>
-							<dd><p>false</p>
-							</dd>
-						</dl>
-					</div>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="getout" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> get<wbr>Out</h3>
@@ -155,7 +129,7 @@
 						</div>
 						<dl class="tsd-comment-tags">
 							<dt>see</dt>
-							<dd><p><a href="faiterator.html#deterministicout">deterministicOut</a></p>
+							<dd><p><a href="faiterator.html#stableout">stableOut</a></p>
 							</dd>
 						</dl>
 					</div>
@@ -228,6 +202,31 @@
 						</ul>
 					</div>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="stableout" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> stable<wbr>Out</h3>
+					<div class="tsd-signature tsd-kind-icon">stable<wbr>Out<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Whether the <a href="faiterator.html#getout">getOut</a> function is stableOut during the lifetime of the iterator.</p>
+						</div>
+						<p>Stable means that if <code>getOut</code> gets called for the same state more than once, it will always return the same
+						value.</p>
+						<p>The sameness of states is defined by
+						<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality">the key equality of the Map class</a>.</p>
+						<p>The sameness of returned values is not defined by this interface and depends of the iterator.</p>
+						<p>I.e. a stable <code>getOut</code> function may return new collections/iterators on subsequent invocations as long as the
+							collections/iterators are considered equal (e.g. equal could be defined as &quot;same elements&quot;) by the consumer of
+						the iterator.</p>
+						<dl class="tsd-comment-tags">
+							<dt>default</dt>
+							<dd><p>false</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -246,9 +245,6 @@
 						<a href="faiterator.html" class="tsd-kind-icon">FAIterator</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="faiterator.html#deterministicout" class="tsd-kind-icon">deterministic<wbr>Out</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="faiterator.html#getout" class="tsd-kind-icon">get<wbr>Out</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
@@ -256,6 +252,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="faiterator.html#isfinal" class="tsd-kind-icon">is<wbr>Final</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="faiterator.html#stableout" class="tsd-kind-icon">stable<wbr>Out</a>
 							</li>
 						</ul>
 					</li>
