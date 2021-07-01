@@ -118,7 +118,7 @@ export class NFA implements ReadonlyNFA {
 		return {
 			initial,
 			getOut: n => n.out.keys(),
-			deterministicOut: true,
+			stableOut: true,
 			isFinal: n => finals.has(n),
 		};
 	}
@@ -128,7 +128,7 @@ export class NFA implements ReadonlyNFA {
 		return {
 			initial,
 			getOut: n => n.out,
-			deterministicOut: true,
+			stableOut: true,
 			isFinal: n => finals.has(n),
 		};
 	}

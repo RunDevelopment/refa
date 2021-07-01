@@ -94,10 +94,10 @@ export function count<S>(iter: FAIterator<S>): number {
 }
 
 /**
- * The returned iterator is guaranteed to be deterministic.
+ * The returned iterator is guaranteed to be stable.
  */
 export function ensureDeterministicOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	if (iter.deterministicOut) {
+	if (iter.stableOut) {
 		return iter;
 	} else {
 		return cacheOut(iter);
@@ -123,7 +123,7 @@ function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 			}
 			return cached;
 		},
-		deterministicOut: true,
+		stableOut: true,
 		isFinal: iter.isFinal,
 	};
 }
@@ -281,11 +281,11 @@ function createInTransitionMap<T>(
  * final.
  */
 export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	const { initial, getOut, deterministicOut, isFinal } = iter;
+	const { initial, getOut, stableOut, isFinal } = iter;
 	return {
 		initial: initial,
 		getOut,
-		deterministicOut,
+		stableOut,
 		isFinal: s => s === initial || isFinal(s),
 	};
 }
@@ -294,11 +294,11 @@ export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O>
  * non-final.
  */
 export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	const { initial, getOut, deterministicOut, isFinal } = iter;
+	const { initial, getOut, stableOut, isFinal } = iter;
 	return {
 		initial: initial,
 		getOut,
-		deterministicOut,
+		stableOut,
 		isFinal: s => s !== initial && isFinal(s),
 	};
 }

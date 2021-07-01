@@ -117,7 +117,7 @@ export class ENFA implements ReadonlyENFA {
 			return {
 				initial,
 				getOut: n => n.out.keys(),
-				deterministicOut: true,
+				stableOut: true,
 				isFinal: n => n === final,
 			};
 		}
@@ -216,7 +216,7 @@ export class ENFA implements ReadonlyENFA {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.nodes.initial,
 			getOut: n => n.out,
-			deterministicOut: true,
+			stableOut: true,
 			isFinal: n => n === this.nodes.final,
 		};
 
@@ -238,7 +238,7 @@ export class ENFA implements ReadonlyENFA {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial,
 			getOut: n => n.out,
-			deterministicOut: true,
+			stableOut: true,
 			isFinal: n => n === final,
 		};
 		return Iter.toRegex(iter, options);
@@ -248,7 +248,7 @@ export class ENFA implements ReadonlyENFA {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.nodes.initial,
 			getOut: n => n.out,
-			deterministicOut: true,
+			stableOut: true,
 			isFinal: n => n === this.nodes.final,
 		};
 

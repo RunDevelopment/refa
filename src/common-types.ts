@@ -84,27 +84,27 @@ export interface FAIterator<S, O = Iterable<S>> {
 	/**
 	 * Returns the value a state maps to.
 	 *
-	 * @see {@link deterministicOut}
+	 * @see {@link stableOut}
 	 */
 	readonly getOut: (state: S) => O;
 	/**
-	 * Whether the {@link getOut} function is deterministic during the lifetime of the iterator.
+	 * Whether the {@link getOut} function is stableOut during the lifetime of the iterator.
 	 *
-	 * Deterministic means that if the `getOut` gets called for the same state twice (or more), it will always return
-	 * equal values. The equality of states is defined by
+	 * Stable means that if `getOut` gets called for the same state more than once, it will always return the same
+	 * value.
+	 *
+	 * The sameness of states is defined by
 	 * [the key equality of the Map class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#key_equality).
-	 * Value equality depends on the iterator.
 	 *
-	 * The equality relation of returned values is not defined by this interface. I.e. a deterministic `getOut` function
-	 * may return new collections/iterators on subsequent invocations as long as the collections/iterators are
-	 * considered equal (e.g. equal could be defined as "same elements").
+	 * The sameness of returned values is not defined by this interface and depends of the iterator.
 	 *
-	 * It is also assumed that deterministic `getOut` functions are sufficiently fast for subsequent invocations
-	 * (usually `O(1)` can be assumed).
+	 * I.e. a stable `getOut` function may return new collections/iterators on subsequent invocations as long as the
+	 * collections/iterators are considered equal (e.g. equal could be defined as "same elements") by the consumer of
+	 * the iterator.
 	 *
 	 * @default false
 	 */
-	readonly deterministicOut?: boolean;
+	readonly stableOut?: boolean;
 	/**
 	 * Returns whether the given state is a final state.
 	 *
