@@ -36,9 +36,16 @@ function measure(fn: () => void, samples: number = 1, label?: string): void {
 		fn();
 		durations.push(performance.now() - start);
 	}
+	durations.sort((a, b) => a - b)
+
 	const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
 	const max = Math.max(...durations);
-	console.log(`${label ? label + ":\t" : ""}avg=${+avg.toExponential(2)}ms\tmax=${+max.toExponential(2)}ms`);
+
+	const median = durations.length % 2 === 0
+		? (durations[durations.length / 2 - 1] + durations[durations.length / 2]) / 2
+		: durations[(durations.length - 1) / 2]
+
+	console.log(`${label ? label + ":\t" : ""}avg=${+avg.toExponential(2)}ms\tmed=${+median.toExponential(2)}ms\tmax=${+max.toExponential(2)}ms`);
 }
 
 // actual debug code
