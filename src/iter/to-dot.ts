@@ -1,6 +1,6 @@
 import { FAIterator } from "../common-types";
 import { iterToArray } from "../util";
-import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
+import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
 export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDotOptions<S, T>): string {
 	const {
@@ -9,7 +9,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDo
 		getNodeAttributes = DEFAULT_GET_NODE_ATTRIBUTES,
 	} = options;
 
-	const stableIter = ensureDeterministicOut(mapOut(iter, iterToArray));
+	const stableIter = ensureStableOut(mapOut(iter, iterToArray));
 	const states: S[] = [...iterateStates(mapOutIter(stableIter, ([s]) => s))];
 
 	const index = new Map<S, number>(states.map((s, i) => [s, i]));

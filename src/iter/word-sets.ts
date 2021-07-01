@@ -1,6 +1,6 @@
 import { CharSet } from "../char-set";
 import { FAIterator } from "../common-types";
-import { ensureDeterministicOut, shortestAcceptingPath } from "./iterator";
+import { ensureStableOut, shortestAcceptingPath } from "./iterator";
 import { removeDeadStates } from "./remove-dead-states";
 
 /**
@@ -13,7 +13,7 @@ import { removeDeadStates } from "./remove-dead-states";
  * @param iter
  */
 export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Iterable<CharSet[]> {
-	const { initial, getOut, isFinal } = ensureDeterministicOut(removeDeadStates(iter, i => i[0]));
+	const { initial, getOut, isFinal } = ensureStableOut(removeDeadStates(iter, i => i[0]));
 
 	interface BFSNode {
 		state: S;
@@ -114,7 +114,7 @@ export function approximateRejectingWordSet<S>(
 		throw new Error("The input character set must contain at least one character.");
 	}
 
-	const { initial, getOut, isFinal } = ensureDeterministicOut(removeDeadStates(iter, i => i[0]));
+	const { initial, getOut, isFinal } = ensureStableOut(removeDeadStates(iter, i => i[0]));
 
 	// The idea here is to use Thompson's algorithm as described by Russ Cox
 	// (https://swtch.com/~rsc/regexp/regexp1.html) with a slight twist.

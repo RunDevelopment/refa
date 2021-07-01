@@ -1,6 +1,6 @@
 import { FAIterator } from "../common-types";
 import { iterToArray } from "../util";
-import { ensureDeterministicOut, iterateStates, mapOut, mapOutIter } from "./iterator";
+import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 
 /**
  * Returns a human readable string representation of the given FA. The FA has to have exactly one initial state.
@@ -34,7 +34,7 @@ export function toString<S, T>(
 	toString: (value: T) => string = String,
 	ordered: boolean = false
 ): string {
-	const stableIter = ensureDeterministicOut(
+	const stableIter = ensureStableOut(
 		mapOut(iter, out => {
 			const mapped = iterToArray(out).map<[S, string]>(([k, v]) => [k, toString(v)]);
 			if (!ordered) {

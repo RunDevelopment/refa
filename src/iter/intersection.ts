@@ -1,5 +1,5 @@
 import { CharSet } from "../char-set";
-import { ensureDeterministicOut } from "./iterator";
+import { ensureStableOut } from "./iterator";
 import { FABuilder, FAIterator, TransitionIterator } from "../common-types";
 
 /**
@@ -17,8 +17,8 @@ export function intersection<S, L, R>(
 	left: TransitionIterator<L>,
 	right: TransitionIterator<R>
 ): FAIterator<S, S> {
-	left = ensureDeterministicOut(left);
-	right = ensureDeterministicOut(right);
+	left = ensureStableOut(left);
+	right = ensureStableOut(right);
 
 	const leftToIndex = createIndexer<L>();
 	const rightToIndex = createIndexer<R>();

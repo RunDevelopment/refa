@@ -3,7 +3,7 @@ import { getBaseSets } from "../char-util";
 import { FABuilder, FAIterator } from "../common-types";
 import { Char } from "../char-types";
 import { debugAssert, filterMut, traverse } from "../util";
-import { ensureDeterministicOut } from "./iterator";
+import { ensureStableOut } from "./iterator";
 
 /**
  * This will return an iterator that iteratively create a DFA using the given {@link FABuilder}.
@@ -14,7 +14,7 @@ export function makeDeterministic<B, I>(
 	builder: FABuilder<B, CharSet>,
 	iter: FAIterator<I, Iterable<[I, CharSet]>>
 ): FAIterator<B, B> {
-	iter = ensureDeterministicOut(iter);
+	iter = ensureStableOut(iter);
 
 	const alphabet = getBaseSets(getAllCharSets(iter));
 

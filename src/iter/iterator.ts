@@ -96,7 +96,7 @@ export function count<S>(iter: FAIterator<S>): number {
 /**
  * The returned iterator is guaranteed to be stable.
  */
-export function ensureDeterministicOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
+export function ensureStableOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	if (iter.stableOut) {
 		return iter;
 	} else {
@@ -241,7 +241,7 @@ export function languageIsFinite<S>(iter: FAIterator<S>): boolean {
 	 * many words as we like making the language infinite.
 	 */
 
-	iter = ensureDeterministicOut(mapOut(iter, iterToArray));
+	iter = ensureStableOut(mapOut(iter, iterToArray));
 
 	const states = [...iterateStates(iter)];
 	const finals = states.filter(iter.isFinal);

@@ -1,5 +1,5 @@
 import { FAIterator } from "../common-types";
-import { ensureDeterministicOut } from "./iterator";
+import { ensureStableOut } from "./iterator";
 
 /**
  * Removes all dead states (and trap states) from the given iterator.
@@ -7,7 +7,7 @@ import { ensureDeterministicOut } from "./iterator";
  * Note: This will iteratively create a complete copy of the given FA. This method is an expensive operation.
  */
 export function removeDeadStates<S, O>(iter: FAIterator<S, Iterable<O>>, select: (item: O) => S): FAIterator<S, O[]> {
-	const { initial, getOut: oldGetOut, isFinal } = ensureDeterministicOut(iter);
+	const { initial, getOut: oldGetOut, isFinal } = ensureStableOut(iter);
 
 	const cache = new Map<S, boolean>();
 	function canReachFinal(state: S): boolean {
