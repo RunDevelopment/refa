@@ -1,6 +1,6 @@
 import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
-import { assertNever } from "../util";
+import { assertNever, cachedFunc } from "../util";
 import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
@@ -81,38 +81,44 @@ export function toLiteral(
 		flagsString += "y";
 	}
 
-	const printOptions: PrintOptions = {
-		fastCharacters,
+	const env = getCharEnv(flags);
+
+	const printCharSet = createCharacterPrinter(fastCharacters, flags, env);
+
+	const context: PrintContext = {
+		flags,
+		printCharSet,
 		env: getCharEnv(flags),
 	};
 
 	return {
-		source: toSource(value, flags, printOptions),
+		source: toSource(value, context),
 		flags: flagsString,
 	};
 }
 
-interface PrintOptions {
-	readonly fastCharacters: boolean;
-	readonly env: CharEnv;
-}
-
-function toSource(
-	value: NoParent<Node> | readonly NoParent<Concatenation>[],
-	flags: Flags,
-	options: PrintOptions
-): string {
-	if (Array.isArray(value)) {
-		return alternativesToSource(value as readonly NoParent<Concatenation>[], flags, options);
+function createCharacterPrinter(fastCharacters: boolean, flags: Flags, env: CharEnv): (value: CharSet) => string {
+	if (fastCharacters) {
+		return cachedFunc(printCharactersFast);
 	} else {
-		return nodeToSource(value as NoParent<Node>, flags, options);
+		return cachedFunc<CharSet, string>(cs => printCharacters(cs, flags, env));
 	}
 }
-function alternativesToSource(
-	alternatives: readonly NoParent<Concatenation>[],
-	flags: Flags,
-	options: PrintOptions
-): string {
+
+interface PrintContext {
+	readonly printCharSet: (value: CharSet) => string;
+	readonly env: CharEnv;
+	readonly flags: Flags;
+}
+
+function toSource(value: NoParent<Node> | readonly NoParent<Concatenation>[], context: PrintContext): string {
+	if (Array.isArray(value)) {
+		return alternativesToSource(value as readonly NoParent<Concatenation>[], context);
+	} else {
+		return nodeToSource(value as NoParent<Node>, context);
+	}
+}
+function alternativesToSource(alternatives: readonly NoParent<Concatenation>[], context: PrintContext): string {
 	if (alternatives.length === 0) {
 		return "[]";
 	} else {
@@ -124,23 +130,23 @@ function alternativesToSource(
 			} else {
 				s += "|";
 			}
-			s += nodeToSource(a, flags, options);
+			s += nodeToSource(a, context);
 		}
 		return s;
 	}
 }
-function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions): string {
+function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 	switch (node.type) {
 		case "Alternation": {
-			const assertion = isBoundaryAssertion(node, options.env);
+			const assertion = isBoundaryAssertion(node, context.env);
 			if (assertion) {
 				return assertion;
 			}
 
-			return "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
+			return "(?:" + alternativesToSource(node.alternatives, context) + ")";
 		}
 		case "Assertion": {
-			if (isEdgeAssertion(node, flags, options.env)) {
+			if (isEdgeAssertion(node, context.flags, context.env)) {
 				return node.kind === "behind" ? "^" : "$";
 			}
 			let s = "(?";
@@ -148,42 +154,38 @@ function nodeToSource(node: NoParent<Node>, flags: Flags, options: PrintOptions)
 				s += "<";
 			}
 			s += node.negate ? "!" : "=";
-			s += alternativesToSource(node.alternatives, flags, options);
+			s += alternativesToSource(node.alternatives, context);
 			s += ")";
 			return s;
 		}
 		case "CharacterClass": {
-			if (node.characters.maximum !== options.env.maxCharacter) {
-				throw new Error(`All characters were expected to have a maximum of ${options.env.maxCharacter}.`);
+			if (node.characters.maximum !== context.env.maxCharacter) {
+				throw new Error(`All characters were expected to have a maximum of ${context.env.maxCharacter}.`);
 			}
 
-			if (options.fastCharacters) {
-				return printCharactersFast(node.characters);
-			} else {
-				return printCharacters(node.characters, flags, options.env);
-			}
+			return context.printCharSet(node.characters);
 		}
 		case "Concatenation": {
 			let s = "";
 			for (const element of node.elements) {
-				s += nodeToSource(element, flags, options);
+				s += nodeToSource(element, context);
 			}
 			return s;
 		}
 		case "Expression": {
-			return alternativesToSource(node.alternatives, flags, options);
+			return alternativesToSource(node.alternatives, context);
 		}
 		case "Quantifier": {
 			let s;
 			if (node.alternatives.length === 1 && node.alternatives[0].elements.length === 1) {
 				const e = node.alternatives[0].elements[0];
 				if (e.type === "Alternation" || e.type === "CharacterClass") {
-					s = nodeToSource(node.alternatives[0], flags, options);
+					s = nodeToSource(node.alternatives[0], context);
 				} else {
-					s = "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
+					s = "(?:" + alternativesToSource(node.alternatives, context) + ")";
 				}
 			} else {
-				s = "(?:" + alternativesToSource(node.alternatives, flags, options) + ")";
+				s = "(?:" + alternativesToSource(node.alternatives, context) + ")";
 			}
 
 			if (node.min === 0 && node.max === Infinity) {
