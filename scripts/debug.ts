@@ -30,14 +30,19 @@ function toRegExp(value: FiniteAutomaton | CharSet | NoParent<Expression>): RegE
 	}
 	return RegExp(literal.source, literal.flags);
 }
-function measure(fn: () => void, samples: number = 1, label?: string): void {
+function measure<T>(fn: () => T, samples: number = 1, label?: string): T {
 	const durations: number[] = [];
-	for (let i = 0; i < samples; i++) {
+	let result: T;
+
+	do {
 		const start = performance.now();
-		fn();
+		result = fn();
 		durations.push(performance.now() - start);
-	}
-	logDurations(durations, label);
+	} while (--samples > 0);
+
+	logDurations(durations, label ?? fn.toString().replace(/^\(\) => /, ""));
+
+	return result
 }
 
 // actual debug code
