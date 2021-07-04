@@ -6,7 +6,7 @@ function strictEqualFn<T>(a: T, b: T): boolean {
 }
 
 export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
-	isEmpty: boolean;
+	readonly isEmpty: boolean;
 
 	/**
 	 * Returns whether the given character is a key in the map.
