@@ -157,11 +157,12 @@
 						<p>This is one of the core concepts of refa. Instead of operating on JavaScript strings, UTF16 character codes, or
 							Unicode code points, this library uses plain numbers instead. This makes refa agnostic to text encodings and even
 						text in general since the integers used as character may represent arbitrary concepts.</p>
-						<p>The only 2 restrictions on the numbers that can be characters:</p>
+						<p>There are only 2 restrictions on the numbers that can be characters:</p>
 						<ol>
 							<li> They have to be non-negative integers.</li>
 							<li> They can be at most <code>Number.MAX_SAFE_INTEGER</code>.</li>
 						</ol>
+						<hr>
 						<p>This type serves as a way to document characters. It is a clear way to signal that a value is not just any number.</p>
 					</div>
 				</section>
