@@ -238,12 +238,13 @@ export class DFA implements ReadonlyDFA {
 
 		const mapping = new Map<DFA.Node, DFA.Node>();
 		P.forEach(eqClass => {
+			if (eqClass.size === 1) {
+				return;
+			}
+
 			let first: DFA.Node | undefined = undefined;
 			if (eqClass.has(this.nodes.initial)) {
 				first = this.nodes.initial;
-			}
-			if (eqClass.size === 0) {
-				throw new Error("Empty equivalence class");
 			}
 			eqClass.forEach(node => {
 				if (first === undefined) {
@@ -255,12 +256,14 @@ export class DFA implements ReadonlyDFA {
 				mapping.set(node, first);
 			});
 		});
+
+		if (mapping.size === 0) {
+			// the DFA is already minimized
+			return;
+		}
+
 		const translate = (node: DFA.Node): DFA.Node => {
-			const mappedNode = mapping.get(node);
-			if (mappedNode === undefined) {
-				throw new Error("Unmapped node");
-			}
-			return mappedNode;
+			return mapping.get(node) ?? node;
 		};
 
 		// adjust nodes
