@@ -5,10 +5,12 @@
  * Unicode code points, this library uses plain numbers instead. This makes refa agnostic to text encodings and even
  * text in general since the integers used as character may represent arbitrary concepts.
  *
- * The only 2 restrictions on the numbers that can be characters:
+ * There are only 2 restrictions on the numbers that can be characters:
  *
  * 1.  They have to be non-negative integers.
  * 2.  They can be at most `Number.MAX_SAFE_INTEGER`.
+ *
+ * ---
  *
  * This type serves as a way to document characters. It is a clear way to signal that a value is not just any number.
  */
