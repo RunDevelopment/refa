@@ -1,24 +1,6 @@
 import { Char } from "./char-types";
 import { CharRange } from "./char-set";
 
-function checkRange(range: CharRange): void {
-	const { min, max } = range;
-
-	if (min > max) {
-		throw new RangeError(`min has to be less or equal to max. (min=${min}, max=${max})`);
-	}
-	if (!Number.isInteger(min) || min < 0) {
-		throw new TypeError(`min has to be a non-negative integer. (min=${min})`);
-	}
-	if (!Number.isInteger(max) || max < 0) {
-		throw new TypeError(`max has to be a non-negative integer. (max=${max})`);
-	}
-}
-function checkChar(char: Char): void {
-	if (!Number.isInteger(char) || char < 0) {
-		throw new TypeError(`The given character has to be a non-negative integer. (char=${char})`);
-	}
-}
 function strictEqualFn<T>(a: T, b: T): boolean {
 	return a === b;
 }
@@ -89,13 +71,9 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	}
 
 	has(char: Char): boolean {
-		if (!Number.isFinite(char)) {
-			return false;
-		}
 		return this._tree.nodeOf(char) !== null;
 	}
 	hasEvery(chars: CharRange): boolean {
-		checkRange(chars);
 		const { min, max } = chars;
 
 		// get nodes which contain min and max
@@ -122,20 +100,15 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		return true;
 	}
 	hasSome(chars: CharRange): boolean {
-		checkRange(chars);
 		return this._tree.nodeInRange(chars) !== null;
 	}
 
 	get(char: Char): T | undefined {
-		if (!Number.isFinite(char)) {
-			return undefined; // char is NaN, Inf, or -Inf
-		}
 		const node = this._tree.nodeOf(char);
 		return node ? node.value : undefined;
 	}
 
 	set(char: Char, value: T): void {
-		checkChar(char);
 		this._tree.deleteCharacter(char);
 		this._tree.insert({ min: char, max: char }, value);
 	}
@@ -149,15 +122,11 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 * @param value
 	 */
 	setEvery(chars: CharRange, value: T): void {
-		checkRange(chars);
 		this._tree.deleteRange(chars);
 		this._tree.insert(chars, value);
 	}
 
 	delete(char: Char): boolean {
-		if (!Number.isFinite(char)) {
-			return false;
-		}
 		const result = this._tree.deleteCharacter(char);
 		return result;
 	}
@@ -170,7 +139,6 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 * @param range
 	 */
 	deleteEvery(range: CharRange): void {
-		checkRange(range);
 		this._tree.deleteRange(range);
 	}
 

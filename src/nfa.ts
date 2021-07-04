@@ -454,9 +454,6 @@ export class NFA implements ReadonlyNFA {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 				}
-				if (!Number.isInteger(char)) {
-					throw new Error(`All characters have to be integers, ${char} is not.`);
-				}
 
 				for (const [to, chars] of node.out) {
 					if (chars.has(char)) {

@@ -410,9 +410,6 @@ export class DFA implements ReadonlyDFA {
 					if (char > maxCharacter) {
 						throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
 					}
-					if (!Number.isInteger(char)) {
-						throw new Error(`All characters have to be integers, ${char} is not.`);
-					}
 
 					let next = node.out.get(char);
 					if (next === undefined) {

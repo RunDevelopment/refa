@@ -134,27 +134,6 @@ export class CharSet {
 		}
 	}
 
-	private _toRanges(value: CharSet): readonly CharRange[];
-	private _toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange>;
-	private _toRanges(value: CharSet | Iterable<CharRange>): Iterable<CharRange> {
-		if (value instanceof CharSet) {
-			this._checkCompatibility(value);
-			return value.ranges;
-		} else {
-			return value;
-		}
-	}
-
-	private _checkRange(range: CharRange): CharRange {
-		if (range.min < 0 || range.min > range.max || range.max > this.maximum) {
-			throw new RangeError(`min=${range.min} has to be >= 0 and <= max.`);
-		}
-		if (range.max > this.maximum) {
-			throw new RangeError(`max=${range.max} has to be <= maximum=${this.maximum}.`);
-		}
-		return range;
-	}
-
 	/**
 	 * Returns whether this and the given character set are equivalent.
 	 *
@@ -264,8 +243,16 @@ export class CharSet {
 
 		const newRanges: CharRange[] = this.ranges.slice();
 		for (const rangesOrSet of data) {
-			for (const range of this._toRanges(rangesOrSet)) {
-				newRanges.push(this._checkRange(range));
+			if (rangesOrSet instanceof CharSet) {
+				this._checkCompatibility(rangesOrSet);
+				newRanges.push(...rangesOrSet.ranges);
+			} else {
+				for (const range of rangesOrSet) {
+					if (range.max > this.maximum) {
+						throw new RangeError(`max=${range.max} has to be <= maximum=${this.maximum}.`);
+					}
+					newRanges.push(range);
+				}
 			}
 		}
 
