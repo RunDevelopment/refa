@@ -23,13 +23,8 @@ describe("CharMap", function () {
 		assert.strictEqual(map.has(3), true);
 		assert.strictEqual(map.has(4), false);
 
-		assert.strictEqual(map.has(-Infinity), false);
-		assert.strictEqual(map.has(-100), false);
-		assert.strictEqual(map.has(-1), false);
 		assert.strictEqual(map.has(2.5), false);
 		assert.strictEqual(map.has(100), false);
-		assert.strictEqual(map.has(Infinity), false);
-		assert.strictEqual(map.has(NaN), false);
 
 		assert.strictEqual(map.get(0), undefined);
 		assert.strictEqual(map.get(1), undefined);
@@ -37,21 +32,11 @@ describe("CharMap", function () {
 		assert.strictEqual(map.get(3), "d");
 		assert.strictEqual(map.get(4), undefined);
 
-		assert.strictEqual(map.get(-Infinity), undefined);
-		assert.strictEqual(map.get(-100), undefined);
-		assert.strictEqual(map.get(-1), undefined);
 		assert.strictEqual(map.get(2.5), undefined);
 		assert.strictEqual(map.get(100), undefined);
-		assert.strictEqual(map.get(Infinity), undefined);
-		assert.strictEqual(map.get(NaN), undefined);
 
-		assert.strictEqual(map.delete(-Infinity), false);
-		assert.strictEqual(map.delete(-100), false);
-		assert.strictEqual(map.delete(-1), false);
 		assert.strictEqual(map.delete(2.5), false);
 		assert.strictEqual(map.delete(100), false);
-		assert.strictEqual(map.delete(Infinity), false);
-		assert.strictEqual(map.delete(NaN), false);
 
 		assertEqual(map, [
 			[{ min: 2, max: 2 }, "c"],
@@ -78,44 +63,6 @@ describe("CharMap", function () {
 			[{ min: 0, max: 0 }, "a"],
 			[{ min: 5, max: 16 }, "b"],
 		]);
-
-		assert.throws(() => {
-			map.setEvery({ min: -1, max: 1 }, "e");
-		});
-		assert.throws(() => {
-			map.setEvery({ min: 5, max: 1 }, "e");
-		});
-		assert.throws(() => {
-			map.setEvery({ min: 0.1, max: 2.3 }, "e");
-		});
-		assert.throws(() => {
-			map.setEvery({ min: 1, max: Infinity }, "e");
-		});
-		assert.throws(() => {
-			map.setEvery({ min: 1, max: NaN }, "e");
-		});
-		assert.throws(() => {
-			map.setEvery({ min: -Infinity, max: 1 }, "e");
-		});
-
-		assert.throws(() => {
-			map.deleteEvery({ min: -1, max: 1 });
-		});
-		assert.throws(() => {
-			map.deleteEvery({ min: 5, max: 1 });
-		});
-		assert.throws(() => {
-			map.deleteEvery({ min: 0.1, max: 2.3 });
-		});
-		assert.throws(() => {
-			map.deleteEvery({ min: 1, max: Infinity });
-		});
-		assert.throws(() => {
-			map.deleteEvery({ min: 1, max: NaN });
-		});
-		assert.throws(() => {
-			map.deleteEvery({ min: -Infinity, max: 1 });
-		});
 	});
 
 	it("merge adjacent", function () {
