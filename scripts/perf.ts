@@ -1,6 +1,7 @@
 import { NFA, DFA, JS } from "../src";
 import { PrismRegexes } from "../tests/helper/prism-regex-data";
 import { performance } from "perf_hooks";
+import { logDurations } from "./util";
 
 
 function perfTest(): void {
@@ -15,13 +16,7 @@ function perfTest(): void {
 	function showResult(): void {
 		const maxLen = Math.max(...Object.keys(durationRecord).map(s => s.length));
 		for (const key in durationRecord) {
-			const durations = durationRecord[key];
-			const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
-			const max = Math.max(...durations);
-
-			console.log(
-				`${(key + ":").padEnd(maxLen)}\tavg=${Number(avg.toExponential(2))}ms\tmax=${Number(max.toExponential(2))}ms`
-			);
+			logDurations(durationRecord[key], (key + ":").padEnd(maxLen));
 		}
 	}
 
