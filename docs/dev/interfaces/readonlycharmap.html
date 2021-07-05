@@ -109,6 +109,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#has" class="tsd-kind-icon">has</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#hasevery" class="tsd-kind-icon">has<wbr>Every</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#hassome" class="tsd-kind-icon">has<wbr>Some</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#invert" class="tsd-kind-icon">invert</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#keys" class="tsd-kind-icon">keys</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="readonlycharmap.html#values" class="tsd-kind-icon">values</a></li>
 							</ul>
@@ -312,6 +313,33 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="invert" class="tsd-anchor"></a>
+					<h3>invert</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">invert<span class="tsd-signature-symbol">(</span>maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a mapping from the values of this map to its keys.</p>
+								</div>
+								<p><strong>Note</strong>: This will ignore the supplied or default equality function. Value are assumed to be equal based on the key
+								equality function defined by <code>Map</code>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>maxCharacter: <a href="../modules.html#char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><a href="../classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="keys" class="tsd-anchor"></a>
 					<h3>keys</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -376,6 +404,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="readonlycharmap.html#hassome" class="tsd-kind-icon">has<wbr>Some</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="readonlycharmap.html#invert" class="tsd-kind-icon">invert</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="readonlycharmap.html#keys" class="tsd-kind-icon">keys</a>
