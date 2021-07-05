@@ -5,7 +5,7 @@ import { Alias, Binary_Property, General_Category, Script, Script_Extensions } f
 
 interface CacheEntry {
 	readonly value: CharSet;
-	negated: CharSet | undefined;
+	readonly negated: CharSet;
 }
 
 export function getProperty(
@@ -16,9 +16,6 @@ export function getProperty(
 ): CharSet {
 	const entry = getCacheEntry(key, value, env);
 	if (negated) {
-		if (!entry.negated) {
-			entry.negated = entry.value.negate();
-		}
 		return entry.negated;
 	} else {
 		return entry.value;
@@ -42,11 +39,12 @@ function getCacheEntry(key: string, value: string | null, env: CharEnv & CharEnv
 }
 
 function newCacheEntry(key: string, value: string | null, env: CharEnv & CharEnvUnicode): CacheEntry {
-	let set = env.empty.union(getPropertyRanges(key, value));
+	const set = env.empty.union(getPropertyRanges(key, value));
 	if (env.ignoreCase) {
-		set = env.withCaseVaryingCharacters(set);
+		return { value: env.withCaseVaryingCharacters(set), negated: env.withCaseVaryingCharacters(set.negate()) };
+	} else {
+		return { value: set, negated: set.negate() };
 	}
-	return { value: set, negated: undefined };
 }
 
 function getPropertyRanges(key: string, value: string | null): readonly CharRange[] {
