@@ -1051,10 +1051,10 @@ function getCharacterClassCacheKey(
 	for (const e of elements) {
 		switch (e.type) {
 			case "Character":
-				s += "\\" + e.value.toString(16);
+				s += "x" + e.value.toString(16);
 				break;
 			case "CharacterClassRange":
-				s += "\\" + e.min.value.toString(16) + "-\\" + e.max.value.toString(16);
+				s += "x" + e.min.value.toString(16) + "-x" + e.max.value.toString(16);
 				break;
 			case "CharacterSet":
 				s += e.raw;
