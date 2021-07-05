@@ -93,9 +93,9 @@
 								<li class="tsd-kind-interface"><a href="interfaces/concatenation.html" class="tsd-kind-icon">Concatenation</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/expression.html" class="tsd-kind-icon">Expression</a></li>
 								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/fabuilder.html" class="tsd-kind-icon">FABuilder</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/facreationoptions.html" class="tsd-kind-icon">FACreation<wbr>Options</a></li>
 								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/faiterator.html" class="tsd-kind-icon">FAIterator</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/finiteautomaton.html" class="tsd-kind-icon">Finite<wbr>Automaton</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/intersectionoptions.html" class="tsd-kind-icon">Intersection<wbr>Options</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/quantifier.html" class="tsd-kind-icon">Quantifier</a></li>
 								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/readonlycharmap.html" class="tsd-kind-icon">Readonly<wbr>Char<wbr>Map</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/readonlydfa.html" class="tsd-kind-icon">ReadonlyDFA</a></li>
@@ -290,7 +290,7 @@
 					<a name="getintersectioniterator" class="tsd-anchor"></a>
 					<h3>get<wbr>Intersection<wbr>Iterator</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Iterator&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="modules/faiterators.html#mapfabuildernode" class="tsd-signature-type" data-tsd-kind="Type alias">MapFABuilderNode</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Iterator&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="modules.html#transitioniterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="modules/faiterators.html#mapfabuildernode" class="tsd-signature-type" data-tsd-kind="Type alias">MapFABuilderNode</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -320,7 +320,7 @@
 									<h5>right: <a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -333,7 +333,7 @@
 					<a name="getintersectionwordsets" class="tsd-anchor"></a>
 					<h3>get<wbr>Intersection<wbr>Word<wbr>Sets</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -369,7 +369,7 @@
 									<h5>right: <a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -380,7 +380,7 @@
 					<a name="getintersectionwords" class="tsd-anchor"></a>
 					<h3>get<wbr>Intersection<wbr>Words</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Words&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Words&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -415,7 +415,7 @@
 									<h5>right: <a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#word" class="tsd-signature-type" data-tsd-kind="Type alias">Word</a><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -426,7 +426,7 @@
 					<a name="isdisjointwith" class="tsd-anchor"></a>
 					<h3>is<wbr>Disjoint<wbr>With</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Disjoint<wbr>With&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Disjoint<wbr>With&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -459,7 +459,7 @@
 									<h5>right: <a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/intersectionoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">IntersectionOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -695,14 +695,14 @@
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/fabuilder.html" class="tsd-kind-icon">FABuilder</a>
 					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/facreationoptions.html" class="tsd-kind-icon">FACreation<wbr>Options</a>
+					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/faiterator.html" class="tsd-kind-icon">FAIterator</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/finiteautomaton.html" class="tsd-kind-icon">Finite<wbr>Automaton</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/intersectionoptions.html" class="tsd-kind-icon">Intersection<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/quantifier.html" class="tsd-kind-icon">Quantifier</a>

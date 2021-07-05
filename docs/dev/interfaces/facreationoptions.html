@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IntersectionOptions | refa - v0.8.0</title>
+	<title>FACreationOptions | refa - v0.8.0</title>
 	<meta name="description" content="Documentation for refa - v0.8.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -53,10 +53,10 @@
 					<a href="../modules.html">refa - v0.8.0</a>
 				</li>
 				<li>
-					<a href="intersectionoptions.html">IntersectionOptions</a>
+					<a href="facreationoptions.html">FACreationOptions</a>
 				</li>
 			</ul>
-			<h1>Interface IntersectionOptions</h1>
+			<h1>Interface FACreationOptions</h1>
 		</div>
 	</div>
 </header>
@@ -67,7 +67,18 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">IntersectionOptions</span>
+						<span class="target">FACreationOptions</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="dfa.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a>
+							</li>
+							<li>
+								<a href="enfa.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a>
+							</li>
+							<li>
+								<a href="nfa.creationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -78,7 +89,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="intersectionoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="facreationoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a></li>
 							</ul>
 						</section>
 					</div>
@@ -94,14 +105,13 @@
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>The maximum number of nodes the intersection operation is allowed to create before throwing a
-							<code>TooManyNodesError</code>.</p>
+							<p>The maximum number of nodes the operation is allowed to create before throwing a <code>TooManyNodesError</code>.</p>
 						</div>
-						<p>If the maximum number of nodes is unset or set to <code>Infinity</code>, the intersection operation may create as many nodes
-						as necessary to construct the intersection. This might cause the machine to run out of memory.</p>
+						<p>If the maximum number of nodes is unset or set to <code>Infinity</code>, the operation may create as many nodes as
+						necessary. This might cause the machine to run out of memory.</p>
 						<dl class="tsd-comment-tags">
 							<dt>default</dt>
-							<dd><p>Infinity</p>
+							<dd><p>10000</p>
 							</dd>
 						</dl>
 					</div>
@@ -121,10 +131,10 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="intersectionoptions.html" class="tsd-kind-icon">Intersection<wbr>Options</a>
+						<a href="facreationoptions.html" class="tsd-kind-icon">FACreation<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="intersectionoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a>
+								<a href="facreationoptions.html#maxnodes" class="tsd-kind-icon">max<wbr>Nodes</a>
 							</li>
 						</ul>
 					</li>
