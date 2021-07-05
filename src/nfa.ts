@@ -3,9 +3,9 @@ import { CharSet } from "./char-set";
 import { assertNever, cachedFunc, traverse } from "./util";
 import {
 	FABuilder,
+	FACreationOptions,
 	FAIterator,
 	FiniteAutomaton,
-	IntersectionOptions,
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
@@ -45,17 +45,17 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	/**
 	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
 	 */
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean;
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean;
 	/**
 	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
 	 */
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word>;
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word>;
 	/**
 	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
 	 */
 	getIntersectionWordSets<O>(
 		other: TransitionIterable<O>,
-		options?: Readonly<IntersectionOptions>
+		options?: Readonly<FACreationOptions>
 	): Iterable<CharSet[]>;
 
 	/**
@@ -184,15 +184,15 @@ export class NFA implements ReadonlyNFA {
 		);
 	}
 
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): boolean {
+	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean {
 		return isDisjointWith(this, other, options);
 	}
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<IntersectionOptions>): Iterable<Word> {
+	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
 		return getIntersectionWords(this, other, options);
 	}
 	getIntersectionWordSets<O>(
 		other: TransitionIterable<O>,
-		options?: Readonly<IntersectionOptions>
+		options?: Readonly<FACreationOptions>
 	): Iterable<CharSet[]> {
 		return getIntersectionWordSets(this, other, options);
 	}
@@ -344,7 +344,7 @@ export class NFA implements ReadonlyNFA {
 	static fromIntersection<L, R>(
 		left: TransitionIterable<L>,
 		right: TransitionIterable<R>,
-		options?: Readonly<IntersectionOptions & NFA.CreationOptions>
+		options?: Readonly<NFA.CreationOptions>
 	): NFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
@@ -762,7 +762,7 @@ export namespace NFA {
 	/**
 	 * Options for the constraints on how a NFA will be created.
 	 */
-	export interface CreationOptions {
+	export interface CreationOptions extends FACreationOptions {
 		/**
 		 * The maximum number of nodes the NFA creation operation is allowed to create before throwing a
 		 * `TooManyNodesError`.

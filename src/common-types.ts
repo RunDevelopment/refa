@@ -157,6 +157,18 @@ export interface FABuilder<S, T> {
 	readonly linkNodes: (from: S, to: S, transition: T) => void;
 }
 
+export interface FACreationOptions {
+	/**
+	 * The maximum number of nodes the operation is allowed to create before throwing a `TooManyNodesError`.
+	 *
+	 * If the maximum number of nodes is unset or set to `Infinity`, the operation may create as many nodes as
+	 * necessary. This might cause the machine to run out of memory.
+	 *
+	 * @default 10000
+	 */
+	maxNodes?: number;
+}
+
 /**
  * An {@link FAIterator} where transitions are map of states to character sets.
  *
@@ -191,17 +203,4 @@ export interface ToRegexOptions {
 	 * The default number of passes is implementation defined.
 	 */
 	maxOptimizationPasses?: number;
-}
-
-export interface IntersectionOptions {
-	/**
-	 * The maximum number of nodes the intersection operation is allowed to create before throwing a
-	 * `TooManyNodesError`.
-	 *
-	 * If the maximum number of nodes is unset or set to `Infinity`, the intersection operation may create as many nodes
-	 * as necessary to construct the intersection. This might cause the machine to run out of memory.
-	 *
-	 * @default Infinity
-	 */
-	maxNodes?: number;
 }

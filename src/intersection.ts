@@ -4,7 +4,7 @@ import * as Iter from "./iter";
 import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";
 import { wordSetsToWords } from "./char-util";
-import { IntersectionOptions, TransitionIterable, TransitionIterator } from "./common-types";
+import { FACreationOptions, TransitionIterable, TransitionIterator } from "./common-types";
 
 /**
  * Returns a lazily-created {@link TransitionIterator} for the intersection of the two given FA.
@@ -17,7 +17,7 @@ import { IntersectionOptions, TransitionIterable, TransitionIterator } from "./c
 export function getIntersectionIterator<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<IntersectionOptions>
+	options?: Readonly<FACreationOptions>
 ): TransitionIterator<MapFABuilderNode> {
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
@@ -42,7 +42,7 @@ export function getIntersectionIterator<L, R>(
 export function isDisjointWith<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<IntersectionOptions>
+	options?: Readonly<FACreationOptions>
 ): boolean {
 	const iter = getIntersectionIterator(left, right, options);
 
@@ -62,7 +62,7 @@ export function isDisjointWith<L, R>(
 export function getIntersectionWordSets<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<IntersectionOptions>
+	options?: Readonly<FACreationOptions>
 ): Iterable<CharSet[]> {
 	const iter = getIntersectionIterator(left, right, options);
 
@@ -81,7 +81,7 @@ export function getIntersectionWordSets<L, R>(
 export function getIntersectionWords<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<IntersectionOptions>
+	options?: Readonly<FACreationOptions>
 ): Iterable<Word> {
 	return wordSetsToWords(getIntersectionWordSets(left, right, options));
 }
