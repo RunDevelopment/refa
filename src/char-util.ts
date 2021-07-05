@@ -1,6 +1,5 @@
 import { Char, Word } from "./char-types";
 import { CharRange, CharSet } from "./char-set";
-import { ReadonlyCharMap } from "./char-map";
 import { concatSequences, iterToSet } from "./util";
 
 export function isChar(value: unknown): value is Char {
