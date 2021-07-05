@@ -16,9 +16,9 @@ export class MapFABuilder implements FABuilder<MapFABuilderNode, CharSet> {
 	readonly initial: MapFABuilderNode = new Map();
 	readonly finals = new Set<MapFABuilderNode>();
 
-	constructor(limit?: { maxNodes: number; kind: string }) {
-		if (limit) {
-			this._limit = { current: 0, maxNodes: limit.maxNodes, kind: limit.kind };
+	constructor(maxNodes: number = Infinity, kind?: string) {
+		if (maxNodes < Infinity) {
+			this._limit = { current: 0, maxNodes, kind: kind ?? "MapFABuilder" };
 		}
 	}
 
