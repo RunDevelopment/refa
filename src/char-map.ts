@@ -1,5 +1,5 @@
 import { Char } from "./char-types";
-import { CharRange } from "./char-set";
+import { CharRange, CharSet } from "./char-set";
 
 function strictEqualFn<T>(a: T, b: T): boolean {
 	return a === b;
@@ -50,6 +50,14 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	keys(): Iterable<CharRange>;
 	values(): Iterable<T>;
 	entries(range?: CharRange): Iterable<[CharRange, T]>;
+
+	/**
+	 * Returns a mapping from the values of this map to its keys.
+	 *
+	 * **Note**: This will ignore the supplied or default equality function. Value are assumed to be equal based on the key
+	 * equality function defined by `Map`.
+	 */
+	invert(maxCharacter: Char): Map<T, CharSet>;
 }
 
 /**
@@ -154,6 +162,24 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this._tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
 		});
+	}
+
+	invert(maxCharacter: Char): Map<T, CharSet> {
+		const rangeMap = new Map<T, CharRange[]>();
+
+		this.forEach((value, range) => {
+			let array = rangeMap.get(value);
+			if (array === undefined) {
+				rangeMap.set(value, (array = []));
+			}
+			array.push(range);
+		});
+
+		const map = new Map<T, CharSet>();
+		for (const [value, ranges] of rangeMap) {
+			map.set(value, CharSet.empty(maxCharacter).union(ranges));
+		}
+		return map;
 	}
 
 	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void {

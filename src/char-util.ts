@@ -136,24 +136,6 @@ export function decomposeIntoBaseSets(set: CharSet, baseSets: readonly CharSet[]
 	return res;
 }
 
-export function invertCharMap<T>(charMap: ReadonlyCharMap<T>, maximum: Char): Map<T, CharSet> {
-	const rangeMap = new Map<T, CharRange[]>();
-
-	charMap.forEach((value, range) => {
-		let array = rangeMap.get(value);
-		if (array === undefined) {
-			rangeMap.set(value, (array = []));
-		}
-		array.push(range);
-	});
-
-	const map = new Map<T, CharSet>();
-	for (const [value, ranges] of rangeMap) {
-		map.set(value, CharSet.empty(maximum).union(ranges));
-	}
-	return map;
-}
-
 /**
  * Returns a string representation of the given character ranges.
  *

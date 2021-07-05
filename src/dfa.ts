@@ -11,14 +11,7 @@ import {
 } from "./common-types";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
-import {
-	decomposeIntoBaseSets,
-	getBaseSets,
-	invertCharMap,
-	isChar,
-	rangesToString,
-	wordSetsToWords,
-} from "./char-util";
+import { decomposeIntoBaseSets, getBaseSets, isChar, rangesToString, wordSetsToWords } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -117,7 +110,7 @@ export class DFA implements ReadonlyDFA {
 
 		return {
 			initial: this.nodes.initial,
-			getOut: n => invertCharMap(n.out, maximum),
+			getOut: n => n.out.invert(maximum),
 			isFinal: n => finals.has(n),
 		};
 	}
@@ -739,7 +732,7 @@ function findEquivalenceClasses(
 	//  3. Create the in map of all nodes
 	traverse(nodeList.initial, node => {
 		allNodes.push(node);
-		const out = invertCharMap(node.out, maxCharacter);
+		const out = node.out.invert(maxCharacter);
 		out.forEach((cs, n) => {
 			allCharacterSets.add(cs);
 			getInMap(n).set(node, cs);
