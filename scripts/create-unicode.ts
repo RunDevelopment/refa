@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { CharSet } from "../src/char-set";
-import { runEncodeCharacters } from "../src/char-util";
 import * as aliases from "../src/js/unicode/alias";
 import { printRanges } from "./util";
 
@@ -34,7 +33,7 @@ import { CharRange } from "../../char-set";
 
 	for (const prop of values) {
 		const codePoints: number[] = require(`unicode-13.0.0/${category}/${prop}/code-points`);
-		const ranges = CharSet.empty(0x10FFFF).union(runEncodeCharacters(codePoints)).ranges;
+		const ranges = CharSet.fromCharacters(0x10FFFF, codePoints).ranges;
 
 		code += `export const ${prop}: readonly CharRange[] = ${printRanges(ranges)};\n`;
 	}

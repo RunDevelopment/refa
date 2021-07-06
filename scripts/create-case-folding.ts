@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { CharSet } from "../src/char-set";
-import { runEncodeCharacters } from "../src/char-util";
 import { printRanges } from "./util";
 
 
@@ -67,7 +66,7 @@ function createCaseFoldingFile(
 	});
 
 	let count = 0;
-	const CASE_VARYING = CharSet.empty(maxCharacter).union(runEncodeCharacters(function* () {
+	const CASE_VARYING = CharSet.fromCharacters(maxCharacter, function* () {
 		for (let i = 0; i < maxCharacter; i++) {
 			const fold = caseFolding[i];
 			if (fold.indexOf(i) === -1) {
@@ -78,7 +77,7 @@ function createCaseFoldingFile(
 				yield i;
 			}
 		}
-	}()));
+	}());
 
 	const map: Record<number, number[]> = {};
 	caseFolding.forEach((fold, i) => {
@@ -101,9 +100,8 @@ import { CharSet } from "${"../".repeat(filename.split(/\//g).length)}char-set";
 /**
  * A character set of all characters that have at least one case variation.
  */
-export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${
-	printRanges(CASE_VARYING.ranges)
-});
+export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${printRanges(CASE_VARYING.ranges)
+		});
 
 /**
  * A map for a given character to all it case variations. The list of case variations also includes the key character
@@ -111,9 +109,8 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  *
  * If the given character do not have case variations, it will not be part of this map.
  */
-export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${
-	JSON.stringify(JSON.stringify(map))
-});
+export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${JSON.stringify(JSON.stringify(map))
+		});
 `;
 
 	fs.writeFileSync(path.join(__dirname, "../src/js", filename), code, "utf-8");

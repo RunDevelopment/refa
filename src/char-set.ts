@@ -83,7 +83,7 @@ export class CharSet {
 	/**
 	 * Returns an iterable of all characters in this set.
 	 *
-	 * Characters are in ascending order and each character is yielded exactly once.
+	 * Characters are sorted by ascending order and each character is yielded exactly once.
 	 *
 	 * Note: The iterable is stable. It can be iterated multiple times.
 	 */
@@ -157,6 +157,33 @@ export class CharSet {
 			allCache.set(maximum, allSet);
 		}
 		return allSet;
+	}
+	/**
+	 * Returns a character set which contains the given characters.
+	 *
+	 * @param maximum The greatest character which will be element of the set.
+	 * @param characters A sorted collection of characters.
+	 * @throws {@link `RangeError`} If the given collection is not sorted or contains characters greater than `maximum`.
+	 */
+	static fromCharacters(maximum: Char, characters: Iterable<Char>): CharSet {
+		const ranges = runEncodeCharacters(characters);
+
+		if (ranges.length === 0) {
+			return CharSet.empty(maximum);
+		}
+
+		const last = ranges[ranges.length - 1];
+		if (last.max > maximum) {
+			throw new RangeError(
+				`The character iterable contained the char ${last.max} but all chars have to be <= maximum=${maximum}.`
+			);
+		}
+
+		if (ranges.length === 1 && last.min === 0 && last.max === maximum) {
+			return CharSet.all(maximum);
+		}
+
+		return new CharSet(maximum, ranges);
 	}
 
 	private _checkCompatibility(value: CharSet): void {
@@ -794,4 +821,40 @@ function smallRangesToArray(ranges: readonly CharRange[], maxSize: number): Char
 	}
 
 	return chars;
+}
+
+function runEncodeCharacters(characters: Iterable<Char>): CharRange[] {
+	// runs in O(characters.length)
+
+	const ranges: CharRange[] = [];
+
+	let start: Char | undefined = undefined;
+	let length = 0;
+
+	for (const i of characters) {
+		if (start === undefined) {
+			start = i;
+			length = 1;
+		} else {
+			const end: Char = start + length;
+
+			if (i === end) {
+				length++;
+			} else if (i > end) {
+				ranges.push({ min: start, max: end - 1 });
+				start = i;
+				length = 1;
+			} else if (i === end - 1) {
+				// we ignore duplicates
+			} else {
+				throw new RangeError("The character iterable has to be sorted.");
+			}
+		}
+	}
+
+	if (start !== undefined) {
+		ranges.push({ min: start, max: start + length - 1 });
+	}
+
+	return ranges;
 }

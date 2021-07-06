@@ -1,5 +1,4 @@
 import { CharRange, CharSet } from "../char-set";
-import { runEncodeCharacters } from "../char-util";
 import { Char } from "../char-types";
 import { Flags } from "./flags";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
@@ -230,7 +229,7 @@ function withCaseVaryingCharacters(
 	const caseVariationArray = [...caseVariationSet];
 	caseVariationArray.sort((a, b) => a - b);
 
-	return cs.union(runEncodeCharacters(caseVariationArray));
+	return cs.union(CharSet.fromCharacters(cs.maximum, caseVariationArray));
 }
 
 export function getCharEnv(flags: Readonly<Flags>): CharEnv {

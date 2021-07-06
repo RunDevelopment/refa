@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { CharRange, CharSet } from "../src/char-set";
+import { Char } from "../src/char-types";
 import { charsFromRegex } from "./helper/chars";
 
 function toRanges(input: (string | number | CharRange | [number, number])[]): CharRange[] {
@@ -213,6 +214,36 @@ describe("CharSet", function () {
 				}
 			});
 		}
+	});
+
+	describe(CharSet.fromCharacters.name, function () {
+		const valid: readonly Char[] = [1, 2, 3, 5, 6, 9, 10, 11, 17];
+		const expectedForValid: CharRange[] = [
+			{ min: 1, max: 3 },
+			{ min: 5, max: 6 },
+			{ min: 9, max: 11 },
+			{ min: 17, max: 17 },
+		];
+
+		it("simple", function () {
+			assert.deepEqual(CharSet.fromCharacters(255, valid).ranges, expectedForValid);
+		});
+
+		it("with duplicates", function () {
+			const withDuplicates = [...valid, ...valid].sort((a, b) => a - b);
+
+			assert.deepEqual(CharSet.fromCharacters(255, withDuplicates).ranges, expectedForValid);
+		});
+
+		it("unsorted", function () {
+			const unsorted = [...valid].reverse();
+
+			assert.throws(() => CharSet.fromCharacters(255, unsorted));
+		});
+
+		it("maximum", function () {
+			assert.throws(() => CharSet.fromCharacters(8, valid));
+		});
 	});
 
 	describe("Combinations", function () {

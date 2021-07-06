@@ -7,33 +7,6 @@ export function isChar(value: unknown): value is Char {
 }
 
 /**
- * Converts the given iterable of sorted unique numbers to a optimal iterable of character ranges.
- *
- * @param chars
- */
-export function* runEncodeCharacters(chars: Iterable<Char>): Iterable<CharRange> {
-	let start = -1;
-	let length = 0;
-
-	for (const i of chars) {
-		if (start === -1) {
-			start = i;
-			length = 1;
-		} else if (i === start + length) {
-			length++;
-		} else {
-			yield { min: start, max: start + length - 1 };
-			start = i;
-			length = 1;
-		}
-	}
-
-	if (length > 0) {
-		yield { min: start, max: start + length - 1 };
-	}
-}
-
-/**
  * Returns an array of disjoint non-empty sets that can used to construct all given sets.
  *
  * If the union of all given character sets is empty, the empty array will be returned.
