@@ -163,7 +163,7 @@ export class CharSet {
 	 *
 	 * @param maximum The greatest character which will be element of the set.
 	 * @param characters A sorted collection of characters.
-	 * @throws {@link `RangeError`} If the given collection is not sorted or contains characters greater than `maximum`.
+	 * @throws `RangeError` if the given collection is not sorted or contains characters greater than `maximum`.
 	 */
 	static fromCharacters(maximum: Char, characters: Iterable<Char>): CharSet {
 		const ranges = runEncodeCharacters(characters);
