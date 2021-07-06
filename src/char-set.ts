@@ -81,6 +81,17 @@ export class CharSet {
 	}
 
 	/**
+	 * Returns an iterable of all characters in this set.
+	 *
+	 * Characters are in ascending order and each character is yielded exactly once.
+	 *
+	 * Note: The iterable is stable. It can be iterated multiple times.
+	 */
+	characters(): Iterable<Char> {
+		return toCharacters(this.ranges);
+	}
+
+	/**
 	 * Returns a string representation of the character set.
 	 */
 	toString(): string {
@@ -698,4 +709,66 @@ function negateRanges(ranges: readonly CharRange[], maximum: Char): CharRange[] 
 
 		return result;
 	}
+}
+
+/**
+ * Returns an iterable of characters from the given ranges.
+ */
+function toCharacters(ranges: readonly CharRange[]): Iterable<Char> {
+	// For small char sets (only a few characters), it's more efficient to return an array.
+	const charsArray = smallRangesToArray(ranges, 8);
+	if (charsArray) {
+		return charsArray;
+	}
+
+	return {
+		[Symbol.iterator](): Iterator<Char, void> {
+			let currentRangeIndex = 0;
+			let currentChar = ranges[0].min - 1;
+
+			function advance(): void {
+				if (currentRangeIndex >= ranges.length) {
+					// do nothing
+				} else {
+					currentChar++;
+					if (currentChar > ranges[currentRangeIndex].max) {
+						currentRangeIndex++;
+						if (currentRangeIndex < ranges.length) {
+							currentChar = ranges[currentRangeIndex].min;
+						}
+					}
+				}
+			}
+
+			return {
+				next(): IteratorResult<Char, void> {
+					advance();
+
+					if (currentRangeIndex >= ranges.length) {
+						return { done: true, value: undefined };
+					} else {
+						return { done: false, value: currentChar };
+					}
+				},
+			};
+		},
+	};
+}
+function smallRangesToArray(ranges: readonly CharRange[], maxSize: number): Char[] | undefined {
+	if (ranges.length > maxSize) {
+		return undefined;
+	}
+
+	const chars: Char[] = [];
+	for (const { min, max } of ranges) {
+		if (chars.length + max - min >= maxSize) {
+			return undefined;
+		}
+
+		for (let c = min; c <= max; c++) {
+			chars.push(c);
+		}
+	}
+
+	return chars;
 }

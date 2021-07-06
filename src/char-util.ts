@@ -233,72 +233,7 @@ export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
 		})();
 	}
 
-	return concatSequences(wordSet.map(charSetToChars));
-}
-
-export function charSetToChars(charSet: CharSet): Iterable<Char> {
-	const ranges = charSet.ranges;
-
-	// For small char sets (only a few characters), it's more efficient to return an array.
-	const charsArray = smallRangesToArray(ranges, 8);
-	if (charsArray) {
-		return charsArray;
-	}
-
-	return {
-		[Symbol.iterator](): Iterator<Char, void> {
-			let currentRangeIndex = 0;
-			let currentChar = ranges[0].min - 1;
-
-			function advance(): void {
-				if (currentRangeIndex >= ranges.length) {
-					// do nothing
-				} else {
-					currentChar++;
-					if (currentChar > ranges[currentRangeIndex].max) {
-						currentRangeIndex++;
-						if (currentRangeIndex < ranges.length) {
-							currentChar = ranges[currentRangeIndex].min;
-						}
-					}
-				}
-			}
-
-			return {
-				next(): IteratorResult<Char, void> {
-					advance();
-
-					if (currentRangeIndex >= ranges.length) {
-						return { done: true, value: undefined };
-					} else {
-						return { done: false, value: currentChar };
-					}
-				},
-			};
-		},
-	};
-}
-function smallRangesToArray(ranges: readonly CharRange[], maxSize: number): Char[] | undefined {
-	if (ranges.length > maxSize) {
-		return undefined;
-	}
-
-	const chars: Char[] = [];
-	for (const { min, max } of ranges) {
-		if (max - min >= maxSize) {
-			return undefined;
-		}
-
-		for (let c = min; c <= max; c++) {
-			chars.push(c);
-		}
-
-		if (chars.length > maxSize) {
-			return undefined;
-		}
-	}
-
-	return chars;
+	return concatSequences(wordSet.map(cs => cs.characters()));
 }
 
 export function* wordSetsToWords(wordSets: Iterable<readonly CharSet[]>): Iterable<Word> {

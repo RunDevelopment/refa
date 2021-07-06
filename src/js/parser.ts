@@ -25,7 +25,6 @@ import {
 	repeatSequences,
 	unionSequences,
 } from "../util";
-import { charSetToChars } from "../char-util";
 import { createAssertion } from "./create-assertion";
 import { createCharSet } from "./create-char-set";
 import { Literal } from "./literal";
@@ -1135,7 +1134,7 @@ function removeDuplicateEmptyAlternative(element: NoParent<Expression | Alternat
 type CharSetToCharsFn = (charSet: CharSet) => Iterable<LogicalChar>;
 function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 	if (!flags.ignoreCase) {
-		return charSetToChars;
+		return cs => cs.characters();
 	} else {
 		const env = getCharEnv(flags);
 		if (!env.ignoreCase) {
@@ -1147,7 +1146,7 @@ function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 		return function* charSetToLogicalChars(charSet: CharSet): Iterable<LogicalChar> {
 			const seen = new Set<Char>();
 
-			for (const c of charSetToChars(charSet)) {
+			for (const c of charSet.characters()) {
 				if (seen.has(c)) {
 					continue;
 				}
