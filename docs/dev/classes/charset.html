@@ -111,6 +111,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#issubsetof" class="tsd-kind-icon">is<wbr>Subset<wbr>Of</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#issupersetof" class="tsd-kind-icon">is<wbr>Superset<wbr>Of</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#negate" class="tsd-kind-icon">negate</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#torangesstring" class="tsd-kind-icon">to<wbr>Ranges<wbr>String</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#tostring" class="tsd-kind-icon">to<wbr>String</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#union" class="tsd-kind-icon">union</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charset.html#without" class="tsd-kind-icon">without</a></li>
@@ -492,6 +493,39 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="torangesstring" class="tsd-anchor"></a>
+					<h3>to<wbr>Ranges<wbr>String</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">to<wbr>Ranges<wbr>String<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a string representation of the ranges of this character set.</p>
+								</div>
+								<p>The string representation has the following rules:</p>
+								<ol>
+									<li>Each character is represented as a hexadecimal number.</li>
+									<li>Each range where <code>min == max</code> will be represented by the <code>min</code> character.</li>
+									<li>Each range where <code>min != max</code> will be represented by <code>min</code> followed by <code>&quot;..&quot;</code> followed by <code>max</code>.</li>
+									<li>The sequence of ranges will be joined together using <code>&quot;, &quot;</code>.</li>
+								</ol>
+								<p>The returned string representation will have the following format:</p>
+								<pre><code><span style="color: #001080">string</span><span style="color: #000000"> = [ </span><span style="color: #001080">ranges</span><span style="color: #000000"> ]</span>
+<span style="color: #001080">ranges</span><span style="color: #000000"> = </span><span style="color: #001080">range</span><span style="color: #000000"> *( </span><span style="color: #A31515">&quot;, &quot;</span><span style="color: #000000"> </span><span style="color: #001080">range</span><span style="color: #000000"> )</span>
+<span style="color: #001080">range</span><span style="color: #000000">  = </span><span style="color: #001080">hex</span><span style="color: #000000"> [ </span><span style="color: #A31515">&quot;..&quot;</span><span style="color: #000000"> </span><span style="color: #001080">hex</span><span style="color: #000000"> ]</span>
+<span style="color: #001080">hex</span><span style="color: #000000">    = </span><span style="color: #A31515">&quot;a&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;b&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;c&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;d&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;e&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;f&quot;</span><span style="color: #000000"> | </span><span style="color: #001080">digit</span>
+<span style="color: #001080">digit</span><span style="color: #000000">  = </span><span style="color: #A31515">&quot;0&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;1&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;2&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;3&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;4&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;5&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;6&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;7&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;8&quot;</span><span style="color: #000000"> | </span><span style="color: #A31515">&quot;9&quot;</span>
+</code></pre>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="tostring" class="tsd-anchor"></a>
 					<h3>to<wbr>String</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -704,6 +738,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="charset.html#negate" class="tsd-kind-icon">negate</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="charset.html#torangesstring" class="tsd-kind-icon">to<wbr>Ranges<wbr>String</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="charset.html#tostring" class="tsd-kind-icon">to<wbr>String</a>
