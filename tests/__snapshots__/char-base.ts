@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-module.exports["char-util >> getBaseSets"] = `
+module.exports["CharBase >> base sets"] = `
 Input: /a/u /b/u
 CharSet (1114111) [61]
 CharSet (1114111) [62]

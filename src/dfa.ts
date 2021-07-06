@@ -11,7 +11,8 @@ import {
 } from "./common-types";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
-import { decomposeIntoBaseSets, getBaseSets, isChar, wordSetsToWords } from "./char-util";
+import { CharBase } from "./char-base";
+import { isChar, wordSetsToWords } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -746,12 +747,12 @@ function findEquivalenceClasses(
 	// because in JS regex unicode mode, character sets can contain 1 million characters, so iterating over all of them
 	// is not feasible. To make this more efficient, we use the base sets of all the character sets in the given DFA
 	// instead. The base sets are a set of non-empty disjoint character sets from which all other character sets in the
-	// DFA can be constructed (via union). If we then decompose all character sets in the DFA into their base sets, we
+	// DFA can be constructed (via union). If we then split all character sets in the DFA into their base sets, we
 	// will create a new alphabet (of base sets) that behaves like the "original" alphabet. The only difference is that
 	// alphabet of base sets is MUCH smaller. The total number of base sets is bound by both the total number of unique
 	// character sets in the DFA and the number of character in the original alphabet.
-	const baseSets = getBaseSets(allCharacterSets);
-	const decompose = cachedFunc<CharSet, readonly number[]>(set => decomposeIntoBaseSets(set, baseSets));
+	const base = new CharBase(allCharacterSets);
+	const split = cachedFunc<CharSet, readonly number[]>(set => base.split(set));
 
 	// determine the incoming nodes by base set for all nodes
 	//
@@ -760,7 +761,7 @@ function findEquivalenceClasses(
 	const getIn = cachedFunc<DFA.ReadonlyNode, readonly (readonly DFA.ReadonlyNode[])[]>(node => {
 		const inArray: DFA.ReadonlyNode[][] = [];
 		getInMap(node).forEach((cs, n) => {
-			decompose(cs).forEach(baseIndex => {
+			split(cs).forEach(baseIndex => {
 				const value = inArray[baseIndex];
 				if (value) {
 					value.push(n);
@@ -783,7 +784,7 @@ function findEquivalenceClasses(
 		W.delete(A);
 
 		// this essentially loops through all characters
-		for (let baseIndex = 0, l = baseSets.length; baseIndex < l; baseIndex++) {
+		for (let baseIndex = 0, l = base.sets.length; baseIndex < l; baseIndex++) {
 			const X = new Set<DFA.ReadonlyNode>();
 			A.forEach(node => {
 				const inArray = getIn(node)[baseIndex];

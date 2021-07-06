@@ -1,12 +1,12 @@
 import { assert } from "chai";
+import { CharBase } from "../src/char-base";
 import { CharSet } from "../src/char-set";
-import { getBaseSets } from "../src/char-util";
 import { Char } from "../src/char-types";
 import { charsFromRegex } from "./helper/chars";
 import { assertEqualSnapshot } from "./helper/snapshot";
 
-describe("char-util", function () {
-	it(getBaseSets.name, function () {
+describe(CharBase.name, function () {
+	it("base sets", function () {
 		const regexes: RegExp[] = [/a/u, /b/u, /c/u, /\w/u, /\d/u, /\p{L}/u, /\p{Lu}/u, /\p{Ll}/u, /[^]/u, /[]/u];
 		const chars = regexes.map(charsFromRegex);
 
@@ -29,25 +29,25 @@ describe("char-util", function () {
 
 		const actual = cases
 			.map(({ id, sets }) => {
-				const baseSets = getBaseSets(sets);
+				const base = new CharBase(sets);
 
 				assert.isTrue(
-					baseSets.every(b => !b.isEmpty),
+					base.sets.every(b => !b.isEmpty),
 					"Expected all base sets to be non-empty"
 				);
 				assert.isTrue(
-					unionAll(sets).equals(unionAll(baseSets)),
+					unionAll(sets).equals(unionAll(base.sets)),
 					"Expected the union of all base sets to be equal to the union of all input sets."
 				);
-				for (let i = 0; i < baseSets.length; i++) {
-					const a = baseSets[i];
-					for (let j = i + 1; j < baseSets.length; j++) {
-						const b = baseSets[j];
+				for (let i = 0; i < base.sets.length; i++) {
+					const a = base.sets[i];
+					for (let j = i + 1; j < base.sets.length; j++) {
+						const b = base.sets[j];
 						assert.isTrue(a.isDisjointWith(b), "Expected base sets to be disjoint with each other.");
 					}
 				}
 
-				return ["Input: " + id, ...getBaseSets(sets).map(c => c.toString())].join("\n");
+				return ["Input: " + id, ...base.sets.map(c => c.toString())].join("\n");
 			})
 			.join("\n\n");
 

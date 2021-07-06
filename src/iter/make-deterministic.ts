@@ -1,5 +1,5 @@
 import { CharSet } from "../char-set";
-import { getBaseSets } from "../char-util";
+import { CharBase } from "../char-base";
 import { FABuilder, FAIterator } from "../common-types";
 import { Char } from "../char-types";
 import { debugAssert, filterMut, traverse } from "../util";
@@ -16,7 +16,7 @@ export function makeDeterministic<B, I>(
 ): FAIterator<B, B> {
 	iter = ensureStableOut(iter);
 
-	const alphabet = getBaseSets(getAllCharSets(iter));
+	const alphabet = new CharBase(getAllCharSets(iter));
 
 	const idMap = new Map<I, number>();
 	function getId(node: I): number {
@@ -95,7 +95,7 @@ export function makeDeterministic<B, I>(
 		initial: builder.initial,
 		getOut: state => {
 			const inputNodes = getInputNodes(state);
-			for (const set of alphabet) {
+			for (const set of alphabet.sets) {
 				const out = getOutNode(inputNodes, set.ranges[0].min);
 				if (out) {
 					builder.linkNodes(state, out, set);
