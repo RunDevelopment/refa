@@ -112,7 +112,7 @@ export class CharSet {
 	 * ```
 	 * string = [ ranges ]
 	 * ranges = range *( ", " range )
-	 * range  = hex [ ".." hex ]
+	 * range  = +hex [ ".." +hex ]
 	 * hex    = "a" | "b" | "c" | "d" | "e" | "f" | digit
 	 * digit  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 	 * ```
