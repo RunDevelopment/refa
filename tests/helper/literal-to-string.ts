@@ -1,5 +1,4 @@
 import { Concatenation, Element, NoParent, Node } from "../../src/ast";
-import { rangesToString } from "../../src/char-util";
 import { assertNever } from "../../src/util";
 
 function toPatternConcatenation(concat: NoParent<Concatenation>): string {
@@ -21,7 +20,7 @@ function toPatternElement(element: NoParent<Element>): string {
 			return `(?${kind}${negate}${toPatternAlternatives(element.alternatives)})`;
 		}
 		case "CharacterClass": {
-			return `[${rangesToString(element.characters.ranges)}]`;
+			return `[${element.characters.toRangesString()}]`;
 		}
 		case "Quantifier": {
 			let quant: string;

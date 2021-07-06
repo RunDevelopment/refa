@@ -13,7 +13,7 @@ import {
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
-import { rangesToString, wordSetsToWords } from "./char-util";
+import { wordSetsToWords } from "./char-util";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 
@@ -226,7 +226,7 @@ export class ENFA implements ReadonlyENFA {
 				if (cs === null) {
 					return "ε";
 				} else {
-					return rangesToString(cs);
+					return cs.toRangesString();
 				}
 			},
 			true
@@ -254,7 +254,7 @@ export class ENFA implements ReadonlyENFA {
 
 		const toString: (charSet: null | CharSet) => string = charSetToString
 			? cs => (cs === null ? "" : charSetToString!(cs))
-			: cs => (cs === null ? "" : rangesToString(cs));
+			: cs => (cs === null ? "" : cs.toRangesString());
 
 		return Iter.toDot(iter, Iter.createSimpleToDotOptions(toString, true));
 	}

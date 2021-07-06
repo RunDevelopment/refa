@@ -11,7 +11,7 @@ import {
 } from "./common-types";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
-import { decomposeIntoBaseSets, getBaseSets, isChar, rangesToString, wordSetsToWords } from "./char-util";
+import { decomposeIntoBaseSets, getBaseSets, isChar, wordSetsToWords } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -143,7 +143,7 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	toString(): string {
-		return Iter.toString(this.transitionIterator(), rangesToString);
+		return Iter.toString(this.transitionIterator(), cs => cs.toRangesString());
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
@@ -153,7 +153,7 @@ export class DFA implements ReadonlyDFA {
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
 		return Iter.toDot(
 			this.transitionIterator(),
-			Iter.createSimpleToDotOptions(charSetToString || rangesToString, false)
+			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toRangesString()), false)
 		);
 	}
 

@@ -95,6 +95,29 @@ export class CharSet {
 	 * Returns a string representation of the character set.
 	 */
 	toString(): string {
+		return `CharSet (${this.maximum}) [${this.toRangesString()}]`;
+	}
+	/**
+	 * Returns a string representation of the ranges of this character set.
+	 *
+	 * The string representation has the following rules:
+	 *
+	 * 1. Each character is represented as a hexadecimal number.
+	 * 2. Each range where `min == max` will be represented by the `min` character.
+	 * 3. Each range where `min != max` will be represented by `min` followed by `".."` followed by `max`.
+	 * 4. The sequence of ranges will be joined together using `", "`.
+	 *
+	 * The returned string representation will have the following format:
+	 *
+	 * ```
+	 * string = [ ranges ]
+	 * ranges = range *( ", " range )
+	 * range  = hex [ ".." hex ]
+	 * hex    = "a" | "b" | "c" | "d" | "e" | "f" | digit
+	 * digit  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+	 * ```
+	 */
+	toRangesString(): string {
 		let s = "";
 		for (const { min, max } of this.ranges) {
 			if (s !== "") {
@@ -106,7 +129,7 @@ export class CharSet {
 				s += min.toString(16) + ".." + max.toString(16);
 			}
 		}
-		return `CharSet (${this.maximum}) [${s}]`;
+		return s;
 	}
 
 	/**

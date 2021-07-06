@@ -1,6 +1,5 @@
 import { assert } from "chai";
 import { CharRange, CharSet } from "../src/char-set";
-import { rangesToString } from "../src/char-util";
 import { charsFromRegex } from "./helper/chars";
 
 function toRanges(input: (string | number | CharRange | [number, number])[]): CharRange[] {
@@ -109,7 +108,7 @@ describe("CharSet", function () {
 
 		for (const test of testCases) {
 			it(test.title, function () {
-				assert.equal(rangesToString(test.set), test.expected);
+				assert.equal(test.set.toRangesString(), test.expected);
 			});
 		}
 	});

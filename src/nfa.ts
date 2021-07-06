@@ -10,7 +10,7 @@ import {
 	TransitionIterable,
 	TransitionIterator,
 } from "./common-types";
-import { rangesToString, wordSetsToWords } from "./char-util";
+import { wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -170,7 +170,7 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	toString(): string {
-		return Iter.toString(this.transitionIterator(), rangesToString);
+		return Iter.toString(this.transitionIterator(), cs => cs.toRangesString());
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
@@ -180,7 +180,7 @@ export class NFA implements ReadonlyNFA {
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
 		return Iter.toDot(
 			this.transitionIterator(),
-			Iter.createSimpleToDotOptions(charSetToString || rangesToString, false)
+			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toRangesString()), false)
 		);
 	}
 

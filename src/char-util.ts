@@ -136,55 +136,6 @@ export function decomposeIntoBaseSets(set: CharSet, baseSets: readonly CharSet[]
 }
 
 /**
- * Returns a string representation of the given character ranges.
- *
- * @param ranges
- * @param printReadable Whether to also output readable characters as characters.
- */
-export function rangesToString(ranges: CharSet | Iterable<CharRange>): string {
-	if (ranges instanceof CharSet) {
-		ranges = ranges.ranges;
-	}
-
-	let s = "";
-	for (const { min, max } of ranges) {
-		if (s !== "") {
-			s += ", ";
-		}
-		if (min == max) {
-			s += min.toString(16);
-		} else {
-			s += min.toString(16) + ".." + max.toString(16);
-		}
-	}
-	return s;
-}
-/**
- * Parses the string representation of character ranges and returns the represented ranges.
- *
- * @param string
- */
-export function rangesFromString(string: string): CharRange[] {
-	function parse(s: string): Char {
-		return parseInt(s, 16);
-	}
-
-	return string
-		.trim()
-		.split(/\s*,\s*/g)
-		.filter(Boolean)
-		.map(r => {
-			const [min, max] = r.split("..");
-			if (max === undefined) {
-				const parsed = parse(min);
-				return { min: parsed, max: parsed };
-			} else {
-				return { min: parse(min), max: parse(max) };
-			}
-		});
-}
-
-/**
  * Iterates all words which can be constructed from the given word set (array of character sets).
  *
  * @param wordSet
