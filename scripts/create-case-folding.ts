@@ -4,8 +4,8 @@ import { CharSet } from "../src/char-set";
 import { printRanges } from "./util";
 
 
-const CaseFoldingCommon: ReadonlyMap<number, number> = require("unicode-13.0.0/Case_Folding/C/code-points");
-const CaseFoldingSimple: ReadonlyMap<number, number> = require("unicode-13.0.0/Case_Folding/S/code-points");
+const CaseFoldingCommon: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/C/code-points");
+const CaseFoldingSimple: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/S/code-points");
 
 
 createCaseFoldingFile(UTF16CanonicalizeIgnoreCase, 0xFFFF, "UTF16", "utf16-case-folding.ts");
