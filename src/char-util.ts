@@ -17,18 +17,11 @@ export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
 		return [[]];
 	} else if (wordSet.length === 1) {
 		// This is about twice as fast as calling `concatSequences`.
-		const ranges = wordSet[0].ranges;
-		return (function* (): Iterable<Word> {
-			for (const { min, max } of ranges) {
-				for (let c = min; c <= max; c++) {
-					yield [c];
-				}
-			}
-		})();
+		return toWords(wordSet[0]);
 	}
 
 	// The overhead of `concatSequences` can be **really** high for single-character char sets.
-	// So we will try to find a subtract a non-empty suffix of single-character char sets.
+	// So we will try to find and subtract a non-empty suffix of single-character char sets.
 	const suffix: Word = [];
 	for (let i = wordSet.length - 1; i >= 0; i--) {
 		const ranges = wordSet[i].ranges;
@@ -56,6 +49,11 @@ export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
 	}
 
 	return concatSequences(wordSet.map(cs => cs.characters()));
+}
+function* toWords(set: CharSet): Iterable<Word> {
+	for (const c of set.characters()) {
+		yield [c];
+	}
 }
 
 export function* wordSetsToWords(wordSets: Iterable<readonly CharSet[]>): Iterable<Word> {
