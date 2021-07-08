@@ -531,16 +531,19 @@ export namespace DFA {
 				this._uncheckedLinkNodesWithCharRange(from, to, characters);
 			}
 		}
+		// eslint-disable-next-line jsdoc/require-param
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: Char): void {
 			from.out.set(character, to);
 		}
+		// eslint-disable-next-line jsdoc/require-param
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharRange(from: Node, to: Node, characters: CharRange): void {
 			from.out.setEvery(characters, to);
 		}
+		// eslint-disable-next-line jsdoc/require-param
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {

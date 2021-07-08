@@ -43,7 +43,7 @@ export function mapOutIter<S, O, T>(
  * Maps the out type of the given iterator and returns a new iterator.
  *
  * @param iter
- * @param mapFn
+ * @param conditionFn
  */
 export function filterOutIter<S, O>(
 	iter: FAIterator<S, Iterable<O>>,
@@ -72,6 +72,7 @@ export function filterOutIter<S, O>(
  * The order in which states are traversed is implementation-defined.
  *
  * @param iter
+ * @param consumerFn
  */
 export function forEach<S>(iter: FAIterator<S>, consumerFn?: (state: S) => void): void {
 	if (consumerFn) {
@@ -86,6 +87,8 @@ export function forEach<S>(iter: FAIterator<S>, consumerFn?: (state: S) => void)
 
 /**
  * Returns the number of nodes reachable from the initial state (including the initial state itself).
+ *
+ * @param iter
  */
 export function count<S>(iter: FAIterator<S>): number {
 	let count = 0;
@@ -95,6 +98,8 @@ export function count<S>(iter: FAIterator<S>): number {
 
 /**
  * The returned iterator is guaranteed to be stable.
+ *
+ * @param iter
  */
 export function ensureStableOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	if (iter.stableOut) {
@@ -279,6 +284,8 @@ function createInTransitionMap<T>(
 /**
  * Creates a new iterator that is equivalent to the given iterator expect that the initial state is guaranteed to be
  * final.
+ *
+ * @param iter
  */
 export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	const { initial, getOut, stableOut, isFinal } = iter;
@@ -292,6 +299,8 @@ export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O>
 /**
  * Creates a new iterator that is equivalent to the given iterator expect that the initial state is guaranteed to be
  * non-final.
+ *
+ * @param iter
  */
 export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	const { initial, getOut, stableOut, isFinal } = iter;
@@ -309,6 +318,9 @@ export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S,
  * E.g. for the regex `a|b|cd`, the returned path may be `a` or `b` but not `cd`,
  *
  * If the iterator does not accept any path, `undefined` will be returned.
+ *
+ * @param iter
+ * @param selectState
  */
 export function shortestAcceptingPath<S, T>(
 	iter: FAIterator<S, Iterable<T>>,

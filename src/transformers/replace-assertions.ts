@@ -21,6 +21,8 @@ function onParent(node: NoParent<Parent>, context: TransformContext): void {
 
 /**
  * This transformer will all assertions with either the empty set or the empty word.
+ *
+ * @param options
  */
 export function replaceAssertions(options?: Readonly<RemoveAssertionsCreationOptions>): Transformer {
 	const replacement = options?.replacement ?? "empty-set";

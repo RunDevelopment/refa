@@ -9,6 +9,10 @@ import { Char } from "./char-types";
 export class MaxCharacterError extends Error {
 	/**
 	 * Asserts the two given max characters are the same.
+	 *
+	 * @param a
+	 * @param b
+	 * @param kind
 	 */
 	static assert(a: Char | { maxCharacter: Char }, b: Char | { maxCharacter: Char }, kind?: string): void {
 		let left: number | { maxCharacter: number } = a;
@@ -41,6 +45,10 @@ export class MaxCharacterError extends Error {
 export class TooManyNodesError extends Error {
 	/**
 	 * Asserts that the current number of created nodes does not exceed the limit.
+	 *
+	 * @param current
+	 * @param limit
+	 * @param kind
 	 */
 	static assert(current: number, limit: number, kind: string): void {
 		if (current > limit) {

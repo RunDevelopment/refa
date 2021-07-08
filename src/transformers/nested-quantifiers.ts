@@ -107,6 +107,8 @@ function optimizeChildQuantifier(
  *
  * This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
  * order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.
+ *
+ * @param options
  */
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreAmbiguity) {

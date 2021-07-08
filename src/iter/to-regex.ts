@@ -713,6 +713,9 @@ function stateElimination<S>(
  * Returns a regular expression for the given iterator.
  *
  * `null` transitions are assumed to be epsilon transitions.
+ *
+ * @param iter
+ * @param options
  */
 export function toRegex<S>(
 	iter: FAIterator<S, Iterable<[S, CharSet | null]>>,

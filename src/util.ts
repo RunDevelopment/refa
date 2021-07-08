@@ -168,6 +168,9 @@ export function* iterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
 
 /**
  * Traverses the given graph in any order. All elements will be visited exactly once.
+ *
+ * @param root
+ * @param next
  */
 export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 	const visited = new Set<S>();
@@ -183,6 +186,9 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 }
 /**
  * Traverses the given graph in any order. All elements will be visited exactly once.
+ *
+ * @param roots
+ * @param next
  */
 export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => Iterable<S>): void {
 	const visited = new Set<S>();

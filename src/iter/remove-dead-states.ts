@@ -5,6 +5,9 @@ import { ensureStableOut } from "./iterator";
  * Removes all dead states (and trap states) from the given iterator.
  *
  * Note: This will iteratively create a complete copy of the given FA. This method is an expensive operation.
+ *
+ * @param iter
+ * @param select
  */
 export function removeDeadStates<S, O>(iter: FAIterator<S, Iterable<O>>, select: (item: O) => S): FAIterator<S, O[]> {
 	const { initial, getOut: oldGetOut, isFinal } = ensureStableOut(iter);

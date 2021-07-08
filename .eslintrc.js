@@ -14,7 +14,8 @@ module.exports = {
 	parser: "@typescript-eslint/parser",
 	plugins: [
 		"@typescript-eslint",
-		"prettier"
+		"prettier",
+		"jsdoc"
 	],
 	parserOptions: {
 		ecmaVersion: 2018,
@@ -70,11 +71,24 @@ module.exports = {
 		"@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true, ignoreProperties: true }],
 		"@typescript-eslint/explicit-function-return-type": ["error", { allowExpressions: true }],
 
+		"jsdoc/no-types": "error",
+		"jsdoc/no-bad-blocks": "error",
+		"jsdoc/newline-after-description": "error",
+		"jsdoc/multiline-blocks": "error",
+		"jsdoc/empty-tags": "error",
+		"jsdoc/check-param-names": ["error", { enableFixer: true }],
+		"jsdoc/require-param": "error",
+
 		"no-empty-character-class": "off",
 		"@typescript-eslint/explicit-member-accessibility": "off",
 		"@typescript-eslint/no-non-null-assertion": "off",
 		"@typescript-eslint/no-use-before-define": "off",
 		"@typescript-eslint/indent": "off",
+	},
+	settings: {
+		jsdoc: {
+			mode: "typescript"
+		}
 	},
 	overrides: [
 		{

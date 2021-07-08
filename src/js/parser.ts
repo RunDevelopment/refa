@@ -251,6 +251,8 @@ export class Parser {
 	 * Parsed the entire literal.
 	 *
 	 * For more information on parsing, see {@link parseElement}.
+	 *
+	 * @param options
 	 */
 	parse(options?: Readonly<ParseOptions>): ParseResult {
 		return this.parseElement(this.ast.pattern, options);
@@ -259,6 +261,9 @@ export class Parser {
 	 * Parses a specific element of the literal.
 	 *
 	 * Use {@link ParseOptions} to control how the element is parsed.
+	 *
+	 * @param element
+	 * @param options
 	 */
 	parseElement(element: ParsableElement, options?: Readonly<ParseOptions>): ParseResult {
 		const context: ParserContext = {
@@ -385,6 +390,9 @@ export class Parser {
 	 * will be reversed.
 	 *
 	 * The function expects the given elements to be in that order and will returns the parsed elements in that order.
+	 *
+	 * @param inputElements
+	 * @param context
 	 */
 	private _createElements(
 		inputElements: readonly AST.Element[],

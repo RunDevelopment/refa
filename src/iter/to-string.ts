@@ -28,6 +28,10 @@ import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
  *
  * [3] -> none
  * ```
+ *
+ * @param iter
+ * @param toString
+ * @param ordered
  */
 export function toString<S, T>(
 	iter: FAIterator<S, Iterable<[S, T]>>,

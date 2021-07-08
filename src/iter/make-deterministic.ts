@@ -9,6 +9,9 @@ import { ensureStableOut } from "./iterator";
  * This will return an iterator that iteratively create a DFA using the given {@link FABuilder}.
  *
  * This operation may produce up to _2^O(n)_ many states. The builder should limit the number of states created.
+ *
+ * @param builder
+ * @param iter
  */
 export function makeDeterministic<B, I>(
 	builder: FABuilder<B, CharSet>,

@@ -22,6 +22,8 @@ import { assertNever } from "./util";
  *
  * This essentially means that it's possible to wrap the given node into a look{ahead,behind} without changing the
  * meaning of the pattern.
+ *
+ * @param node
  */
 export function isZeroLength(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
 	if (Array.isArray(node)) {
@@ -55,6 +57,8 @@ export function isZeroLength(node: NoParent<Node> | NoParent<Concatenation>[]): 
 /**
  * Returns whether there is at least one path in the given element that does not consume any characters of the input
  * string.
+ *
+ * @param node
  */
 export function isPotentiallyZeroLength(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
 	if (Array.isArray(node)) {
@@ -92,6 +96,8 @@ export function isPotentiallyZeroLength(node: NoParent<Node> | NoParent<Concaten
  *
  * This essentially means that the given node can be remove with the empty string (= empty concatenation) without
  * changing the meaning of the pattern.
+ *
+ * @param node
  */
 export function isEmpty(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
 	if (Array.isArray(node)) {
@@ -126,6 +132,8 @@ export function isEmpty(node: NoParent<Node> | NoParent<Concatenation>[]): boole
 /**
  * Returns whether there is at least one path in the given element that accepts without consuming any characters and
  * without asserting anything.
+ *
+ * @param node
  */
 export function isPotentiallyEmpty(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
 	if (Array.isArray(node)) {
@@ -161,6 +169,8 @@ export function isPotentiallyEmpty(node: NoParent<Node> | NoParent<Concatenation
 /**
  * Returns whether the given assertion will always trivially accept regardless of the input string and other RE AST
  * nodes in the regular expression.
+ *
+ * @param assertion
  */
 export function isTriviallyAccepting(assertion: NoParent<Assertion>): boolean {
 	if (assertion.negate) {
@@ -295,6 +305,9 @@ class StackPathImpl<N extends Node, P = N["parent"]> implements Path<N, P> {
  *
  * The ancestors will be iterated in the order from closest to farthest.
  * The condition function will not be called on the given node.
+ *
+ * @param nodePath
+ * @param conditionFn
  */
 export function hasSomeAncestor(
 	nodePath: Path<Node>,
@@ -323,6 +336,8 @@ const ONE_LENGTH_RANG: LengthRange = { min: 1, max: 1 };
  * If `undefined`, then the given element can't consume any characters.
  *
  * This function doesn't take assertions into account.
+ *
+ * @param element
  */
 export function getLengthRange(element: NoParent<Node> | NoParent<Concatenation>[]): LengthRange | undefined {
 	if (Array.isArray(element)) {
@@ -417,6 +432,9 @@ const ONE_ASSERT_RANGE: AssertRange = {
 /**
  * Assuming that the given elements are part of an assertion, this function returns the number of characters the result
  * of the assertion can be affected by.
+ *
+ * @param element
+ * @param kind
  */
 export function getAssertRange(
 	element: NoParent<Node> | NoParent<Concatenation>[],
@@ -589,6 +607,10 @@ export interface FirstPartiallyConsumedChar {
  *
  * If `exact` is `true` then it is guaranteed that the returned character is guaranteed to be the actual
  * character at all times if this element is not influenced by assertions outside itself.
+ *
+ * @param node
+ * @param direction
+ * @param maxCharacter
  */
 export function getFirstCharConsumedBy(
 	node: NoParent<Node> | NoParent<Concatenation>[],
@@ -699,6 +721,8 @@ export function getFirstCharConsumedBy(
 }
 /**
  * Returns first-look-char that is equivalent to a trivially-accepting assertion.
+ *
+ * @param maxCharacter
  */
 function firstLookCharTriviallyAccepting(maxCharacter: number): FirstLookChar {
 	return { char: CharSet.all(maxCharacter), edge: true, exact: true };
@@ -706,6 +730,9 @@ function firstLookCharTriviallyAccepting(maxCharacter: number): FirstLookChar {
 /**
  * Returns first-consumed-char that is equivalent to consuming nothing (the empty word) followed by a trivially
  * accepting assertion.
+ *
+ * @param maxCharacter
+ * @param look
  */
 function firstConsumedCharEmptyWord(maxCharacter: number, look?: FirstLookChar): FirstPartiallyConsumedChar {
 	return {
@@ -845,6 +872,8 @@ function firstConsumedCharConcat(iter: Iterable<Readonly<FirstConsumedChar>>, ma
 }
 /**
  * This wraps the first-consumed-char object in a look.
+ *
+ * @param first
  */
 function firstConsumedToLook(first: Readonly<FirstConsumedChar>): FirstLookChar {
 	if (first.empty) {
@@ -1193,6 +1222,10 @@ export function getFirstConsumedCharAfter(
  *
  * What "after" means depends the on the given direction which will be interpreted as the current matching
  * direction. You can use this to get the previous character of an element as well.
+ *
+ * @param afterThis
+ * @param direction
+ * @param maxCharacter
  */
 export function getFirstCharAfter(
 	afterThis: Path<Element>,

@@ -79,6 +79,8 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
  * ---
  *
  * This transformer should be used in combination with {@link inline} to handle trivial simplifications.
+ *
+ * @param _options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeDeadBranches(_options?: Readonly<CreationOptions>): Transformer {

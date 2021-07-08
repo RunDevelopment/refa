@@ -763,6 +763,8 @@ function negateRanges(ranges: readonly CharRange[], maximum: Char): CharRange[] 
 
 /**
  * Returns an iterable of characters from the given ranges.
+ *
+ * @param ranges
  */
 function toCharacters(ranges: readonly CharRange[]): Iterable<Char> {
 	// For small char sets (only a few characters), it's more efficient to return an array.

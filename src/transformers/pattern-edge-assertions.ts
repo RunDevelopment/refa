@@ -5,6 +5,8 @@ import { at, inRange, tryInlineAssertions } from "./util";
 
 /**
  * Returns whether a previous assertion may also assert the same characters as the given assertion.
+ *
+ * @param path
  */
 function influencedByPreviousAssertion(path: Path<Assertion>): boolean {
 	const { kind } = path.node;
@@ -172,6 +174,8 @@ export interface PatternEdgeAssertionsCreationOptions extends CreationOptions {
  * `a(?!\d)|(?=\w)(?!\d)` which can be inlined to `a(?!\d)|(?!\d)\w` and transformed to `a(?!\d)|[A-Z_a-z]`.
  *
  * If neither inlining nor removal are active, then this transformer won't do anything.
+ *
+ * @param options
  */
 export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCreationOptions>): Transformer {
 	const inline = options?.inline ?? true;

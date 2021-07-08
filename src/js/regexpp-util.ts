@@ -143,8 +143,8 @@ export function somePathToBackreference(backreference: AST.Backreference): boole
  * If there exists any accepting path which goes through the backreference but not through the referenced group,
  * this will return `false`.
  *
- * @param {Backreference} backreference
- * @returns {boolean}
+ * @param backreference
+ * @returns
  */
 export function backreferenceAlwaysAfterGroup(backreference: AST.Backreference): boolean {
 	const group = backreference.resolved;

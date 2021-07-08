@@ -50,6 +50,8 @@ function consumeUsingInfiniteQuantifier(
  *
  * - `/a*a/` => `/a+/`
  * - `/a*(?:a+|c)/` => `/a*(?:a|c)/`
+ *
+ * @param options
  */
 export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transformer {
 	// This will preserve the order of alternatives ASSUMING that there are no greedy vs lazy quantifiers.

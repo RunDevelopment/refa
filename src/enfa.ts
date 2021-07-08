@@ -306,6 +306,10 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * Both `min` and `max` both have to be non-negative integers with `min <= max`.
 	 * `max` is also allowed to be `Infinity`.
+	 *
+	 * @param min
+	 * @param max
+	 * @param lazy
 	 */
 	quantify(min: number, max: number, lazy: boolean = false): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
@@ -1311,6 +1315,9 @@ function localCopyOfIterator<T>(nodeList: ENFA.NodeList, iter: TransitionIterato
 
 /**
  * Alters `base` to accept no words.
+ *
+ * @param _nodeList
+ * @param base
  */
 function baseMakeEmpty(_nodeList: ENFA.NodeList, base: SubList): void {
 	base.initial.in.clear();
@@ -1320,6 +1327,9 @@ function baseMakeEmpty(_nodeList: ENFA.NodeList, base: SubList): void {
 }
 /**
  * Alters `base` to accept only the empty word.
+ *
+ * @param nodeList
+ * @param base
  */
 function baseMakeEmptyWord(nodeList: ENFA.NodeList, base: SubList): void {
 	baseMakeEmpty(nodeList, base);
@@ -1436,6 +1446,7 @@ function baseRepeat(nodeList: ENFA.NodeList, base: SubList, times: number): void
  *
  * @param nodeList
  * @param base
+ * @param lazy
  */
 function basePlus(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
 	baseNormalize(nodeList, base);
@@ -1457,6 +1468,7 @@ function basePlus(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
  *
  * @param nodeList
  * @param base
+ * @param lazy
  */
 function baseStar(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
 	baseNormalize(nodeList, base);
@@ -1484,6 +1496,11 @@ function baseStar(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
 
 /**
  * Alters `base` to be equal to `(<base>){0,<max>}`.
+ *
+ * @param nodeList
+ * @param base
+ * @param max
+ * @param lazy
  */
 function baseMaximum(nodeList: ENFA.NodeList, base: SubList, max: number, lazy: boolean): void {
 	if (max === Infinity) {
@@ -1573,6 +1590,10 @@ function baseQuantify(nodeList: ENFA.NodeList, base: SubList, min: number, max: 
 
 /**
  * Alters `base` to be equal to `<left>|<base>`.
+ *
+ * @param nodeList
+ * @param base
+ * @param left
  */
 function baseUnionLeft(nodeList: ENFA.NodeList, base: SubList, left: SubList): void {
 	const initial = nodeList.createNode();
@@ -1588,6 +1609,10 @@ function baseUnionLeft(nodeList: ENFA.NodeList, base: SubList, left: SubList): v
 }
 /**
  * Alters `base` to be equal to `<base>|<right>`.
+ *
+ * @param nodeList
+ * @param base
+ * @param right
  */
 function baseUnionRight(nodeList: ENFA.NodeList, base: SubList, right: SubList): void {
 	baseNormalize(nodeList, base);

@@ -147,6 +147,10 @@ function isNegatedSingleCharAssertion(
 }
 /**
  * Removes adjacent assertions that can trivially be removed (e.g. `^^` => `^^`, `(?!\w)(?!\d)` => `(?!\w)`).
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function removeAdjacentAssertions(
 	elements: NoParent<Element>[],
@@ -252,6 +256,8 @@ function removeAdjacentAssertions(
 
 /**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
+ *
+ * @param _options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>): Transformer {

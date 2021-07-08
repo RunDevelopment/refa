@@ -184,6 +184,8 @@ function tryFactorOutQuantifiedCharacter(
  * alternatives will be left.
  *
  * E.g. `(?:abc|abc|abc)` => `(?:abc(?:||))`
+ *
+ * @param options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function factorOut(options?: Readonly<CreationOptions>): Transformer {

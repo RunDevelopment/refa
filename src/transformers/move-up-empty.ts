@@ -95,6 +95,8 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
  *
  * This operation largely ignores the order of alternatives and usually reduces the ambiguity of the expression. If
  * order or ambiguity have to be preserved, then the effectiveness of this transformer will be greatly reduced.
+ *
+ * @param options
  */
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreOrder || !options?.ignoreAmbiguity) {

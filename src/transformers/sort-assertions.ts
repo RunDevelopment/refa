@@ -12,6 +12,9 @@ function compare(a: NoParent<Assertion>, b: NoParent<Assertion>): number {
  * A simple implementation of a stable sorting method - selection sort.
  *
  * Returns whether the given array was changed.
+ *
+ * @param array
+ * @param compareFn
  */
 function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): boolean {
 	const n = array.length;
@@ -39,6 +42,8 @@ function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): boolean {
  * This is operation may be necessary for other transformers to pick up on certain patterns.
  *
  * E.g. `(?=a)(?!b)(?<!c)(?<=d)` => `(?<!c)(?<=d)(?=a)(?!b)`
+ *
+ * @param _options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sortAssertions(_options?: Readonly<CreationOptions>): Transformer {

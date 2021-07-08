@@ -87,6 +87,8 @@ function onAssertion(node: NoParent<Assertion>, context: TransformContext): void
  * ---
  *
  * This transformer should be used in combination with {@link removeDeadBranches} to handle trivial simplifications.
+ *
+ * @param _options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function inline(_options?: Readonly<CreationOptions>): Transformer {

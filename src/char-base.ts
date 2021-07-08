@@ -48,6 +48,7 @@ export class CharBase {
 	 *
 	 * See {@link CharBase} to learn more.
 	 *
+	 * @param charSets
 	 * @throws `RangeError` if the collection contains two character sets with different maximums.
 	 */
 	constructor(charSets: Iterable<CharSet>) {
@@ -62,6 +63,8 @@ export class CharBase {
 	 *
 	 * **Note**: This assumes that `charSet` is either empty or can be constructed from the base sets. If the
 	 * assumption is not met, the output of this function will be undefined.
+	 *
+	 * @param charSet
 	 */
 	split(charSet: CharSet): number[] {
 		const indexes: number[] = [];
@@ -80,6 +83,8 @@ export class CharBase {
  * If the union of all given character sets is empty, the empty array will be returned.
  *
  * This algorithm run in O(n*log(n)) where n is the number of ranges in the given character sets.
+ *
+ * @param charSets
  */
 function getBaseSets(charSets: Iterable<CharSet>): readonly CharSet[] {
 	// remove duplicates and empty sets

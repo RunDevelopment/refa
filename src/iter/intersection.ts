@@ -104,8 +104,6 @@ function computeHash(a: CharSet): number {
  * Creates a function which can intersect any two char sets of the given set of character sets.
  *
  * The function return `null` if the intersection of two char sets is empty.
- *
- * @param charSets
  */
 function createCharSetIntersectFn(): (a: CharSet, b: CharSet) => CharSet | null {
 	const hashTable: Record<number, CharSet | undefined> = {};

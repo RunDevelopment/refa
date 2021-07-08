@@ -63,6 +63,7 @@ function pushFront<T>(direction: MatchingDirection, arr: T[], value: T): void {
  *
  * @param assertion
  * @param char
+ * @param context
  */
 function assertCharacter(
 	assertion: NoParent<Assertion>,
@@ -167,6 +168,10 @@ function toCharElement(convertible: CharConvertible): NoParent<CharacterClass> {
 
 /**
  * This will apply assertions one character at a time. E.g. `(?=\da)\w\w` => `\d(?=a)\w` => `\da`.
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function applyOneCharacter(elements: NoParent<Element>[], kind: Assertion["kind"], context: TransformContext): void {
 	if (elements.length < 2) {
@@ -215,6 +220,10 @@ function applyOneCharacter(elements: NoParent<Element>[], kind: Assertion["kind"
 
 /**
  * This will remove optional branches that are know to reject because of assertions. E.g. `(?=\d)\s*\w+` => `(?=\d)\w+`.
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function removeRejectedBranches(
 	elements: NoParent<Element>[],
@@ -291,6 +300,10 @@ function removeRejectedBranches(
 
 /**
  * This will transform `(?!\s)[^]*` => `(?:\S[^]*|(?!\s))`.
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function applySingleCharacterQuantifier(
 	elements: NoParent<Element>[],
@@ -350,6 +363,10 @@ function applySingleCharacterQuantifier(
 
 /**
  * This will transform `(?:\S[^]*|(?!\s))a` => `(?:\S[^]*a|a)`.
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function moveCharacterIntoAlternation(
 	elements: NoParent<Element>[],
@@ -440,6 +457,10 @@ function moveCharacterIntoAlternation(
 
 /**
  * This will transform `(?!\d)(?:\w+|:|123)` => `(?:(?!\d)\w+|:|[])`.
+ *
+ * @param elements
+ * @param kind
+ * @param context
  */
 function moveAssertionIntoAlternation(
 	elements: NoParent<Element>[],
@@ -509,6 +530,8 @@ function moveAssertionIntoAlternation(
 /**
  * This transformer will apply all trivial assertion (e.g. `/(?!0)\d/` => `/[1-9]/`) and remove all branches in
  * assertions that are guaranteed to reject (e.g. `(?=\d+=|-)\w` => `(?=\d+=)\w`).
+ *
+ * @param _options
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function applyAssertions(_options?: Readonly<CreationOptions>): Transformer {

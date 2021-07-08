@@ -11,7 +11,8 @@ import { FACreationOptions, TransitionIterable, TransitionIterator } from "./com
  *
  * The iterator will create states as it is traversed.
  *
- * @param other
+ * @param left
+ * @param right
  * @param options
  */
 export function getIntersectionIterator<L, R>(
@@ -36,7 +37,8 @@ export function getIntersectionIterator<L, R>(
  *
  * This is equivalent to `NFA.fromIntersection(left, right).isEmpty` but implemented more efficiently.
  *
- * @param other
+ * @param left
+ * @param right
  * @param options
  */
 export function isDisjointWith<L, R>(
@@ -58,6 +60,10 @@ export function isDisjointWith<L, R>(
  * 3. No character set of the yielded word sets is empty.
  *
  * This is roughly equivalent to `NFA.fromIntersection(left, right).wordSets()` but implemented more efficiently.
+ *
+ * @param left
+ * @param right
+ * @param options
  */
 export function getIntersectionWordSets<L, R>(
 	left: TransitionIterable<L>,
@@ -77,6 +83,10 @@ export function getIntersectionWordSets<L, R>(
  *    any order.)
  *
  * This is roughly equivalent to `NFA.fromIntersection(left, right).words()` but implemented more efficiently.
+ *
+ * @param left
+ * @param right
+ * @param options
  */
 export function getIntersectionWords<L, R>(
 	left: TransitionIterable<L>,

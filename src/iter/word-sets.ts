@@ -79,6 +79,8 @@ export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>)
  * ---
  *
  * This operation is roughly equivalent to `firstOf(iterateWordSets(iter))` but implemented **much more** efficiently.
+ *
+ * @param iter
  */
 export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): WordSet | undefined {
 	const result = shortestAcceptingPath(iter, item => item[0]);
