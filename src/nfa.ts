@@ -45,14 +45,20 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 
 	/**
 	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
 	 */
 	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean;
 	/**
 	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
 	 */
 	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word>;
 	/**
 	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
 	 */
 	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
@@ -182,12 +188,36 @@ export class NFA implements ReadonlyNFA {
 		);
 	}
 
+	/**
+	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
+	 *
+	 * @param other
+	 * @param options
+	 */
 	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean {
 		return isDisjointWith(this, other, options);
 	}
+	/**
+	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
+	 *
+	 * @param other
+	 * @param options
+	 */
 	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
 		return getIntersectionWords(this, other, options);
 	}
+	/**
+	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
+	 *
+	 * @deprecated Use the equivalent free function instead.
+	 *
+	 * @param other
+	 * @param options
+	 */
 	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
 		return getIntersectionWordSets(this, other, options);
 	}
