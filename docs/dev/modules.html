@@ -122,8 +122,10 @@
 								<li class="tsd-kind-type-alias"><a href="modules.html#node" class="tsd-kind-icon">Node</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#parent" class="tsd-kind-icon">Parent</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#readonlyword" class="tsd-kind-icon">Readonly<wbr>Word</a></li>
+								<li class="tsd-kind-type-alias"><a href="modules.html#readonlywordset" class="tsd-kind-icon">Readonly<wbr>Word<wbr>Set</a></li>
 								<li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#transitioniterator" class="tsd-kind-icon">Transition<wbr>Iterator</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#word" class="tsd-kind-icon">Word</a></li>
+								<li class="tsd-kind-type-alias"><a href="modules.html#wordset" class="tsd-kind-icon">Word<wbr>Set</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -219,6 +221,19 @@
 						<p>This is an immutable view on a <a href="modules.html#word">Word</a>.</p>
 					</div>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+					<a name="readonlywordset" class="tsd-anchor"></a>
+					<h3>Readonly<wbr>Word<wbr>Set</h3>
+					<div class="tsd-signature tsd-kind-icon">Readonly<wbr>Word<wbr>Set<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">readonly </span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>An immutable finite sequence of non-empty <a href="classes/charset.html">CharSet</a>s.</p>
+						</div>
+						<p>This is an immutable view on a <a href="modules.html#wordset">WordSet</a>.</p>
+					</div>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-has-type-parameter">
 					<a name="transitioniterator" class="tsd-anchor"></a>
 					<h3>Transition<wbr>Iterator</h3>
@@ -252,6 +267,24 @@
 							<a href="modules.html#char">Char</a>s and char arrays (= words). This means that refa is agnostic to text encodings, the string
 						representation of JavaScript, and even text itself.</p>
 						<p>This type serves as a way to document words. It should <em>not</em> be used interchangeably with <code>Char[]</code> or <code>number[]</code>.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+					<a name="wordset" class="tsd-anchor"></a>
+					<h3>Word<wbr>Set</h3>
+					<div class="tsd-signature tsd-kind-icon">Word<wbr>Set<span class="tsd-signature-symbol">:</span> <a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>A word set is finite sequence of non-empty <a href="classes/charset.html">CharSet</a>s.</p>
+						</div>
+						<p>All <a href="classes/charset.html">CharSet</a>s are guaranteed to be non-empty and to have the same maximum.</p>
+						<p>All FA and regex implementations are based on either <a href="classes/charset.html">CharSet</a>s or <a href="interfaces/charrange.html">CharRange</a>s. This is necessary
+							because it&#39;s not practical to represent the large character sets used in every-day regexes using single characters.
+							Consequently, it is more efficient to work with <a href="classes/charset.html">CharSet</a>s for them, so operations that yield the words of an
+						FA or regex typically yield <a href="modules.html#wordset">WordSet</a>s instead of <a href="modules.html#word">Word</a>s.</p>
+						<p>This type serves as a way to document word sets. It should <em>not</em> be used interchangeably with <code>CharSet[]</code>.</p>
 					</div>
 				</section>
 			</section>
@@ -334,7 +367,7 @@
 					<a name="getintersectionwordsets" class="tsd-anchor"></a>
 					<h3>get<wbr>Intersection<wbr>Word<wbr>Sets</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets&lt;L, R&gt;<span class="tsd-signature-symbol">(</span>left<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">L</span><span class="tsd-signature-symbol">&gt;</span>, right<span class="tsd-signature-symbol">: </span><a href="interfaces/transitioniterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#wordset" class="tsd-signature-type" data-tsd-kind="Type alias">WordSet</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -373,7 +406,7 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/facreationoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FACreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="classes/charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#wordset" class="tsd-signature-type" data-tsd-kind="Type alias">WordSet</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -768,11 +801,17 @@
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#readonlyword" class="tsd-kind-icon">Readonly<wbr>Word</a>
 					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#readonlywordset" class="tsd-kind-icon">Readonly<wbr>Word<wbr>Set</a>
+					</li>
 					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
 						<a href="modules.html#transitioniterator" class="tsd-kind-icon">Transition<wbr>Iterator</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#word" class="tsd-kind-icon">Word</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#wordset" class="tsd-kind-icon">Word<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#combinetransformers" class="tsd-kind-icon">combine<wbr>Transformers</a>
