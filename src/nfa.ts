@@ -13,6 +13,7 @@ import {
 import { wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";
+import { WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 
@@ -53,10 +54,7 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	/**
 	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
 	 */
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]>;
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
 	/**
 	 * Create a mutable copy of this NFA.
@@ -162,7 +160,7 @@ export class NFA implements ReadonlyNFA {
 		return currentStates.some(state => this.nodes.finals.has(state));
 	}
 
-	wordSets(): Iterable<CharSet[]> {
+	wordSets(): Iterable<WordSet> {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
 	words(): Iterable<Word> {
@@ -190,10 +188,7 @@ export class NFA implements ReadonlyNFA {
 	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
 		return getIntersectionWords(this, other, options);
 	}
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]> {
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
 		return getIntersectionWordSets(this, other, options);
 	}
 

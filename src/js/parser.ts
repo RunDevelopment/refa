@@ -1,4 +1,5 @@
 import { Char } from "../char-types";
+import { ReadonlyWordSet, WordSet } from "../word-set";
 import { CharSet } from "../char-set";
 import {
 	Alternation,
@@ -1172,7 +1173,7 @@ function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
 }
 
 function* wordSetsToLogicalWords(
-	wordSets: Iterable<readonly CharSet[]>,
+	wordSets: Iterable<ReadonlyWordSet>,
 	charSetToChars: CharSetToCharsFn
 ): Iterable<LogicalWord> {
 	for (const wordSet of wordSets) {
@@ -1183,7 +1184,7 @@ function* wordSetsToLogicalWords(
 function iterateLogicalWords(node: NoParent<Node>, charSetToChars: CharSetToCharsFn): UnionIterable<LogicalWord> {
 	return wordSetsToLogicalWords(iterateWordSets(node), charSetToChars);
 }
-function iterateWordSets(node: NoParent<Node>): UnionIterable<CharSet[]> {
+function iterateWordSets(node: NoParent<Node>): UnionIterable<WordSet> {
 	switch (node.type) {
 		case "Alternation":
 		case "Expression":

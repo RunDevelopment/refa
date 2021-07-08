@@ -1,4 +1,5 @@
 import { Char, ReadonlyWord, Word } from "./char-types";
+import { ReadonlyWordSet } from "./word-set";
 import { CharRange, CharSet } from "./char-set";
 import { wordSetToWords as wordSetToWordsImpl } from "./char-util";
 
@@ -74,7 +75,7 @@ export function fromStringToUnicode(string: string): Word {
  *
  * @param wordSet
  */
-export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
+export function wordSetToWords(wordSet: ReadonlyWordSet): Iterable<Word> {
 	return wordSetToWordsImpl(wordSet);
 }
 

@@ -1,4 +1,5 @@
 import { Char, Word } from "./char-types";
+import { ReadonlyWordSet } from "./word-set";
 import { CharSet } from "./char-set";
 import { concatSequences } from "./util";
 
@@ -11,7 +12,7 @@ export function isChar(value: unknown): value is Char {
  *
  * @param wordSet
  */
-export function wordSetToWords(wordSet: readonly CharSet[]): Iterable<Word> {
+export function wordSetToWords(wordSet: ReadonlyWordSet): Iterable<Word> {
 	if (wordSet.length === 0) {
 		// simple base case
 		return [[]];
@@ -56,7 +57,7 @@ function* toWords(set: CharSet): Iterable<Word> {
 	}
 }
 
-export function* wordSetsToWords(wordSets: Iterable<readonly CharSet[]>): Iterable<Word> {
+export function* wordSetsToWords(wordSets: Iterable<ReadonlyWordSet>): Iterable<Word> {
 	for (const wordSet of wordSets) {
 		yield* wordSetToWords(wordSet);
 	}

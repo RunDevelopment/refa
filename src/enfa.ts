@@ -1,6 +1,7 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
 import { Char, ReadonlyWord, Word } from "./char-types";
+import { WordSet } from "./word-set";
 import {
 	FABuilder,
 	FACreationOptions,
@@ -39,10 +40,7 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	/**
 	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
 	 */
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]>;
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
 	/**
 	 * Create a mutable copy of this ENFA.
@@ -151,10 +149,7 @@ export class ENFA implements ReadonlyENFA {
 	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
 		return getIntersectionWords(this, other, options);
 	}
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]> {
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
 		return getIntersectionWordSets(this, other, options);
 	}
 
@@ -205,7 +200,7 @@ export class ENFA implements ReadonlyENFA {
 		return currentStates.some(state => effectivelyFinal.has(state));
 	}
 
-	wordSets(): Iterable<CharSet[]> {
+	wordSets(): Iterable<WordSet> {
 		return Iter.iterateWordSets(this.transitionIterator());
 	}
 	words(): Iterable<Word> {

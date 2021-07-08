@@ -1,4 +1,5 @@
 import { CharSet } from "../../src/char-set";
+import { WordSet } from "../../src/word-set";
 import { TransitionIterable } from "../../src/common-types";
 import { approximateRejectingWordSet, iterateWordSets, shortestWordSet } from "../../src/iter";
 import { literalToDFA, literalToENFA, literalToNFA } from "../helper/fa";
@@ -26,7 +27,7 @@ describe("word sets", function () {
 		/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i,
 	];
 
-	function wordSetToString(wordSet: CharSet[]): string {
+	function wordSetToString(wordSet: WordSet): string {
 		return JSON.stringify(wordSet.map(rangesToString));
 	}
 

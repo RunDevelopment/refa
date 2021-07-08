@@ -1,4 +1,5 @@
 import { CharSet } from "../char-set";
+import { WordSet } from "../word-set";
 import { FAIterator } from "../common-types";
 import { ensureStableOut, shortestAcceptingPath } from "./iterator";
 import { removeDeadStates } from "./remove-dead-states";
@@ -12,7 +13,7 @@ import { removeDeadStates } from "./remove-dead-states";
  *
  * @param iter
  */
-export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Iterable<CharSet[]> {
+export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Iterable<WordSet> {
 	const { initial, getOut, isFinal } = ensureStableOut(removeDeadStates(iter, i => i[0]));
 
 	interface BFSNode {
@@ -38,8 +39,8 @@ export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>)
 		return currentWave.length !== 0;
 	}
 
-	function getPath(node: BFSNode): CharSet[] {
-		const path: CharSet[] = [];
+	function getPath(node: BFSNode): WordSet {
+		const path: WordSet = [];
 		while (node.value) {
 			path.push(node.value);
 			node = node.parent!;
@@ -79,7 +80,7 @@ export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>)
  *
  * This operation is roughly equivalent to `firstOf(iterateWordSets(iter))` but implemented **much more** efficiently.
  */
-export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): CharSet[] | undefined {
+export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): WordSet | undefined {
 	const result = shortestAcceptingPath(iter, item => item[0]);
 
 	if (result === undefined) {
@@ -109,7 +110,7 @@ export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>):
 export function approximateRejectingWordSet<S>(
 	iter: FAIterator<S, Iterable<[S, CharSet]>>,
 	inputCharacters: CharSet
-): CharSet[] | undefined {
+): WordSet | undefined {
 	if (inputCharacters.isEmpty) {
 		throw new Error("The input character set must contain at least one character.");
 	}
@@ -131,7 +132,7 @@ export function approximateRejectingWordSet<S>(
 	//
 	// Note: The above memorization approach assumes that all states can eventually reach a final state.
 
-	const wordSet: CharSet[] = [];
+	const wordSet: WordSet = [];
 
 	let current: readonly S[] = [initial];
 

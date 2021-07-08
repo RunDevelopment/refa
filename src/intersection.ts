@@ -1,5 +1,5 @@
-import { CharSet } from "./char-set";
 import { Word } from "./char-types";
+import { WordSet } from "./word-set";
 import * as Iter from "./iter";
 import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";
@@ -63,7 +63,7 @@ export function getIntersectionWordSets<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
 	options?: Readonly<FACreationOptions>
-): Iterable<CharSet[]> {
+): Iterable<WordSet> {
 	const iter = getIntersectionIterator(left, right, options);
 
 	return Iter.iterateWordSets(iter);

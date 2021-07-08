@@ -1,6 +1,7 @@
 import type { Char, ReadonlyWord, Word } from "./char-types";
 import type { Expression, NoParent } from "./ast";
 import type { CharSet } from "./char-set";
+import type { WordSet } from "./word-set";
 
 export interface FiniteAutomaton {
 	/**
@@ -43,7 +44,7 @@ export interface FiniteAutomaton {
 	 *
 	 * If this FA accepts infinitely many words, the iterable will never end.
 	 */
-	wordSets(): Iterable<CharSet[]>;
+	wordSets(): Iterable<WordSet>;
 
 	/**
 	 * Returns a string representation of this FA.

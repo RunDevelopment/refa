@@ -1,4 +1,5 @@
 import { Char, ReadonlyWord, Word } from "./char-types";
+import { WordSet } from "./word-set";
 import { cachedFunc, firstOf, intersectSet, traverse, withoutSet } from "./util";
 import {
 	FABuilder,
@@ -40,10 +41,7 @@ export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.Rea
 	/**
 	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
 	 */
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]>;
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
 	/**
 	 * Creates a new DFA equivalent to this one.
@@ -131,7 +129,7 @@ export class DFA implements ReadonlyDFA {
 		return this.nodes.finals.has(current);
 	}
 
-	wordSets(): Iterable<CharSet[]> {
+	wordSets(): Iterable<WordSet> {
 		if (this.isEmpty) {
 			return [];
 		}
@@ -164,10 +162,7 @@ export class DFA implements ReadonlyDFA {
 	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
 		return getIntersectionWords(this, other, options);
 	}
-	getIntersectionWordSets<O>(
-		other: TransitionIterable<O>,
-		options?: Readonly<FACreationOptions>
-	): Iterable<CharSet[]> {
+	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
 		return getIntersectionWordSets(this, other, options);
 	}
 
