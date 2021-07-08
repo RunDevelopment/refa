@@ -9,7 +9,7 @@ import {
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
-} from "./common-types";
+} from "./fa-types";
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { CharBase } from "./char-base";

@@ -9,7 +9,7 @@ import {
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
-} from "./common-types";
+} from "./fa-types";
 import { wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";

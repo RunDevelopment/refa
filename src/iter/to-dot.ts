@@ -1,4 +1,4 @@
-import { FAIterator } from "../common-types";
+import { FAIterator } from "../fa-types";
 import { iterToArray } from "../util";
 import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
 

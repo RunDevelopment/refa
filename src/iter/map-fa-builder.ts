@@ -1,5 +1,5 @@
 import { CharSet } from "../char-set";
-import { FABuilder } from "../common-types";
+import { FABuilder } from "../fa-types";
 import { TooManyNodesError } from "../errors";
 
 interface Limit {

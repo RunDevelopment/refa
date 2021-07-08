@@ -12,7 +12,7 @@ import {
 } from "../ast";
 import { CharSet } from "../char-set";
 import { DFS, assertNever, cachedFunc, firstOf, minOf } from "../util";
-import { FAIterator, ToRegexOptions } from "../common-types";
+import { FAIterator, ToRegexOptions } from "../fa-types";
 import { structurallyEqual } from "../ast-analysis";
 import {
 	CreationOptions,

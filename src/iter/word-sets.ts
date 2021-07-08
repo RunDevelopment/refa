@@ -1,6 +1,6 @@
 import { CharSet } from "../char-set";
 import { WordSet } from "../word-set";
-import { FAIterator } from "../common-types";
+import { FAIterator } from "../fa-types";
 import { ensureStableOut, shortestAcceptingPath } from "./iterator";
 import { removeDeadStates } from "./remove-dead-states";
 

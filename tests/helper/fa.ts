@@ -3,7 +3,7 @@ import { NFA, ReadonlyNFA } from "../../src/nfa";
 import { ENFA } from "../../src/enfa";
 import { Literal, Parser } from "../../src/js";
 import * as Iter from "../../src/iter";
-import { TransitionIterable } from "../../src/common-types";
+import { TransitionIterable } from "../../src/fa-types";
 
 export function literalToString(literal: Literal): string {
 	return `/${literal.source}/${literal.flags}`;

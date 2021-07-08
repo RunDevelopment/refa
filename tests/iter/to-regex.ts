@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { faEqual, literalToENFA, literalToNFA, literalToString } from "../helper/fa";
 import { Literal, toLiteral } from "../../src/js";
 import { NFA } from "../../src/nfa";
-import { FiniteAutomaton, ToRegexOptions, TransitionIterable } from "../../src/common-types";
+import { FiniteAutomaton, ToRegexOptions, TransitionIterable } from "../../src/fa-types";
 
 describe("toRegex", function () {
 	describe("Literals", function () {

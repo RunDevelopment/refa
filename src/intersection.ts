@@ -4,7 +4,7 @@ import * as Iter from "./iter";
 import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";
 import { wordSetsToWords } from "./char-util";
-import { FACreationOptions, TransitionIterable, TransitionIterator } from "./common-types";
+import { FACreationOptions, TransitionIterable, TransitionIterator } from "./fa-types";
 
 /**
  * Returns a lazily-created {@link TransitionIterator} for the intersection of the two given FA.

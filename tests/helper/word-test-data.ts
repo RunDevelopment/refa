@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { FiniteAutomaton } from "../../src/common-types";
+import { FiniteAutomaton } from "../../src/fa-types";
 import { Literal } from "../../src/js";
 import { fromStringToUTF16, fromUTF16ToString, fromUnicodeToString } from "../../src/words";
 

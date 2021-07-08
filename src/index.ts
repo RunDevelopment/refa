@@ -3,7 +3,7 @@ export * from "./char-base";
 export * from "./char-map";
 export * from "./char-set";
 export * from "./char-types";
-export * from "./common-types";
+export * from "./fa-types";
 export * from "./dfa";
 export * from "./enfa";
 export * from "./errors";

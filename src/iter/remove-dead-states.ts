@@ -1,4 +1,4 @@
-import { FAIterator } from "../common-types";
+import { FAIterator } from "../fa-types";
 import { ensureStableOut } from "./iterator";
 
 /**

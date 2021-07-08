@@ -1,6 +1,6 @@
 import { CharSet } from "../char-set";
 import { ensureStableOut } from "./iterator";
-import { FABuilder, FAIterator, TransitionIterator } from "../common-types";
+import { FABuilder, FAIterator, TransitionIterator } from "../fa-types";
 
 /**
  * A lazy intersection algorithm that will use the given FA builder to construct the intersection FA as the returned

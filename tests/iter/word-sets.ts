@@ -1,6 +1,6 @@
 import { CharSet } from "../../src/char-set";
 import { WordSet } from "../../src/word-set";
-import { TransitionIterable } from "../../src/common-types";
+import { TransitionIterable } from "../../src/fa-types";
 import { approximateRejectingWordSet, iterateWordSets, shortestWordSet } from "../../src/iter";
 import { literalToDFA, literalToENFA, literalToNFA } from "../helper/fa";
 import { assertEqualSnapshot } from "../helper/snapshot";

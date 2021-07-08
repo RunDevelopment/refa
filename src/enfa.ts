@@ -10,7 +10,7 @@ import {
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
-} from "./common-types";
+} from "./fa-types";
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
