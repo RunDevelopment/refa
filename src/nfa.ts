@@ -10,12 +10,12 @@ import {
 	TransitionIterable,
 	TransitionIterator,
 } from "./fa-types";
-import { wordSetsToWords } from "./char-util";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";
 import { WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
+import { wordSetsToWords } from "./words";
 
 /*
  * ####################################################################################################################

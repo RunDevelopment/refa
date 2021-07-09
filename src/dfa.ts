@@ -13,11 +13,12 @@ import {
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { CharBase } from "./char-base";
-import { isChar, wordSetsToWords } from "./char-util";
+import { isChar } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
+import { wordSetsToWords } from "./words";
 
 const DEFAULT_MAX_NODES = 10_000;
 

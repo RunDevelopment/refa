@@ -14,9 +14,9 @@ import {
 import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
-import { wordSetsToWords } from "./char-util";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
+import { wordSetsToWords } from "./words";
 
 const DEFAULT_MAX_NODES = 10_000;
 
