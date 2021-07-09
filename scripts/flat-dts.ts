@@ -17,7 +17,12 @@ async function run() {
 	ensureInternalExportAll(parsed);
 	ensureSoleExport(parsed);
 
-	await fs.writeFile("./index.d.ts", outputModContext(inline(parsed).modules.refa), "utf8");
+	let output = outputModContext(inline(parsed).modules.refa);
+
+	// Dirty hack to fix an error
+	output = output.replace("TransitionIterator<MapFABuilderNode>", "TransitionIterator<FAIterators.MapFABuilderNode>");
+
+	await fs.writeFile("./index.d.ts", output, "utf8");
 }
 run().catch(err => {
 	console.log(err);
