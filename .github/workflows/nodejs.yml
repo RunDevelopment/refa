@@ -25,6 +25,9 @@ jobs:
     - run: npm run build
       env:
         CI: true
+    - run: npx tsc index.d.ts --noEmit
+      env:
+        CI: true
 
   test:
     runs-on: ubuntu-latest
