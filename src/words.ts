@@ -137,16 +137,14 @@ export function pickMostReadableCharacter(set: CharSet): Char | undefined {
 /**
  * Returns a word of the given word set that is the most humanly readable.
  *
- * If at least one of the given character sets is empty, `undefined` will be returned.
- *
  * @param wordSet
  */
-export function pickMostReadableWord(wordSet: Iterable<CharSet>): Word | undefined {
+export function pickMostReadableWord(wordSet: ReadonlyWordSet): Word {
 	const word: Word = [];
 	for (const set of wordSet) {
 		const c = pickMostReadableCharacter(set);
 		if (c === undefined) {
-			return undefined;
+			throw new Error("Word sets are not allowed to contain empty character sets.");
 		} else {
 			word.push(c);
 		}
