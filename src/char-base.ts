@@ -12,7 +12,7 @@ import { iterToSet } from "./util";
  *
  * - Every character set in the collection can be constructed by combining (union) a unique set of base sets.
  *
- * - The list of base sets is guaranteed to be as small as possible. There are at most `min(n, o)` base sets where `n`
+ * - The list of base sets is guaranteed to be as small as possible. There are at most `min(n^2, o)` base sets where `n`
  *   is the number of unique, non-empty character sets in the collection, and `o` is the number of characters in the
  *   union of all character sets in the collection.
  *
