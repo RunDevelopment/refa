@@ -150,6 +150,13 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this._tree.deleteRange(range);
 	}
 
+	/**
+	 * Deletes all entries in the map.
+	 */
+	clear(): void {
+		this._tree.clear();
+	}
+
 	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
 		this._tree.map((r, v) => {
 			return mapFn(v, r, this);
@@ -161,6 +168,12 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	): void {
 		this._tree.mapWithGaps(range, (r, v) => {
 			return mapFn(v, r, this);
+		});
+	}
+
+	filter(conditionFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => boolean): void {
+		this._tree.filter((r, v) => {
+			return conditionFn(v, r, this);
 		});
 	}
 
@@ -874,6 +887,10 @@ class AVLTree<T> {
 		toRemove.forEach(node => this.detachNode(node));
 	}
 
+	clear(): void {
+		this.root = null;
+	}
+
 	/**
 	 * Sets the value of the given node.
 	 *
@@ -924,6 +941,23 @@ class AVLTree<T> {
 
 			prevNode = node;
 		}
+	}
+
+	filter(conditionFn: (range: CharRange, value: T) => boolean): void {
+		if (!this.root) {
+			return;
+		}
+
+		const del: Node<T>[] = [];
+
+		let node: Node<T> | null = leftmostNode(this.root);
+		do {
+			if (!conditionFn(node.key, node.value)) {
+				del.push(node);
+			}
+		} while ((node = rightNeighbor(node)));
+
+		del.forEach(n => this.detachNode(n));
 	}
 
 	private _applyModifications(mods: [Node<T>, T][]): void {

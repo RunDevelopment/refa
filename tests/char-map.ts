@@ -43,6 +43,13 @@ describe("CharMap", function () {
 			[{ min: 3, max: 3 }, "d"],
 			[{ min: 12, max: 12 }, "f"],
 		]);
+
+		map.filter(value => value !== "d");
+
+		assertEqual(map, [
+			[{ min: 2, max: 2 }, "c"],
+			[{ min: 12, max: 12 }, "f"],
+		]);
 	});
 
 	it("range operations", function () {
@@ -63,6 +70,10 @@ describe("CharMap", function () {
 			[{ min: 0, max: 0 }, "a"],
 			[{ min: 5, max: 16 }, "b"],
 		]);
+
+		map.clear();
+
+		assertEqual(map, []);
 	});
 
 	it("merge adjacent", function () {
