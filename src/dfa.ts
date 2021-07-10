@@ -1,6 +1,6 @@
 import { Char, ReadonlyWord, Word } from "./char-types";
 import { WordSet } from "./word-set";
-import { cachedFunc, firstOf, intersectSet, traverse, withoutSet } from "./util";
+import { cachedFunc, debugAssert, firstOf, intersectSet, traverse, traverseMultiRoot, withoutSet } from "./util";
 import {
 	FABuilder,
 	FACreationOptions,
@@ -614,53 +614,63 @@ export namespace DFA {
 			 * (For condition 1, we just have to check the final states.)
 			 */
 
-			const alive = new Set<Node>();
+			if (this.finals.size === 0) {
+				// clear all nodes
+				this.initial.out.clear();
+				return;
+			}
 
-			const walked = new Set<Node>();
-			const walk = (node: Node): void => {
-				if (walked.has(node)) {
-					return;
-				}
-				walked.add(node);
+			const getInSet = cachedFunc<Node, Set<Node>>(() => new Set());
 
-				// walk all out node
+			traverse(this.initial, node => {
+				getInSet(node);
+
 				const out = new Set<Node>();
-				node.out.forEach(node => out.add(node));
-				out.forEach(n => walk(n));
+				node.out.forEach(n => {
+					out.add(n);
+					getInSet(n).add(node);
+				});
 
-				if (this.finals.has(node)) {
-					// if it's final, it satisfies both conditions
-					alive.add(node);
-				} else {
-					// if at least one out node is alive, this node it too
-					for (const outNode of out) {
-						if (alive.has(outNode)) {
-							alive.add(node);
-							break;
-						}
-					}
-				}
-			};
-			walk(this.initial);
+				return out;
+			});
 
-			// remove dead finals
-			for (const finalNode of this.finals) {
-				if (!alive.has(finalNode)) {
-					this.finals.delete(finalNode);
+			debugAssert(getInSet.cache.has(this.initial));
+
+			// Check condition 1) for all final states
+			const toDelete: Node[] = [];
+			for (const f of this.finals) {
+				if (!getInSet.cache.has(f)) {
+					toDelete.push(f);
 				}
 			}
+			toDelete.forEach(f => this.finals.delete(f));
 
-			// remove dead nodes reachable from the initial state
-			function removeDead(node: Node): void {
-				const toRemove: CharRange[] = [];
-				for (const [range, outNode] of node.out) {
-					if (!alive.has(outNode)) {
-						toRemove.push(range);
-					}
-				}
-				toRemove.forEach(n => node.out.deleteEvery(n));
+			if (this.finals.size === 0) {
+				// clear all nodes
+				this.initial.out.clear();
+				return;
 			}
-			removeDead(this.initial);
+
+			// Mark all states reachable from final states
+			const alive = new Set<Node>();
+			traverseMultiRoot(this.finals, node => {
+				alive.add(node);
+				return getInSet(node);
+			});
+
+			// Check condition 2)
+			traverse(this.initial, node => {
+				const next: Node[] = [];
+				node.out.filter(n => {
+					if (alive.has(n)) {
+						next.push(n);
+						return true;
+					} else {
+						return false;
+					}
+				});
+				return next;
+			});
 		}
 
 		count(): number {
