@@ -584,7 +584,7 @@ describe("DFA", function () {
 			}
 
 			for (const { regex, id } of candidates) {
-				it(`${id}: ${literalToString(regex)}`, function () {
+				it(`${id}: ${literalToString(regex).replace(/^([^]{80})[^]+/, "$1...")}`, function () {
 					this.timeout(10_000);
 
 					let dfa;
@@ -607,7 +607,7 @@ describe("DFA", function () {
 
 					if (!copy.structurallyEqual(dfa)) {
 						assert.equal(copy.toDot(), dfa.toDot());
-						assert.fail("What????");
+						assert.fail("structurally equal doesn't work");
 					}
 				});
 			}
