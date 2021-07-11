@@ -751,12 +751,9 @@ function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
 	};
 }
 
-function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): Set<ReadonlySet<DFA.Node>>;
-function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): Set<ReadonlySet<DFA.ReadonlyNode>>;
-function findEquivalenceClasses(
-	nodeList: DFA.ReadonlyNodeList,
-	maxCharacter: Char
-): Set<ReadonlySet<DFA.ReadonlyNode>> {
+function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): ReadonlySet<DFA.Node>[];
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): ReadonlySet<DFA.ReadonlyNode>[];
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): ReadonlySet<DFA.ReadonlyNode>[] {
 	// https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
 	if (nodeList.finals.size === 0) {
 		throw new Error("Cannot find equivalence classes for a DFA without final states.");
@@ -812,9 +809,9 @@ function findEquivalenceClasses(
 		return inArray;
 	});
 
-	const P = new Set<ReadonlySet<DFA.ReadonlyNode>>([nodeList.finals]);
+	const P: ReadonlySet<DFA.ReadonlyNode>[] = [nodeList.finals];
 	if (allNodes.length > nodeList.finals.size) {
-		P.add(withoutSet(allNodes, nodeList.finals));
+		P.push(withoutSet(allNodes, nodeList.finals));
 	}
 	const W = new Set<ReadonlySet<DFA.ReadonlyNode>>(P);
 
@@ -835,9 +832,8 @@ function findEquivalenceClasses(
 				continue;
 			}
 
-			const pToAdd: ReadonlySet<DFA.ReadonlyNode>[] = [];
-			const pToDelete: ReadonlySet<DFA.ReadonlyNode>[] = [];
-			for (const Y of P) {
+			for (let i = 0, l = P.length; i < l; i++) {
+				const Y = P[i];
 				const intersection = intersectSet(X, Y);
 				if (intersection.size === 0) {
 					continue;
@@ -847,8 +843,9 @@ function findEquivalenceClasses(
 					continue;
 				}
 
-				pToAdd.push(intersection, without);
-				pToDelete.push(Y);
+				// This is a little trick to remove `Y` and push `intersection` and `without`
+				P.push(intersection);
+				P[i] = without;
 
 				if (W.has(Y)) {
 					W.delete(Y);
@@ -862,8 +859,6 @@ function findEquivalenceClasses(
 					}
 				}
 			}
-			pToDelete.forEach(x => P.delete(x));
-			pToAdd.forEach(x => P.add(x));
 		}
 	}
 
