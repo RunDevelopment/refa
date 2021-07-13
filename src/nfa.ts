@@ -1,6 +1,6 @@
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { CharSet } from "./char-set";
-import { assertNever, cachedFunc, traverse } from "./util";
+import { assertNever, cachedFunc, swapRemove, traverse } from "./util";
 import {
 	FABuilder,
 	FACreationOptions,
@@ -905,33 +905,24 @@ function createNodeList(
 		function handleConcatenation(concatenation: NoParent<Concatenation>): SubList {
 			const elements = concatenation.elements;
 
-			const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-
-			// check for trivial cases first
-			for (let i = 0, l = elements.length; i < l; i++) {
-				const element = elements[i];
-				if (element.type === "Assertion") {
-					if (creationOptions.assertions === "disable") {
-						return base;
-					} else {
-						throw new Error("Assertions are not supported yet.");
-					}
-				} else if (element.type === "CharacterClass") {
-					if (element.characters.isEmpty) {
-						return base;
-					}
-				}
+			if (elements.length === 0) {
+				const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
+				base.finals.add(base.initial);
+				return base;
 			}
 
-			base.finals.add(base.initial);
+			const base = createElement(elements[0]);
+			if (base === null) {
+				return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
+			}
 
-			for (let i = 0, l = elements.length; i < l; i++) {
+			for (let i = 1, l = elements.length; i < l; i++) {
 				if (base.finals.size === 0) {
 					// Since base is the empty language, concatenation has no effect, so let's stop early
 					break;
 				}
 
-				handleElement(elements[i], base);
+				appendElement(elements[i], base);
 			}
 
 			return base;
@@ -947,25 +938,11 @@ function createNodeList(
 			return base;
 		}
 
-		function handleElement(element: NoParent<Element>, base: SubList): void {
+		function appendElement(element: NoParent<Element>, base: SubList): void {
 			switch (element.type) {
-				case "Alternation":
-					baseAppend(nodeList, base, handleAlternation(element.alternatives));
-					break;
-
-				case "Assertion":
-					if (creationOptions.assertions === "disable") {
-						baseMakeEmpty(nodeList, base);
-						break;
-					} else {
-						throw new Error("Assertions are not supported yet.");
-					}
-
 				case "CharacterClass": {
 					const chars = element.characters;
-					if (chars.maximum !== options.maxCharacter) {
-						throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
-					}
+					checkCharacters(chars);
 
 					if (chars.isEmpty) {
 						// the whole concatenation can't go anywhere
@@ -979,22 +956,66 @@ function createNodeList(
 					}
 					break;
 				}
-				case "Quantifier":
+
+				case "Quantifier": {
 					if (element.max > 0) {
 						baseAppend(nodeList, base, handleQuantifier(element));
 					}
 					break;
+				}
+
+				default: {
+					const after = createElement(element);
+					if (after === null) {
+						baseMakeEmpty(nodeList, base);
+					} else {
+						baseAppend(nodeList, base, after);
+					}
+				}
+			}
+		}
+		function createElement(element: NoParent<Element>): SubList | null {
+			switch (element.type) {
+				case "Alternation":
+					return handleAlternation(element.alternatives);
+
+				case "Assertion":
+					if (creationOptions.assertions === "disable") {
+						return null;
+					} else {
+						throw new Error("Assertions are not supported yet.");
+					}
+
+				case "CharacterClass": {
+					const chars = element.characters;
+					checkCharacters(chars);
+
+					if (chars.isEmpty) {
+						return null;
+					} else {
+						const i = nodeList.createNode();
+						const f = nodeList.createNode();
+						nodeList.linkNodes(i, f, chars);
+						return { initial: i, finals: new Set([f]) };
+					}
+				}
+				case "Quantifier":
+					return handleQuantifier(element);
 
 				case "Unknown":
 					if (creationOptions.unknowns === "disable") {
-						baseMakeEmpty(nodeList, base);
-						break;
+						return null;
 					} else {
 						throw new Error("Unknowns are not supported.");
 					}
 
 				default:
 					throw assertNever(element);
+			}
+		}
+		function checkCharacters(chars: CharSet): void {
+			if (chars.maximum !== options.maxCharacter) {
+				throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
 			}
 		}
 	});
@@ -1172,10 +1193,10 @@ function baseUnion(nodeList: NFA.NodeList, base: SubList, alternative: SubList):
 	});
 
 	// transfer nodes to base
-	for (const [to, characters] of [...alternative.initial.out]) {
-		nodeList.linkNodes(base.initial, to, characters);
-		nodeList.unlinkNodes(alternative.initial, to);
-	}
+	alternative.initial.out.forEach((via, to) => {
+		to.in.delete(alternative.initial);
+		nodeList.linkNodes(base.initial, to, via);
+	});
 
 	// optional optimization to reduce the number of nodes
 	baseOptimizationReuseFinalStates(nodeList, base);
@@ -1184,22 +1205,25 @@ function baseUnion(nodeList: NFA.NodeList, base: SubList, alternative: SubList):
 }
 
 function baseOptimizationReuseFinalStates(nodeList: NFA.NodeList, base: SubList): void {
+	if (base.finals.size < 2) {
+		return;
+	}
+
 	const reusable: NFA.Node[] = [];
-	base.finals.forEach(f => {
+	for (const f of base.finals) {
 		if (f !== base.initial && f.out.size === 0) {
 			reusable.push(f);
 		}
-	});
+	}
 
 	if (reusable.length > 1) {
 		const masterFinal: NFA.Node = reusable.pop()!;
-		for (let i = 0, l = reusable.length; i < l; i++) {
-			const toRemove = reusable[i];
+		for (const toRemove of reusable) {
 			base.finals.delete(toRemove);
-			for (const [from, characters] of [...toRemove.in]) {
-				nodeList.linkNodes(from, masterFinal, characters);
-				nodeList.unlinkNodes(from, toRemove);
-			}
+			toRemove.in.forEach((via, from) => {
+				from.out.delete(toRemove);
+				nodeList.linkNodes(from, masterFinal, via);
+			});
 		}
 	}
 }
@@ -1245,7 +1269,7 @@ function baseOptimizationMergePrefixes(nodeList: NFA.NodeList, base: SubList): v
 					if (otherIsFinal) {
 						base.finals.delete(other);
 					}
-					candidateOutNodes.splice(i, 1);
+					swapRemove(candidateOutNodes, i);
 
 					// we might be able to merge prefixes on this one
 					prefixNodes.push(current);
@@ -1301,7 +1325,7 @@ function baseOptimizationMergeSuffixes(nodeList: NFA.NodeList, base: SubList): v
 					if (otherIsFinal) {
 						base.finals.delete(other);
 					}
-					candidateInNodes.splice(i, 1);
+					swapRemove(candidateInNodes, i);
 
 					// we might be able to merge prefixes on this one
 					suffixNodes.push(current);
@@ -1392,9 +1416,9 @@ function basePlus(nodeList: NFA.NodeList, base: SubList): void {
 	// all final states will then behave like the initial state.
 	for (const f of base.finals) {
 		if (f !== base.initial) {
-			for (const [to, characters] of base.initial.out) {
+			base.initial.out.forEach((characters, to) => {
 				nodeList.linkNodes(f, to, characters);
-			}
+			});
 		}
 	}
 }

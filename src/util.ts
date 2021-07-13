@@ -35,6 +35,14 @@ export function filterMut<T>(array: T[], filter: (arg: T, prev: T | undefined) =
 	array.splice(array.length - deleteCount, deleteCount);
 }
 
+export function swapRemove<T>(array: T[], index: number): void {
+	if (index === array.length - 1) {
+		array.pop();
+	} else {
+		array[index] = array.pop()!;
+	}
+}
+
 export function minOf<T>(iter: Iterable<T>, cost: (value: T) => number): T | undefined {
 	let min: T | undefined = undefined;
 	let minCost = Infinity;
