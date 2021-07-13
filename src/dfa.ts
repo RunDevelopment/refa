@@ -610,8 +610,10 @@ export namespace DFA {
 			}
 
 			const getInSet = cachedFunc<Node, Set<Node>>(() => new Set());
+			const reachableFromInitial: Node[] = [];
 
 			traverse(this.initial, node => {
+				reachableFromInitial.push(node);
 				getInSet(node);
 
 				const out = new Set<Node>();
@@ -641,25 +643,18 @@ export namespace DFA {
 			}
 
 			// Mark all states reachable from final states
-			const alive = new Set<Node>();
+			const reachableFromFinal = new Set<Node>();
 			traverseMultiRoot(this.finals, node => {
-				alive.add(node);
+				reachableFromFinal.add(node);
 				return getInSet(node);
 			});
 
 			// Check condition 2)
-			traverse(this.initial, node => {
-				const next: Node[] = [];
-				node.out.filter(n => {
-					if (alive.has(n)) {
-						next.push(n);
-						return true;
-					} else {
-						return false;
-					}
-				});
-				return next;
-			});
+			if (reachableFromFinal.size < reachableFromInitial.length) {
+				for (const node of reachableFromInitial) {
+					node.out.filter(n => reachableFromFinal.has(n));
+				}
+			}
 		}
 
 		count(): number {
