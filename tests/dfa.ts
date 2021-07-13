@@ -534,6 +534,15 @@ describe("DFA", function () {
 
 					[6] -> [6] : 30..39`,
 			},
+			{
+				literal: /ab+/,
+				expected: `
+					(0) -> (1) : 61
+
+					(1) -> [2] : 62
+
+					[2] -> [2] : 62`,
+			},
 		]);
 
 		interface TestCase {
