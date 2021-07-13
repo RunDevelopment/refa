@@ -130,6 +130,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#map" class="tsd-kind-icon">map</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#maprange" class="tsd-kind-icon">map<wbr>Range</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#set" class="tsd-kind-icon">set</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#setcharset" class="tsd-kind-icon">set<wbr>Char<wbr>Set</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#setrange" class="tsd-kind-icon">set<wbr>Range</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="charmap.html#values" class="tsd-kind-icon">values</a></li>
 							</ul>
@@ -670,6 +671,37 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="setcharset" class="tsd-anchor"></a>
+					<h3>set<wbr>Char<wbr>Set</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Char<wbr>Set<span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a>, value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the value for all characters in the given character set.</p>
+								</div>
+								<p>This is equivalent to <code>[...charSet.characters()].forEach(char =&gt; this.set(char, value))</code>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>charSet: <a href="charset.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
+								</li>
+								<li>
+									<h5>value: <span class="tsd-signature-type">T</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="setrange" class="tsd-anchor"></a>
 					<h3>set<wbr>Range</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -785,6 +817,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="charmap.html#set" class="tsd-kind-icon">set</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="charmap.html#setcharset" class="tsd-kind-icon">set<wbr>Char<wbr>Set</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="charmap.html#setrange" class="tsd-kind-icon">set<wbr>Range</a>
