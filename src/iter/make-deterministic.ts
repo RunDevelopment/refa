@@ -19,17 +19,8 @@ export function makeDeterministic<B, I>(
 ): FAIterator<B, B> {
 	iter = ensureStableOut(iter);
 
-	const alphabet = new CharBase(getAllCharSets(iter));
-
-	const idMap = new Map<I, number>();
-	function getId(node: I): number {
-		let value = idMap.get(node);
-		if (value === undefined) {
-			value = idMap.size;
-			idMap.set(node, value);
-		}
-		return value;
-	}
+	const { charSets, ids } = getInfo(iter);
+	const alphabet = new CharBase(charSets);
 
 	// This will use the subset method to construct the DFA.
 
@@ -38,13 +29,13 @@ export function makeDeterministic<B, I>(
 	function getKey(nodes: readonly I[]): string {
 		let key = "";
 		for (let i = 0, l = nodes.length; i < l; i++) {
-			key += "," + getId(nodes[i]).toString(16);
+			key += "," + ids.get(nodes[i])!;
 		}
 		return key;
 	}
 	function getDfaNode(nodes: I[]): B {
 		// sort
-		nodes.sort((a, b) => getId(a) - getId(b));
+		nodes.sort((a, b) => ids.get(a)! - ids.get(b)!);
 		// remove duplicates
 		filterMut(nodes, (n, prev) => n !== prev);
 
@@ -111,19 +102,29 @@ export function makeDeterministic<B, I>(
 	};
 }
 
-function getAllCharSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Set<CharSet> {
-	const transitionSets = new Set<CharSet>();
+interface Info<S> {
+	charSets: Set<CharSet>;
+	ids: ReadonlyMap<S, number>;
+}
+
+function getInfo<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Info<S> {
+	const charSets = new Set<CharSet>();
+	const ids = new Map<S, number>();
+	let id = 0;
 
 	traverse(iter.initial, n => {
+		ids.set(n, id);
+		id++;
+
 		const next: S[] = [];
 
 		for (const [to, via] of iter.getOut(n)) {
-			transitionSets.add(via);
+			charSets.add(via);
 			next.push(to);
 		}
 
 		return next;
 	});
 
-	return transitionSets;
+	return { charSets, ids };
 }
