@@ -582,16 +582,7 @@ export namespace DFA {
 		}
 
 		unlinkNodes(from: Node, to: Node): void {
-			const toRemove: CharRange[] = [];
-			for (const [key, node] of from.out) {
-				if (node === to) {
-					toRemove.push(key);
-				}
-			}
-
-			for (let i = 0, l = toRemove.length; i < l; i++) {
-				from.out.deleteRange(toRemove[i]);
-			}
+			from.out.filter(node => node !== to);
 		}
 
 		makeFinal(state: Node): void {
