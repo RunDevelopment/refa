@@ -572,14 +572,14 @@ export namespace DFA {
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharRange(from: Node, to: Node, characters: CharRange): void {
-			from.out.setEvery(characters, to);
+			from.out.setRange(characters, to);
 		}
 		// eslint-disable-next-line jsdoc/require-param
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {
 			for (const range of characters.ranges) {
-				from.out.setEvery(range, to);
+				from.out.setRange(range, to);
 			}
 		}
 
@@ -592,7 +592,7 @@ export namespace DFA {
 			}
 
 			for (let i = 0, l = toRemove.length; i < l; i++) {
-				from.out.deleteEvery(toRemove[i]);
+				from.out.deleteRange(toRemove[i]);
 			}
 		}
 
@@ -879,7 +879,7 @@ function copyTo(fromNodeList: DFA.ReadonlyNodeList, toNodeList: DFA.NodeList): v
 		const next = new Set<DFA.ReadonlyNode>();
 		node.out.forEach((n, range) => {
 			next.add(n);
-			toNode.out.setEvery(range, translate(n));
+			toNode.out.setRange(range, translate(n));
 		});
 
 		return next;

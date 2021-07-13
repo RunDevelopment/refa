@@ -129,7 +129,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 * @param chars
 	 * @param value
 	 */
-	setEvery(chars: CharRange, value: T): void {
+	setRange(chars: CharRange, value: T): void {
 		this._tree.deleteRange(chars);
 		this._tree.insert(chars, value);
 	}
@@ -146,7 +146,7 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 *
 	 * @param range
 	 */
-	deleteEvery(range: CharRange): void {
+	deleteRange(range: CharRange): void {
 		this._tree.deleteRange(range);
 	}
 

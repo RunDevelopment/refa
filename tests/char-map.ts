@@ -54,17 +54,17 @@ describe("CharMap", function () {
 
 	it("range operations", function () {
 		const map = new CharMap<string>();
-		map.setEvery({ min: 0, max: 1 }, "a");
-		map.setEvery({ min: 4, max: 16 }, "b");
+		map.setRange({ min: 0, max: 1 }, "a");
+		map.setRange({ min: 4, max: 16 }, "b");
 
-		map.deleteEvery({ min: 2, max: 3 });
+		map.deleteRange({ min: 2, max: 3 });
 
 		assertEqual(map, [
 			[{ min: 0, max: 1 }, "a"],
 			[{ min: 4, max: 16 }, "b"],
 		]);
 
-		map.deleteEvery({ min: 1, max: 4 });
+		map.deleteRange({ min: 1, max: 4 });
 
 		assertEqual(map, [
 			[{ min: 0, max: 0 }, "a"],
@@ -84,7 +84,7 @@ describe("CharMap", function () {
 
 		assertEqual(map, [[{ min: 1, max: 2 }, 0]]);
 
-		map.setEvery({ min: 4, max: 9 }, 0);
+		map.setRange({ min: 4, max: 9 }, 0);
 
 		assertEqual(map, [
 			[{ min: 1, max: 2 }, 0],
