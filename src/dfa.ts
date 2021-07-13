@@ -578,9 +578,7 @@ export namespace DFA {
 		/** @internal */
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {
-			for (const range of characters.ranges) {
-				from.out.setRange(range, to);
-			}
+			from.out.setCharSet(characters, to);
 		}
 
 		unlinkNodes(from: Node, to: Node): void {

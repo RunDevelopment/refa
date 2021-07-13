@@ -134,6 +134,33 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 		this._tree.insert(chars, value);
 	}
 
+	/**
+	 * Sets the value for all characters in the given character set.
+	 *
+	 * This is equivalent to `[...charSet.characters()].forEach(char => this.set(char, value))`.
+	 *
+	 * @param charSet
+	 * @param value
+	 */
+	setCharSet(charSet: CharSet, value: T): void {
+		if (charSet.ranges.length === 0) {
+			return;
+		} else if (charSet.ranges.length === 1) {
+			this.setRange(charSet.ranges[0], value);
+			return;
+		}
+
+		if (this._tree.root !== null) {
+			for (const range of charSet.ranges) {
+				this._tree.deleteRange(range);
+			}
+		}
+
+		for (const range of charSet.ranges) {
+			this._tree.insert(range, value);
+		}
+	}
+
 	delete(char: Char): boolean {
 		const result = this._tree.deleteCharacter(char);
 		return result;
@@ -807,6 +834,11 @@ class AVLTree<T> {
 	}
 
 	deleteRange(range: CharRange): void {
+		if (this.root === null) {
+			// the tree is empty
+			return;
+		}
+
 		const { min: rMin, max: rMax } = range;
 
 		// edge cases first
