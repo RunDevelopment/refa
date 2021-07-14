@@ -1,4 +1,4 @@
-import { NFA, DFA, JS } from "../src";
+import { NFA, DFA, JS, combineTransformers, Transformers, transform } from "../src";
 import { PrismRegexes } from "../tests/helper/prism-regex-data";
 import { performance } from "perf_hooks";
 import { logDurations } from "./util";
@@ -7,10 +7,12 @@ import { logDurations } from "./util";
 function perfTest(): void {
 	const durationRecord: Record<string, number[]> = {};
 	function measure<T>(label: string, fn: () => T): T {
+		const durations = (durationRecord[label] = durationRecord[label] || []);
+
 		const start = performance.now();
 		const result = fn();
-		const duration = performance.now() - start;
-		(durationRecord[label] = durationRecord[label] || []).push(duration);
+		durations.push(performance.now() - start);
+
 		return result;
 	}
 	function showResult(): void {
@@ -20,17 +22,19 @@ function perfTest(): void {
 		}
 	}
 
+	const TOO_BIG = new Set<number>([245, 862, 1474, 2278]);
+
 	let errors = 0;
 	let counter = 0;
 	for (const literal of PrismRegexes) {
 		counter++;
-		if (counter === 862) {
-			// this regex creates a DFA with >500k states. The DFA just doesn't fit into Node's limit of 2GB memory
-			continue;
-		}
 		process.stdout.write(`\r${counter}/${PrismRegexes.length}`);
 		if (counter === PrismRegexes.length) {
 			console.log();
+		}
+
+		if (TOO_BIG.has(counter)) {
+			continue
 		}
 
 		try {
@@ -39,14 +43,32 @@ function perfTest(): void {
 			measure("toLiteral", () => JS.toLiteral(expression));
 			measure("toLiteral fast", () => JS.toLiteral(expression, { fastCharacters: true }));
 
+			const finalExpression = measure("transformers", () => {
+				const applyTransformer = combineTransformers([
+					Transformers.inline(),
+					Transformers.removeDeadBranches(),
+					Transformers.removeUnnecessaryAssertions(),
+					Transformers.sortAssertions(),
+					Transformers.applyAssertions(),
+					Transformers.removeUnnecessaryAssertions(),
+				]);
+				const modifiedExpression = transform(applyTransformer, expression);
+
+				return transform(
+					Transformers.patternEdgeAssertions({ remove: true }),
+					modifiedExpression
+				);
+			});
+
 			const nfa = measure("Create NFA", () =>
 				NFA.fromRegex(
-					expression,
+					finalExpression,
 					{ maxCharacter },
-					{ assertions: "disable" }
+					{ assertions: "disable", maxNodes: 100_000 }
 				)
 			);
 			measure("toRegex NFA", () => nfa.toRegex({ maxNodes: 100_000 }));
+
 			const dfa = measure("Create DFA", () => DFA.fromFA(nfa));
 			measure("Minimize DFA", () => dfa.minimize());
 
