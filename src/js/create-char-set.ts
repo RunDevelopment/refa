@@ -2,7 +2,6 @@ import { Char } from "../char-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./flags";
-import { isChar } from "../char-util";
 import { CharEnv, getCharEnv } from "./char-env";
 import { getProperty } from "./property";
 
@@ -112,6 +111,10 @@ export function createCharSet(
 	}
 
 	return env.withCaseVaryingCharacters(cs);
+}
+
+function isChar(value: unknown): value is Char {
+	return typeof value === "number";
 }
 
 function getPredefinedSet(char: Readonly<PredefinedCharacterSet>, flags: Readonly<Flags>, env: CharEnv): CharSet {

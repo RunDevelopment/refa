@@ -13,7 +13,6 @@ import {
 import { CharMap, ReadonlyCharMap } from "./char-map";
 import { CharRange, CharSet } from "./char-set";
 import { CharBase } from "./char-base";
-import { isChar } from "./char-util";
 import { Expression, NoParent } from "./ast";
 import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -703,6 +702,10 @@ export namespace DFA {
 		 */
 		maxCharacter: Char;
 	}
+}
+
+function isChar(value: unknown): value is Char {
+	return typeof value === "number";
 }
 
 function iterStates(list: DFA.ReadonlyNodeList): FAIterator<DFA.ReadonlyNode> {
