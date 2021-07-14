@@ -12,6 +12,8 @@ import { combineTransformers, transform } from "../src/ast";
 import * as Transformers from "../src/transformers";
 import { TooManyNodesError } from "../src/errors";
 import { CONFIG_RUN_STRESS_TEST } from "./helper/config";
+import { assertEqualSnapshot } from "./helper/snapshot";
+import { createHash } from "crypto";
 
 describe("DFA", function () {
 	describe("fromWords", function () {
@@ -618,6 +620,10 @@ describe("DFA", function () {
 						assert.equal(copy.toDot(), dfa.toDot());
 						assert.fail("structurally equal doesn't work");
 					}
+
+					// This way we can detect when the DFA minimization produces incorrect results.
+					// We could also store the DFA string itself but this results in mega bytes of snapshots.
+					assertEqualSnapshot(this, createHash("sha256").update(dfa.toString()).digest("base64"));
 				});
 			}
 		});
