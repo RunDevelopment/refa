@@ -1,10 +1,6 @@
 import { Char } from "./char-types";
 import { CharRange, CharSet } from "./char-set";
 
-function strictEqualFn<T>(a: T, b: T): boolean {
-	return a === b;
-}
-
 export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	readonly isEmpty: boolean;
 
@@ -53,9 +49,6 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 
 	/**
 	 * Returns a mapping from the values of this map to its keys.
-	 *
-	 * **Note**: This will ignore the supplied or default equality function. Value are assumed to be equal based on the key
-	 * equality function defined by `Map`.
 	 */
 	invert(maxCharacter: Char): Map<T, CharSet>;
 }
@@ -64,14 +57,13 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
  * A map from characters to generic values.
  *
  * The map guarantees that there are no adjacent character ranges that map to the equal values, will always be iterated
- * as one character range. The equality of values is given by a custom equal function or JavaScript's strict equality
- * operator (`===`).
+ * as one character range. The equality of values is given by JavaScript's strict equality operator (`===`).
  */
 export class CharMap<T> implements ReadonlyCharMap<T> {
 	private _tree: AVLTree<T>;
 
-	constructor(equalFn?: (a: T, b: T) => boolean) {
-		this._tree = new AVLTree<T>(equalFn || strictEqualFn);
+	constructor() {
+		this._tree = new AVLTree<T>();
 	}
 
 	get isEmpty(): boolean {
@@ -469,8 +461,6 @@ function unionAdjacentRanges(left: CharRange, right: CharRange): CharRange {
 class AVLTree<T> {
 	root: Node<T> | null = null;
 
-	constructor(public readonly equalFn: (a: T, b: T) => boolean) {}
-
 	validateTree(at: string): void {
 		const prefix = `Invalid tree: ${at}`;
 		if (this.root && this.root.parent) {
@@ -579,7 +569,7 @@ class AVLTree<T> {
 			if (leftN.key.max >= key.min) {
 				throw new Error("The inserted key has to be disjoint with all other keys.");
 			}
-			if (areAdjacentRanges(leftN.key, key) && this.equalFn(leftN.value, rightNode.value)) {
+			if (areAdjacentRanges(leftN.key, key) && leftN.value === rightNode.value) {
 				min = leftN.key.min;
 				this.detachNode(leftN);
 			}
@@ -598,7 +588,7 @@ class AVLTree<T> {
 			if (rightN.key.min <= key.max) {
 				throw new Error("The inserted key has to be disjoint with all other keys.");
 			}
-			if (areAdjacentRanges(key, rightN.key) && this.equalFn(leftNode.value, rightN.value)) {
+			if (areAdjacentRanges(key, rightN.key) && leftNode.value === rightN.value) {
 				max = rightN.key.max;
 				this.detachNode(rightN);
 			}
@@ -625,12 +615,12 @@ class AVLTree<T> {
 			// check whether we can merge the current value with an existing node instead of creating a new one
 			if (parent.key.max < key.min) {
 				// [parent] [key]
-				if (areAdjacentRanges(parent.key, key) && this.equalFn(parent.value, value)) {
+				if (areAdjacentRanges(parent.key, key) && parent.value === value) {
 					this._mergeAdjacentRight(parent, key);
 					return;
 				} else {
 					const rightN = rightNeighbor(parent);
-					if (rightN && areAdjacentRanges(key, rightN.key) && this.equalFn(value, rightN.value)) {
+					if (rightN && areAdjacentRanges(key, rightN.key) && value === rightN.value) {
 						// merge with right neighbor
 						rightN.key = unionAdjacentRanges(key, rightN.key);
 						return;
@@ -638,12 +628,12 @@ class AVLTree<T> {
 				}
 			} else {
 				// [key] [parent]
-				if (areAdjacentRanges(key, parent.key) && this.equalFn(value, parent.value)) {
+				if (areAdjacentRanges(key, parent.key) && value === parent.value) {
 					this._mergeAdjacentLeft(key, parent);
 					return;
 				} else {
 					const leftN = leftNeighbor(parent);
-					if (leftN && areAdjacentRanges(leftN.key, key) && this.equalFn(leftN.value, value)) {
+					if (leftN && areAdjacentRanges(leftN.key, key) && leftN.value === value) {
 						// merge with left neighbor
 						leftN.key = unionAdjacentRanges(leftN.key, key);
 						return;
@@ -934,7 +924,7 @@ class AVLTree<T> {
 	 * @param newValue
 	 */
 	setNode(node: Node<T>, newValue: T): void {
-		if (this.equalFn(node.value, newValue)) {
+		if (node.value === newValue) {
 			// trivial
 			return;
 		}
@@ -942,13 +932,13 @@ class AVLTree<T> {
 		node.value = newValue;
 
 		const leftN = leftNeighbor(node);
-		if (leftN && areAdjacent(leftN, node) && this.equalFn(leftN.value, newValue)) {
+		if (leftN && areAdjacent(leftN, node) && leftN.value === newValue) {
 			node.key = unionAdjacentRanges(leftN.key, node.key);
 			this.detachNode(leftN);
 		}
 
 		const rightN = leftNeighbor(node);
-		if (rightN && areAdjacent(node, rightN) && this.equalFn(newValue, rightN.value)) {
+		if (rightN && areAdjacent(node, rightN) && newValue === rightN.value) {
 			node.key = unionAdjacentRanges(node.key, rightN.key);
 			this.detachNode(rightN);
 		}
@@ -966,7 +956,7 @@ class AVLTree<T> {
 		while ((node = rightNeighbor(prevNode))) {
 			node.value = mapFn(node.key, node.value);
 
-			if (areAdjacent(prevNode, node) && this.equalFn(prevNode.value, node.value)) {
+			if (areAdjacent(prevNode, node) && prevNode.value === node.value) {
 				node.key = unionAdjacentRanges(prevNode.key, node.key);
 				this.detachNode(prevNode);
 			}
@@ -1006,7 +996,7 @@ class AVLTree<T> {
 			node.value = newValue;
 
 			const prev = leftNeighbor(node);
-			if (prev && areAdjacent(prev, node) && this.equalFn(prev.value, newValue)) {
+			if (prev && areAdjacent(prev, node) && prev.value === newValue) {
 				node.key = unionAdjacentRanges(prev.key, node.key);
 				this.detachNode(prev);
 			}
@@ -1014,7 +1004,7 @@ class AVLTree<T> {
 			const next = rightNeighbor(node);
 			if (!(i + 1 < l && next === mods[i + 1][0])) {
 				// the right neighbor isn't the next modification
-				if (next && areAdjacent(node, next) && this.equalFn(newValue, next.value)) {
+				if (next && areAdjacent(node, next) && newValue === next.value) {
 					node.key = unionAdjacentRanges(node.key, next.key);
 					this.detachNode(next);
 				}
@@ -1043,7 +1033,7 @@ class AVLTree<T> {
 
 			if (mapRes === undefined) {
 				this.deleteRange(range);
-			} else if (this.equalFn(mapRes, oldValue)) {
+			} else if (mapRes === oldValue) {
 				// nothing changed
 			} else if (oldRange.min === range.min && range.max === oldRange.max) {
 				// range === leftmost.key
