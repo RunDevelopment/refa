@@ -192,7 +192,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 47: /\\b0x[\\da-f]+\\b|(?:\\
 vnm9KEc1j+lkhic0scUimNWlHobK9Ufk6ZCzoipLchY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 48: /[<>]=?|[!=]=?=?|--?|\\+\\+?|&&?|\\|\\|?|[?*/~^%]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 48: /[<>]=?|[!=]=?=?|--?|\\+\\+?|&&?|\\|\\|?|[?*\\/~^%]/"] = `
 fCV4oTilLWLSSMqRCwaSvVoTgFPV8USgKVzUwTBRRgQ=
 `.slice(1, -1);
 
@@ -232,7 +232,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 57: /\\b(?:(?:0[xX](?:[\\dA-
 D8ts4vT+6f2woFj/cVXqYRxAQEOO17il9b5msO3Jvzc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 58: /--|\\+\\+|\\*\\*=?|=>|&&=?|\\|\\|=?|[!=]==|<<=?|>>>?=?|[-+*/%&|^!=<>]=?|\\.{3}|\\?\\?=?|..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 58: /--|\\+\\+|\\*\\*=?|=>|&&=?|\\|\\|=?|[!=]==|<<=?|>>>?=?|[-+*\\/%&|^!=<>]=?|\\.{3}|\\?\\?=?..."] = `
 gb/+RP8I5cnaY3KNvlLYRzG6TI1bWE4UHpBWxys8DhA=
 `.slice(1, -1);
 
@@ -484,7 +484,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 121: /\\b(?:Curr(?:FieldNo|P
 YThURjOxBU+DHFtotHVPh0PkdcZfquSrPCnap7Nv1FI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 123: /\\.\\.|:[=:]|[-+*/]=?|<>|[<>]=?|=|\\b(?:and|div|mod|not|or|xor)\\b/i"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 123: /\\.\\.|:[=:]|[-+*\\/]=?|<>|[<>]=?|=|\\b(?:and|div|mod|not|or|xor)\\b/i"] = `
 5NcmfgvKhTyoKdSjjQi3ZTT9kRYe/YFekoWlwpEl/L0=
 `.slice(1, -1);
 
@@ -732,7 +732,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 185: /(?:\\B\\.\\d+|\\b(?:0|
 vAwilgvCZiJSNc6tFRBDDo/m6XC8dTR87rrDh3qzSmA=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 186: /\\*{2,}|[=!]~|[!=<>]=?|&&|\\|\\||[-+*/%]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 186: /\\*{2,}|[=!]~|[!=<>]=?|&&|\\|\\||[-+*\\/%]/"] = `
 7S7DirgZYsxgEbuvGuM5K5+X49MhzFzfwC7xKik+OS0=
 `.slice(1, -1);
 
@@ -788,7 +788,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 199: /(?:\\b0x(?:[\\da-f]+\\
 CyxRTQoPalu4rzC6H++s1SymNgWFqXEkXp+muli2u8U=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 200: />>=?|<<=?|->|([-+&|:])\\1|[?:~]|[-+*/%&|^!=<>]=?/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 200: />>=?|<<=?|->|([-+&|:])\\1|[?:~]|[-+*\\/%&|^!=<>]=?/"] = `
 25SDP7T6v5Tt67ZAijafoqtojw7Im6rEXDU3gxCTz+0=
 `.slice(1, -1);
 
@@ -796,7 +796,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 201: /\\b(?:alignas|alignof|
 Wm7Nwn5iYe7sjYs2ps4+xHO+FnRyd4jdCotDhQ79tEY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 202: />>=?|<<=?|->|([-+&|:])\\1|[?:~]|<=>|[-+*/%&|^!=<>]=?|\\b(?:and|and_eq|bitand|bito..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 202: />>=?|<<=?|->|([-+&|:])\\1|[?:~]|<=>|[-+*\\/%&|^!=<>]=?|\\b(?:and|and_eq|bitand|bit..."] = `
 YwOGcUIpQ/7mgRxSCMQkf5u96q8C4gTD+Xak5z03Qh8=
 `.slice(1, -1);
 
@@ -812,7 +812,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 206: /\\/\\/(?:[^\\r\\n\\\\]
 lmRZz9DKSJj4QzFTQkT3ETbK234SzW4gUTwhdTBNjXQ=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 207: /(^\\s*)#\\s*[a-z]+(?:[^\\r\\n\\\\/]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|\\\\(?:\\r\\n|[\\s..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 207: /(^\\s*)#\\s*[a-z]+(?:[^\\r\\n\\\\\\/]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|\\\\(?:\\r\\n|[\\..."] = `
 4jsbccUZ3rVs02yhx3Fpxi6YyW+yrTYlrmv9Ura3Dhs=
 `.slice(1, -1);
 
@@ -1100,7 +1100,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 279: /(?:\\b0(?:x[\\da-f_]*[
 1rPXEVDLO+OMZ+gvmaKaeakzVlbX468b+QuItFBHQM0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 280: />>=?|<<=?|[-=]>|([-+&|])\\1|~|\\?\\?=?|[-+*/%&|^!=<>]=?/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 280: />>=?|<<=?|[-=]>|([-+&|])\\1|~|\\?\\?=?|[-+*\\/%&|^!=<>]=?/"] = `
 o4oRleti7vvki+fLbm8qTatNDfH9xyc7mtBZBgduSuU=
 `.slice(1, -1);
 
@@ -1116,7 +1116,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 283: /(\\b(?:default|typeof|
 Jwv0TAJtU0a6aepuFaEP6LSIo+Z2eGNNQhSo2S10Ttw=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 286: /(?:@?\\b[A-Za-z_]\\w*\\b)\\s*(?:<(?:[^<>;=+\\-*/%&|^]|(?:<(?:[^<>;=+\\-*/%&|^]|(?:<(?..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 286: /(?:@?\\b[A-Za-z_]\\w*\\b)\\s*(?:<(?:[^<>;=+\\-*\\/%&|^]|(?:<(?:[^<>;=+\\-*\\/%&|^]|(?:<..."] = `
 tZokMIa2qemP4r2ag+CoPtX+PjvweMMJ3gFPWZ8Uy9I=
 `.slice(1, -1);
 
@@ -1148,11 +1148,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 295: /<%.*%>/i"] = `
 DeO+GecOj1pt4ZaePF7QGmnxXmCwcxGkgRfS/qvYWU4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 296: /(^|[^\\\\])(?:\\$@|@\\$)\"(?:\"\"|\\\\[\\s\\S]|\\{\\{|(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'/()]|(?:\\..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 296: /(^|[^\\\\])(?:\\$@|@\\$)\"(?:\"\"|\\\\[\\s\\S]|\\{\\{|(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'\\/()]|(?:..."] = `
 TmJySnOjzH+lOs880TVxiwzSMVdMZnSm6pbOlIk0Otw=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 297: /(^|[^@\\\\])\\$\"(?:\\\\.|\\{\\{|(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'/()]|\\/(?!\\*)|\\/\\*(?:[^*]..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 297: /(^|[^@\\\\])\\$\"(?:\\\\.|\\{\\{|(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'\\/()]|\\/(?!\\*)|\\/\\*(?:[^*..."] = `
 lPbwFcRaRbE1cAnQ+xOyZZxZHDv0ZUvLNmcWQQY/7zY=
 `.slice(1, -1);
 
@@ -1212,7 +1212,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 312: /(\\b(?:is(?:\\s+not)?|
 Bw4gYAa7MtaF7YCPSkJu1quiBjjkEtcDBYGSD0j6sH0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 314: /<(?:[^<>;=+\\-*/%&|^]|(?:<(?:[^<>;=+\\-*/%&|^]|(?:<(?:[^<>;=+\\-*/%&|^]|(?:<(?:[^<..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 314: /<(?:[^<>;=+\\-*\\/%&|^]|(?:<(?:[^<>;=+\\-*\\/%&|^]|(?:<(?:[^<>;=+\\-*\\/%&|^]|(?:<(?:..."] = `
 mkYadARQeci224Ngls9CDhPM0GfFiM2mSxpXzEI7NNY=
 `.slice(1, -1);
 
@@ -1224,7 +1224,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 317: /^(?:\\b(?:assembly|eve
 50a311b7ym3wWHeGI79e2tJi2LlHlJUMjqNiGGrzSPo=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 318: /\\((?:[^\"'/()]|(?:\\/(?![*/])|\\/\\/[^\\r\\n]*[\\r\\n]|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|(?:\"(..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 318: /\\((?:[^\"'\\/()]|(?:\\/(?![*\\/])|\\/\\/[^\\r\\n]*[\\r\\n]|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|(?:..."] = `
 GwjMPhqQ/AxGNoZvItVNPTsWRI+TsZDspkeDhyBrD6Q=
 `.slice(1, -1);
 
@@ -1240,11 +1240,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 321: /<%\\s*?[$=%#:]{0,2}|%>
 Tnfw9L3PQhwgrbwgzq/DVlqHT58X7mieP7zcG3kNKRo=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 322: /((?:^|[^{])(?:\\{\\{)*)(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'/()]|(?:\\/(?![*/])|\\/\\/[^\\r\\n..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 322: /((?:^|[^{])(?:\\{\\{)*)(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'\\/()]|(?:\\/(?![*\\/])|\\/\\/[^\\r..."] = `
 Bw4gYAa7MtaF7YCPSkJu1quiBjjkEtcDBYGSD0j6sH0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 323: /((?:^|[^{])(?:\\{\\{)*)(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'/()]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*(..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 323: /((?:^|[^{])(?:\\{\\{)*)(?:\\{(?!\\{)(?:(?![}:])(?:[^\"'\\/()]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*..."] = `
 Bw4gYAa7MtaF7YCPSkJu1quiBjjkEtcDBYGSD0j6sH0=
 `.slice(1, -1);
 
@@ -1252,11 +1252,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 324: /^\\{|\\}$/"] = `
 W4AY52cBoSQcGVz0+lDanHZsFAo9JSCbKL809xmRCVc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 325: /(^\\{(?:(?![}:])(?:[^\"'/()]|(?:\\/(?![*/])|\\/\\/[^\\r\\n]*[\\r\\n]|\\/\\*(?:[^*]|\\*(?!\\/..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 325: /(^\\{(?:(?![}:])(?:[^\"'\\/()]|(?:\\/(?![*\\/])|\\/\\/[^\\r\\n]*[\\r\\n]|\\/\\*(?:[^*]|\\*(?!..."] = `
 a0KCsWD4d57F0QvHwwQ4tNAEcmUZ5J7Fy8klNcBzF6w=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 326: /(^\\{(?:(?![}:])(?:[^\"'/()]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|(?:\"(?:\\\\.|[^\\\\\"..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 326: /(^\\{(?:(?![}:])(?:[^\"'\\/()]|\\/(?!\\*)|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/|(?:\"(?:\\\\.|[^\\\\..."] = `
 +cRF/ncGik7CBnkfzFH1eWJ7S/5XVhDHMhXjkEkYfk8=
 `.slice(1, -1);
 
@@ -1744,7 +1744,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 456: /(?:\\b\\d+(?:\\.\\d+)?
 Cx8XZtJP6G2cShsfFDEClXMsOTsq+ZqMMD+H3NCf4CE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 457: /--|\\+\\+|>>=?|<<=?|<>|[-+*/\\\\<>]=?|[:^=?]|\\b(?:and|mod|not|or)\\b/i"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 457: /--|\\+\\+|>>=?|<<=?|<>|[-+*\\/\\\\<>]=?|[:^=?]|\\b(?:and|mod|not|or)\\b/i"] = `
 Qsuaj4oyCTml81nzavDZrUwqtxXDqmVzwyO58g91Row=
 `.slice(1, -1);
 
@@ -1972,7 +1972,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 518: /\\b0b[01][01_]*L?\\b|\
 K909+JV7ZoWqPuBHBu8LDuEmJWiXnxRFJzpTq1cFg1o=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 519: /<==|>==|=>|->|<-|<>|\\^|&==|&<>|!|\\?|\\?:|\\.\\?|\\+\\+|--|[-+*/=<>]=?|\\b(?:and|as|ba..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 519: /<==|>==|=>|->|<-|<>|\\^|&==|&<>|!|\\?|\\?:|\\.\\?|\\+\\+|--|[-+*\\/=<>]=?|\\b(?:and|as|b..."] = `
 cl8zWT3ZK6LIXVDuaabaGdxo3LyLpfN2VrWGzJPACaQ=
 `.slice(1, -1);
 
@@ -2000,7 +2000,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 525: /\\b(?:base-uri|block-a
 2hmBPN/Gy+u5i/7Zh6XSKFmoZqFzYj9B8EzCGW5/qy4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 526: /'(?:self|none|strict-dynamic|(?:nonce-|sha(?:256|384|512)-)[a-zA-Z\\d+=/]+)'/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 526: /'(?:self|none|strict-dynamic|(?:nonce-|sha(?:256|384|512)-)[a-zA-Z\\d+=\\/]+)'/"] = `
 jAvXilMUzzLECKB/+g7T5qWYmmTt66OrmXEvyN6RTxM=
 `.slice(1, -1);
 
@@ -2064,7 +2064,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 541: /%r(?:([^a-zA-Z0-9\\s{(
 kPE/nWyJ3MjNSaJorbDrcxOIIygqfbXUXTs7sOu48g4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 542: /(^|[^/])\\/(?!\\/)(?:\\[[^\\r\\n\\]]+\\]|\\\\.|[^[/\\\\\\r\\n])+\\/[gim]{0,3}(?=\\s*(?:$|[\\r\\n..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 542: /(^|[^\\/])\\/(?!\\/)(?:\\[[^\\r\\n\\]]+\\]|\\\\.|[^[\\/\\\\\\r\\n])+\\/[gim]{0,3}(?=\\s*(?:$|[\\r..."] = `
 cweeGB0DBJqltq/H8DweTga+H2lz9no4Uyutriad3/Y=
 `.slice(1, -1);
 
@@ -2224,7 +2224,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 582: /\\b(?:0x[\\da-fA-F]+|\
 PbZXPIp+SwErZIKzuFC/Td2jekB1R0k/oUi01Yt/1S8=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 583: /:|<--?|--?>?|<>|=~?|[<>]=?|[+*/%^|]|\\.\\.\\.?/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 583: /:|<--?|--?>?|<>|=~?|[<>]=?|[+*\\/%^|]|\\.\\.\\.?/"] = `
 lJzCIIJ/ItyxXHltDQVraJQrnyMp4PVlqJKRlHX9Yfs=
 `.slice(1, -1);
 
@@ -2372,7 +2372,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 620: /\\/\\\\|\\/\\/\\\\\\\\
 +8mO4ZO6fRr5VdRipVhv1C+cojlDJiQJ1lfq3h3oqf4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 621: /\\.\\.|[{}\\[\\](),./]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 621: /\\.\\.|[{}\\[\\](),.\\/]/"] = `
 polnrVttcOzVzyAnM6D2kwxTR8PxhmNu7Jpu5gfu+0E=
 `.slice(1, -1);
 
@@ -2388,7 +2388,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 624: /`[^`]*`/"] = `
 wqrwXonvhUKrYj6GGJfYIs9z3+Y6VCQXAHh7jGYQVuQ=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 625: /\\bhttps?:\\/\\/[\\w.:%!$&'*+;=@~-]+(?:\\/[\\w.:%!$&'*+;=@~-]*)*(?:\\?[/?\\w.:%!$&'*+;=..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 625: /\\bhttps?:\\/\\/[\\w.:%!$&'*+;=@~-]+(?:\\/[\\w.:%!$&'*+;=@~-]*)*(?:\\?[\\/?\\w.:%!$&'*+;..."] = `
 FXgToPC7c3GZTrd3Tjxyt0nwhmAQRmuPUnhiTjj2x/A=
 `.slice(1, -1);
 
@@ -2480,7 +2480,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 647: /\\b(?:and|as|by|else|f
 4Qsr0/75Ze2Orxa9HaBNgkhcw1M6U4w2iHSnh5oEHoE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 648: /[-+*/%=]=?|!=|\\*\\*?=?|\\/\\/?=?|<[<=>]?|>[=>]?|[&|^~]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 648: /[-+*\\/%=]=?|!=|\\*\\*?=?|\\/\\/?=?|<[<=>]?|>[=>]?|[&|^~]/"] = `
 XF90SeHc4i7yRHQPxG+dmqFWNtUqY/6++OU+F8ZGZDY=
 `.slice(1, -1);
 
@@ -2560,11 +2560,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 667: /\\b[a-z]\\w*(?:[ \\t]+
 r0n0w9tNIrNJ2zulkWpMYNdg0QZ9pNTCFwRir+x9kS0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 668: /\\([:/]|[:/]\\)|[.,;()[\\]{}]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 668: /\\([:\\/]|[:\\/]\\)|[.,;()[\\]{}]/"] = `
 xtdcO31zMXoLaXNd9MezybG0YoEOP575RnPOdUzNZvI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 669: /[-=|*/!]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 669: /[-=|*\\/!]/"] = `
 Saa823xE7KFjMr9tTUqTnXMFbRJLipdI4k217rk9zDk=
 `.slice(1, -1);
 
@@ -2728,7 +2728,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 709: /\\b(?:\\d+(?:\\.\\d+)?
 XrQYcegWH4IAE6q5AmMh6HR8DKLSb28bdoztEZB4UeY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 710: /\\s\\.\\s|[+\\-/*=.$<>:&|^?%#@~!]{2,}|[+\\-/*=$<>:&|^?%#@~!]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 710: /\\s\\.\\s|[+\\-\\/*=.$<>:&|^?%#@~!]{2,}|[+\\-\\/*=$<>:&|^?%#@~!]/"] = `
 9yMxhqLPEHeL1afU1mzywV3PtP1YpSJGtR2iotg51/0=
 `.slice(1, -1);
 
@@ -2868,7 +2868,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 744: /\\b(?:TRUE|FALSE)\\b/i
 kPiBOQvqbACAoKWacUeiIbdyS5DG8ByS7p6jUbRTaMI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 745: /[-+*/^%=&,]|<[=>]?|>=?/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 745: /[-+*\\/^%=&,]|<[=>]?|>=?/"] = `
 5BrU1OrPfJniBtsPyv+YUR/ZXyL/hT+oRPKInZENgS4=
 `.slice(1, -1);
 
@@ -2932,7 +2932,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 760: /\\b(?:let|return|use|y
 Ri8md3MbgYIhaQBupV/NiTi9s5NGsDfQwkMxH8X29II=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 761: /([<>~&^])\\1\\1|([*.:<>&])\\2|<-|->|[!=:]=|<?\\|{1,3}>?|\\??(?:<=|>=|<>|[-+*/%=<>])\\..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 761: /([<>~&^])\\1\\1|([*.:<>&])\\2|<-|->|[!=:]=|<?\\|{1,3}>?|\\??(?:<=|>=|<>|[-+*\\/%=<>])..."] = `
 mcDEUjizRyrvAXEzxbOxTB9GhnEiHBL+q93Zo6zfjPY=
 `.slice(1, -1);
 
@@ -2992,7 +2992,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 775: /(\\s*#)\\b(?:else|endi
 LPfyM8GOH7W6w6LWgjAYFQ6JHP9MFudehWOXrgVCrkE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 776: /(^|\\s)R\\/\\s+(?:\\\\\\S|[^\\\\/])*\\/(?:[idmsr]*|[idmsr]+-[idmsr]+)(?=\\s|$)/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 776: /(^|\\s)R\\/\\s+(?:\\\\\\S|[^\\\\\\/])*\\/(?:[idmsr]*|[idmsr]+-[idmsr]+)(?=\\s|$)/"] = `
 2G/9Ky3ajA3O5K8+1iBNqXD+97lSo46d+z4CoIVNG+o=
 `.slice(1, -1);
 
@@ -3164,7 +3164,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 820: /\\b(?:allow|function|i
 a9GKIdnKrf9RCEholscVGGUU+SfPdDGGXaT15nct7Xw=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 821: /&&|\\|\\||[<>!=]=?|[-+*/%=]|\\b(?:in|is)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 821: /&&|\\|\\||[<>!=]=?|[-+*\\/%=]|\\b(?:in|is)\\b/"] = `
 jzzPrOkAKLPaxDucrtJ//GWc3GriTiSHZmY+nWEHGpU=
 `.slice(1, -1);
 
@@ -3176,7 +3176,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 823: /(\\ballow\\s+)[a-z]+(?
 Ln027EuDYNMdCye96Xszv9OFzIZED3rvSiWj+ul13cg=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 824: /[/]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 824: /[\\/]/"] = `
 6c0qv2Vd5FCWwFQc50hf+iGXtDiS4c+TyfmZQbyGrR8=
 `.slice(1, -1);
 
@@ -3308,7 +3308,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 856: /\\d+(?:\\.\\d+)?/"] = 
 BUUB+E0cSs2HJg/bnfkRb9zOkiIJyaWTgS3PqQb6wCc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 857: /\\.\\.[<*!]?|->|--|\\+\\+|&&|\\|\\||\\?{1,2}|[-+*/%!=<>]=?|\\b(?:gt|gte|lt|lte)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 857: /\\.\\.[<*!]?|->|--|\\+\\+|&&|\\|\\||\\?{1,2}|[-+*\\/%!=<>]=?|\\b(?:gt|gte|lt|lte)\\b/"] = `
 8+Z1eZ6gjES1c1YKueXxcbDt2lHAwmhHIlnN9falk80=
 `.slice(1, -1);
 
@@ -3372,7 +3372,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 875: /\\b[A-Z][A-Z_\\d]*\\b/
 UcIDU2iHr2KOagvx0q01C1TjLtgmoYFKP4gj/qvdv4c=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 876: /->|:=|&&|\\|\\||<<|>>|[-+*/%&|!<>=]=?|[~^]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 876: /->|:=|&&|\\|\\||<<|>>|[-+*\\/%&|!<>=]=?|[~^]/"] = `
 DmtMZBTv2seSs/NQlMBVwoP9LLOiVGX884KaY7JX/eE=
 `.slice(1, -1);
 
@@ -3396,11 +3396,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 881: /\\b(?:INF|NAN|PI|TAU)\
 BrbpKRfQXKHF74R2V+CJOxoekugtTaP5WEyugQzrB4w=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 882: /(^\\s*\\d+ +(?:@\\w[\\w!\"$%&'()*+,\\-./:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@ +)?\\w+ +).+/m"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 882: /(^\\s*\\d+ +(?:@\\w[\\w!\"$%&'()*+,\\-.\\/:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@ +)?\\w+ +).+/..."] = `
 cgE44Qg1Kxui0x7YHY4PcnDALyqm9X8NmedsdBhbrLE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 883: /(^\\s*\\d+ +(?:@\\w[\\w!\"$%&'()*+,\\-./:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@ +)?)\\w+/m"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 883: /(^\\s*\\d+ +(?:@\\w[\\w!\"$%&'()*+,\\-.\\/:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@ +)?)\\w+/m"] = `
 TZcJg/xsMPpSmnVaox+A0XT/uRixN7o2R1jtbPC9NAk=
 `.slice(1, -1);
 
@@ -3408,11 +3408,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 884: /(^\\s*)\\d+/m"] = `
 aNwcaI3hYovu4fo+iASLtqRoytatH3W0WwP5U1bqlYc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 885: /@\\w[\\w!\"$%&'()*+,\\-./:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 885: /@\\w[\\w!\"$%&'()*+,\\-.\\/:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@/"] = `
 Y6S+zhPkljPMGCHl1nGJOk6n00z9OcCpZrai/WPNemY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 886: /^@\\w[\\w!\"$%&'()*+,\\-./:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@$/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 886: /^@\\w[\\w!\"$%&'()*+,\\-.\\/:;<=>?[\\\\\\]^`{|}~\\x80-\\xfe #]*@$/"] = `
 Y6S+zhPkljPMGCHl1nGJOk6n00z9OcCpZrai/WPNemY=
 `.slice(1, -1);
 
@@ -3744,11 +3744,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 971: /(^|[^.])(?:~|==?~?|\\?
 Y8/6oTY9F/HDox/NM78lApiC0DsIkCyRoROtWKkdaWU=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 972: /(\"\"\"|''')(?:[^\\\\]|\\\\[\\s\\S])*?\\1|\\$\\/(?:[^/$]|\\$(?:[/$]|(?![/$]))|\\/(?!\\$))*\\/\\$..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 972: /(\"\"\"|''')(?:[^\\\\]|\\\\[\\s\\S])*?\\1|\\$\\/(?:[^\\/$]|\\$(?:[\\/$]|(?![\\/$]))|\\/(?!\\$))*\\..."] = `
 +AGo8AJ8MXMr/UKp2b9qJBSuevu2JueO8Um87exCbQw=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 973: /([\"'/])(?:\\\\.|(?!\\1)[^\\\\\\r\\n])*\\1/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 973: /([\"'\\/])(?:\\\\.|(?!\\1)[^\\\\\\r\\n])*\\1/"] = `
 8vQ97DZZZa/xytPX8I5mSLOMX5SeRAq0NK5gkCZ/WS4=
 `.slice(1, -1);
 
@@ -3980,7 +3980,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1030: /^\\[[^\\]]+\\]\\S+$/m
 I4ygAR1INIj3fH3MSmVdH+oAy5ZwiP0g+oPZXPh0EW4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1031: /\"(?:\\([^|()\\n]+\\)|\\[[^\\]\\n]+\\]|\\{[^}\\n]+\\})*[^\"]+\":.+?(?=[^\\w/]?(?:\\s|$))/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1031: /\"(?:\\([^|()\\n]+\\)|\\[[^\\]\\n]+\\]|\\{[^}\\n]+\\})*[^\"]+\":.+?(?=[^\\w\\/]?(?:\\s|$))/"] = `
 OmWj2BNbK9XzoUvjhcV1/XIlBiWbKi19DjE1OQ+TgoQ=
 `.slice(1, -1);
 
@@ -4356,7 +4356,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1125: /(content-type:\\s*tex
 OdeqpWcmAViqDIBxkUntV1cMuvUuwZyZjBPyvZkSHDk=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1126: /\\b(?:(?:includeSubDomains|preload|strict)(?: |;)|pin-sha256=\"[a-zA-Z\\d+=/]+\"|(?..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1126: /\\b(?:(?:includeSubDomains|preload|strict)(?: |;)|pin-sha256=\"[a-zA-Z\\d+=\\/]+\"|(..."] = `
 ER9OxJybYBzr0rO0l+t+Eamk7l6u9dijVa4u2x8RY/8=
 `.slice(1, -1);
 
@@ -4520,7 +4520,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1166: /\\b0x[\\da-f]+\\b|(?:
 wG10JoqPaZgKZyzfsEQwVSLeSVDoYlXuUkPMv9hf+Kk=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1167: /[=!*/%+\\-^&|]=|>>?=?|<<?=?|:?:?=|\\+\\+?|--?|\\*\\*?|\\/\\/?|%|\\|\\|?|&&?|\\b(?:return|..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1167: /[=!*\\/%+\\-^&|]=|>>?=?|<<?=?|:?:?=|\\+\\+?|--?|\\*\\*?|\\/\\/?|%|\\|\\|?|&&?|\\b(?:return..."] = `
 6bvP88PAf4L7fftqkJT8EK9vmWIL7CgeQi7Sz+milcA=
 `.slice(1, -1);
 
@@ -4596,7 +4596,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1185: /\\b[A-Z]\\w*(?=\\s+\\
 5RN6F56s4cDe+Ml9jsyiFrFWNQGzAZG8n+YMHkC1Isg=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1186: /(^|[^.])(?:<<=?|>>>?=?|->|--|\\+\\+|&&|\\|\\||::|[?:~]|[-+*/%&|^!=<>]=?)/m"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1186: /(^|[^.])(?:<<=?|>>>?=?|->|--|\\+\\+|&&|\\|\\||::|[?:~]|[-+*\\/%&|^!=<>]=?)/m"] = `
 4euJZ69lrlAeqKtektI63TuL5Tolzd04GGlmIAYDlxQ=
 `.slice(1, -1);
 
@@ -4612,7 +4612,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1189: /(\\:\\:)[a-z_]\\w*/"]
 mtw0xBXQrgoM1WNtZSxia42EOMaQ09LEUSnREiBhqyk=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1190: /(^|[^\\\\])\\/\\*\\*[^/][\\s\\S]*?(?:\\*\\/|$)/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1190: /(^|[^\\\\])\\/\\*\\*[^\\/][\\s\\S]*?(?:\\*\\/|$)/"] = `
 CpzWQMbXPbm2DGjJ6B0cnQlOsnmFPZ30q9waivEt26o=
 `.slice(1, -1);
 
@@ -4916,7 +4916,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1265: /\\b[a-z_]\\w*(?=\\s*:
 bqeNOU77nwQTXoEJBxrY/zh4+Ro6Ir7DZuGhpOt1QXw=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1266: /\\.\\.|[!=<>]?=|\\?\\/\\/|\\/\\/=?|[-+*/%]=?|[<>?]|\\b(?:and|or|not)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1266: /\\.\\.|[!=<>]?=|\\?\\/\\/|\\/\\/=?|[-+*\\/%]=?|[<>?]|\\b(?:and|or|not)\\b/"] = `
 z/TtQm3pRY4ZCv0ALojkuldtzPF2hKCUCW1EVsxP7ww=
 `.slice(1, -1);
 
@@ -5392,15 +5392,15 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1385: /;;;.*/"] = `
 RCvRIycbWi79u0SuJ7Ue4dCDB4Rq8WaYOWI4Uz6v2mE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1386: /#?'[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1386: /#?'[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 vdInqlCuV/dkZKUscqi4i+bobCSi7lOqQ8h8JNDnHk4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1387: /:[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1387: /:[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 FeQQ/Yc/vE6eKUlcFoU8jcCF0QsM2y5vW8MXKCFqidY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1388: /,@?[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1388: /,@?[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 5xwssbYgmdJx+yFcyWmSXmP0h1obXatN5F43JjV2SpA=
 `.slice(1, -1);
 
@@ -5420,19 +5420,19 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1392: /([\\s([])[-+]?\\d+(?:
 oTIJ2mnWzZ7+FD3ckbiDADNjfanGb0o1IrsoCclq5Ng=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1393: /(\\()def(?:var|const|custom|group)\\s+[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1393: /(\\()def(?:var|const|custom|group)\\s+[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 QDC5R9psqZsEKMxRTwz1OuW7FBxrqUKPAuU7SMYTzhs=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1394: /(\\()(?:cl-)?(?:defun\\*?|defmacro)\\s+[-+*/_~!@$%^=<>{}\\w]+\\s+\\([\\s\\S]*?\\)/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1394: /(\\()(?:cl-)?(?:defun\\*?|defmacro)\\s+[-+*\\/_~!@$%^=<>{}\\w]+\\s+\\([\\s\\S]*?\\)/"] = `
 MUZy04AqdIP5LYqkRCCd633G9INPttm36z9dUQi5Us8=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1395: /(\\()lambda\\s+\\((?:&?[-+*/_~!@$%^=<>{}\\w]+\\s*)*\\)/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1395: /(\\()lambda\\s+\\((?:&?[-+*\\/_~!@$%^=<>{}\\w]+\\s*)*\\)/"] = `
 WM5CUfg2sU7Hi+UJ4fC4dWE1XbKoH4O39uH9aj8O6TM=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1396: /(\\()[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1396: /(\\()[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 yZtSQVbBOEpeoilWpXkannWUTqWngO3FsXhC+TSj5gQ=
 `.slice(1, -1);
 
@@ -5444,7 +5444,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1398: /[-A-Z]+(?=[.,\\s])/"]
 QqW5WokwedbRwbHfJsmzXxyIYkurSY6AArzPUueezBc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1399: /`[-+*/_~!@$%^=<>{}\\w]+'/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1399: /`[-+*\\/_~!@$%^=<>{}\\w]+'/"] = `
 3JDTBLUXPZE1WN+aFr/1x9kTA0MeVbPiWfM7C9TrGsI=
 `.slice(1, -1);
 
@@ -5460,7 +5460,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1402: /^def[a-z]+/"] = `
 RjqSUMiFy6635NAU27NUorJcrWE5rk/UdDsE1DtHqac=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1403: /[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1403: /[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 uwVrYJUtOJinDPPLH58Zj+0ZXScQycLElWs2YUeeXjk=
 `.slice(1, -1);
 
@@ -5480,7 +5480,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1407: /(\\()[\\s\\S]*(?=\\))
 2IvA5Ro0+Gp04wMiEX0z6l9MH/YIlOY9U4IneLrPrXg=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1408: /(^\\s)[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1408: /(^\\s)[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 aZlDHIa1WdTNu4nM2hJzhiDV3mlLSfbs0wh7v8whRSU=
 `.slice(1, -1);
 
@@ -5496,11 +5496,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1411: /&key\\s+\\S+(?:\\s+\\
 CH5wZi4sLl45zpRmd0aKTt8p1sbPJwueI5yrTfuDOss=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1412: /&[-+*/_~!@$%^=<>{}\\w]+/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1412: /&[-+*\\/_~!@$%^=<>{}\\w]+/"] = `
 4QN7JEeY+Mg0AjnhGyLkyAijaxCiRFPosYYKur0AvHM=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1413: /(\\()[-+*/_~!@$%^=<>{}\\w]+\\s+\\S[\\s\\S]*(?=\\))/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1413: /(\\()[-+*\\/_~!@$%^=<>{}\\w]+\\s+\\S[\\s\\S]*(?=\\))/"] = `
 opfwG/oGde0ds/XnRoxJ8DZ8GY4iPydRY9RjO7pWTNM=
 `.slice(1, -1);
 
@@ -5560,7 +5560,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1427: /\\/\\/(?:\\[[^\\r\\n\
 3l3Ui6JCVvgxsPccVhowM+AZqSXsdYwDqR2ldXf0LL8=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1428: /\\/(?:\\[[^\\r\\n\\]]*\\]|\\\\.|[^/\\\\\\r\\n\\[])+\\/[gimyu]{0,5}/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1428: /\\/(?:\\[[^\\r\\n\\]]*\\]|\\\\.|[^\\/\\\\\\r\\n\\[])+\\/[gimyu]{0,5}/"] = `
 yDmOk1yA11MtdGoK4+2OAqftRH4rmBiydeIOXFYls4s=
 `.slice(1, -1);
 
@@ -5828,7 +5828,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1495: /(?:\\B\\.\\d+|\\b\\d+
 XodjL5JIz4asBnd6gQ0ORZ32PMZVkSczqTVrVSmAxuI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1496: /\\.{3}|[-=]>|~=|(?:[-+*/%<>!=]|\\.\\.)=?|[:#^]|\\b(?:and|or)\\b=?|\\b(?:not)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1496: /\\.{3}|[-=]>|~=|(?:[-+*\\/%<>!=]|\\.\\.)=?|[:#^]|\\b(?:and|or)\\b=?|\\b(?:not)\\b/"] = `
 t4WR/jE2EDvq10Z+lEiiwTmLdikIGPLVAC0j7JwGg0Q=
 `.slice(1, -1);
 
@@ -6504,7 +6504,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1670: /[_a-z]\\w*(?=\\s*\\()
 Pzj56ooZK2dcyafycKwYDm3OyTvuhVK39Cp0cgWIiQI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1671: /<>|[<>]=?|!=|\\*\\*|[-+*/|=@]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1671: /<>|[<>]=?|!=|\\*\\*|[-+*\\/|=@]/"] = `
 Emm0UIAwS8jntbWPZAT7inqCV5f0JzazEaKN6KZMlYs=
 `.slice(1, -1);
 
@@ -7400,7 +7400,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1897: /(?:\\$[\\da-f]+|\\b-?
 a4l4VxNpeQqZ4fiKHWKVE5uQ+1TgbBCOpWZM0d0QTso=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1898: /(?:@\\*?|\\?|\\*)\\w+|-[>-]?|\\+\\+?|!=?|<<?=?|>>?=?|==?|&&?|\\|?\\||[~^%?*/@]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1898: /(?:@\\*?|\\?|\\*)\\w+|-[>-]?|\\+\\+?|!=?|<<?=?|>>?=?|==?|&&?|\\|?\\||[~^%?*\\/@]/"] = `
 GIXQZ7zNK40pz+oXqLZBYOLKXD2VIpRr1oWo1tZVzMU=
 `.slice(1, -1);
 
@@ -7416,7 +7416,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 1901: /(?:\\b|-|(?=\\$))(?:0
 gUzCYnljPlrb88uo3aR8mmmbuiks0SOpMF+XevwvtrQ=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 1902: /[\\[\\]*+\\-/%<>=&|$!,.:]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 1902: /[\\[\\]*+\\-\\/%<>=&|$!,.:]/"] = `
 UnmdV9KFgMXPg7BN9zG1vDeWNueQSNFAyFbDdZA+d2Y=
 `.slice(1, -1);
 
@@ -7808,7 +7808,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2001: /@\"[\\s\\S]*?\"/"] = 
 a7bmkCIHzAUn20IgdvH6aFzhGtngU3IhzwPXe6M6Iq4=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2002: /\\/(?:\\[(?:[^\\]\\\\\\r\\n]|\\\\.)*]|\\\\.|[^/\\\\\\[\\r\\n])+\\/[imsx]{0,4}(?=\\s*(?:$|[\\r\\n,.;..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2002: /\\/(?:\\[(?:[^\\]\\\\\\r\\n]|\\\\.)*]|\\\\.|[^\\/\\\\\\[\\r\\n])+\\/[imsx]{0,4}(?=\\s*(?:$|[\\r\\n,...."] = `
 FDRy9sz61F42+y96oqExfOmzjmr5YkZ4+UhuDwv23zo=
 `.slice(1, -1);
 
@@ -8088,7 +8088,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2072: /[^\\d\\s`'\",.:;#\\/\
 GJb8pgMmgRjd8W0nDvEQlZ+VstApGpm/0b8zNOPSIlo=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2073: /(^|[^/])\\/(?!\\/)(?:\\[[^\\n\\r\\]]*\\]|\\\\.|[^/\\\\\\r\\n\\[])+\\/(?=\\s*(?:$|[\\r\\n,.;})]))/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2073: /(^|[^\\/])\\/(?!\\/)(?:\\[[^\\n\\r\\]]*\\]|\\\\.|[^\\/\\\\\\r\\n\\[])+\\/(?=\\s*(?:$|[\\r\\n,.;})])..."] = `
 xiQYb+fh+GLbbIoyTsj+RSm/OTDhHPw6giG8Kyy83T8=
 `.slice(1, -1);
 
@@ -8248,7 +8248,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2112: /(?:\\b[a-z][a-z_\\d]*
 Bw4gYAa7MtaF7YCPSkJu1quiBjjkEtcDBYGSD0j6sH0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2113: /(^|[^\\\\])\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2113: /(^|[^\\\\])\\/\\*(?:[^*\\/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[^*\\/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?..."] = `
 qfRoqGTIF34YR/Mjtuz+T2wS6TehAaVM724nsNSgQ1U=
 `.slice(1, -1);
 
@@ -8320,11 +8320,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2130: /%_\\w+(?=\\()/"] = `
 HTmukP5HivzudaA2+zEsPrhMNvn5IpftWEtXK5hqflY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2131: /\\binput\\s+[-\\w\\s/*.$&]+;/i"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2131: /\\binput\\s+[-\\w\\s\\/*.$&]+;/i"] = `
 hUJcDvnrzhmJ9J9q8lVKx22sFOIPYq2XzBbdmfmI3nY=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2132: /(^options)[-'\"|/\\\\<>*+=:()\\w\\s]*(?=;)/im"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2132: /(^options)[-'\"|\\/\\\\<>*+=:()\\w\\s]*(?=;)/im"] = `
 OrzmChide8Nyl0l9GMDK11cqHdOEYaImIjG4P0mlbEw=
 `.slice(1, -1);
 
@@ -8512,7 +8512,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2180: /[$#](?:[^\\\\\\r\\n'\
 RxDvJG4AfQ/Zj2hM52/EPaw9Gwyi932gSk0a/DnODHE=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2181: /^[^\\s@:$#*!/\\\\]+@[^\\s@:$#*!/\\\\]+(?=:|$)/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2181: /^[^\\s@:$#*!\\/\\\\]+@[^\\s@:$#*!\\/\\\\]+(?=:|$)/"] = `
 0OQQlFYaPY49g+ky2M/bUh8IyjG/aUrRaouMUvq5fRo=
 `.slice(1, -1);
 
@@ -8560,7 +8560,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2192: /(^|[^\\w.-])(?:true|f
 UcWo9VF+ZIBrZpbS6uyykTgL43imjg5jPMFpP2Rwg2s=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2193: /(^|[^/\\w.-])-?(?:NAN|INFINITY|0x(?:[\\dA-F]+(?:\\.[\\dA-F]*)?|\\.[\\dA-F]+)(?:p[+-]?..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2193: /(^|[^\\/\\w.-])-?(?:NAN|INFINITY|0x(?:[\\dA-F]+(?:\\.[\\dA-F]*)?|\\.[\\dA-F]+)(?:p[+-]..."] = `
 o8PbsRISWjT9ivqnmWkNaUlb28rpxEe25tIO2a7RB8g=
 `.slice(1, -1);
 
@@ -8720,7 +8720,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2232: /\\b(?:_|anonymous|as|
 gKAML2AvlK4CXBbU5zvPFx2fpu/6qwow7nB4DKtxCok=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2233: /=>|->|:=|=:|\\*\\*|\\+\\+|--|\\|\\||&&|<<=?|>>=?|[-+*/%^&|<>!=]=?|[~?]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2233: /=>|->|:=|=:|\\*\\*|\\+\\+|--|\\|\\||&&|<<=?|>>=?|[-+*\\/%^&|<>!=]=?|[~?]/"] = `
 GK2On5IkDgkN2lcstKW7wQYOycO7l4JVgrq30m0Hbgc=
 `.slice(1, -1);
 
@@ -8752,7 +8752,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2240: /\\b\\d+(?:\\.\\d+)?(?
 UOtsXVd+7W6+oiPiVguFDBt1JqiNSQs4lKviPhTb+eg=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2241: /\\?:?|<=?|>=?|==?|!=|[+*/%-]|\\b(?:and|not|or)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2241: /\\?:?|<=?|>=?|==?|!=|[+*\\/%-]|\\b(?:and|not|or)\\b/"] = `
 4CIchLjbbvjQUc0xBMJVKt1jVHfk5rU2/rt1KKo1BBA=
 `.slice(1, -1);
 
@@ -8868,7 +8868,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2270: /\\b(?:f|false|t|true)
 aovF2/Rv4wkvMGC7JbvnxoHwspbS0MrBDxEHGiDX0F8=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2271: /[<>=]=?|[-+*/%|]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2271: /[<>=]=?|[-+*\\/%|]/"] = `
 qb5KXg/plKMNdDeZEgh4tLo2buF4DemGipXrzOSzvGA=
 `.slice(1, -1);
 
@@ -8896,7 +8896,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2278: /(?:\\$|\\b0x)[\\da-f]
 l7BPVR+O4ke+BConXG1RdXWwLhijp16S7bGAd18/3MM=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2279: /##|>>|&&|\\|\\||[!=<>]=?|[-+*/%#^]|\\b(?:and|mod|not|or)\\b/i"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2279: /##|>>|&&|\\|\\||[!=<>]=?|[-+*\\/%#^]|\\b(?:and|mod|not|or)\\b/i"] = `
 nAO5fwla3/eT4GAs+PZvYOCO5GQiqhKpg6nQqfkPwd8=
 `.slice(1, -1);
 
@@ -8944,7 +8944,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2290: /\\b(?:TRUE|FALSE|NULL
 GzZmsD9uulg8Y8WPc716XlurnSuezroj6ctIn5f43uM=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2291: /(?:S?R?:?=>?|&&?|\\*\\*?|<=?|>=?|[-:^/+])|\\b(?:OR|AND|MOD|NOT|XOR|LE|GE|EQ|NE|GE|..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2291: /(?:S?R?:?=>?|&&?|\\*\\*?|<=?|>=?|[-:^\\/+])|\\b(?:OR|AND|MOD|NOT|XOR|LE|GE|EQ|NE|GE..."] = `
 Oo02cHTpApcUafTV3gbRvAVBhRSZv00hCmFaU2rgVi4=
 `.slice(1, -1);
 
@@ -9036,7 +9036,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2314: /(^|[^\\\\:])'.*/"] = 
 CP6jQ4ktE6acZQnhCRY/dh21GyDyAUVwIMEbuc3Lcqk=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2315: /!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-%#;/?:@&=+$.~*'()]+)..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2315: /!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-%#;\\/?:@&=+$.~*'()]..."] = `
 OpDyEPF/JNoR+/CRqOBSnFwcLfAIbNhnriv1t3iI2I8=
 `.slice(1, -1);
 
@@ -9072,11 +9072,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2323: /\\d+\\.\\.\\d+(?: +#.
 GS6BJbiIXP0+/mz0oO4SkAWTkSBc6Rfyubuphlgd3/k=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2324: /([\\-:]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-%#;..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2324: /([\\-:]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-%#..."] = `
 1vc4zxYQDihAIePeWuLwPGDeU8dtiskdWxLo5s8EnQQ=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2325: /((?:^|[:\\-,[{\\r\\n?])[ \\t]*(?:(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2325: /((?:^|[:\\-,[{\\r\\n?])[ \\t]*(?:(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z..."] = `
 3ULi/J768J+co20Q+IKwQmm1OBZJHRq7VHeNibz0xcw=
 `.slice(1, -1);
 
@@ -9084,23 +9084,23 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2326: /(^[ \\t]*)%.+/m"] = `
 bc/8lnM2uJacMY1FUYHYKWQcMfd7V3iZFvFxs2jbO6U=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2327: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2327: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\..."] = `
 LXV95mRkbAzSje5Wj8hwlNvlSeWRCNPunHtjVUmGyBA=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2328: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2328: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\..."] = `
 dphai4mHR4+MrHZCK2PbRbuooyE+SpH2YsHji1lENNo=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2329: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2329: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\..."] = `
 +Yh7acdI8iZ0t6EgZjHLmHo38XFrxc8TxVAv+Spzn3U=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2330: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2330: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\..."] = `
 WX3qtfFvgTAKVnGsBccxqm6RkXcTFr3v/r7aiCM64ac=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2331: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\-..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2331: /([:\\-,[{]\\s*(?:\\s(?:!(?:<[\\w\\-%#;\\/?:@&=+$,.!~*'()[\\]]+>|(?:[a-zA-Z\\d-]*!)?[\\w\\..."] = `
 S6jMNQhNmVJYThwAypb6enXaCjWZdntDOnCkJneXoLg=
 `.slice(1, -1);
 
@@ -9224,7 +9224,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2361: /\\b(?:abstract|actor|
 f13fyA90p742oliQg9XP/wXFLvLULgn4f+4U9t4Tyac=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2362: />>|<<|--|\\+\\+|\\*\\*|[-+*/~!=<>$@]=?|&&?|\\|\\|?|\\^\\^?|[?:%]|\\b(?:Cross|Dot|Clockwi..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2362: />>|<<|--|\\+\\+|\\*\\*|[-+*\\/~!=<>$@]=?|&&?|\\|\\|?|\\^\\^?|[?:%]|\\b(?:Cross|Dot|Clockw..."] = `
 O5sDaDNIsGWaUZr8/CcAEqC1wQL6lV2E9zsqAQ6TXBY=
 `.slice(1, -1);
 
@@ -9284,7 +9284,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2376: /^#@?(?:[a-z][\\w-]*|{
 jPDjARg81KAI1qP/dQfWnNWVrIFqw/I3EFs0TeSvJ0w=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2377: /[=!<>]=?|[+*/%-]|&&|\\|\\||\\.\\.|\\b(?:eq|g[et]|l[et]|n(?:e|ot))\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2377: /[=!<>]=?|[+*\\/%-]|&&|\\|\\||\\.\\.|\\b(?:eq|g[et]|l[et]|n(?:e|ot))\\b/"] = `
 1A4zx1/Y0x8VhOesd4Xk0NrNfY/jUiv1sszKj1aO4Fk=
 `.slice(1, -1);
 
@@ -9336,7 +9336,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2390: /'[01uxzwlh-]'|\\b(?:\
 UWucQgNcRDtjmxgFWyzqAXvBleTDDus+grZx/Ez0pWA=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2391: /[<>]=?|:=|[-+*/&=]|\\b(?:abs|not|mod|rem|sll|srl|sla|sra|rol|ror|and|or|nand|xno..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2391: /[<>]=?|:=|[-+*\\/&=]|\\b(?:abs|not|mod|rem|sll|srl|sla|sra|rol|ror|and|or|nand|xn..."] = `
 Es2ZJgUPaoB+fgfMoPIIi6pG7xNHA/JO3xcR/M7LuCQ=
 `.slice(1, -1);
 
@@ -9392,11 +9392,11 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2407: /\\$?[\"“”](?:[\"�
 Mi09duwEKVta9ZSEs53D0VDik7/8SkczwmXJDeU+vMc=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2408: /#[^\\S\\r\\n]*(?:\\d+([/-])\\d+\\1\\d+(?:[^\\S\\r\\n]+(?:\\d+[^\\S\\r\\n]*(?:AM|PM)|\\d+:\\d+(?..."] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2408: /#[^\\S\\r\\n]*(?:\\d+([\\/-])\\d+\\1\\d+(?:[^\\S\\r\\n]+(?:\\d+[^\\S\\r\\n]*(?:AM|PM)|\\d+:\\d+(..."] = `
 9Yg6mXrfrqh4FuxtJHluiOXpQuCFACuOSQjTyDT2NS0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2409: /[+\\-*/\\\\^<=>&#@$%!]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2409: /[+\\-*\\/\\\\^<=>&#@$%!]/"] = `
 BL1wjXGvVUAeFk33xF5tAjZSew5eYhzUN7P54P8JJlU=
 `.slice(1, -1);
 
@@ -9428,7 +9428,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2416: /<%|%>|[{}[\\]()]/"] =
 qTR+9J/xNkPOGpUOLAqEPxg1FE2iFAPHST+zG/8crGI=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2417: /==|&&?|\\|\\|?|\\*\\*?|>>>?|<<|==|[<>!~]=?|[-/%^]|\\+!?|\\b(?:AND|NOT|OR)\\b/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2417: /==|&&?|\\|\\|?|\\*\\*?|>>>?|<<|==|[<>!~]=?|[-\\/%^]|\\+!?|\\b(?:AND|NOT|OR)\\b/"] = `
 ABU4jqGGrr+/xEDa96zje69Ad1RhcYh6YVYgddpaCKI=
 `.slice(1, -1);
 
@@ -9440,7 +9440,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2419: /@\\S+/"] = `
 zEDo4CpOSRXg/fDzf93Dgtqc7+mTpCi55ctMj2B0WU8=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2420: /\\$[\\w!#$%&'*+\\-./:<=>?@\\\\^_`|~]+/i"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2420: /\\$[\\w!#$%&'*+\\-.\\/:<=>?@\\\\^_`|~]+/i"] = `
 Sy4hZTQClj/Q2OWW4JkgWAiizAt+vIjVkmC7ZUWQJv0=
 `.slice(1, -1);
 
@@ -9676,7 +9676,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2478: /\\b\\d+(?:\\.\\d+)?(?
 N7Wii+nB35iaFi76u/UFYiHPqOx3HD0M1qPIPub2p1c=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2479: /[[\\](){},;:/]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2479: /[[\\](){},;:\\/]/"] = `
 zP3pTq+bOoFOCzwlfW/z55vgwIn+IIwybwvzZAHB2BQ=
 `.slice(1, -1);
 
@@ -9776,7 +9776,7 @@ module.exports["DFA >> Minimize >> Prism regexes >> 2503: /\\b(?:0b[01]+|0o[0-7]
 Bw4gYAa7MtaF7YCPSkJu1quiBjjkEtcDBYGSD0j6sH0=
 `.slice(1, -1);
 
-module.exports["DFA >> Minimize >> Prism regexes >> 2504: /\\.[*?]|\\.{2,3}|[-=]>|\\*\\*|\\+\\+|\\|\\||(?:<<|>>|[-+*]%|[-+*/%^&|<>!=])=?|[?~]/"] = `
+module.exports["DFA >> Minimize >> Prism regexes >> 2504: /\\.[*?]|\\.{2,3}|[-=]>|\\*\\*|\\+\\+|\\|\\||(?:<<|>>|[-+*]%|[-+*\\/%^&|<>!=])=?|[?~]/"] = `
 S47XQ0toswRy5rnJ/vfJlxz5bNiM4Ryxw7IZFKv8PmQ=
 `.slice(1, -1);
 

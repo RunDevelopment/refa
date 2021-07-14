@@ -563,9 +563,9 @@ describe("DFA", function () {
 		}
 
 		describe("Prism regexes", function () {
-			if (!CONFIG_RUN_STRESS_TEST) {
-				return;
-			}
+			//if (!CONFIG_RUN_STRESS_TEST) {
+			//	return;
+			//}
 
 			const candidates = PrismRegexes.map((r, i) => ({ regex: r, id: i })).filter(
 				({ regex }) => regex.source.length < 1e3
@@ -595,7 +595,15 @@ describe("DFA", function () {
 			}
 
 			for (const { regex, id } of candidates) {
-				it(`${id}: ${literalToString(regex).replace(/^([^]{80})[^]+/, "$1...")}`, function () {
+				// node v10 has a bug where all "/" chars are escaped. This escapes all "/" chars to make the
+				// result consistent across versions.
+				const source = regex.source.replace(/([^\\](?:\\{2})*)(?=\/)/g, "$1\\");
+
+				const preview = literalToString({ source, flags: regex.flags })
+					// max length of 80
+					.replace(/^([^]{80})[^]+/, "$1...");
+
+				it(`${id}: ${preview}`, function () {
 					this.timeout(10_000);
 
 					let dfa;
