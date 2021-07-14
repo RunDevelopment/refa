@@ -563,9 +563,9 @@ describe("DFA", function () {
 		}
 
 		describe("Prism regexes", function () {
-			//if (!CONFIG_RUN_STRESS_TEST) {
-			//	return;
-			//}
+			if (!CONFIG_RUN_STRESS_TEST) {
+				return;
+			}
 
 			const candidates = PrismRegexes.map((r, i) => ({ regex: r, id: i })).filter(
 				({ regex }) => regex.source.length < 1e3
