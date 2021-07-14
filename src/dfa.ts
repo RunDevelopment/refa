@@ -1,6 +1,6 @@
 import { Char, ReadonlyWord, Word } from "./char-types";
 import { WordSet } from "./word-set";
-import { cachedFunc, debugAssert, firstOf, intersectSet, traverse, traverseMultiRoot, withoutSet } from "./util";
+import { cachedFunc, debugAssert, traverse, traverseMultiRoot, withoutSet } from "./util";
 import {
 	FABuilder,
 	FACreationOptions,
@@ -257,25 +257,19 @@ export class DFA implements ReadonlyDFA {
 		const P = findEquivalenceClasses(this.nodes, this.maxCharacter);
 
 		const mapping = new Map<DFA.Node, DFA.Node>();
-		P.forEach(eqClass => {
-			if (eqClass.size === 1) {
-				return;
-			}
+		const toAdjust: DFA.Node[] = [];
+		for (const eqClass of P) {
+			const first: DFA.Node = eqClass[0];
+			toAdjust.push(first);
 
-			let first: DFA.Node | undefined = undefined;
-			if (eqClass.has(this.nodes.initial)) {
-				first = this.nodes.initial;
-			}
-			eqClass.forEach(node => {
-				if (first === undefined) {
-					first = node;
-				}
+			for (let i = 1; i < eqClass.length; i++) {
+				const node = eqClass[i];
 				if (mapping.has(node)) {
 					throw new Error("Duplicate mapping");
 				}
 				mapping.set(node, first);
-			});
-		});
+			}
+		}
 
 		if (mapping.size === 0) {
 			// the DFA is already minimized
@@ -287,10 +281,9 @@ export class DFA implements ReadonlyDFA {
 		};
 
 		// adjust nodes
-		traverse(this.nodes.initial, node => {
+		for (const node of toAdjust) {
 			node.out.map(translate);
-			return node.out.values();
-		});
+		}
 
 		// adjust finals
 		const mappedFinals = [...this.nodes.finals].map(translate);
@@ -735,120 +728,6 @@ function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
 	};
 }
 
-function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): ReadonlySet<DFA.Node>[];
-function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): ReadonlySet<DFA.ReadonlyNode>[];
-function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): ReadonlySet<DFA.ReadonlyNode>[] {
-	// https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
-	if (nodeList.finals.size === 0) {
-		throw new Error("Cannot find equivalence classes for a DFA without final states.");
-	}
-
-	const getInMap = cachedFunc<DFA.ReadonlyNode, Map<DFA.ReadonlyNode, CharSet>>(() => new Map());
-	const allNodes: DFA.ReadonlyNode[] = [];
-	const allCharacterSets = new Set<CharSet>();
-
-	// Go through all nodes to:
-	//  1. Determine all nodes
-	//  2. Determine all used character sets
-	//  3. Create the in map of all nodes
-	traverse(nodeList.initial, node => {
-		allNodes.push(node);
-		const out = node.out.invert(maxCharacter);
-		out.forEach((cs, n) => {
-			allCharacterSets.add(cs);
-			getInMap(n).set(node, cs);
-		});
-		return out.keys();
-	});
-
-	// determine the base sets of all used character sets
-	//
-	// Hopcroft's algorithm scales linearly with the number of characters in the alphabet. This is bad news for us
-	// because in JS regex unicode mode, character sets can contain 1 million characters, so iterating over all of them
-	// is not feasible. To make this more efficient, we use the base sets of all the character sets in the given DFA
-	// instead. The base sets are a set of non-empty disjoint character sets from which all other character sets in the
-	// DFA can be constructed (via union). If we then split all character sets in the DFA into their base sets, we
-	// will create a new alphabet (of base sets) that behaves like the "original" alphabet. The only difference is that
-	// alphabet of base sets is MUCH smaller. The total number of base sets is bound by both the total number of unique
-	// character sets in the DFA and the number of character in the original alphabet.
-	const base = new CharBase(allCharacterSets);
-	const split = cachedFunc<CharSet, readonly number[]>(set => base.split(set));
-
-	// determine the incoming nodes by base set for all nodes
-	//
-	// The returned data structure is a nested array. The outer array takes the index of a base set as key and yields
-	// the list of nodes that have a transition via the key base set to the function argument node.
-	const getIn = cachedFunc<DFA.ReadonlyNode, readonly (readonly DFA.ReadonlyNode[])[]>(node => {
-		const inArray: DFA.ReadonlyNode[][] = [];
-		getInMap(node).forEach((cs, n) => {
-			split(cs).forEach(baseIndex => {
-				const value = inArray[baseIndex];
-				if (value) {
-					value.push(n);
-				} else {
-					inArray[baseIndex] = [n];
-				}
-			});
-		});
-		return inArray;
-	});
-
-	const P: ReadonlySet<DFA.ReadonlyNode>[] = [nodeList.finals];
-	if (allNodes.length > nodeList.finals.size) {
-		P.push(withoutSet(allNodes, nodeList.finals));
-	}
-	const W = new Set<ReadonlySet<DFA.ReadonlyNode>>(P);
-
-	while (W.size > 0) {
-		const A: ReadonlySet<DFA.ReadonlyNode> = firstOf(W)!;
-		W.delete(A);
-
-		// this essentially loops through all characters
-		for (let baseIndex = 0, l = base.sets.length; baseIndex < l; baseIndex++) {
-			const X = new Set<DFA.ReadonlyNode>();
-			A.forEach(node => {
-				const inArray = getIn(node)[baseIndex];
-				if (inArray) {
-					inArray.forEach(inNode => X.add(inNode));
-				}
-			});
-			if (X.size === 0) {
-				continue;
-			}
-
-			for (let i = 0, l = P.length; i < l; i++) {
-				const Y = P[i];
-				const intersection = intersectSet(X, Y);
-				if (intersection.size === 0) {
-					continue;
-				}
-				const without = withoutSet(Y, X);
-				if (without.size === 0) {
-					continue;
-				}
-
-				// This is a little trick to remove `Y` and push `intersection` and `without`
-				P.push(intersection);
-				P[i] = without;
-
-				if (W.has(Y)) {
-					W.delete(Y);
-					W.add(intersection);
-					W.add(without);
-				} else {
-					if (intersection.size <= without.size) {
-						W.add(intersection);
-					} else {
-						W.add(without);
-					}
-				}
-			}
-		}
-	}
-
-	return P;
-}
-
 function rangeEqual(r1: CharRange, r2: CharRange): boolean {
 	return r1.min === r2.min && r1.max === r2.max;
 }
@@ -870,4 +749,267 @@ function copyTo(fromNodeList: DFA.ReadonlyNodeList, toNodeList: DFA.NodeList): v
 	});
 
 	fromNodeList.finals.forEach(f => toNodeList.finals.add(translate(f)));
+}
+
+function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): DFA.Node[][];
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): DFA.ReadonlyNode[][];
+function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): DFA.ReadonlyNode[][] {
+	if (nodeList.finals.size === 0) {
+		throw new Error("Cannot find equivalence classes for a DFA without final states.");
+	}
+
+	// This is an implementation of the paper:
+	// Valmari, A. (2012). Fast brief practical DFA minimization. Inf. Process. Lett., 112, 213-217.
+	// https://www.cs.cmu.edu/~sutner/CDM/papers/Valmari12.pdf
+
+	// This methods only converts the given DFA into the right format for the algorithm in the paper.
+	// The paper itself is implemented in the `DFAMinimizer` class.
+
+	const allNodes: DFA.ReadonlyNode[] = [];
+	const allCharacterSets = new Set<CharSet>();
+	const numberMap = new Map<DFA.ReadonlyNode, MinState>();
+	const outMaps: Map<DFA.ReadonlyNode, CharSet>[] = [];
+
+	// Go through all nodes to:
+	//  1. Determine all nodes
+	//  2. Determine all used character sets
+	//  3. Create the out map of all nodes
+	traverse(nodeList.initial, node => {
+		numberMap.set(node, numberMap.size);
+		allNodes.push(node);
+
+		const out = node.out.invert(maxCharacter);
+		outMaps.push(out);
+		out.forEach(cs => allCharacterSets.add(cs));
+		return out.keys();
+	});
+
+	const base = new CharBase(allCharacterSets);
+
+	const T: MinState[] = [];
+	const L: Char[] = [];
+	const H: MinState[] = [];
+	for (let i = 0; i < allNodes.length; i++) {
+		const out = outMaps[i];
+
+		out.forEach((cs, to) => {
+			const head = numberMap.get(to)!;
+
+			for (const index of base.split(cs)) {
+				T.push(i);
+				L.push(index);
+				H.push(head);
+			}
+		});
+	}
+
+	const finals: MinState[] = [];
+	for (const f of nodeList.finals) {
+		finals.push(numberMap.get(f)!);
+	}
+
+	// minimize
+	const min = new DFAMinimizer(allNodes.length, finals, T, L, H);
+	const blockPartition = min.getBlockPartition();
+
+	// get equivalence classes
+	const eqClasses: DFA.ReadonlyNode[][] = [];
+	for (let i = 0; i < blockPartition.setCount; i++) {
+		eqClasses.push([]);
+	}
+	for (let i = 0; i < allNodes.length; i++) {
+		eqClasses[blockPartition.setIndex[i]].push(allNodes[i]);
+	}
+
+	return eqClasses;
+}
+
+type MinState = number & { __state?: never };
+
+class WorkSet {
+	readonly marked: number[];
+	readonly touched: number[];
+
+	constructor() {
+		this.marked = [];
+		this.touched = [];
+	}
+}
+
+class Partition {
+	readonly elements: number[];
+	readonly location: number[];
+	readonly setIndex: number[];
+	readonly first: number[];
+	readonly past: number[];
+	readonly workSet: WorkSet;
+	setCount: number = 1;
+
+	constructor(elementCount: number, workSet: WorkSet) {
+		this.elements = [];
+		this.location = [];
+		this.setIndex = new Array(elementCount);
+		this.first = [];
+		this.past = [];
+		this.workSet = workSet;
+
+		for (let i = 0; i < elementCount; i++) {
+			this.elements.push(i);
+			this.location.push(i);
+		}
+		this.setIndex.fill(0);
+
+		this.first.push(0);
+		this.past.push(elementCount);
+	}
+
+	mark(element: number): void {
+		const set = this.setIndex[element];
+		const i = this.location[element];
+		const j = this.first[set] + this.workSet.marked[set];
+
+		this.elements[i] = this.elements[j];
+		this.location[this.elements[i]] = i;
+		this.elements[j] = element;
+		this.location[element] = j;
+
+		if (!this.workSet.marked[set]++) {
+			this.workSet.touched.push(set);
+		}
+	}
+
+	split(): void {
+		let set;
+		while ((set = this.workSet.touched.pop()) !== undefined) {
+			const p = this.first[set] + this.workSet.marked[set];
+			if (p === this.past[set]) {
+				this.workSet.marked[set] = 0;
+				continue;
+			}
+
+			if (this.workSet.marked[set] <= this.past[set] - p) {
+				this.first[this.setCount] = this.first[set];
+				this.past[this.setCount] = p;
+				this.first[set] = p;
+			} else {
+				this.past[this.setCount] = this.past[set];
+				this.first[this.setCount] = p;
+				this.past[set] = p;
+			}
+
+			for (let i = this.first[this.setCount]; i < this.past[this.setCount]; i++) {
+				this.setIndex[this.elements[i]] = this.setCount;
+			}
+
+			this.workSet.marked[set] = 0;
+			this.workSet.marked[this.setCount++] = 0;
+		}
+	}
+}
+
+class DFAMinimizer {
+	readonly stateCount: number;
+	readonly transitionCount: number;
+	readonly finals: readonly MinState[];
+	readonly tails: readonly MinState[];
+	readonly chars: readonly Char[];
+	readonly heads: readonly MinState[];
+
+	private readonly _adjacent: number[];
+	private readonly _offset: number[];
+
+	constructor(
+		statesCount: number,
+		finals: readonly MinState[],
+		tails: readonly MinState[],
+		chars: readonly Char[],
+		heads: readonly MinState[]
+	) {
+		debugAssert(statesCount > 0);
+		debugAssert(finals.length > 0);
+		debugAssert(tails.length === chars.length && chars.length === heads.length);
+		debugAssert(tails.length > 0);
+
+		this.stateCount = statesCount;
+		this.transitionCount = tails.length;
+		this.finals = finals;
+		this.tails = tails;
+		this.chars = chars;
+		this.heads = heads;
+
+		this._adjacent = new Array(this.transitionCount);
+		this._offset = new Array(statesCount + 1).fill(0);
+	}
+
+	private _makeAdjacent(keys: readonly MinState[]): void {
+		for (let trans = 0; trans < this.transitionCount; trans++) {
+			this._offset[keys[trans]]++;
+		}
+		for (let state = 0; state < this.stateCount; state++) {
+			this._offset[state + 1] += this._offset[state];
+		}
+		for (let trans = this.transitionCount; trans--; ) {
+			this._adjacent[--this._offset[keys[trans]]] = trans;
+		}
+	}
+
+	getBlockPartition(): Partition {
+		const workSet = new WorkSet();
+		const blocks = new Partition(this.stateCount, workSet);
+		const cords = new Partition(this.transitionCount, workSet);
+
+		// Move the final states
+		let reachedStates = 0;
+		for (const f of this.finals) {
+			const i = blocks.location[f];
+			if (i >= reachedStates) {
+				blocks.elements[i] = blocks.elements[reachedStates];
+				blocks.location[blocks.elements[i]] = i;
+				blocks.elements[reachedStates] = f;
+				blocks.location[f] = reachedStates++;
+			}
+		}
+
+		// Make initial partition
+		workSet.marked[0] = this.finals.length;
+		workSet.touched.push(0);
+		blocks.split();
+
+		// Make transition partition
+		cords.elements.sort((a, b) => this.chars[a] - this.chars[b]);
+		cords.setCount = workSet.marked[0] = 0;
+		let char = this.chars[cords.elements[0]];
+		for (let i = 0; i < this.transitionCount; i++) {
+			const trans = cords.elements[i];
+			if (this.chars[trans] !== char) {
+				char = this.chars[trans];
+				cords.past[cords.setCount++] = i;
+				cords.first[cords.setCount] = i;
+				workSet.marked[cords.setCount] = 0;
+			}
+			cords.setIndex[trans] = cords.setCount;
+			cords.location[trans] = i;
+		}
+		cords.past[cords.setCount++] = this.transitionCount;
+
+		// Split blocks and cords
+		this._makeAdjacent(this.heads);
+		for (let b = 1, c = 0; c < cords.setCount; c++) {
+			for (let i = cords.first[c]; i < cords.past[c]; i++) {
+				blocks.mark(this.tails[cords.elements[i]]);
+			}
+			blocks.split();
+			for (; b < blocks.setCount; b++) {
+				for (let i = blocks.first[b]; i < blocks.past[b]; i++) {
+					const state = blocks.elements[i];
+					for (let j = this._offset[state]; j < this._offset[state + 1]; j++) {
+						cords.mark(this._adjacent[j]);
+					}
+				}
+				cords.split();
+			}
+		}
+
+		return blocks;
+	}
 }
