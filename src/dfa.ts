@@ -827,37 +827,27 @@ function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Ch
 type MinState = number & { __state?: never };
 
 class WorkSet {
-	readonly marked: number[];
-	readonly touched: number[];
-
-	constructor() {
-		this.marked = [];
-		this.touched = [];
-	}
+	readonly marked: number[] = [];
+	readonly touched: number[] = [];
 }
 
 class Partition {
-	readonly elements: number[];
-	readonly location: number[];
+	readonly elements: number[] = [];
+	readonly location: number[] = [];
 	readonly setIndex: number[];
-	readonly first: number[];
-	readonly past: number[];
+	readonly first: number[] = [];
+	readonly past: number[] = [];
 	readonly workSet: WorkSet;
 	setCount: number = 1;
 
 	constructor(elementCount: number, workSet: WorkSet) {
-		this.elements = [];
-		this.location = [];
-		this.setIndex = new Array(elementCount);
-		this.first = [];
-		this.past = [];
+		this.setIndex = new Array(elementCount).fill(0);
 		this.workSet = workSet;
 
 		for (let i = 0; i < elementCount; i++) {
 			this.elements.push(i);
 			this.location.push(i);
 		}
-		this.setIndex.fill(0);
 
 		this.first.push(0);
 		this.past.push(elementCount);
