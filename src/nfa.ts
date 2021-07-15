@@ -14,7 +14,6 @@ import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";
 import { WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
-import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 import { wordSetsToWords } from "./words";
 
 /*
@@ -42,25 +41,6 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	readonly options: Readonly<NFA.Options>;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
-
-	/**
-	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 */
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean;
-	/**
-	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 */
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word>;
-	/**
-	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 */
-	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
 	/**
 	 * Create a mutable copy of this NFA.
@@ -186,40 +166,6 @@ export class NFA implements ReadonlyNFA {
 			this.transitionIterator(),
 			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toRangesString()), false)
 		);
-	}
-
-	/**
-	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean {
-		return isDisjointWith(this, other, options);
-	}
-	/**
-	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
-		return getIntersectionWords(this, other, options);
-	}
-	/**
-	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
-		return getIntersectionWordSets(this, other, options);
 	}
 
 	/**

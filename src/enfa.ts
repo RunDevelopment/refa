@@ -15,7 +15,6 @@ import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseM
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
-import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 import { wordSetsToWords } from "./words";
 
 const DEFAULT_MAX_NODES = 10_000;
@@ -28,25 +27,6 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	readonly options: Readonly<ENFA.Options>;
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
-
-	/**
-	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
-	 *
-	 * @deprecated
-	 */
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean;
-	/**
-	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
-	 *
-	 * @deprecated
-	 */
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word>;
-	/**
-	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
-	 *
-	 * @deprecated
-	 */
-	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet>;
 
 	/**
 	 * Create a mutable copy of this ENFA.
@@ -147,40 +127,6 @@ export class ENFA implements ReadonlyENFA {
 			},
 			isFinal: n => effectivelyFinal.has(n),
 		};
-	}
-
-	/**
-	 * This is equivalent to `isDisjointWith(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	isDisjointWith<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): boolean {
-		return isDisjointWith(this, other, options);
-	}
-	/**
-	 * This is equivalent to `getIntersectionWords(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	getIntersectionWords<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<Word> {
-		return getIntersectionWords(this, other, options);
-	}
-	/**
-	 * This is equivalent to `getIntersectionWordSets(this, other, options)` (free function).
-	 *
-	 * @deprecated Use the equivalent free function instead.
-	 *
-	 * @param other
-	 * @param options
-	 */
-	getIntersectionWordSets<O>(other: TransitionIterable<O>, options?: Readonly<FACreationOptions>): Iterable<WordSet> {
-		return getIntersectionWordSets(this, other, options);
 	}
 
 	copy(): ENFA {
