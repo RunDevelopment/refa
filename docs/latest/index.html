@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>refa - v0.8.0</title>
-	<meta name="description" content="Documentation for refa - v0.8.0">
+	<title>refa - v0.9.0</title>
+	<meta name="description" content="Documentation for refa - v0.9.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
 	<script async src="assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">refa - v0.8.0</a>
+					<a href="index.html" class="title">refa - v0.9.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -48,7 +48,7 @@
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<h1>refa - v0.8.0</h1>
+			<h1>refa - v0.9.0</h1>
 		</div>
 	</div>
 </header>
@@ -136,14 +136,14 @@
 					<li>Unknowns (elements that cannot be represented otherwise. E.g. backreferences)</li>
 				</ul>
 				<p>Some features like atomic groups and capturing groups are not supported (but might be added in the future).</p>
-				<p>For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules/js.html"><code>JS</code> namespace</a>.</p>
+				<p>For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules/JS.html"><code>JS</code> namespace</a>.</p>
 				<a href="#universal-characters" id="universal-characters" style="color: inherit; text-decoration: none;">
 					<h3>Universal characters</h3>
 				</a>
-				<p>refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#char"><code>Char</code> type</a>) and arrays of numbers to represent words/strings (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#word"><code>Word</code> type</a>).</p>
+				<p>refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#Char"><code>Char</code> type</a>) and arrays of numbers to represent words/strings (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#Word"><code>Word</code> type</a>).</p>
 				<p>This means that any text encoding can be used.</p>
-				<p>The <a href="https://rundevelopment.github.io/refa/docs/latest/modules/words.html"><code>Words</code> namespace</a> contains functions to convert JavaScript data into refa-compatible words and characters.</p>
-				<p>For the sets of characters, the <a href="https://rundevelopment.github.io/refa/docs/latest/classes/charset.html"><code>CharSet</code> class</a> is used.</p>
+				<p>The <a href="https://rundevelopment.github.io/refa/docs/latest/modules/Words.html"><code>Words</code> namespace</a> contains functions to convert JavaScript data into refa-compatible words and characters.</p>
+				<p>For the sets of characters, the <a href="https://rundevelopment.github.io/refa/docs/latest/classes/CharSet.html"><code>CharSet</code> class</a> is used.</p>
 				<a href="#general-limitations" id="general-limitations" style="color: inherit; text-decoration: none;">
 					<h3>General limitations</h3>
 				</a>
@@ -324,170 +324,182 @@
 						<a href="modules.html">Exports</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/dfa.html">DFA</a>
+						<a href="modules/DFA.html">DFA</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/enfa.html">ENFA</a>
+						<a href="modules/ENFA.html">ENFA</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/faiterators.html">FAIterators</a>
+						<a href="modules/FAIterators.html">FAIterators</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/js.html">JS</a>
+						<a href="modules/JS.html">JS</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/nfa.html">NFA</a>
+						<a href="modules/NFA.html">NFA</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/transformers.html">Transformers</a>
+						<a href="modules/Transformers.html">Transformers</a>
 					</li>
 					<li class=" tsd-kind-namespace">
-						<a href="modules/words.html">Words</a>
+						<a href="modules/Words.html">Words</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="classes/CharBase.html" class="tsd-kind-icon">Char<wbr>Base</a>
+					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="classes/charmap.html" class="tsd-kind-icon">Char<wbr>Map</a>
+						<a href="classes/CharMap.html" class="tsd-kind-icon">Char<wbr>Map</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/charset.html" class="tsd-kind-icon">Char<wbr>Set</a>
+						<a href="classes/CharSet.html" class="tsd-kind-icon">Char<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/dfa.html" class="tsd-kind-icon">DFA</a>
+						<a href="classes/DFA.html" class="tsd-kind-icon">DFA</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/enfa.html" class="tsd-kind-icon">ENFA</a>
+						<a href="classes/ENFA.html" class="tsd-kind-icon">ENFA</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/maxcharactererror.html" class="tsd-kind-icon">Max<wbr>Character<wbr>Error</a>
+						<a href="classes/MaxCharacterError.html" class="tsd-kind-icon">Max<wbr>Character<wbr>Error</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/nfa.html" class="tsd-kind-icon">NFA</a>
+						<a href="classes/NFA.html" class="tsd-kind-icon">NFA</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/toomanynodeserror.html" class="tsd-kind-icon">Too<wbr>Many<wbr>Nodes<wbr>Error</a>
+						<a href="classes/TooManyNodesError.html" class="tsd-kind-icon">Too<wbr>Many<wbr>Nodes<wbr>Error</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/alternation.html" class="tsd-kind-icon">Alternation</a>
+						<a href="interfaces/Alternation.html" class="tsd-kind-icon">Alternation</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/assertion.html" class="tsd-kind-icon">Assertion</a>
+						<a href="interfaces/Assertion.html" class="tsd-kind-icon">Assertion</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/charrange.html" class="tsd-kind-icon">Char<wbr>Range</a>
+						<a href="interfaces/CharRange.html" class="tsd-kind-icon">Char<wbr>Range</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/characterclass.html" class="tsd-kind-icon">Character<wbr>Class</a>
+						<a href="interfaces/CharacterClass.html" class="tsd-kind-icon">Character<wbr>Class</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/concatenation.html" class="tsd-kind-icon">Concatenation</a>
+						<a href="interfaces/Concatenation.html" class="tsd-kind-icon">Concatenation</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/expression.html" class="tsd-kind-icon">Expression</a>
+						<a href="interfaces/Expression.html" class="tsd-kind-icon">Expression</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/fabuilder.html" class="tsd-kind-icon">FABuilder</a>
+						<a href="interfaces/FABuilder.html" class="tsd-kind-icon">FABuilder</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/FACreationOptions.html" class="tsd-kind-icon">FACreation<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/faiterator.html" class="tsd-kind-icon">FAIterator</a>
+						<a href="interfaces/FAIterator.html" class="tsd-kind-icon">FAIterator</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/finiteautomaton.html" class="tsd-kind-icon">Finite<wbr>Automaton</a>
+						<a href="interfaces/FiniteAutomaton.html" class="tsd-kind-icon">Finite<wbr>Automaton</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/intersectionoptions.html" class="tsd-kind-icon">Intersection<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/quantifier.html" class="tsd-kind-icon">Quantifier</a>
+						<a href="interfaces/Quantifier.html" class="tsd-kind-icon">Quantifier</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/readonlycharmap.html" class="tsd-kind-icon">Readonly<wbr>Char<wbr>Map</a>
+						<a href="interfaces/ReadonlyCharMap.html" class="tsd-kind-icon">Readonly<wbr>Char<wbr>Map</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/readonlydfa.html" class="tsd-kind-icon">ReadonlyDFA</a>
+						<a href="interfaces/ReadonlyDFA.html" class="tsd-kind-icon">ReadonlyDFA</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/readonlyenfa.html" class="tsd-kind-icon">ReadonlyENFA</a>
+						<a href="interfaces/ReadonlyENFA.html" class="tsd-kind-icon">ReadonlyENFA</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/readonlynfa.html" class="tsd-kind-icon">ReadonlyNFA</a>
+						<a href="interfaces/ReadonlyNFA.html" class="tsd-kind-icon">ReadonlyNFA</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/sourcelocation.html" class="tsd-kind-icon">Source<wbr>Location</a>
+						<a href="interfaces/SourceLocation.html" class="tsd-kind-icon">Source<wbr>Location</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/toregexoptions.html" class="tsd-kind-icon">To<wbr>Regex<wbr>Options</a>
+						<a href="interfaces/ToRegexOptions.html" class="tsd-kind-icon">To<wbr>Regex<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/transformcontext.html" class="tsd-kind-icon">Transform<wbr>Context</a>
+						<a href="interfaces/TransformContext.html" class="tsd-kind-icon">Transform<wbr>Context</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/transformoptions.html" class="tsd-kind-icon">Transform<wbr>Options</a>
+						<a href="interfaces/TransformOptions.html" class="tsd-kind-icon">Transform<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/transformer.html" class="tsd-kind-icon">Transformer</a>
+						<a href="interfaces/Transformer.html" class="tsd-kind-icon">Transformer</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/transitioniterable.html" class="tsd-kind-icon">Transition<wbr>Iterable</a>
+						<a href="interfaces/TransitionIterable.html" class="tsd-kind-icon">Transition<wbr>Iterable</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/unknown.html" class="tsd-kind-icon">Unknown</a>
+						<a href="interfaces/Unknown.html" class="tsd-kind-icon">Unknown</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/visitasthandler.html" class="tsd-kind-icon">Visit<wbr>Ast<wbr>Handler</a>
+						<a href="interfaces/VisitAstHandler.html" class="tsd-kind-icon">Visit<wbr>Ast<wbr>Handler</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/visitnoparentasthandler.html" class="tsd-kind-icon">Visit<wbr>NoParent<wbr>Ast<wbr>Handler</a>
+						<a href="interfaces/VisitNoParentAstHandler.html" class="tsd-kind-icon">Visit<wbr>NoParent<wbr>Ast<wbr>Handler</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#char" class="tsd-kind-icon">Char</a>
+						<a href="modules.html#Char" class="tsd-kind-icon">Char</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#element" class="tsd-kind-icon">Element</a>
+						<a href="modules.html#Element" class="tsd-kind-icon">Element</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#noparent" class="tsd-kind-icon">No<wbr>Parent</a>
+						<a href="modules.html#NoParent" class="tsd-kind-icon">No<wbr>Parent</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#node" class="tsd-kind-icon">Node</a>
+						<a href="modules.html#Node" class="tsd-kind-icon">Node</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#parent" class="tsd-kind-icon">Parent</a>
+						<a href="modules.html#Parent" class="tsd-kind-icon">Parent</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#readonlyword" class="tsd-kind-icon">Readonly<wbr>Word</a>
+						<a href="modules.html#ReadonlyWord" class="tsd-kind-icon">Readonly<wbr>Word</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#ReadonlyWordSet" class="tsd-kind-icon">Readonly<wbr>Word<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#transitioniterator" class="tsd-kind-icon">Transition<wbr>Iterator</a>
+						<a href="modules.html#TransitionIterator" class="tsd-kind-icon">Transition<wbr>Iterator</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="modules.html#word" class="tsd-kind-icon">Word</a>
+						<a href="modules.html#Word" class="tsd-kind-icon">Word</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#WordSet" class="tsd-kind-icon">Word<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#combinetransformers" class="tsd-kind-icon">combine<wbr>Transformers</a>
+						<a href="modules.html#combineTransformers" class="tsd-kind-icon">combine<wbr>Transformers</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#getintersectionwordsets" class="tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets</a>
+						<a href="modules.html#getIntersectionIterator" class="tsd-kind-icon">get<wbr>Intersection<wbr>Iterator</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#getintersectionwords" class="tsd-kind-icon">get<wbr>Intersection<wbr>Words</a>
+						<a href="modules.html#getIntersectionWordSets" class="tsd-kind-icon">get<wbr>Intersection<wbr>Word<wbr>Sets</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#isdisjointwith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a>
+						<a href="modules.html#getIntersectionWords" class="tsd-kind-icon">get<wbr>Intersection<wbr>Words</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#setparent" class="tsd-kind-icon">set<wbr>Parent</a>
+						<a href="modules.html#isDisjointWith" class="tsd-kind-icon">is<wbr>Disjoint<wbr>With</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#setParent" class="tsd-kind-icon">set<wbr>Parent</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#setsource" class="tsd-kind-icon">set<wbr>Source</a>
+						<a href="modules.html#setSource" class="tsd-kind-icon">set<wbr>Source</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#transform" class="tsd-kind-icon">transform</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#visitast" class="tsd-kind-icon">visit<wbr>Ast</a>
+						<a href="modules.html#visitAst" class="tsd-kind-icon">visit<wbr>Ast</a>
 					</li>
 				</ul>
 			</nav>
@@ -506,6 +518,9 @@
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
