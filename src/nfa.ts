@@ -94,7 +94,7 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
  * - Between any two states, there can at most be one transition.
  *
  *   This means that all transitions between two nodes will be merged into one. This is implemented as a simple
- *   `CharSet#union`. As a consequence, `/a|a/` and `/a/` have the same state machine in this NFA implementation.
+ *   {@link CharSet.union}. As a consequence, `/a|a/` and `/a/` have the same state machine in this NFA implementation.
  */
 export class NFA implements ReadonlyNFA {
 	readonly nodes: NFA.NodeList;

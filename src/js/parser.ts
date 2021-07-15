@@ -117,8 +117,8 @@ export interface ParseOptions {
 	 * - Removing constant 0 and constant 1 quantifiers.
 	 * - Inlining single-alternative groups.
 	 *
-	 * These simplifications might prevent that certain backreferences or assertions from throwing an error. It's
-	 * usually good to have them enabled since parsing is usually faster and the produced RE AST is smaller.
+	 * These simplifications might prevent certain backreferences or assertions from throwing an error. It's usually
+	 * good to have them enabled since parsing is usually faster and the produced RE AST is smaller.
 	 *
 	 * If the produced RE AST is supposed to be a literal translation, then simplifications have to be disabled.
 	 *

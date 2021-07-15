@@ -121,7 +121,7 @@ export interface FAIterator<S, O = Iterable<S>> {
  * The constructed FA is always owned by the builder.
  *
  * @template S The type of a state.
- * @template O The type of the value each state maps to.
+ * @template T The transition type of the values linking states.
  */
 export interface FABuilder<S, T> {
 	/**
@@ -140,7 +140,7 @@ export interface FABuilder<S, T> {
 	/**
 	 * Returns whether the given state is a final state.
 	 *
-	 * This operation is assumed to be semantically equivalent to {@link FAIterator#isFinal}.
+	 * This operation is assumed to be semantically equivalent to {@link FAIterator.isFinal}.
 	 */
 	readonly isFinal: (state: S) => boolean;
 	/**
