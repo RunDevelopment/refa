@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.9.0 (2021-07-15)
+
+### Breaking changes
+
+- `FAIterators.intersection` no longer accepts options.
+- Removed the `IntersectionOptions` interface. Use the new `FACreationOptions` interface or any of the FA-specific interfaces instead.
+- Removed custom equality functions for `CharMap`.
+- The constructor of `FAIterators.MapFABuilder` changed slightly. It now accepts arguments as parameters instead of as an object.
+- Some renaming:
+	- `FAIterator#deterministicOut` -> `FAIterator#stableOut`
+	- `FAIterators.ensureDeterministicOut` -> `FAIterators.ensureStableOut`
+	- `CharMap#{delete,set}Every` -> `CharMap#{delete,set}Range`
+
+### Added
+
+- Added support for the new JS RegExp [`hasIndices` flag](https://github.com/tc39/proposal-regexp-match-indices).
+- New `WordSet` and `ReadonlyWordSet` types.
+- New `CharBase` class. This provides methods to remap alphabets.
+- Added `CharMap#clear`.
+- Added `CharMap#filter`.
+- Added `CharMap#invert` to convert `CharMap`s to `Map`s.
+- Added `CharMap#setCharSet` to more efficiently set many ranges.
+- Added `CharSet#characters` to iterate over all characters in a set.
+- Added `CharSet#toRangesString` to print only the ranges of a set.
+- Added `CharSet.fromCharacters` to create a set from a collection of characters.
+- `FAIterators.shortestAcceptingPath` returns the shortest accepting path of arbitrary iterators.
+- `FAIterators.shortestWordSet` returns the shortest accepted word set of an iterator.
+- `FAIterators.makeInitialFinal` and `FAIterators.makeInitialNonFinal` changes whether the initial state is also a final state.
+- `FAIterators.approximateRejectingWordSet` tries to find a rejected word set.
+- `FAIterators.makeDeterministic` builds a deterministic version of an iterator. This is a general DFA construction.
+- `Words.wordSetsToWords` converts a collections of word sets into a collection of words.
+
+### Changed
+
+- refa is now allowed to assume all given `Char`s and `CharRange`s conform to the guarantees given by the interface. This includes guarantees that cannot be verified at compile time (e.g. `min <= max` for `CharRange`).
+- `Words.pickMostReadableWord` will now always return a word.
+- `{DFA,ENFA,NFA}#{isDisjointWith,getIntersectionWords,getIntersectionWordSets}` are now deprecated and will be removed in future releases.
+- `Words.wordSetToWords` is now deprecated. Use `Words.wordSetsToWords` instead (mind the s).
+
+### Fixed
+
+- `ReadonlyCharMap#isEmpty` is now a readonly property.
+- Fixed `JS.Parser` incorrectly caching parsed characters.
+- Fixed `JS.Parser` incorrectly canonicalizing Unicode property escapes.
+- Fixed `DFA.NodeList#removeUnreachable` removing reachable states sometimes.
+
+### Improved
+
+- Many, many minor improvements (code quality, documentation, etc.).
+- 10x faster `wordSetToWords`. All methods iterating words will now be faster.
+- Pretty much all DFA operations will be faster. DFA minimization is up to 20x faster.
+- Faster NFA creation.
+
+
 ## 0.8.0 (2021-04-29)
 
 ### Breaking changes
