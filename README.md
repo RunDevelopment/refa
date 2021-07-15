@@ -79,17 +79,17 @@ It supports:
 
 Some features like atomic groups and capturing groups are not supported (but might be added in the future).
 
-For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the [`JS` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/js.html).
+For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the [`JS` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/JS.html).
 
 ### Universal characters
 
-refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the [`Char` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#char)) and arrays of numbers to represent words/strings (see the [`Word` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#word)).
+refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the [`Char` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#Char)) and arrays of numbers to represent words/strings (see the [`Word` type](https://rundevelopment.github.io/refa/docs/latest/modules.html#Word)).
 
 This means that any text encoding can be used.
 
-The [`Words` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/words.html) contains functions to convert JavaScript data into refa-compatible words and characters.
+The [`Words` namespace](https://rundevelopment.github.io/refa/docs/latest/modules/Words.html) contains functions to convert JavaScript data into refa-compatible words and characters.
 
-For the sets of characters, the [`CharSet` class](https://rundevelopment.github.io/refa/docs/latest/classes/charset.html) is used.
+For the sets of characters, the [`CharSet` class](https://rundevelopment.github.io/refa/docs/latest/classes/CharSet.html) is used.
 
 ### General limitations
 
