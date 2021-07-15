@@ -3,7 +3,7 @@ import { Word } from "../char-types";
 import { concatSequences } from "../util";
 import { ReadonlyWordSet } from "../word-set";
 
-function wordSetToWords(wordSet: ReadonlyWordSet): Iterable<Word> {
+function wordSetToWordsImpl(wordSet: ReadonlyWordSet): Iterable<Word> {
 	if (wordSet.length === 0) {
 		// simple base case
 		return [[]];
@@ -33,7 +33,7 @@ function wordSetToWords(wordSet: ReadonlyWordSet): Iterable<Word> {
 		wordSet = wordSet.slice(0, wordSet.length - suffix.length);
 
 		return (function* (): Iterable<Word> {
-			for (const word of wordSetToWords(wordSet)) {
+			for (const word of wordSetToWordsImpl(wordSet)) {
 				word.push(...suffix);
 				yield word;
 			}
@@ -55,6 +55,16 @@ function* charSetToWords(set: CharSet): Iterable<Word> {
  */
 export function* wordSetsToWords(wordSets: Iterable<ReadonlyWordSet>): Iterable<Word> {
 	for (const wordSet of wordSets) {
-		yield* wordSetToWords(wordSet);
+		yield* wordSetToWordsImpl(wordSet);
 	}
+}
+
+/**
+ * Returns an iterable yielding all words that can be constructed from the given word set.
+ *
+ * @param wordSet
+ * @deprecated Use {@link wordSetsToWords} instead.
+ */
+export function wordSetToWords(wordSet: ReadonlyWordSet): Iterable<Word> {
+	return wordSetToWordsImpl(wordSet);
 }
