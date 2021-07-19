@@ -401,7 +401,8 @@ export class NFA implements ReadonlyNFA {
 	): NFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
-		const nodeList = NFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
 			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
 
 			// traverse the whole iterator to create our NodeList
@@ -474,7 +475,9 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
 			function getNext(node: NFA.Node, char: Char): NFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
@@ -519,7 +522,9 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
 			const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
 			translate.cache.set(iter.initial, nodeList.initial);
 

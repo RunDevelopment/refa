@@ -385,7 +385,8 @@ export class DFA implements ReadonlyDFA {
 		if (left instanceof DFA && right instanceof DFA) {
 			// the intersection of two DFA is also a DFA, so we can directly construct it
 
-			const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+			const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
+			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
 				const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
 
 				// traverse the whole iterator to create our NodeList
@@ -416,8 +417,9 @@ export class DFA implements ReadonlyDFA {
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		const { maxCharacter } = options;
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
 			// build a prefix trie
 			for (const word of words) {
 				let node = nodeList.initial;
@@ -442,9 +444,8 @@ export class DFA implements ReadonlyDFA {
 
 	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
 		if (fa instanceof DFA) {
-			const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-				copyTo(fa.nodes, nodeList);
-			});
+			const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => copyTo(fa.nodes, nodeList));
 			return new DFA(nodeList, fa.maxCharacter);
 		} else {
 			return DFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
@@ -456,7 +457,8 @@ export class DFA implements ReadonlyDFA {
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
-		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
 			const deterministicIter = Iter.makeDeterministic(nodeList, iter);
 			Iter.forEach(Iter.mapOut(deterministicIter, s => s.out.values()));
 		});

@@ -469,7 +469,9 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions?: Readonly<ENFA.CreationOptions>
 	): ENFA {
 		const { maxCharacter } = options;
-		const nodeList = ENFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
 			function getNext(node: ENFA.Node, char: Char): ENFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
@@ -517,7 +519,9 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions?: Readonly<ENFA.CreationOptions>
 	): ENFA {
 		const { maxCharacter } = options;
-		const nodeList = ENFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
 			const fakeInitial = nodeList.createNode();
 			nodeList.linkNodes(nodeList.initial, fakeInitial, null);
 
