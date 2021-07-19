@@ -1271,6 +1271,18 @@ function baseMakeEffectivelyFinal(nodeList: ENFA.NodeList, base: SubList, node: 
 	} else if (current === null) {
 		return;
 	} else {
+		// the trick is to add a new node that connects the given node with the final state via epsilon transitions
+		// however, we might already have added such a node, so we need to check for that.
+
+		for (const [to, via] of node.out) {
+			if (via === null) {
+				if (to.out.get(base.final) === null) {
+					// we already added such a state
+					return;
+				}
+			}
+		}
+
 		const newNode = nodeList.createNode();
 		nodeList.linkNodes(node, newNode, null);
 		nodeList.linkNodes(newNode, base.final, null);
