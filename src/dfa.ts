@@ -339,6 +339,36 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	/**
+	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
+	 *
+	 * @param options
+	 */
+	static empty(options: Readonly<DFA.Options>): DFA {
+		const { maxCharacter } = options;
+		const nodeList = new DFA.NodeList();
+		return new DFA(nodeList, maxCharacter);
+	}
+
+	/**
+	 * Creates a new DFA which matches all words.
+	 *
+	 * @param options
+	 */
+	static all(options: Readonly<DFA.Options>): DFA {
+		const { maxCharacter } = options;
+		const nodeList = new DFA.NodeList();
+		nodeList.finals.add(nodeList.initial);
+
+		const allChars = { min: 0, max: maxCharacter };
+		const other = nodeList.createNode();
+		nodeList._uncheckedLinkNodesWithCharRange(nodeList.initial, other, allChars);
+		nodeList._uncheckedLinkNodesWithCharRange(other, other, allChars);
+		nodeList.finals.add(other);
+
+		return new DFA(nodeList, maxCharacter);
+	}
+
+	/**
 	 * Returns a new DFA which is equivalent to the intersection of the two given FA.
 	 *
 	 * @param left
@@ -378,36 +408,6 @@ export class DFA implements ReadonlyDFA {
 
 			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
 		}
-	}
-
-	/**
-	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
-	 *
-	 * @param options
-	 */
-	static empty(options: Readonly<DFA.Options>): DFA {
-		const { maxCharacter } = options;
-		const nodeList = new DFA.NodeList();
-		return new DFA(nodeList, maxCharacter);
-	}
-
-	/**
-	 * Creates a new DFA which matches all words.
-	 *
-	 * @param options
-	 */
-	static all(options: Readonly<DFA.Options>): DFA {
-		const { maxCharacter } = options;
-		const nodeList = new DFA.NodeList();
-		nodeList.finals.add(nodeList.initial);
-
-		const allChars = { min: 0, max: maxCharacter };
-		const other = nodeList.createNode();
-		nodeList._uncheckedLinkNodesWithCharRange(nodeList.initial, other, allChars);
-		nodeList._uncheckedLinkNodesWithCharRange(other, other, allChars);
-		nodeList.finals.add(other);
-
-		return new DFA(nodeList, maxCharacter);
 	}
 
 	static fromWords(

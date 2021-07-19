@@ -360,6 +360,34 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	/**
+	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
+	 *
+	 * @param options
+	 */
+	static empty(options: Readonly<NFA.Options>): NFA {
+		const nodeList = new NFA.NodeList();
+		return new NFA(nodeList, options.maxCharacter);
+	}
+
+	/**
+	 * Creates a new NFA which matches all words.
+	 *
+	 * @param options
+	 */
+	static all(options: Readonly<NFA.Options>): NFA {
+		const nodeList = new NFA.NodeList();
+		nodeList.finals.add(nodeList.initial);
+
+		const allChars = CharSet.all(options.maxCharacter);
+		const other = nodeList.createNode();
+		nodeList.linkNodes(nodeList.initial, other, allChars);
+		nodeList.linkNodes(other, other, allChars);
+		nodeList.finals.add(other);
+
+		return new NFA(nodeList, options.maxCharacter);
+	}
+
+	/**
 	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
 	 *
 	 * @param left
@@ -389,34 +417,6 @@ export class NFA implements ReadonlyNFA {
 		});
 
 		return new NFA(nodeList, left.maxCharacter);
-	}
-
-	/**
-	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
-	 *
-	 * @param options
-	 */
-	static empty(options: Readonly<NFA.Options>): NFA {
-		const nodeList = new NFA.NodeList();
-		return new NFA(nodeList, options.maxCharacter);
-	}
-
-	/**
-	 * Creates a new NFA which matches all words.
-	 *
-	 * @param options
-	 */
-	static all(options: Readonly<NFA.Options>): NFA {
-		const nodeList = new NFA.NodeList();
-		nodeList.finals.add(nodeList.initial);
-
-		const allChars = CharSet.all(options.maxCharacter);
-		const other = nodeList.createNode();
-		nodeList.linkNodes(nodeList.initial, other, allChars);
-		nodeList.linkNodes(other, other, allChars);
-		nodeList.finals.add(other);
-
-		return new NFA(nodeList, options.maxCharacter);
 	}
 
 	static fromRegex(
