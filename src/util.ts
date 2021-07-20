@@ -185,7 +185,8 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 	const toCheck: S[] = [root];
 
 	let element;
-	while ((element = toCheck.pop())) {
+	while (toCheck.length) {
+		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
 			toCheck.push(...next(element));
@@ -203,7 +204,8 @@ export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => I
 	const toCheck: S[] = [...roots];
 
 	let element;
-	while ((element = toCheck.pop())) {
+	while (toCheck.length) {
+		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
 			toCheck.push(...next(element));
