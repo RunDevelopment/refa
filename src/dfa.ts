@@ -1,5 +1,5 @@
 import { Char, ReadonlyWord, Word } from "./char-types";
-import { WordSet } from "./word-set";
+import { ReadonlyWordSet, WordSet } from "./word-set";
 import { cachedFunc, debugAssert, traverse, traverseMultiRoot, withoutSet } from "./util";
 import {
 	FABuilder,
@@ -411,6 +411,13 @@ export class DFA implements ReadonlyDFA {
 		}
 	}
 
+	/**
+	 * Creates a new DFA which matches all and only all of the given words.
+	 *
+	 * @param words
+	 * @param options
+	 * @param creationOptions
+	 */
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
@@ -420,23 +427,29 @@ export class DFA implements ReadonlyDFA {
 		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
 		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
-			// build a prefix trie
-			for (const word of words) {
-				let node = nodeList.initial;
-				for (const char of word) {
-					if (char > maxCharacter) {
-						throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
-					}
+			Iter.fromWords(nodeList, (node, char) => node.out.get(char), words, maxCharacter);
+		});
 
-					let next = node.out.get(char);
-					if (next === undefined) {
-						next = nodeList.createNode();
-						nodeList._uncheckedLinkNodesWithCharacter(node, next, char);
-					}
-					node = next;
-				}
-				nodeList.finals.add(node);
-			}
+		return new DFA(nodeList, maxCharacter);
+	}
+
+	/**
+	 * Creates a new DFA which matches all and only all of the given word sets.
+	 *
+	 * @param wordSets
+	 * @param options
+	 * @param creationOptions
+	 */
+	static fromWordSets(
+		wordSets: Iterable<ReadonlyWordSet>,
+		options: Readonly<DFA.Options>,
+		creationOptions?: Readonly<DFA.CreationOptions>
+	): DFA {
+		const { maxCharacter } = options;
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
+			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
 		});
 
 		return new DFA(nodeList, maxCharacter);

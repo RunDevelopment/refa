@@ -12,7 +12,7 @@ import {
 } from "./fa-types";
 import * as Iter from "./iter";
 import { Char, ReadonlyWord, Word } from "./char-types";
-import { WordSet } from "./word-set";
+import { ReadonlyWordSet, WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { getIntersectionWordSets, getIntersectionWords, isDisjointWith } from "./intersection";
 import { wordSetsToWords } from "./words";
@@ -478,32 +478,44 @@ export class NFA implements ReadonlyNFA {
 		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
 		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
-			function getNext(node: NFA.Node, char: Char): NFA.Node {
-				if (char > maxCharacter) {
-					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
-				}
-
-				for (const [to, chars] of node.out) {
-					if (chars.has(char)) {
-						return to;
+			Iter.fromWords(
+				nodeList,
+				(node, char) => {
+					for (const [to, chars] of node.out) {
+						if (chars.has(char)) {
+							return to;
+						}
 					}
-				}
+					return undefined;
+				},
+				words,
+				maxCharacter
+			);
 
-				const newNode = nodeList.createNode();
-				const charSet = CharSet.empty(maxCharacter).union([{ min: char, max: char }]);
-				nodeList.linkNodes(node, newNode, charSet);
+			baseOptimizationReuseFinalStates(nodeList, nodeList);
+			baseOptimizationMergeSuffixes(nodeList, nodeList);
+		});
 
-				return newNode;
-			}
+		return new NFA(nodeList, maxCharacter);
+	}
 
-			// build a prefix trie
-			for (const word of words) {
-				let node = nodeList.initial;
-				for (const charCode of word) {
-					node = getNext(node, charCode);
-				}
-				nodeList.finals.add(node);
-			}
+	/**
+	 * Creates a new NFA which matches all and only all of the given word sets.
+	 *
+	 * @param wordSets
+	 * @param options
+	 * @param creationOptions
+	 */
+	static fromWordSets(
+		wordSets: Iterable<ReadonlyWordSet>,
+		options: Readonly<NFA.Options>,
+		creationOptions?: Readonly<NFA.CreationOptions>
+	): NFA {
+		const { maxCharacter } = options;
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
+			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
 
 			baseOptimizationReuseFinalStates(nodeList, nodeList);
 			baseOptimizationMergeSuffixes(nodeList, nodeList);

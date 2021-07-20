@@ -1,7 +1,7 @@
 /* eslint-disable no-inner-declarations */
 import { CharSet } from "./char-set";
 import { Char, ReadonlyWord, Word } from "./char-types";
-import { WordSet } from "./word-set";
+import { ReadonlyWordSet, WordSet } from "./word-set";
 import {
 	FABuilder,
 	FACreationOptions,
@@ -472,35 +472,41 @@ export class ENFA implements ReadonlyENFA {
 		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
 		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
-			function getNext(node: ENFA.Node, char: Char): ENFA.Node {
-				if (char > maxCharacter) {
-					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
-				}
-
-				for (const [to, chars] of node.out) {
-					if (chars !== null && chars.has(char)) {
-						return to;
+			Iter.fromWords(
+				nodeList,
+				(node, char) => {
+					for (const [to, chars] of node.out) {
+						if (chars !== null && chars.has(char)) {
+							return to;
+						}
 					}
-				}
+					return undefined;
+				},
+				words,
+				maxCharacter
+			);
+		});
 
-				const newNode = nodeList.createNode();
-				const charSet = CharSet.empty(maxCharacter).union([{ min: char, max: char }]);
-				nodeList.linkNodes(node, newNode, charSet);
+		return new ENFA(nodeList, maxCharacter);
+	}
 
-				return newNode;
-			}
+	/**
+	 * Creates a new ENFA which matches all and only all of the given word sets.
+	 *
+	 * @param wordSets
+	 * @param options
+	 * @param creationOptions
+	 */
+	static fromWordSets(
+		wordSets: Iterable<ReadonlyWordSet>,
+		options: Readonly<ENFA.Options>,
+		creationOptions?: Readonly<ENFA.CreationOptions>
+	): ENFA {
+		const { maxCharacter } = options;
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-			// build a prefix trie
-			for (const word of words) {
-				let node = nodeList.initial;
-				for (const charCode of word) {
-					node = getNext(node, charCode);
-				}
-
-				if (!node.out.has(nodeList.final)) {
-					nodeList.linkNodes(node, nodeList.final, null);
-				}
-			}
+		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
+			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
 		});
 
 		return new ENFA(nodeList, maxCharacter);
