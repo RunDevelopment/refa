@@ -339,48 +339,6 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	/**
-	 * Returns a new DFA which is equivalent to the intersection of the two given FA.
-	 *
-	 * @param left
-	 * @param right
-	 * @param options
-	 */
-	static fromIntersection<L, R>(
-		left: TransitionIterable<L>,
-		right: TransitionIterable<R>,
-		options?: Readonly<DFA.CreationOptions>
-	): DFA {
-		MaxCharacterError.assert(left, right, "TransitionIterable");
-
-		if (left instanceof DFA && right instanceof DFA) {
-			// the intersection of two DFA is also a DFA, so we can directly construct it
-
-			const nodeList = DFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-				const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
-
-				// traverse the whole iterator to create our NodeList
-				Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
-
-				// A cleanup still has to be performed because while all states are connected to the initial state, they
-				// might not be able to reach a final state. This will remove such trap states.
-				nodeList.removeUnreachable();
-			});
-
-			return new DFA(nodeList, left.maxCharacter);
-		} else {
-			// the intersection of two non-DFA is likely a NFA, so we have to make it deterministic.
-
-			const iter = Iter.intersection(
-				new Iter.MapFABuilder(),
-				left.transitionIterator(),
-				right.transitionIterator()
-			);
-
-			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
-		}
-	}
-
-	/**
 	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
 	 *
 	 * @param options
@@ -409,14 +367,58 @@ export class DFA implements ReadonlyDFA {
 		return new DFA(nodeList, maxCharacter);
 	}
 
+	/**
+	 * Returns a new DFA which is equivalent to the intersection of the two given FA.
+	 *
+	 * @param left
+	 * @param right
+	 * @param options
+	 */
+	static fromIntersection<L, R>(
+		left: TransitionIterable<L>,
+		right: TransitionIterable<R>,
+		options?: Readonly<DFA.CreationOptions>
+	): DFA {
+		MaxCharacterError.assert(left, right, "TransitionIterable");
+
+		if (left instanceof DFA && right instanceof DFA) {
+			// the intersection of two DFA is also a DFA, so we can directly construct it
+
+			const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
+			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
+				const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
+
+				// traverse the whole iterator to create our NodeList
+				Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
+
+				// A cleanup still has to be performed because while all states are connected to the initial state, they
+				// might not be able to reach a final state. This will remove such trap states.
+				nodeList.removeUnreachable();
+			});
+
+			return new DFA(nodeList, left.maxCharacter);
+		} else {
+			// the intersection of two non-DFA is likely a NFA, so we have to make it deterministic.
+
+			const iter = Iter.intersection(
+				new Iter.MapFABuilder(),
+				left.transitionIterator(),
+				right.transitionIterator()
+			);
+
+			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
+		}
+	}
+
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
 		const { maxCharacter } = options;
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
 			// build a prefix trie
 			for (const word of words) {
 				let node = nodeList.initial;
@@ -441,9 +443,8 @@ export class DFA implements ReadonlyDFA {
 
 	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
 		if (fa instanceof DFA) {
-			const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-				copyTo(fa.nodes, nodeList);
-			});
+			const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => copyTo(fa.nodes, nodeList));
 			return new DFA(nodeList, fa.maxCharacter);
 		} else {
 			return DFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
@@ -455,7 +456,8 @@ export class DFA implements ReadonlyDFA {
 		options: Readonly<DFA.Options>,
 		creationOptions?: Readonly<DFA.CreationOptions>
 	): DFA {
-		const nodeList = DFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
 			const deterministicIter = Iter.makeDeterministic(nodeList, iter);
 			Iter.forEach(Iter.mapOut(deterministicIter, s => s.out.values()));
 		});

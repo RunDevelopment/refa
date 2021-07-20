@@ -139,7 +139,7 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 	switch (node.type) {
 		case "Alternation": {
 			const assertion = isBoundaryAssertion(node, context.env);
-			if (assertion) {
+			if (assertion !== false) {
 				return assertion;
 			}
 
@@ -387,17 +387,21 @@ function getMultilineFlag(value: readonly NoParent<Node>[], env: CharEnv): boole
 	}
 
 	// try to avoid lookbehinds (browser support for them isn't great)
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (lineStartAssertion) {
 		return true;
 	}
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (stringStartAssertion) {
 		return false;
 	}
 
 	// try to avoid (?!.), so we can enable the s flag
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (lineEndAssertion) {
 		return true;
 	}
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (stringEndAssertion) {
 		return false;
 	}
@@ -470,7 +474,7 @@ function printInCharClass(char: Char): string {
 	}
 
 	const specialPrintable = PRINTABLE_CONTROL_CHARACTERS.get(char);
-	if (specialPrintable) {
+	if (specialPrintable !== undefined) {
 		return specialPrintable;
 	}
 
@@ -529,7 +533,7 @@ function printOutsideOfCharClass(char: Char): string {
 	}
 
 	const specialPrint = PRINTABLE_CONTROL_CHARACTERS.get(char);
-	if (specialPrint) {
+	if (specialPrint !== undefined) {
 		return specialPrint;
 	}
 

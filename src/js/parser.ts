@@ -539,7 +539,7 @@ export class Parser {
 	}
 	private _affectedSliceLength(group: AST.CapturingGroup, slice: readonly AST.Element[]): number {
 		function withParent(element: AST.Element): AST.Element {
-			let p: AST.Element | AST.BranchNode = element;
+			let p = element as AST.Element | AST.BranchNode | null;
 			while (p) {
 				if (p.parent === group.parent) {
 					return p;

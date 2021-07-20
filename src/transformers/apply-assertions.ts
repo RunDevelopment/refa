@@ -290,6 +290,7 @@ function removeRejectedBranches(
 			}
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (parentElement.type === "Alternation" || (parentElement.type === "Quantifier" && parentElement.max === 1)) {
 			if (tryRemoveRejectingAssertionBranches(parentElement, char, edge, direction, context.maxCharacter)) {
 				context.signalMutation();
@@ -406,7 +407,8 @@ function moveCharacterIntoAlternation(
 			const assertionIndex = lastIndexFor(direction);
 			const assertion = at(alternative.elements, assertionIndex);
 			if (
-				assertion &&
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				assertion !== undefined &&
 				assertion.type === "Assertion" &&
 				assertion.kind === kind &&
 				isSingleCharacterParent(assertion)
@@ -515,6 +517,7 @@ function moveAssertionIntoAlternation(
 			return true;
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (toAdd.length > 0 && (toAdd.length < alternation.alternatives.length || canApply)) {
 			context.signalMutation();
 			elements.splice(assertionIndex, 1);

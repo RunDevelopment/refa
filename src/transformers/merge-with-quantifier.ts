@@ -19,7 +19,7 @@ function consumeUsingInfiniteQuantifier(
 	) {
 		for (const alt of after.alternatives) {
 			const firstIndex = direction === "ltr" ? 0 : alt.elements.length - 1;
-			const first: NoParent<Element> | undefined = alt.elements[firstIndex];
+			const first = alt.elements[firstIndex] as NoParent<Element> | undefined;
 			if (first) {
 				if (
 					first.type === "Quantifier" &&

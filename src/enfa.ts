@@ -469,7 +469,9 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions?: Readonly<ENFA.CreationOptions>
 	): ENFA {
 		const { maxCharacter } = options;
-		const nodeList = ENFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
 			function getNext(node: ENFA.Node, char: Char): ENFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
@@ -517,7 +519,9 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions?: Readonly<ENFA.CreationOptions>
 	): ENFA {
 		const { maxCharacter } = options;
-		const nodeList = ENFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
 			const fakeInitial = nodeList.createNode();
 			nodeList.linkNodes(nodeList.initial, fakeInitial, null);
 
@@ -761,6 +765,7 @@ export namespace ENFA {
 				}
 				return n.out.keys();
 			});
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!hasSeenFinal) {
 				c++;
 			}
@@ -1271,6 +1276,18 @@ function baseMakeEffectivelyFinal(nodeList: ENFA.NodeList, base: SubList, node: 
 	} else if (current === null) {
 		return;
 	} else {
+		// the trick is to add a new node that connects the given node with the final state via epsilon transitions
+		// however, we might already have added such a node, so we need to check for that.
+
+		for (const [to, via] of node.out) {
+			if (via === null) {
+				if (to.out.get(base.final) === null) {
+					// we already added such a state
+					return;
+				}
+			}
+		}
+
 		const newNode = nodeList.createNode();
 		nodeList.linkNodes(node, newNode, null);
 		nodeList.linkNodes(newNode, base.final, null);

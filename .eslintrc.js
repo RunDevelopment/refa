@@ -23,7 +23,8 @@ module.exports = {
 		ecmaFeatures: {
 			node: true,
 			spread: true
-		}
+		},
+		project: "./tsconfig.json"
 	},
 	rules: {
 		"@typescript-eslint/naming-convention": [
@@ -70,6 +71,8 @@ module.exports = {
 		"sort-imports": ["error", { ignoreDeclarationSort: true }],
 		"@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true, ignoreProperties: true }],
 		"@typescript-eslint/explicit-function-return-type": ["error", { allowExpressions: true }],
+		"@typescript-eslint/no-unnecessary-condition": "warn",
+		"@typescript-eslint/strict-boolean-expressions": ["warn", { allowNullableBoolean: true }],
 
 		"jsdoc/no-types": "error",
 		"jsdoc/no-bad-blocks": "error",
@@ -102,6 +105,16 @@ module.exports = {
 			},
 			rules: {
 				"@typescript-eslint/no-var-requires": "off"
+			}
+		}
+	],
+	overrides: [
+		{
+			files: [
+				"tests/**"
+			],
+			parserOptions: {
+				project: "./tests/tsconfig.json"
 			}
 		}
 	],

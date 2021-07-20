@@ -322,6 +322,7 @@ function createNodeList<S>(
 		});
 	});
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	return { nodeList, maxCharacter: maxCharacter ?? 0 };
 }
 function eliminateStates(nodeList: NodeList, tc: TransitionCreator, maxCharacter: number): void {

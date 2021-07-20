@@ -54,7 +54,8 @@ export function visitAst(node: Node, visitor: VisitAstHandler): void;
 export function visitAst(node: NoParent<Node>, visitor: VisitNoParentAstHandler): void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function visitAst(node: NoParent<Node>, visitor: Record<string, any>): void {
-	const enter = visitor["on" + node.type + "Enter"];
+	type Fn = (node: NoParent<Node>) => void;
+	const enter: Fn | undefined = visitor["on" + node.type + "Enter"];
 	if (enter) {
 		enter(node);
 	}
@@ -79,7 +80,7 @@ export function visitAst(node: NoParent<Node>, visitor: Record<string, any>): vo
 			break;
 	}
 
-	const leave = visitor["on" + node.type + "Leave"];
+	const leave: Fn | undefined = visitor["on" + node.type + "Leave"];
 	if (leave) {
 		leave(node);
 	}

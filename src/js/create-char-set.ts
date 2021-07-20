@@ -105,6 +105,7 @@ export function createCharSet(
 	}
 
 	const cs = env.empty.union(ranges);
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (!env.ignoreCase || !fullCaseCheck) {
 		// no full case check, so we're done here.
 		return cs;

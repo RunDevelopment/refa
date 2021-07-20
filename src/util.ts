@@ -185,7 +185,8 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 	const toCheck: S[] = [root];
 
 	let element;
-	while ((element = toCheck.pop())) {
+	while (toCheck.length) {
+		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
 			toCheck.push(...next(element));
@@ -203,7 +204,8 @@ export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => I
 	const toCheck: S[] = [...roots];
 
 	let element;
-	while ((element = toCheck.pop())) {
+	while (toCheck.length) {
+		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
 			toCheck.push(...next(element));
@@ -220,7 +222,7 @@ export function assertNever(value: never, message?: string): never {
 
 export function debugAssert(condition: boolean, message?: string): asserts condition {
 	if (!condition) {
-		throw new Error("Debug assertion failed." + (message ? "Message: " + message : ""));
+		throw new Error("Debug assertion failed." + (message !== undefined ? "Message: " + message : ""));
 	}
 }
 
@@ -346,7 +348,7 @@ function* iterateCombinations<T>(sequences: ConcatIterable<Iterable<T>>): Iterab
 		return;
 	}
 
-	while (true) {
+	for (;;) {
 		for (let i = iterators.length - 1; i >= 0; i--) {
 			const result = iterators[i].next();
 			if (result.done) {
