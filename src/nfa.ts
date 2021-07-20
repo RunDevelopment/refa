@@ -331,6 +331,7 @@ export class NFA implements ReadonlyNFA {
 				}
 			});
 
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (total === undefined) {
 				throw new Error("The node doesn't have incoming transitions.");
 			}
@@ -887,7 +888,7 @@ function createNodeList(
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>
 ): NFA.NodeList {
-	const infinityThreshold: number = creationOptions.infinityThreshold || Infinity;
+	const infinityThreshold: number = creationOptions.infinityThreshold ?? Infinity;
 
 	return NFA.NodeList.withLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 		baseReplaceWith(nodeList, nodeList, handleAlternation(expression));

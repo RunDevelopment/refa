@@ -765,6 +765,7 @@ export namespace ENFA {
 				}
 				return n.out.keys();
 			});
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!hasSeenFinal) {
 				c++;
 			}

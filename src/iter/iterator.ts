@@ -345,7 +345,7 @@ export function shortestAcceptingPath<S, T>(
 	function getShortestPath(to: S): T[] {
 		const revPath: T[] = [];
 
-		while (true) {
+		for (;;) {
 			const from = shortestPathTo.get(to);
 
 			// this _should_ never happen

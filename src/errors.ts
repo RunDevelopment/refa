@@ -26,7 +26,7 @@ export class MaxCharacterError extends Error {
 		}
 
 		if (left !== right) {
-			if (kind) {
+			if (kind !== undefined) {
 				throw new MaxCharacterError(`The two ${kind} do not have the same max character. ${left} != ${right}`);
 			} else {
 				throw new MaxCharacterError(`Different max character. ${left} != ${right}`);

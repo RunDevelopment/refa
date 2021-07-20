@@ -222,7 +222,7 @@ export function assertNever(value: never, message?: string): never {
 
 export function debugAssert(condition: boolean, message?: string): asserts condition {
 	if (!condition) {
-		throw new Error("Debug assertion failed." + (message ? "Message: " + message : ""));
+		throw new Error("Debug assertion failed." + (message !== undefined ? "Message: " + message : ""));
 	}
 }
 
@@ -348,7 +348,7 @@ function* iterateCombinations<T>(sequences: ConcatIterable<Iterable<T>>): Iterab
 		return;
 	}
 
-	while (true) {
+	for (;;) {
 		for (let i = iterators.length - 1; i >= 0; i--) {
 			const result = iterators[i].next();
 			if (result.done) {

@@ -402,8 +402,8 @@ export class CharSet {
 
 		let i = 0;
 		let j = 0;
-		let thisItem = thisRanges[i];
-		let otherItem = otherRanges[j];
+		let thisItem = thisRanges[i] as CharRange | undefined;
+		let otherItem = otherRanges[j] as CharRange | undefined;
 
 		// try to disprove that other this the smaller set
 		// we search for any character in other which is not in this
@@ -465,8 +465,8 @@ export class CharSet {
 
 		let i = 0;
 		let j = 0;
-		let thisItem = thisRanges[i];
-		let otherItem = otherRanges[j];
+		let thisItem = thisRanges[i] as CharRange | undefined;
+		let otherItem = otherRanges[j] as CharRange | undefined;
 
 		while (thisItem && otherItem) {
 			if (otherItem.max < thisItem.min) {
@@ -573,8 +573,8 @@ function intersectRanges(a: readonly CharRange[], b: readonly CharRange[]): Char
 
 	let aIndex = 0;
 	let bIndex = 0;
-	let aRange: CharRange | undefined = a[aIndex];
-	let bRange: CharRange | undefined = b[bIndex];
+	let aRange = a[aIndex] as CharRange | undefined;
+	let bRange = b[bIndex] as CharRange | undefined;
 	while (aRange && bRange) {
 		// skip if thisR and otherR are disjoint
 		if (aRange.max < bRange.min) {
@@ -611,8 +611,8 @@ function unionRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRang
 
 	let aIndex = 0;
 	let bIndex = 0;
-	let aRange: CharRange | undefined = a[aIndex];
-	let bRange: CharRange | undefined = b[bIndex];
+	let aRange = a[aIndex] as CharRange | undefined;
+	let bRange = b[bIndex] as CharRange | undefined;
 	while (aRange && bRange) {
 		if (aRange.min <= bRange.min) {
 			newRanges.push(aRange);
@@ -643,8 +643,8 @@ function withoutRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRa
 
 	let aIndex = 0;
 	let bIndex = 0;
-	let aRange: CharRange | undefined = a[aIndex];
-	let bRange: CharRange | undefined = b[bIndex];
+	let aRange = a[aIndex] as CharRange | undefined;
+	let bRange = b[bIndex] as CharRange | undefined;
 	while (aRange && bRange) {
 		if (aRange.max < bRange.min) {
 			// disjoint and aRange is before bRange

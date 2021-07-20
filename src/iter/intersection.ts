@@ -113,7 +113,7 @@ function createCharSetIntersectFn(): (a: CharSet, b: CharSet) => CharSet | null 
 		let id = charSetIdMap.get(set);
 		if (id === undefined) {
 			let hash = computeHash(set);
-			while (true) {
+			for (;;) {
 				const entry = hashTable[hash];
 				if (entry === undefined) {
 					// make new entry
