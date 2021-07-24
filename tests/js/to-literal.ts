@@ -197,7 +197,7 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: false } },
-				expected: Error,
+				expected: /\d/i,
 			},
 
 			{
@@ -333,6 +333,57 @@ describe("JS.toLiteral", function () {
 				literal: /./,
 				options: { fastCharacters: true },
 				expected: /[\0-\x09\x0b\f\x0e-\u2027\u202a-\uffff]/,
+			},
+		]);
+	});
+
+	describe("Unicode to UTF16", function () {
+		test([
+			{
+				literal: /abc/u,
+				options: { flags: { unicode: false } },
+				expected: /abc/,
+			},
+			{
+				literal: /abc/iu,
+				options: { flags: { unicode: false } },
+				expected: /ABC/i,
+			},
+
+			{
+				literal: /\w+/u,
+				options: { flags: { unicode: false } },
+				expected: /\w+/,
+			},
+			{
+				literal: /\w+/iu,
+				options: { flags: { unicode: false } },
+				expected: /[\w\u017f\u212a]+/i,
+			},
+
+			{
+				literal: /./iu,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:[^\n\r\u2028\u2029\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
+			},
+			{
+				literal: /./isu,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
+			},
+
+			{
+				literal: /\u{1F4A9}/u,
+				options: { flags: { unicode: false } },
+				expected: /(?:\ud83d\udca9)/i,
+			},
+			{
+				literal: /[^\u{1F4A9}]/u,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:[^\ud800-\udfff]|[\ud800-\ud83c\ud83e-\udbff][\udc00-\udfff]|\ud83d[\udc00-\udca8\udcaa-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
 			},
 		]);
 	});

@@ -1,10 +1,11 @@
 import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
-import { assertNever, cachedFunc } from "../util";
+import { assertNever, cachedFunc, debugAssert } from "../util";
 import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
 import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { toUTF16 } from "./unicode-to-utf16";
 
 export interface ToLiteralOptions {
 	/**
@@ -159,11 +160,40 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 			return s;
 		}
 		case "CharacterClass": {
-			if (node.characters.maximum !== context.env.maxCharacter) {
-				throw new Error(`All characters were expected to have a maximum of ${context.env.maxCharacter}.`);
-			}
+			if (node.characters.maximum === UNICODE_MAXIMUM && !context.flags.unicode) {
+				// convert Unicode character set to UTF16
+				const utf16Result = toUTF16(node.characters);
 
-			return context.printCharSet(node.characters);
+				if (utf16Result.astral.length === 0 && utf16Result.high.isEmpty && utf16Result.low.isEmpty) {
+					// in this case, the Unicode and UTF16 character set are equivalent
+					return context.printCharSet(utf16Result.bmp);
+				}
+
+				let s = "";
+				if (!utf16Result.bmp.isEmpty) {
+					s += context.printCharSet(utf16Result.bmp) + "|";
+				}
+				for (const [high, low] of utf16Result.astral) {
+					s += context.printCharSet(high) + context.printCharSet(low) + "|";
+				}
+				if (!utf16Result.low.isEmpty) {
+					// TODO: Should we add a lookbehind here?
+					s += context.printCharSet(utf16Result.low) + "|";
+				}
+				if (!utf16Result.high.isEmpty) {
+					s += context.printCharSet(utf16Result.high) + "(?![\\udc00-\\udfff])|";
+				}
+
+				debugAssert(s !== "");
+
+				return `(?:${s.slice(0, -1)})`;
+			} else {
+				if (node.characters.maximum !== context.env.maxCharacter) {
+					throw new Error(`All characters were expected to have a maximum of ${context.env.maxCharacter}.`);
+				}
+
+				return context.printCharSet(node.characters);
+			}
 		}
 		case "Concatenation": {
 			let s = "";
@@ -411,14 +441,14 @@ function getFlags(
 ): Flags {
 	const template = options?.flags;
 
-	const unicode = template?.unicode ?? getUnicodeFlag(value);
+	const nativeUnicode = getUnicodeFlag(value);
 
 	const templateIgnoreCase = template?.ignoreCase;
 	let ignoreCase: boolean | undefined;
 	if (fastCharacters && !templateIgnoreCase) {
 		ignoreCase = false;
 	} else {
-		ignoreCase = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
+		ignoreCase = getIgnoreCaseFlag(value, !!nativeUnicode) ?? templateIgnoreCase;
 	}
 	if ((templateIgnoreCase ?? ignoreCase) !== ignoreCase) {
 		throw new Error(
@@ -433,9 +463,9 @@ function getFlags(
 		global: template?.global,
 		hasIndices: template?.hasIndices,
 		ignoreCase: ignoreCase ?? true,
-		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
+		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode: nativeUnicode })),
 		sticky: template?.sticky,
-		unicode,
+		unicode: template?.unicode ?? nativeUnicode,
 	};
 }
 
