@@ -176,12 +176,11 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 				for (const [high, low] of utf16Result.astral) {
 					s += context.printCharSet(high) + context.printCharSet(low) + "|";
 				}
-				if (!utf16Result.low.isEmpty) {
-					// TODO: Should we add a lookbehind here?
-					s += context.printCharSet(utf16Result.low) + "|";
-				}
 				if (!utf16Result.high.isEmpty) {
 					s += context.printCharSet(utf16Result.high) + "(?![\\udc00-\\udfff])|";
+				}
+				if (!utf16Result.low.isEmpty) {
+					s += "(?<![\\uda00-\\udbff])" + context.printCharSet(utf16Result.low) + "|";
 				}
 
 				debugAssert(s !== "");

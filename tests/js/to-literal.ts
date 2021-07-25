@@ -10,7 +10,7 @@ describe("JS.toLiteral", function () {
 	interface TestCase {
 		literal: Literal;
 		options?: ToLiteralOptions;
-		expected: Literal | typeof Error;
+		expected?: Literal | typeof Error;
 	}
 
 	function test(cases: TestCase[]): void {
@@ -19,13 +19,19 @@ describe("JS.toLiteral", function () {
 				const { expression } = Parser.fromLiteral(literal).parse({ simplify: false });
 				try {
 					const actual = toLiteral(expression, options);
-					if ("source" in expected && "flags" in expected) {
+					if (expected === undefined) {
+						assertEqualSnapshot(this, literalToString(actual));
+					} else if ("source" in expected && "flags" in expected) {
 						assert.equal(literalToString(actual), literalToString(expected));
 					} else {
 						assert.fail("Expected it to fail.");
 					}
 				} catch (error) {
-					if (expected !== Error) {
+					if (expected === Error) {
+						// all according to keikaku
+					} else if (expected === undefined) {
+						assertEqualSnapshot(this, "Error");
+					} else {
 						throw error;
 					}
 				}
@@ -342,48 +348,94 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /abc/u,
 				options: { flags: { unicode: false } },
-				expected: /abc/,
 			},
 			{
 				literal: /abc/iu,
 				options: { flags: { unicode: false } },
-				expected: /ABC/i,
 			},
 
 			{
 				literal: /\w+/u,
 				options: { flags: { unicode: false } },
-				expected: /\w+/,
 			},
 			{
 				literal: /\w+/iu,
 				options: { flags: { unicode: false } },
-				expected: /[\w\u017f\u212a]+/i,
+			},
+			{
+				literal: /\W+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\W+/iu,
+				options: { flags: { unicode: false } },
 			},
 
 			{
 				literal: /./iu,
 				options: { flags: { unicode: false } },
-				expected:
-					/(?:[^\n\r\u2028\u2029\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
 			},
 			{
 				literal: /./isu,
 				options: { flags: { unicode: false } },
-				expected:
-					/(?:[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
 			},
 
 			{
 				literal: /\u{1F4A9}/u,
 				options: { flags: { unicode: false } },
-				expected: /(?:\ud83d\udca9)/i,
 			},
 			{
 				literal: /[^\u{1F4A9}]/u,
 				options: { flags: { unicode: false } },
-				expected:
-					/(?:[^\ud800-\udfff]|[\ud800-\ud83c\ud83e-\udbff][\udc00-\udfff]|\ud83d[\udc00-\udca8\udcaa-\udfff]|[\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff]))/i,
+			},
+
+			{
+				literal: /\p{ASCII_Hex_Digit}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{ASCII_Hex_Digit}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[^\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{ASCII_Hex_Digit})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Anatolian_Hieroglyphs})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Wancho})/u,
+				options: { flags: { unicode: false } },
 			},
 		]);
 	});
