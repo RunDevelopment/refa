@@ -76,6 +76,7 @@ function getPropertyRanges(key: string, value: string | null): readonly CharRang
 		} else if (keyName === "Script") {
 			categoryAliases = Alias.ScriptAndScript_Extensions;
 			categoryValues = Script;
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} else if (keyName === "Script_Extensions") {
 			categoryAliases = Alias.ScriptAndScript_Extensions;
 			categoryValues = Script_Extensions;

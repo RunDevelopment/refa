@@ -56,7 +56,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?=$)/,
 				transformer,
-				expected: /$/i,
+				expected: /$/,
 			},
 			{
 				literal: /(?!(?<=a))/,

@@ -78,6 +78,7 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 		return true;
 	});
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (mutated && needQuantifier) {
 		makeContentOptional(node.alternatives, node.source);
 	}
@@ -99,7 +100,7 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
  * @param options
  */
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
-	if (!options?.ignoreOrder || !options?.ignoreAmbiguity) {
+	if (!options?.ignoreOrder || !options.ignoreAmbiguity) {
 		return {}; // noop
 	} else {
 		return {

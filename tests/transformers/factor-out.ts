@@ -25,17 +25,17 @@ describe("Transformers", function () {
 			{
 				literal: /\w+|\w*|\w{3,}/,
 				transformer,
-				expected: /\w*(?:\w||\w{3})/i,
+				expected: /\w*(?:\w||\w{3})/,
 			},
 			{
 				literal: /\w+|\w{2,3}/,
 				transformer,
-				expected: /\w(?:\w*|\w{1,2})/i,
+				expected: /\w(?:\w*|\w{1,2})/,
 			},
 			{
 				literal: /\w{2,4}|\w{2,3}/,
 				transformer,
-				expected: /\w{2}(?:\w{0,2}|\w?)/i,
+				expected: /\w{2}(?:\w{0,2}|\w?)/,
 			},
 		]);
 

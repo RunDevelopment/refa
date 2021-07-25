@@ -1097,8 +1097,8 @@ export function followPaths<S>(
 	): NonNullable<S> {
 		let i = direction === "ltr" ? 0 : concat.elements.length - 1;
 		const increment = direction === "ltr" ? +1 : -1;
-		let element: NoParent<Element> | undefined;
-		for (; (element = concat.elements[i]); i += increment) {
+		for (; 0 <= i && i < concat.elements.length; i += increment) {
+			const element = concat.elements[i];
 			state = opEnter(element, state, direction);
 
 			const continueAfter = operations.continueAfter?.(element, state, direction) ?? true;
@@ -1123,7 +1123,7 @@ export function followPaths<S>(
 			const parent = parentPath.node;
 
 			const nextIndex = parent.elements.indexOf(element) + (direction === "ltr" ? +1 : -1);
-			const nextElement: NoParent<Element> | undefined = parent.elements[nextIndex];
+			const nextElement = parent.elements[nextIndex] as NoParent<Element> | undefined;
 
 			if (nextElement) {
 				return parentPath.toChildPath<Element>(nextElement);
@@ -1136,6 +1136,7 @@ export function followPaths<S>(
 					return "assertion";
 				} else if (parentParent.type === "Alternation") {
 					return getNextElement(parentParentPath as Path<Alternation>);
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				} else if (parentParent.type === "Quantifier") {
 					// This is difficult.
 					// The main problem is that paths coming out of the quantifier might loop back into itself. This means that
@@ -1151,8 +1152,7 @@ export function followPaths<S>(
 			}
 		}
 
-		// eslint-disable-next-line no-constant-condition
-		while (true) {
+		for (;;) {
 			let after = getNextElement(elementPath);
 			while (Array.isArray(after)) {
 				const [quant, other] = after;

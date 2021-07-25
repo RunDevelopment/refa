@@ -17,7 +17,7 @@ import { TooManyNodesError } from "../src/errors";
  *
  * Only set this to `true` if you have the time to run it.
  */
-const CHECK_RE_LANGUAGE = false;
+const CHECK_RE_LANGUAGE = false as boolean;
 
 const maxNodes = 100_000;
 

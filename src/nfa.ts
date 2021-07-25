@@ -331,6 +331,7 @@ export class NFA implements ReadonlyNFA {
 				}
 			});
 
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (total === undefined) {
 				throw new Error("The node doesn't have incoming transitions.");
 			}
@@ -360,38 +361,6 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	/**
-	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
-	 *
-	 * @param left
-	 * @param right
-	 * @param options
-	 */
-	static fromIntersection<L, R>(
-		left: TransitionIterable<L>,
-		right: TransitionIterable<R>,
-		options?: Readonly<NFA.CreationOptions>
-	): NFA {
-		MaxCharacterError.assert(left, right, "TransitionIterable");
-
-		const nodeList = NFA.NodeList.withLimit(options?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
-
-			// traverse the whole iterator to create our NodeList
-			Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));
-
-			// A cleanup still has to be performed because while all states are connected to the initial state, they might
-			// not be able to reach a final state. This will remove such trap states.
-			nodeList.removeUnreachable();
-
-			// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
-			// having less final states will make a lot of the NFA operations more efficient.
-			baseOptimizationReuseFinalStates(nodeList, nodeList);
-		});
-
-		return new NFA(nodeList, left.maxCharacter);
-	}
-
-	/**
 	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
 	 *
 	 * @param options
@@ -417,6 +386,39 @@ export class NFA implements ReadonlyNFA {
 		nodeList.finals.add(other);
 
 		return new NFA(nodeList, options.maxCharacter);
+	}
+
+	/**
+	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
+	 *
+	 * @param left
+	 * @param right
+	 * @param options
+	 */
+	static fromIntersection<L, R>(
+		left: TransitionIterable<L>,
+		right: TransitionIterable<R>,
+		options?: Readonly<NFA.CreationOptions>
+	): NFA {
+		MaxCharacterError.assert(left, right, "TransitionIterable");
+
+		const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
+			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
+
+			// traverse the whole iterator to create our NodeList
+			Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));
+
+			// A cleanup still has to be performed because while all states are connected to the initial state, they might
+			// not be able to reach a final state. This will remove such trap states.
+			nodeList.removeUnreachable();
+
+			// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
+			// having less final states will make a lot of the NFA operations more efficient.
+			baseOptimizationReuseFinalStates(nodeList, nodeList);
+		});
+
+		return new NFA(nodeList, left.maxCharacter);
 	}
 
 	static fromRegex(
@@ -474,7 +476,9 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
 			function getNext(node: NFA.Node, char: Char): NFA.Node {
 				if (char > maxCharacter) {
 					throw new Error(`All characters have to be <= options.maxCharacter (${maxCharacter}).`);
@@ -519,7 +523,9 @@ export class NFA implements ReadonlyNFA {
 		creationOptions?: Readonly<NFA.CreationOptions>
 	): NFA {
 		const { maxCharacter } = options;
-		const nodeList = NFA.NodeList.withLimit(creationOptions?.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
+		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+
+		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
 			const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
 			translate.cache.set(iter.initial, nodeList.initial);
 
@@ -882,7 +888,7 @@ function createNodeList(
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>
 ): NFA.NodeList {
-	const infinityThreshold: number = creationOptions.infinityThreshold || Infinity;
+	const infinityThreshold: number = creationOptions.infinityThreshold ?? Infinity;
 
 	return NFA.NodeList.withLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
 		baseReplaceWith(nodeList, nodeList, handleAlternation(expression));

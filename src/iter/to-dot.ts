@@ -77,7 +77,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDo
 
 	// graph attributes
 	s += "\t// graph attributes\n";
-	const graphAttrs = getGraphAttributes() || {};
+	const graphAttrs = getGraphAttributes();
 	for (const key in graphAttrs) {
 		if (Object.prototype.hasOwnProperty.call(graphAttrs, key)) {
 			const value = graphAttrs[key];
