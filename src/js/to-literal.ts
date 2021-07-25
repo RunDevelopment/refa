@@ -1,10 +1,11 @@
 import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
-import { assertNever, cachedFunc } from "../util";
+import { assertNever, cachedFunc, debugAssert } from "../util";
 import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
 import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { UTF16CaseVarying } from "./utf16-case-folding";
 
 export interface ToLiteralOptions {
 	/**
@@ -325,32 +326,77 @@ function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 
 	return undefined; // no characters
 }
-function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): false | undefined {
-	const env = getCharEnv({ unicode, ignoreCase: true });
-	if (!env.ignoreCase) {
-		throw new Error();
-	}
 
-	let ignoreCase: false | undefined = undefined;
+const UTF16_ASCII_CASE_VARYING = CharSet.empty(UTF16_MAXIMUM).union([
+	{ min: 0x41, max: 0x5a }, // A-Z
+	{ min: 0x61, max: 0x7a }, // a-z
+]);
+const UTF16_NON_ASCII_CASE_VARYING = UTF16CaseVarying.without(UTF16_ASCII_CASE_VARYING);
+const enum GetIgnoreCaseFlagResult {
+	DONT_CARE,
+	BENEFICIAL,
+	FORBIDDEN,
+}
+function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): GetIgnoreCaseFlagResult {
+	const env = getCharEnv({ unicode, ignoreCase: true });
+	debugAssert(env.ignoreCase === true);
+
+	let beneficial = false as boolean;
 
 	try {
 		for (const node of value) {
 			visitAst(node, {
 				onCharacterClassEnter(node) {
 					const cs = node.characters;
+
+					if (cs.isDisjointWith(env.caseVarying) || cs.isSupersetOf(env.caseVarying)) {
+						// The char set either contains none or all case-varying characters.
+						// This means that we don't have to worry about casing. The character printer might be able to
+						// print a smaller character class if the i flag was enabled but that's unlikely.
+						return;
+					}
+
+					if (!unicode) {
+						// For non-Unicode regexes, we have to do a bit more work to avoid unnecessary i flags.
+						// The problem is that \w's won't be caught by the above condition (they were in Unicode mode),
+						// so we have to get creative or all regexes containing \w's will get an i flag (unless
+						// forbidden).
+						//
+						// The trick we use lies in the canonicalization algorithm for non-Unicode regexes. The
+						// algorithm explicitly distinguishes between ASCII and non-ASCII characters. The case folding
+						// maps for those two character types are completely disjoint. This means that we can split the
+						// case-varying condition to check for ASCII and non-ASCII separately.
+						//
+						// However, this will actually give a few too many false positives, so we will use a little
+						// hack to gear this condition specifically towards \w: We will assume that all \w characters
+						// are case-varying. That's false of course, but it prevents a few false positives.
+						if (
+							((cs.isDisjointWith(env.word) || cs.isSupersetOf(env.word)) &&
+								cs.isDisjointWith(UTF16_NON_ASCII_CASE_VARYING)) ||
+							cs.isSupersetOf(UTF16_NON_ASCII_CASE_VARYING)
+						) {
+							return;
+						}
+					}
+
+					beneficial = true;
+
 					if (!cs.equals(env.withCaseVaryingCharacters(cs))) {
-						ignoreCase = false;
-						throw new Error();
+						throw GetIgnoreCaseFlagResult.FORBIDDEN;
 					}
 				},
 			});
 		}
 	} catch (e) {
-		/* swallow error */
+		if (e === GetIgnoreCaseFlagResult.FORBIDDEN) {
+			return GetIgnoreCaseFlagResult.FORBIDDEN;
+		}
+		throw e;
 	}
 
-	return ignoreCase;
+	return beneficial ? GetIgnoreCaseFlagResult.BENEFICIAL : GetIgnoreCaseFlagResult.DONT_CARE;
 }
+
 function getMultilineFlag(value: readonly NoParent<Node>[], env: CharEnv): boolean | undefined {
 	let stringStartAssertion = false;
 	let stringEndAssertion = false;
@@ -413,32 +459,39 @@ function getFlags(
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
 ): Flags {
-	const template = options?.flags;
+	const template = options?.flags ?? {};
 
-	const unicode = template?.unicode ?? getUnicodeFlag(value);
+	const unicode = template.unicode ?? getUnicodeFlag(value);
 
-	const templateIgnoreCase = template?.ignoreCase;
-	let ignoreCase: boolean | undefined;
-	if (fastCharacters && !templateIgnoreCase) {
+	let ignoreCase: boolean;
+	if (template.ignoreCase === true) {
+		// check that it's actually possible to enable the i flag
+		if (getIgnoreCaseFlag(value, !!unicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+			throw new Error(
+				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
+			);
+		}
+		ignoreCase = true;
+	} else if (template.ignoreCase === false) {
+		// it's always possible to not use the i flag
 		ignoreCase = false;
 	} else {
-		ignoreCase = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
-	}
-	if ((templateIgnoreCase ?? ignoreCase) !== ignoreCase) {
-		throw new Error(
-			`Incompatible flags: The i flag is ${ignoreCase ? "required" : "forbidden"} to create a literal but ${
-				templateIgnoreCase ? "required" : "forbidden"
-			} by the options.`
-		);
+		// we can choose
+		if (fastCharacters) {
+			ignoreCase = false;
+		} else {
+			const result = getIgnoreCaseFlag(value, !!unicode);
+			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
+		}
 	}
 
 	return {
-		dotAll: template?.dotAll,
-		global: template?.global,
-		hasIndices: template?.hasIndices,
-		ignoreCase: ignoreCase ?? true,
-		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
-		sticky: template?.sticky,
+		dotAll: template.dotAll,
+		global: template.global,
+		hasIndices: template.hasIndices,
+		ignoreCase,
+		multiline: template.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
+		sticky: template.sticky,
 		unicode,
 	};
 }

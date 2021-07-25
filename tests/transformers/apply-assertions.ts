@@ -105,7 +105,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?=\d)\s*\w+/,
 				transformer,
-				expected: /\d\w*/i,
+				expected: /\d\w*/,
 			},
 			{
 				literal: /a$(?:a|b)/,
@@ -126,7 +126,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?!\s)[^]*\S/,
 				transformer,
-				expected: /(?:\S[^]*|)\S/i,
+				expected: /(?:\S[^]*|)\S/,
 			},
 			{
 				literal: /(?=a)[^]*/,
@@ -146,17 +146,17 @@ describe("Transformers", function () {
 			{
 				literal: /(?=\d)[^]*\w/,
 				transformer,
-				expected: /(?:\d[^]*\w|\d)/i,
+				expected: /(?:\d[^]*\w|\d)/,
 			},
 			{
 				literal: /(?=\d)[^]*\w+/,
 				transformer,
-				expected: /(?:\d[^]*\w|\d)\w*/i,
+				expected: /(?:\d[^]*\w|\d)\w*/,
 			},
 			{
 				literal: /(?=\d)[^]?\w+/,
 				transformer,
-				expected: /(?:\d[^]{0}\w|\d)\w*/i,
+				expected: /(?:\d[^]{0}\w|\d)\w*/,
 			},
 			{
 				literal: /=begin\s[^]*^=end/m,

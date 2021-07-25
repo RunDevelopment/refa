@@ -45,7 +45,7 @@ describe("JS.toLiteral", function () {
 			},
 			{
 				literal: /-\//i,
-				expected: /-\//i,
+				expected: /-\//,
 			},
 			{
 				literal: /[-][^-][a\- ][\^.][\^-]/,
@@ -57,15 +57,15 @@ describe("JS.toLiteral", function () {
 			},
 			{
 				literal: /[!][!"][!"#][!"#$][!"#$%][!"#$%&][!"#$%&'][!"#$%&'(][!"#$%&'()]/,
-				expected: /![!"][!"#][!"#$][!"#$%][!"#$%&][\x21-\x27][\x21-\x28][\x21-\x29]/i,
+				expected: /![!"][!"#][!"#$][!"#$%][!"#$%&][\x21-\x27][\x21-\x28][\x21-\x29]/,
 			},
 			{
 				literal: /\n\r\f\t[\n\r\f\t]/,
-				expected: /\n\r\f\t[\t\n\f\r]/i,
+				expected: /\n\r\f\t[\t\n\f\r]/,
 			},
 			{
 				literal: /\s\d\w\S\D\W./,
-				expected: /\s\d\w\S\D\W./i,
+				expected: /\s\d\w\S\D\W./,
 			},
 			{
 				literal: /\s\d\w\S\D\W./iu,
@@ -78,12 +78,12 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /[^\s\S][^\0-\uFFFF]/,
 				// eslint-disable-next-line no-empty-character-class
-				expected: /[][]/i,
+				expected: /[][]/,
 			},
 
 			{
 				literal: /\0/,
-				expected: /\0/i,
+				expected: /\0/,
 			},
 			{
 				literal: /\p{ASCII}/u,
@@ -92,29 +92,29 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\p{Cc}/u,
 				// eslint-disable-next-line no-control-regex
-				expected: /[\0-\x1f\x7f-\x9f]/iu,
+				expected: /[\0-\x1f\x7f-\x9f]/u,
 			},
 
 			{
 				literal: /[\s'">=]/,
-				expected: /[\s"'=>]/i,
+				expected: /[\s"'=>]/,
 			},
 			{
 				literal: /[^\s'">=]/,
-				expected: /[^\s"'=>]/i,
+				expected: /[^\s"'=>]/,
 			},
 			{
 				literal: /[\s'">=]/u,
-				expected: /[\s"'=>]/iu,
+				expected: /[\s"'=>]/u,
 			},
 			{
 				literal: /[^\s'">=]/u,
-				expected: /[^\s"'=>]/iu,
+				expected: /[^\s"'=>]/u,
 			},
 
 			{
 				literal: /[\w-]/,
-				expected: /[-\w]/i,
+				expected: /[-\w]/,
 			},
 
 			{
@@ -128,34 +128,34 @@ describe("JS.toLiteral", function () {
 		test([
 			{
 				literal: /^$ (?<![\s\S])(?![\s\S])/,
-				expected: /^$ ^$/i,
+				expected: /^$ ^$/,
 			},
 			{
 				literal: /^$ (?<!.)(?!.)/s,
-				expected: /^$ ^$/i,
+				expected: /^$ ^$/,
 			},
 			{
 				literal: /^$ (?<!.)(?!.)/m,
-				expected: /^$ ^$/im,
+				expected: /^$ ^$/m,
 			},
 
 			{
 				literal: /^$ (?!.)/ms,
-				expected: /^$ (?![^])/im,
+				expected: /^$ (?![^])/m,
 			},
 			{
 				literal: /(?<!.)(?!.) $/ms,
-				expected: /^$ (?!.)/i,
+				expected: /^$ (?!.)/,
 			},
 			{
 				literal: /(?<!.)(?!.) $/ms,
 				options: { flags: { dotAll: true } },
-				expected: /^$ (?![^\n\r\u2028\u2029])/is,
+				expected: /^$ (?![^\n\r\u2028\u2029])/s,
 			},
 
 			{
 				literal: /\b\B/,
-				expected: /\b\B/i,
+				expected: /\b\B/,
 			},
 			{
 				literal: /\b\B/iu,
@@ -187,12 +187,12 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/,
 				options: { flags: { unicode: false } },
-				expected: /\d/i,
+				expected: /\d/,
 			},
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: true } },
-				expected: /\d/iu,
+				expected: /\d/u,
 			},
 			{
 				literal: /\d/u,
