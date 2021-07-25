@@ -490,8 +490,16 @@ function getFlags(
 ): Flags {
 	const template = options?.flags ?? {};
 
-	const inputUnicode = getUnicodeFlag(value);
+	// u flag
+	const inputUnicode: boolean = getUnicodeFlag(value) ?? template.unicode ?? false;
+	const unicode: boolean = template.unicode ?? inputUnicode;
+	if (inputUnicode === false && unicode === true) {
+		throw new Error(
+			`Incompatible flags: The u flag is required by the flags options but a UTF16 regex cannot be converted to a Unicode regex.`
+		);
+	}
 
+	// i flag
 	let ignoreCase: boolean;
 	if (template.ignoreCase === true) {
 		// check that it's actually possible to enable the i flag
@@ -514,14 +522,21 @@ function getFlags(
 		}
 	}
 
+	// m flag
+	let multiline = template.multiline;
+	if (multiline === undefined && inputUnicode === unicode) {
+		// we only want to enable the m flag if we are NOT converting from Unicode to UTF16
+		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode }));
+	}
+
 	return {
 		dotAll: template.dotAll,
 		global: template.global,
 		hasIndices: template.hasIndices,
 		ignoreCase,
-		multiline: template.multiline ?? getMultilineFlag(value, getCharEnv({ unicode: inputUnicode })),
+		multiline,
 		sticky: template.sticky,
-		unicode: template.unicode ?? inputUnicode,
+		unicode,
 	};
 }
 
