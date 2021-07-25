@@ -503,7 +503,7 @@ function getFlags(
 	let ignoreCase: boolean;
 	if (template.ignoreCase === true) {
 		// check that it's actually possible to enable the i flag
-		if (getIgnoreCaseFlag(value, !!inputUnicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+		if (getIgnoreCaseFlag(value, inputUnicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
 			throw new Error(
 				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
 			);
@@ -517,7 +517,7 @@ function getFlags(
 		if (fastCharacters) {
 			ignoreCase = false;
 		} else {
-			const result = getIgnoreCaseFlag(value, !!inputUnicode);
+			const result = getIgnoreCaseFlag(value, inputUnicode);
 			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
 		}
 	}
