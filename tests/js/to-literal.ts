@@ -180,6 +180,35 @@ describe("JS.toLiteral", function () {
 				literal: /((?=a))?/,
 				expected: /(?:(?=a))?/,
 			},
+
+			// forced flags
+
+			{
+				literal: /\b\B/u,
+				options: { flags: { unicode: false } },
+				expected: /\b\B/,
+			},
+			{
+				literal: /\bk/iu,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:(?<![\w\u017f\u212a])(?=[\w\u017f\u212a])|(?<=[\w\u017f\u212a])(?![\w\u017f\u212a]))[K\u212a]/i,
+			},
+			{
+				literal: /^$/u,
+				options: { flags: { unicode: false } },
+				expected: /^$/,
+			},
+			{
+				literal: /^$/mu,
+				options: { flags: { unicode: false } },
+				expected: /^$/m,
+			},
+			{
+				literal: /(?!.) (?![^])/u,
+				options: { flags: { unicode: false } },
+				expected: /$ (?![^])/m,
+			},
 		]);
 	});
 

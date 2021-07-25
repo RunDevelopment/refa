@@ -60,7 +60,7 @@ export function toLiteral(
 
 	const result = getFlags(nodes, options, fastCharacters);
 	const flags: Readonly<Flags> = result.flags;
-	const { converter } = result;
+	const { converter, inputUnicode } = result;
 
 	const env = getCharEnv(flags);
 
@@ -70,6 +70,7 @@ export function toLiteral(
 		flags,
 		printCharSet,
 		env: getCharEnv(flags),
+		inputEnv: getCharEnv({ unicode: inputUnicode }),
 		converter,
 	};
 
@@ -122,6 +123,7 @@ function createCharacterPrinter(
 interface PrintContext {
 	readonly printCharSet: (value: CharSet) => string;
 	readonly env: CharEnv;
+	readonly inputEnv: CharEnv;
 	readonly flags: Flags;
 	readonly converter: CharSetConverter;
 }
@@ -161,9 +163,24 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 			return "(?:" + alternativesToSource(node.alternatives, context) + ")";
 		}
 		case "Assertion": {
-			if (isEdgeAssertion(node, context.flags, context.env)) {
+			if (isEdgeAssertion(node, context.flags, context.inputEnv)) {
 				return node.kind === "behind" ? "^" : "$";
 			}
+
+			if (node.negate) {
+				const chars = getSingleCharSetInAssertion(node);
+				if (chars) {
+					// try to give ^ $ an efficient representation even if their required flag isn't present
+					const dir = node.kind === "ahead" ? "" : "<";
+					if (context.inputEnv.nonLineTerminator.equals(chars)) {
+						return `(?${dir}!${context.printCharSet(context.env.nonLineTerminator)})`;
+					}
+					if (chars.isAll) {
+						return `(?${dir}!${context.printCharSet(context.env.all)})`;
+					}
+				}
+			}
+
 			let s = "(?";
 			if (node.kind === "behind") {
 				s += "<";
@@ -174,9 +191,14 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 			return s;
 		}
 		case "CharacterClass": {
+			if (node.characters.maximum !== context.inputEnv.maxCharacter) {
+				throw new Error(`All characters were expected to have a maximum of ${context.inputEnv.maxCharacter}.`);
+			}
+
 			if (node.characters.maximum === UNICODE_MAXIMUM && !context.flags.unicode) {
 				// convert Unicode character set to UTF16
-				const utf16Result = toUTF16(node.characters);
+				debugAssert(context.converter instanceof UnicodeToUTF16CharSetConverter);
+				const utf16Result = context.converter.getUTF16Result(node.characters);
 
 				if (utf16Result.astral.length === 0 && utf16Result.high.isEmpty && utf16Result.low.isEmpty) {
 					// in this case, the Unicode and UTF16 character set are equivalent
@@ -201,10 +223,6 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 
 				return `(?:${s.slice(0, -1)})`;
 			} else {
-				if (node.characters.maximum !== context.env.maxCharacter) {
-					throw new Error(`All characters were expected to have a maximum of ${context.env.maxCharacter}.`);
-				}
-
 				return context.printCharSet(node.characters);
 			}
 		}
@@ -267,6 +285,7 @@ function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags, env: Char
 	if (assertion.negate) {
 		const chars = getSingleCharSetInAssertion(assertion);
 		if (chars) {
+			debugAssert(chars.maximum === env.maxCharacter);
 			return (flags.multiline && env.nonLineTerminator.equals(chars)) || (!flags.multiline && chars.isAll);
 		}
 	}
@@ -305,7 +324,7 @@ function isBoundaryAssertion(alternation: NoParent<Alternation>, env: CharEnv): 
 		return false;
 	}
 
-	const word = env.word;
+	const word = env.word.resize(c00.maximum);
 	if (!c00.equals(word) || !c01.equals(word) || !c10.equals(word) || !c11.equals(word)) {
 		return false;
 	}
@@ -504,7 +523,7 @@ function getFlags(
 	value: readonly NoParent<Node>[],
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
-): { flags: Flags; converter: CharSetConverter } {
+): { flags: Flags; converter: CharSetConverter; inputUnicode: boolean } {
 	const template = options?.flags ?? {};
 
 	// u flag
@@ -544,9 +563,8 @@ function getFlags(
 
 	// m flag
 	let multiline = template.multiline;
-	if (multiline === undefined && inputUnicode === unicode) {
-		// we only want to enable the m flag if we are NOT converting from Unicode to UTF16
-		multiline = getMultilineFlag(value, getCharEnv({ unicode }));
+	if (multiline === undefined) {
+		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode }));
 	}
 
 	return {
@@ -560,6 +578,7 @@ function getFlags(
 			unicode,
 		},
 		converter,
+		inputUnicode,
 	};
 }
 
