@@ -490,12 +490,12 @@ function getFlags(
 ): Flags {
 	const template = options?.flags ?? {};
 
-	const nativeUnicode = template.unicode ?? getUnicodeFlag(value);
+	const inputUnicode = getUnicodeFlag(value);
 
 	let ignoreCase: boolean;
 	if (template.ignoreCase === true) {
 		// check that it's actually possible to enable the i flag
-		if (getIgnoreCaseFlag(value, !!nativeUnicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+		if (getIgnoreCaseFlag(value, !!inputUnicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
 			throw new Error(
 				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
 			);
@@ -509,7 +509,7 @@ function getFlags(
 		if (fastCharacters) {
 			ignoreCase = false;
 		} else {
-			const result = getIgnoreCaseFlag(value, !!nativeUnicode);
+			const result = getIgnoreCaseFlag(value, !!inputUnicode);
 			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
 		}
 	}
@@ -519,9 +519,9 @@ function getFlags(
 		global: template.global,
 		hasIndices: template.hasIndices,
 		ignoreCase,
-		multiline: template.multiline ?? getMultilineFlag(value, getCharEnv({ unicode: nativeUnicode })),
+		multiline: template.multiline ?? getMultilineFlag(value, getCharEnv({ unicode: inputUnicode })),
 		sticky: template.sticky,
-		unicode: template.unicode,
+		unicode: template.unicode ?? inputUnicode,
 	};
 }
 

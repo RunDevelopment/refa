@@ -30,7 +30,7 @@ describe("JS.toLiteral", function () {
 					if (expected === Error) {
 						// all according to keikaku
 					} else if (expected === undefined) {
-						assertEqualSnapshot(this, "Error");
+						assertEqualSnapshot(this, "Error: " + String(error));
 					} else {
 						throw error;
 					}
@@ -203,7 +203,7 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: false } },
-				expected: /\d/i,
+				expected: /\d/,
 			},
 
 			{
