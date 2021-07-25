@@ -14,7 +14,7 @@ export interface ToLiteralOptions {
 	 * are set to `true` are guaranteed to be enabled in the created literal.
 	 *
 	 * Flags that are `undefined` will be enabled/disabled depending on the implementation. While no guarantees are
-	 * given, the implementation will generally try to choose flags such that it can create literal that is as
+	 * given, the implementation will generally try to choose flags such that it can create a literal that is as
 	 * small/simple as possible.
 	 *
 	 * If the constraints on flags defined here make it impossible to create a literal, an error will be thrown.
