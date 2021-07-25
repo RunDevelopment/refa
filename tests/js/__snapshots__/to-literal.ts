@@ -13,7 +13,7 @@ module.exports["JS.toLiteral >> Unicode to UTF16 >> /\\w+/u \t({\"flags\":{\"uni
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /\\w+/iu \t({\"flags\":{\"unicode\":false}})"] = `
-/[\\w\\u017f\\u212a]+/i
+/[\\w\\u017f\\u212a]+/
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /\\W+/u \t({\"flags\":{\"unicode\":false}})"] = `
@@ -21,7 +21,7 @@ module.exports["JS.toLiteral >> Unicode to UTF16 >> /\\W+/u \t({\"flags\":{\"uni
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /\\W+/iu \t({\"flags\":{\"unicode\":false}})"] = `
-/(?:[^\\w\\u017f\\u212a\\ud800-\\udfff]|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\uda00-\\udbff])[\\udc00-\\udfff])+/i
+/(?:[^\\w\\u017f\\u212a\\ud800-\\udfff]|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\uda00-\\udbff])[\\udc00-\\udfff])+/
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /./iu \t({\"flags\":{\"unicode\":false}})"] = `
@@ -61,7 +61,7 @@ module.exports["JS.toLiteral >> Unicode to UTF16 >> /[\\p{ASCII_Hex_Digit}_]/u \
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /[^\\p{ASCII_Hex_Digit}_]/u \t({\"flags\":{\"unicode\":false}})"] = `
-/(?:[^\\dA-F_\\ud800-\\udfff]|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\uda00-\\udbff])[\\udc00-\\udfff])/i
+/(?:[^\\dA-F_a-f\\ud800-\\udfff]|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\uda00-\\udbff])[\\udc00-\\udfff])/
 `.slice(1, -1);
 
 module.exports["JS.toLiteral >> Unicode to UTF16 >> /[\\P{Script_Extensions=Anatolian_Hieroglyphs}]/u \t({\"flags\":{\"unicode\":false}})"] = `

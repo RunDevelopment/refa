@@ -5,7 +5,7 @@ import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
 import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
-import { toUTF16 } from "./unicode-to-utf16";
+import { UTF16Result, toUTF16 } from "./unicode-to-utf16";
 import { UTF16CaseVarying } from "./utf16-case-folding";
 
 export interface ToLiteralOptions {
@@ -51,16 +51,37 @@ export function toLiteral(
 ): Literal {
 	const fastCharacters = options?.fastCharacters ?? false;
 
-	let flags;
+	let nodes: readonly NoParent<Node>[];
 	if (Array.isArray(value)) {
-		const alternatives: readonly NoParent<Concatenation>[] = value;
-		flags = getFlags(alternatives, options, fastCharacters);
+		nodes = value as readonly NoParent<Concatenation>[];
 	} else {
-		const node = value as NoParent<Expression> | NoParent<Concatenation>;
-		flags = getFlags([node], options, fastCharacters);
+		nodes = [value as NoParent<Expression> | NoParent<Concatenation>];
 	}
 
+	const result = getFlags(nodes, options, fastCharacters);
+	const flags: Readonly<Flags> = result.flags;
+	const { converter } = result;
+
+	const env = getCharEnv(flags);
+
+	const printCharSet = createCharacterPrinter(fastCharacters, flags, env);
+
+	const context: PrintContext = {
+		flags,
+		printCharSet,
+		env: getCharEnv(flags),
+		converter,
+	};
+
+	return {
+		source: toSource(value, context),
+		flags: toFlagsString(flags),
+	};
+}
+
+function toFlagsString(flags: Readonly<Flags>): string {
 	let flagsString = "";
+
 	if (flags.hasIndices) {
 		flagsString += "d";
 	}
@@ -83,23 +104,14 @@ export function toLiteral(
 		flagsString += "y";
 	}
 
-	const env = getCharEnv(flags);
-
-	const printCharSet = createCharacterPrinter(fastCharacters, flags, env);
-
-	const context: PrintContext = {
-		flags,
-		printCharSet,
-		env: getCharEnv(flags),
-	};
-
-	return {
-		source: toSource(value, context),
-		flags: flagsString,
-	};
+	return flagsString;
 }
 
-function createCharacterPrinter(fastCharacters: boolean, flags: Flags, env: CharEnv): (value: CharSet) => string {
+function createCharacterPrinter(
+	fastCharacters: boolean,
+	flags: Readonly<Flags>,
+	env: CharEnv
+): (value: CharSet) => string {
 	if (fastCharacters) {
 		return cachedFunc(printCharactersFast);
 	} else {
@@ -111,6 +123,7 @@ interface PrintContext {
 	readonly printCharSet: (value: CharSet) => string;
 	readonly env: CharEnv;
 	readonly flags: Flags;
+	readonly converter: CharSetConverter;
 }
 
 function toSource(value: NoParent<Node> | readonly NoParent<Concatenation>[], context: PrintContext): string {
@@ -366,7 +379,11 @@ const enum GetIgnoreCaseFlagResult {
 	BENEFICIAL,
 	FORBIDDEN,
 }
-function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): GetIgnoreCaseFlagResult {
+function getIgnoreCaseFlag(
+	value: readonly NoParent<Node>[],
+	unicode: boolean,
+	converter: CharSetConverter
+): GetIgnoreCaseFlagResult {
 	const env = getCharEnv({ unicode, ignoreCase: true });
 	debugAssert(env.ignoreCase === true);
 
@@ -376,7 +393,7 @@ function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): 
 		for (const node of value) {
 			visitAst(node, {
 				onCharacterClassEnter(node) {
-					const cs = node.characters;
+					const cs = converter.getCaseVaryingPart(node.characters);
 
 					if (cs.isDisjointWith(env.caseVarying) || cs.isSupersetOf(env.caseVarying)) {
 						// The char set either contains none or all case-varying characters.
@@ -487,7 +504,7 @@ function getFlags(
 	value: readonly NoParent<Node>[],
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
-): Flags {
+): { flags: Flags; converter: CharSetConverter } {
 	const template = options?.flags ?? {};
 
 	// u flag
@@ -499,11 +516,14 @@ function getFlags(
 		);
 	}
 
+	const converter: CharSetConverter =
+		unicode === inputUnicode ? new NoopCharConverter() : new UnicodeToUTF16CharSetConverter();
+
 	// i flag
 	let ignoreCase: boolean;
 	if (template.ignoreCase === true) {
 		// check that it's actually possible to enable the i flag
-		if (getIgnoreCaseFlag(value, inputUnicode) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+		if (getIgnoreCaseFlag(value, unicode, converter) === GetIgnoreCaseFlagResult.FORBIDDEN) {
 			throw new Error(
 				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
 			);
@@ -517,7 +537,7 @@ function getFlags(
 		if (fastCharacters) {
 			ignoreCase = false;
 		} else {
-			const result = getIgnoreCaseFlag(value, inputUnicode);
+			const result = getIgnoreCaseFlag(value, unicode, converter);
 			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
 		}
 	}
@@ -526,18 +546,48 @@ function getFlags(
 	let multiline = template.multiline;
 	if (multiline === undefined && inputUnicode === unicode) {
 		// we only want to enable the m flag if we are NOT converting from Unicode to UTF16
-		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode }));
+		multiline = getMultilineFlag(value, getCharEnv({ unicode }));
 	}
 
 	return {
-		dotAll: template.dotAll,
-		global: template.global,
-		hasIndices: template.hasIndices,
-		ignoreCase,
-		multiline,
-		sticky: template.sticky,
-		unicode,
+		flags: {
+			dotAll: template.dotAll,
+			global: template.global,
+			hasIndices: template.hasIndices,
+			ignoreCase,
+			multiline,
+			sticky: template.sticky,
+			unicode,
+		},
+		converter,
 	};
+}
+
+interface CharSetConverter {
+	/**
+	 * Returns a character set that is a subset of the given character set and a superset of a case-varying characters
+	 * in the given character set.
+	 */
+	getCaseVaryingPart(value: CharSet): CharSet;
+}
+class NoopCharConverter implements CharSetConverter {
+	getCaseVaryingPart(value: CharSet): CharSet {
+		return value;
+	}
+}
+class UnicodeToUTF16CharSetConverter implements CharSetConverter {
+	private readonly _cache = new Map<CharSet, UTF16Result>();
+	getUTF16Result(value: CharSet): UTF16Result {
+		let result = this._cache.get(value);
+		if (result === undefined) {
+			result = toUTF16(value);
+			this._cache.set(value, result);
+		}
+		return result;
+	}
+	getCaseVaryingPart(value: CharSet): CharSet {
+		return this.getUTF16Result(value).bmp;
+	}
 }
 
 const PRINTABLE_CONTROL_CHARACTERS = new Map<Char, string>([
@@ -744,7 +794,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 	return moveCaretCreator(set);
 }
 
-function printCharacters(chars: CharSet, flags: Flags, env: CharEnv): string {
+function printCharacters(chars: CharSet, flags: Readonly<Flags>, env: CharEnv): string {
 	// print
 	if (chars.isAll) {
 		return flags.dotAll ? "." : "[^]";
