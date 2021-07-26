@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.1 (2021-07-26)
+
+### Fixed
+
+- Fixed that some ENFA operations created unnecessary states.
+- Fixed internal functions used to traverse graphs. This fixes the bug that some `FAIterators` functions had trouble with falsy state values.
+
+### Improved
+
+- `JS.toLiteral`: The heuristic used to decide flags has been improved to prevent unnecessary `i` flags.
+
+
 ## 0.9.0 (2021-07-15)
 
 ### Breaking changes
