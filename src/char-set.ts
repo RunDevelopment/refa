@@ -273,6 +273,43 @@ export class CharSet {
 	}
 
 	/**
+	 * Returns a character set with the given maximum.
+	 *
+	 * The ranges of the returned character set are equivalent to the ranges of
+	 * `this.intersect({ min: 0, max: newMaximum })`.
+	 *
+	 * @param newMaximum
+	 * @returns
+	 */
+	resize(newMaximum: Char): CharSet {
+		if (this.ranges.length === 0) {
+			// empty
+			return CharSet.empty(newMaximum);
+		} else if (newMaximum === this.maximum) {
+			// lucky us
+			return this;
+		} else if (newMaximum > this.maximum) {
+			// we can just reuse the ranges
+			return new CharSet(newMaximum, this.ranges);
+		} else {
+			// the non-trivial case
+			const max = this.ranges[this.ranges.length - 1].max;
+			if (max <= newMaximum) {
+				// we can just reuse the ranges
+				return new CharSet(newMaximum, this.ranges);
+			} else {
+				// we actually have to do the intersection
+				const newRanges = intersectRanges(this.ranges, [{ min: 0, max: newMaximum }]);
+				if (newRanges.length === 0) {
+					return CharSet.empty(newMaximum);
+				} else {
+					return new CharSet(newMaximum, newRanges);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Returns [the complement](https://en.wikipedia.org/wiki/Complement_(set_theory)) of this set.
 	 *
 	 * The returned set will have the same maximum as this set.
@@ -322,28 +359,22 @@ export class CharSet {
 	}
 
 	/**
-	 * Returns [the intersection](https://en.wikipedia.org/wiki/Intersection_(set_theory)) of this set and the given set
-	 * and character ranges.
+	 * Returns [the intersection](https://en.wikipedia.org/wiki/Intersection_(set_theory)) of this set and the given
+	 * set/ranges of characters.
 	 *
 	 * The returned set will have the same maximum as this set.
 	 *
-	 * @param set
-	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set or if the maximum of
-	 * one of the given ranges is greater than the maximum of this set.
+	 * @param other
+	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set.
 	 */
-	intersect(set: CharSet): CharSet;
-	intersect(ranges: Iterable<CharRange>): CharSet;
-	intersect(data: Iterable<CharRange> | CharSet): CharSet {
-		let other: CharSet;
-		if (data instanceof CharSet) {
-			this._checkCompatibility(data);
-			other = data;
+	intersect(other: CharSet | CharRange): CharSet {
+		let newRanges;
+		if (other instanceof CharSet) {
+			this._checkCompatibility(other);
+			newRanges = intersectRanges(this.ranges, other.ranges);
 		} else {
-			// will be slower because the data has to be sorted and optimized which is done in O(n log n)
-			other = CharSet.empty(this.maximum).union(data);
+			newRanges = intersectRanges(this.ranges, [other]);
 		}
-
-		const newRanges = intersectRanges(this.ranges, other.ranges);
 
 		if (newRanges.length === 0) {
 			return CharSet.empty(this.maximum);
@@ -353,26 +384,21 @@ export class CharSet {
 	}
 
 	/**
-	 * Returns a set that contains all characters of this set that are not in the given set.
+	 * Returns a set that contains all characters of this set that are not in the given set/range.
 	 *
 	 * The returned set will have the same maximum as this set.
 	 *
-	 * @param set
-	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set or if the maximum of
-	 * one of the given ranges is greater than the maximum of this set.
+	 * @param other
+	 * @throws `RangeError` If the maximum of the given set differs from the maximum of this set.
 	 */
-	without(set: CharSet): CharSet;
-	without(ranges: Iterable<CharRange>): CharSet;
-	without(data: Iterable<CharRange> | CharSet): CharSet {
-		let other;
-		if (data instanceof CharSet) {
-			this._checkCompatibility(data);
-			other = data;
+	without(other: CharSet | CharRange): CharSet {
+		let newRanges;
+		if (other instanceof CharSet) {
+			this._checkCompatibility(other);
+			newRanges = withoutRanges(this.ranges, other.ranges);
 		} else {
-			other = CharSet.empty(this.maximum).union(data);
+			newRanges = withoutRanges(this.ranges, [other]);
 		}
-
-		const newRanges = withoutRanges(this.ranges, other.ranges);
 
 		if (newRanges.length === 0) {
 			return CharSet.empty(this.maximum);
@@ -684,8 +710,6 @@ function withoutRanges(a: readonly CharRange[], b: readonly CharRange[]): CharRa
 	}
 
 	return newRanges;
-
-	//return intersectRanges(a, negateRanges(b, maximum));
 }
 
 /**

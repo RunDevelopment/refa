@@ -10,7 +10,7 @@ describe("JS.toLiteral", function () {
 	interface TestCase {
 		literal: Literal;
 		options?: ToLiteralOptions;
-		expected: Literal | typeof Error;
+		expected?: Literal | typeof Error;
 	}
 
 	function test(cases: TestCase[]): void {
@@ -19,13 +19,19 @@ describe("JS.toLiteral", function () {
 				const { expression } = Parser.fromLiteral(literal).parse({ simplify: false });
 				try {
 					const actual = toLiteral(expression, options);
-					if ("source" in expected && "flags" in expected) {
+					if (expected === undefined) {
+						assertEqualSnapshot(this, literalToString(actual));
+					} else if ("source" in expected && "flags" in expected) {
 						assert.equal(literalToString(actual), literalToString(expected));
 					} else {
 						assert.fail("Expected it to fail.");
 					}
 				} catch (error) {
-					if (expected !== Error) {
+					if (expected === Error) {
+						// all according to keikaku
+					} else if (expected === undefined) {
+						assertEqualSnapshot(this, "Error: " + String(error));
+					} else {
 						throw error;
 					}
 				}
@@ -45,7 +51,7 @@ describe("JS.toLiteral", function () {
 			},
 			{
 				literal: /-\//i,
-				expected: /-\//i,
+				expected: /-\//,
 			},
 			{
 				literal: /[-][^-][a\- ][\^.][\^-]/,
@@ -57,15 +63,15 @@ describe("JS.toLiteral", function () {
 			},
 			{
 				literal: /[!][!"][!"#][!"#$][!"#$%][!"#$%&][!"#$%&'][!"#$%&'(][!"#$%&'()]/,
-				expected: /![!"][!"#][!"#$][!"#$%][!"#$%&][\x21-\x27][\x21-\x28][\x21-\x29]/i,
+				expected: /![!"][!"#][!"#$][!"#$%][!"#$%&][\x21-\x27][\x21-\x28][\x21-\x29]/,
 			},
 			{
 				literal: /\n\r\f\t[\n\r\f\t]/,
-				expected: /\n\r\f\t[\t\n\f\r]/i,
+				expected: /\n\r\f\t[\t\n\f\r]/,
 			},
 			{
 				literal: /\s\d\w\S\D\W./,
-				expected: /\s\d\w\S\D\W./i,
+				expected: /\s\d\w\S\D\W./,
 			},
 			{
 				literal: /\s\d\w\S\D\W./iu,
@@ -78,12 +84,12 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /[^\s\S][^\0-\uFFFF]/,
 				// eslint-disable-next-line no-empty-character-class
-				expected: /[][]/i,
+				expected: /[][]/,
 			},
 
 			{
 				literal: /\0/,
-				expected: /\0/i,
+				expected: /\0/,
 			},
 			{
 				literal: /\p{ASCII}/u,
@@ -92,29 +98,29 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\p{Cc}/u,
 				// eslint-disable-next-line no-control-regex
-				expected: /[\0-\x1f\x7f-\x9f]/iu,
+				expected: /[\0-\x1f\x7f-\x9f]/u,
 			},
 
 			{
 				literal: /[\s'">=]/,
-				expected: /[\s"'=>]/i,
+				expected: /[\s"'=>]/,
 			},
 			{
 				literal: /[^\s'">=]/,
-				expected: /[^\s"'=>]/i,
+				expected: /[^\s"'=>]/,
 			},
 			{
 				literal: /[\s'">=]/u,
-				expected: /[\s"'=>]/iu,
+				expected: /[\s"'=>]/u,
 			},
 			{
 				literal: /[^\s'">=]/u,
-				expected: /[^\s"'=>]/iu,
+				expected: /[^\s"'=>]/u,
 			},
 
 			{
 				literal: /[\w-]/,
-				expected: /[-\w]/i,
+				expected: /[-\w]/,
 			},
 
 			{
@@ -128,34 +134,34 @@ describe("JS.toLiteral", function () {
 		test([
 			{
 				literal: /^$ (?<![\s\S])(?![\s\S])/,
-				expected: /^$ ^$/i,
+				expected: /^$ ^$/,
 			},
 			{
 				literal: /^$ (?<!.)(?!.)/s,
-				expected: /^$ ^$/i,
+				expected: /^$ ^$/,
 			},
 			{
 				literal: /^$ (?<!.)(?!.)/m,
-				expected: /^$ ^$/im,
+				expected: /^$ ^$/m,
 			},
 
 			{
 				literal: /^$ (?!.)/ms,
-				expected: /^$ (?![^])/im,
+				expected: /^$ (?![^])/m,
 			},
 			{
 				literal: /(?<!.)(?!.) $/ms,
-				expected: /^$ (?!.)/i,
+				expected: /^$ (?!.)/,
 			},
 			{
 				literal: /(?<!.)(?!.) $/ms,
 				options: { flags: { dotAll: true } },
-				expected: /^$ (?![^\n\r\u2028\u2029])/is,
+				expected: /^$ (?![^\n\r\u2028\u2029])/s,
 			},
 
 			{
 				literal: /\b\B/,
-				expected: /\b\B/i,
+				expected: /\b\B/,
 			},
 			{
 				literal: /\b\B/iu,
@@ -174,6 +180,35 @@ describe("JS.toLiteral", function () {
 				literal: /((?=a))?/,
 				expected: /(?:(?=a))?/,
 			},
+
+			// forced flags
+
+			{
+				literal: /\b\B/u,
+				options: { flags: { unicode: false } },
+				expected: /\b\B/,
+			},
+			{
+				literal: /\bk/iu,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:(?<![\w\u017f\u212a])(?=[\w\u017f\u212a])|(?<=[\w\u017f\u212a])(?![\w\u017f\u212a]))[K\u212a]/i,
+			},
+			{
+				literal: /^$/u,
+				options: { flags: { unicode: false } },
+				expected: /^$/,
+			},
+			{
+				literal: /^$/mu,
+				options: { flags: { unicode: false } },
+				expected: /^$/m,
+			},
+			{
+				literal: /(?!.) (?![^])/u,
+				options: { flags: { unicode: false } },
+				expected: /$ (?![^])/m,
+			},
 		]);
 	});
 
@@ -187,17 +222,17 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/,
 				options: { flags: { unicode: false } },
-				expected: /\d/i,
+				expected: /\d/,
 			},
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: true } },
-				expected: /\d/iu,
+				expected: /\d/u,
 			},
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: false } },
-				expected: Error,
+				expected: /\d/,
 			},
 
 			{
@@ -333,6 +368,103 @@ describe("JS.toLiteral", function () {
 				literal: /./,
 				options: { fastCharacters: true },
 				expected: /[\0-\x09\x0b\f\x0e-\u2027\u202a-\uffff]/,
+			},
+		]);
+	});
+
+	describe("Unicode to UTF16", function () {
+		test([
+			{
+				literal: /abc/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /abc/iu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\w+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\w+/iu,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\W+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\W+/iu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /./iu,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /./isu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\u{1F4A9}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[^\u{1F4A9}]/u,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\p{ASCII_Hex_Digit}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{ASCII_Hex_Digit}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[^\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{ASCII_Hex_Digit})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Anatolian_Hieroglyphs})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Wancho})/u,
+				options: { flags: { unicode: false } },
 			},
 		]);
 	});

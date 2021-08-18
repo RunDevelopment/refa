@@ -1,10 +1,12 @@
 import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
-import { assertNever, cachedFunc } from "../util";
+import { assertNever, cachedFunc, debugAssert } from "../util";
 import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
 import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { UTF16Result, toUTF16 } from "./unicode-to-utf16";
+import { UTF16CaseVarying } from "./utf16-case-folding";
 
 export interface ToLiteralOptions {
 	/**
@@ -14,7 +16,7 @@ export interface ToLiteralOptions {
 	 * are set to `true` are guaranteed to be enabled in the created literal.
 	 *
 	 * Flags that are `undefined` will be enabled/disabled depending on the implementation. While no guarantees are
-	 * given, the implementation will generally try to choose flags such that it can create literal that is as
+	 * given, the implementation will generally try to choose flags such that it can create a literal that is as
 	 * small/simple as possible.
 	 *
 	 * If the constraints on flags defined here make it impossible to create a literal, an error will be thrown.
@@ -49,16 +51,38 @@ export function toLiteral(
 ): Literal {
 	const fastCharacters = options?.fastCharacters ?? false;
 
-	let flags;
+	let nodes: readonly NoParent<Node>[];
 	if (Array.isArray(value)) {
-		const alternatives: readonly NoParent<Concatenation>[] = value;
-		flags = getFlags(alternatives, options, fastCharacters);
+		nodes = value as readonly NoParent<Concatenation>[];
 	} else {
-		const node = value as NoParent<Expression> | NoParent<Concatenation>;
-		flags = getFlags([node], options, fastCharacters);
+		nodes = [value as NoParent<Expression> | NoParent<Concatenation>];
 	}
 
+	const result = getFlags(nodes, options, fastCharacters);
+	const flags: Readonly<Flags> = result.flags;
+	const { converter, inputUnicode } = result;
+
+	const env = getCharEnv(flags);
+
+	const printCharSet = createCharacterPrinter(fastCharacters, flags, env);
+
+	const context: PrintContext = {
+		flags,
+		printCharSet,
+		env: getCharEnv(flags),
+		inputEnv: getCharEnv({ unicode: inputUnicode }),
+		converter,
+	};
+
+	return {
+		source: toSource(value, context),
+		flags: toFlagsString(flags),
+	};
+}
+
+function toFlagsString(flags: Readonly<Flags>): string {
 	let flagsString = "";
+
 	if (flags.hasIndices) {
 		flagsString += "d";
 	}
@@ -81,23 +105,14 @@ export function toLiteral(
 		flagsString += "y";
 	}
 
-	const env = getCharEnv(flags);
-
-	const printCharSet = createCharacterPrinter(fastCharacters, flags, env);
-
-	const context: PrintContext = {
-		flags,
-		printCharSet,
-		env: getCharEnv(flags),
-	};
-
-	return {
-		source: toSource(value, context),
-		flags: flagsString,
-	};
+	return flagsString;
 }
 
-function createCharacterPrinter(fastCharacters: boolean, flags: Flags, env: CharEnv): (value: CharSet) => string {
+function createCharacterPrinter(
+	fastCharacters: boolean,
+	flags: Readonly<Flags>,
+	env: CharEnv
+): (value: CharSet) => string {
 	if (fastCharacters) {
 		return cachedFunc(printCharactersFast);
 	} else {
@@ -108,7 +123,9 @@ function createCharacterPrinter(fastCharacters: boolean, flags: Flags, env: Char
 interface PrintContext {
 	readonly printCharSet: (value: CharSet) => string;
 	readonly env: CharEnv;
+	readonly inputEnv: CharEnv;
 	readonly flags: Flags;
+	readonly converter: CharSetConverter;
 }
 
 function toSource(value: NoParent<Node> | readonly NoParent<Concatenation>[], context: PrintContext): string {
@@ -146,9 +163,24 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 			return "(?:" + alternativesToSource(node.alternatives, context) + ")";
 		}
 		case "Assertion": {
-			if (isEdgeAssertion(node, context.flags, context.env)) {
+			if (isEdgeAssertion(node, context.flags, context.inputEnv)) {
 				return node.kind === "behind" ? "^" : "$";
 			}
+
+			if (node.negate) {
+				const chars = getSingleCharSetInAssertion(node);
+				if (chars) {
+					// try to give ^ $ an efficient representation even if their required flag isn't present
+					const dir = node.kind === "ahead" ? "" : "<";
+					if (context.inputEnv.nonLineTerminator.equals(chars)) {
+						return `(?${dir}!${context.printCharSet(context.env.nonLineTerminator)})`;
+					}
+					if (chars.isAll) {
+						return `(?${dir}!${context.printCharSet(context.env.all)})`;
+					}
+				}
+			}
+
 			let s = "(?";
 			if (node.kind === "behind") {
 				s += "<";
@@ -159,11 +191,40 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 			return s;
 		}
 		case "CharacterClass": {
-			if (node.characters.maximum !== context.env.maxCharacter) {
-				throw new Error(`All characters were expected to have a maximum of ${context.env.maxCharacter}.`);
+			if (node.characters.maximum !== context.inputEnv.maxCharacter) {
+				throw new Error(`All characters were expected to have a maximum of ${context.inputEnv.maxCharacter}.`);
 			}
 
-			return context.printCharSet(node.characters);
+			if (node.characters.maximum === UNICODE_MAXIMUM && !context.flags.unicode) {
+				// convert Unicode character set to UTF16
+				debugAssert(context.converter instanceof UnicodeToUTF16CharSetConverter);
+				const utf16Result = context.converter.getUTF16Result(node.characters);
+
+				if (utf16Result.astral.length === 0 && utf16Result.high.isEmpty && utf16Result.low.isEmpty) {
+					// in this case, the Unicode and UTF16 character set are equivalent
+					return context.printCharSet(utf16Result.bmp);
+				}
+
+				let s = "";
+				if (!utf16Result.bmp.isEmpty) {
+					s += context.printCharSet(utf16Result.bmp) + "|";
+				}
+				for (const [high, low] of utf16Result.astral) {
+					s += context.printCharSet(high) + context.printCharSet(low) + "|";
+				}
+				if (!utf16Result.high.isEmpty) {
+					s += context.printCharSet(utf16Result.high) + "(?![\\udc00-\\udfff])|";
+				}
+				if (!utf16Result.low.isEmpty) {
+					s += "(?<![\\uda00-\\udbff])" + context.printCharSet(utf16Result.low) + "|";
+				}
+
+				debugAssert(s !== "");
+
+				return `(?:${s.slice(0, -1)})`;
+			} else {
+				return context.printCharSet(node.characters);
+			}
 		}
 		case "Concatenation": {
 			let s = "";
@@ -224,6 +285,7 @@ function isEdgeAssertion(assertion: NoParent<Assertion>, flags: Flags, env: Char
 	if (assertion.negate) {
 		const chars = getSingleCharSetInAssertion(assertion);
 		if (chars) {
+			debugAssert(chars.maximum === env.maxCharacter);
 			return (flags.multiline && env.nonLineTerminator.equals(chars)) || (!flags.multiline && chars.isAll);
 		}
 	}
@@ -262,7 +324,7 @@ function isBoundaryAssertion(alternation: NoParent<Alternation>, env: CharEnv): 
 		return false;
 	}
 
-	const word = env.word;
+	const word = env.word.resize(c00.maximum);
 	if (!c00.equals(word) || !c01.equals(word) || !c10.equals(word) || !c11.equals(word)) {
 		return false;
 	}
@@ -325,32 +387,81 @@ function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 
 	return undefined; // no characters
 }
-function getIgnoreCaseFlag(value: readonly NoParent<Node>[], unicode: boolean): false | undefined {
-	const env = getCharEnv({ unicode, ignoreCase: true });
-	if (!env.ignoreCase) {
-		throw new Error();
-	}
 
-	let ignoreCase: false | undefined = undefined;
+const UTF16_ASCII_CASE_VARYING = CharSet.empty(UTF16_MAXIMUM).union([
+	{ min: 0x41, max: 0x5a }, // A-Z
+	{ min: 0x61, max: 0x7a }, // a-z
+]);
+const UTF16_NON_ASCII_CASE_VARYING = UTF16CaseVarying.without(UTF16_ASCII_CASE_VARYING);
+const enum GetIgnoreCaseFlagResult {
+	DONT_CARE,
+	BENEFICIAL,
+	FORBIDDEN,
+}
+function getIgnoreCaseFlag(
+	value: readonly NoParent<Node>[],
+	unicode: boolean,
+	converter: CharSetConverter
+): GetIgnoreCaseFlagResult {
+	const env = getCharEnv({ unicode, ignoreCase: true });
+	debugAssert(env.ignoreCase === true);
+
+	let beneficial = false as boolean;
 
 	try {
 		for (const node of value) {
 			visitAst(node, {
 				onCharacterClassEnter(node) {
-					const cs = node.characters;
+					const cs = converter.getCaseVaryingPart(node.characters);
+
+					if (cs.isDisjointWith(env.caseVarying) || cs.isSupersetOf(env.caseVarying)) {
+						// The char set either contains none or all case-varying characters.
+						// This means that we don't have to worry about casing. The character printer might be able to
+						// print a smaller character class if the i flag was enabled but that's unlikely.
+						return;
+					}
+
+					if (!unicode) {
+						// For non-Unicode regexes, we have to do a bit more work to avoid unnecessary i flags.
+						// The problem is that \w's won't be caught by the above condition (they were in Unicode mode),
+						// so we have to get creative or all regexes containing \w's will get an i flag (unless
+						// forbidden).
+						//
+						// The trick we use lies in the canonicalization algorithm for non-Unicode regexes. The
+						// algorithm explicitly distinguishes between ASCII and non-ASCII characters. The case folding
+						// maps for those two character types are completely disjoint. This means that we can split the
+						// case-varying condition to check for ASCII and non-ASCII separately.
+						//
+						// However, this will actually give a few too many false positives, so we will use a little
+						// hack to gear this condition specifically towards \w: We will assume that all \w characters
+						// are case-varying. That's false of course, but it prevents a few false positives.
+						if (
+							((cs.isDisjointWith(env.word) || cs.isSupersetOf(env.word)) &&
+								cs.isDisjointWith(UTF16_NON_ASCII_CASE_VARYING)) ||
+							cs.isSupersetOf(UTF16_NON_ASCII_CASE_VARYING)
+						) {
+							return;
+						}
+					}
+
+					beneficial = true;
+
 					if (!cs.equals(env.withCaseVaryingCharacters(cs))) {
-						ignoreCase = false;
-						throw new Error();
+						throw GetIgnoreCaseFlagResult.FORBIDDEN;
 					}
 				},
 			});
 		}
 	} catch (e) {
-		/* swallow error */
+		if (e === GetIgnoreCaseFlagResult.FORBIDDEN) {
+			return GetIgnoreCaseFlagResult.FORBIDDEN;
+		}
+		throw e;
 	}
 
-	return ignoreCase;
+	return beneficial ? GetIgnoreCaseFlagResult.BENEFICIAL : GetIgnoreCaseFlagResult.DONT_CARE;
 }
+
 function getMultilineFlag(value: readonly NoParent<Node>[], env: CharEnv): boolean | undefined {
 	let stringStartAssertion = false;
 	let stringEndAssertion = false;
@@ -412,35 +523,90 @@ function getFlags(
 	value: readonly NoParent<Node>[],
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
-): Flags {
-	const template = options?.flags;
+): { flags: Flags; converter: CharSetConverter; inputUnicode: boolean } {
+	const template = options?.flags ?? {};
 
-	const unicode = template?.unicode ?? getUnicodeFlag(value);
-
-	const templateIgnoreCase = template?.ignoreCase;
-	let ignoreCase: boolean | undefined;
-	if (fastCharacters && !templateIgnoreCase) {
-		ignoreCase = false;
-	} else {
-		ignoreCase = getIgnoreCaseFlag(value, !!unicode) ?? templateIgnoreCase;
-	}
-	if ((templateIgnoreCase ?? ignoreCase) !== ignoreCase) {
+	// u flag
+	const inputUnicode: boolean = getUnicodeFlag(value) ?? template.unicode ?? false;
+	const unicode: boolean = template.unicode ?? inputUnicode;
+	if (inputUnicode === false && unicode === true) {
 		throw new Error(
-			`Incompatible flags: The i flag is ${ignoreCase ? "required" : "forbidden"} to create a literal but ${
-				templateIgnoreCase ? "required" : "forbidden"
-			} by the options.`
+			`Incompatible flags: The u flag is required by the flags options but a UTF16 regex cannot be converted to a Unicode regex.`
 		);
 	}
 
+	const converter: CharSetConverter =
+		unicode === inputUnicode ? new NoopCharConverter() : new UnicodeToUTF16CharSetConverter();
+
+	// i flag
+	let ignoreCase: boolean;
+	if (template.ignoreCase === true) {
+		// check that it's actually possible to enable the i flag
+		if (getIgnoreCaseFlag(value, unicode, converter) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+			throw new Error(
+				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
+			);
+		}
+		ignoreCase = true;
+	} else if (template.ignoreCase === false) {
+		// it's always possible to not use the i flag
+		ignoreCase = false;
+	} else {
+		// we can choose
+		if (fastCharacters) {
+			ignoreCase = false;
+		} else {
+			const result = getIgnoreCaseFlag(value, unicode, converter);
+			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
+		}
+	}
+
+	// m flag
+	let multiline = template.multiline;
+	if (multiline === undefined) {
+		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode }));
+	}
+
 	return {
-		dotAll: template?.dotAll,
-		global: template?.global,
-		hasIndices: template?.hasIndices,
-		ignoreCase: ignoreCase ?? true,
-		multiline: template?.multiline ?? getMultilineFlag(value, getCharEnv({ unicode })),
-		sticky: template?.sticky,
-		unicode,
+		flags: {
+			dotAll: template.dotAll,
+			global: template.global,
+			hasIndices: template.hasIndices,
+			ignoreCase,
+			multiline,
+			sticky: template.sticky,
+			unicode,
+		},
+		converter,
+		inputUnicode,
 	};
+}
+
+interface CharSetConverter {
+	/**
+	 * Returns a character set that is a subset of the given character set and a superset of a case-varying characters
+	 * in the given character set.
+	 */
+	getCaseVaryingPart(value: CharSet): CharSet;
+}
+class NoopCharConverter implements CharSetConverter {
+	getCaseVaryingPart(value: CharSet): CharSet {
+		return value;
+	}
+}
+class UnicodeToUTF16CharSetConverter implements CharSetConverter {
+	private readonly _cache = new Map<CharSet, UTF16Result>();
+	getUTF16Result(value: CharSet): UTF16Result {
+		let result = this._cache.get(value);
+		if (result === undefined) {
+			result = toUTF16(value);
+			this._cache.set(value, result);
+		}
+		return result;
+	}
+	getCaseVaryingPart(value: CharSet): CharSet {
+		return this.getUTF16Result(value).bmp;
+	}
 }
 
 const PRINTABLE_CONTROL_CHARACTERS = new Map<Char, string>([
@@ -624,7 +790,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 		// If the set contains a dash ("-"), then it might be a good idea to move the dash to the start of the set, so
 		// we don't have to escape it.
 		if (set.has(45 /* === "-".charCodeAt(0) */) && !set.has(46) /* "-" has to be at the end of a range */) {
-			const withoutDash = set.without([{ min: 45, max: 45 }]);
+			const withoutDash = set.without({ min: 45, max: 45 });
 			return shortest(reducedCreator(set), "-" + reducedCreator(withoutDash));
 		} else {
 			return reducedCreator(set);
@@ -637,7 +803,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 			set.has(94 /* === "^".charCodeAt(0) */) &&
 			!set.has(93) /* "^" has to be at the start of a range */
 		) {
-			const withoutCaret = set.without([{ min: 94, max: 94 }]);
+			const withoutCaret = set.without({ min: 94, max: 94 });
 			return shortest(moveDashCreator(set), moveDashCreator(withoutCaret) + "^");
 		} else {
 			return moveDashCreator(set);
@@ -647,7 +813,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 	return moveCaretCreator(set);
 }
 
-function printCharacters(chars: CharSet, flags: Flags, env: CharEnv): string {
+function printCharacters(chars: CharSet, flags: Readonly<Flags>, env: CharEnv): string {
 	// print
 	if (chars.isAll) {
 		return flags.dotAll ? "." : "[^]";

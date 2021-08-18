@@ -31,7 +31,7 @@ describe("Transformers", function () {
 			{
 				literal: /(?=\s*$|\S)[\s\S]+/,
 				transformer,
-				expected: /(?=\s*$|\S)[^]+/i,
+				expected: /(?=\s*$|\S)[^]+/,
 			},
 			{
 				literal: /(?=\s*$|\S)a+/,
@@ -72,33 +72,33 @@ describe("Transformers", function () {
 			{
 				literal: /(?!\s*::|\d)\w+/,
 				transformer,
-				expected: /(?!\d)\w+/i,
+				expected: /(?!\d)\w+/,
 			},
 			{
 				literal: /(?=\s*::|\d)\w+/,
 				transformer,
-				expected: /(?=\d)\w+/i,
+				expected: /(?=\d)\w+/,
 			},
 
 			{
 				literal: /^^/,
 				transformer,
-				expected: /^/i,
+				expected: /^/,
 			},
 			{
 				literal: /$$$$$/,
 				transformer,
-				expected: /$/i,
+				expected: /$/,
 			},
 			{
 				literal: /(?!\w)$/,
 				transformer,
-				expected: /$/i,
+				expected: /$/,
 			},
 			{
 				literal: /$(?!\w)/,
 				transformer,
-				expected: /$/i,
+				expected: /$/,
 			},
 
 			{
@@ -109,17 +109,17 @@ describe("Transformers", function () {
 			{
 				literal: /^(?:@|(?<!\w)(?!\w))/i,
 				transformer,
-				expected: /^(?:@|(?!\w))/i,
+				expected: /^(?:@|(?!\w))/,
 			},
 			{
 				literal: /^(?:@|(?<!\w)(?!\w))$/i,
 				transformer,
-				expected: /^(?:@|)$/i,
+				expected: /^(?:@|)$/,
 			},
 			{
 				literal: /(?:@|(?<!\w)(?!\w))$/i,
 				transformer,
-				expected: /(?:@|(?<!\w))$/i,
+				expected: /(?:@|(?<!\w))$/,
 			},
 
 			{
