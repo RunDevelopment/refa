@@ -365,8 +365,7 @@
 					<a name="intersect" class="tsd-anchor"></a>
 					<h3>intersect</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">intersect<span class="tsd-signature-symbol">(</span>set<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
-						<li class="tsd-signature tsd-kind-icon">intersect<span class="tsd-signature-symbol">(</span>ranges<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
+						<li class="tsd-signature tsd-kind-icon">intersect<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -374,32 +373,20 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns <a href="https://en.wikipedia.org/wiki/Intersection_(set_theory)">the intersection</a> of this set and the given set
-									and character ranges.</p>
+									<p>Returns <a href="https://en.wikipedia.org/wiki/Intersection_(set_theory)">the intersection</a> of this set and the given
+									set/ranges of characters.</p>
 								</div>
 								<p>The returned set will have the same maximum as this set.</p>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p><code>RangeError</code> If the maximum of the given set differs from the maximum of this set or if the maximum of
-										one of the given ranges is greater than the maximum of this set.</p>
+									<dd><p><code>RangeError</code> If the maximum of the given set differs from the maximum of this set.</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>set: <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h4>
-						</li>
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>ranges: <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>other: <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h4>
@@ -582,8 +569,7 @@
 					<a name="without" class="tsd-anchor"></a>
 					<h3>without</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">without<span class="tsd-signature-symbol">(</span>set<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
-						<li class="tsd-signature tsd-kind-icon">without<span class="tsd-signature-symbol">(</span>ranges<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
+						<li class="tsd-signature tsd-kind-icon">without<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -591,31 +577,19 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns a set that contains all characters of this set that are not in the given set.</p>
+									<p>Returns a set that contains all characters of this set that are not in the given set/range.</p>
 								</div>
 								<p>The returned set will have the same maximum as this set.</p>
 								<dl class="tsd-comment-tags">
 									<dt>throws</dt>
-									<dd><p><code>RangeError</code> If the maximum of the given set differs from the maximum of this set or if the maximum of
-										one of the given ranges is greater than the maximum of this set.</p>
+									<dd><p><code>RangeError</code> If the maximum of the given set differs from the maximum of this set.</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>set: <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h4>
-						</li>
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>ranges: <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>other: <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/CharRange.html" class="tsd-signature-type" data-tsd-kind="Interface">CharRange</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h4>
