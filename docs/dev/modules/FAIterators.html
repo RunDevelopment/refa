@@ -104,6 +104,8 @@
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#ensureStableOut" class="tsd-kind-icon">ensure<wbr>Stable<wbr>Out</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#filterOutIter" class="tsd-kind-icon">filter<wbr>Out<wbr>Iter</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#forEach" class="tsd-kind-icon">for<wbr>Each</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#fromWordSets" class="tsd-kind-icon">from<wbr>Word<wbr>Sets</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#fromWords" class="tsd-kind-icon">from<wbr>Words</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#hasCycle" class="tsd-kind-icon">has<wbr>Cycle</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#intersection" class="tsd-kind-icon">intersection</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter"><a href="FAIterators.html#iterateStates" class="tsd-kind-icon">iterate<wbr>States</a></li>
@@ -454,6 +456,116 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+					<a name="fromWordSets" class="tsd-anchor"></a>
+					<h3>from<wbr>Word<wbr>Sets</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Word<wbr>Sets&lt;S&gt;<span class="tsd-signature-symbol">(</span>builder<span class="tsd-signature-symbol">: </span><a href="../interfaces/FABuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span>, wordSets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWordSet" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWordSet</a><span class="tsd-signature-symbol">&gt;</span>, maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/FAIterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This eagerly creates an FA that accepts exactly all the given word sets.</p>
+								</div>
+								<p>The construction is already finished when this method returns, so the returned FA iterator does not have to be used.</p>
+								<p>The construction will create a DFA by default.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>S</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>builder: <a href="../interfaces/FABuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>wordSets: <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWordSet" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWordSet</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>maxCharacter: <a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/FAIterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+					<a name="fromWords" class="tsd-anchor"></a>
+					<h3>from<wbr>Words</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Words&lt;S&gt;<span class="tsd-signature-symbol">(</span>builder<span class="tsd-signature-symbol">: </span><a href="../interfaces/FABuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span>, getOutState<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">S</span>, char<span class="tsd-signature-symbol">: </span><a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span>, words<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWord" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWord</a><span class="tsd-signature-symbol">&gt;</span>, maxCharacter<span class="tsd-signature-symbol">: </span><a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/FAIterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This eagerly creates an FA that accepts exactly all the given words.</p>
+								</div>
+								<p>The construction is already finished when this method returns, so the returned FA iterator does not have to be used.</p>
+								<p>The construction will create a DFA by default. However, the FA builder implementation has to be carefully chosen to
+									preserve the determinism. In order for the determinism to be preserved, <code>builder</code> and <code>getOutState</code> have to fulfill
+								the following conditions:</p>
+								<ul>
+									<li>Let <code>x</code>, <code>y</code> be any 2 states of <code>builder</code> and <code>c</code> be any valid character <code>&lt;= maxCharacter</code>. Iff this function
+									called <code>builder.linkNodes(x, y, c)</code>, then <code>getOutState(builder, x, c) == y</code>.</li>
+									<li><code>builder</code> has to be an empty FA when given to this method.</li>
+									<li><code>builder.makeFinal(x)</code> must have no effect on <code>getOutState</code>.</li>
+								</ul>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>S</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>builder: <a href="../interfaces/FABuilder.html" class="tsd-signature-type" data-tsd-kind="Interface">FABuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>getOutState: <span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">S</span>, char<span class="tsd-signature-symbol">: </span><a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">S</span>, char<span class="tsd-signature-symbol">: </span><a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>state: <span class="tsd-signature-type">S</span></h5>
+														</li>
+														<li>
+															<h5>char: <a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">S</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+								<li>
+									<h5>words: <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWord" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWord</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>maxCharacter: <a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/FAIterator.html" class="tsd-signature-type" data-tsd-kind="Interface">FAIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1242,6 +1354,12 @@
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="FAIterators.html#forEach" class="tsd-kind-icon">for<wbr>Each</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<a href="FAIterators.html#fromWordSets" class="tsd-kind-icon">from<wbr>Word<wbr>Sets</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
+						<a href="FAIterators.html#fromWords" class="tsd-kind-icon">from<wbr>Words</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-namespace tsd-has-type-parameter">
 						<a href="FAIterators.html#hasCycle" class="tsd-kind-icon">has<wbr>Cycle</a>
