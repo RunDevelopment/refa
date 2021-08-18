@@ -4,6 +4,7 @@
  * @module
  */
 
+export * from "./from-words";
 export * from "./intersection";
 export * from "./iterator";
 export * from "./make-deterministic";
