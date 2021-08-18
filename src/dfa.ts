@@ -301,7 +301,7 @@ export class DFA implements ReadonlyDFA {
 
 		// create a trap state
 		const trap = this.nodes.createNode();
-		this.nodes._uncheckedLinkNodesWithCharRange(trap, trap, all);
+		this.nodes.linkNodes(trap, trap, CharSet.all(this.maxCharacter));
 
 		// Link all gaps to the trap state
 		traverse(this.nodes.initial, node => {
@@ -359,10 +359,9 @@ export class DFA implements ReadonlyDFA {
 		const nodeList = new DFA.NodeList();
 		nodeList.finals.add(nodeList.initial);
 
-		const allChars = { min: 0, max: maxCharacter };
 		const other = nodeList.createNode();
-		nodeList._uncheckedLinkNodesWithCharRange(nodeList.initial, other, allChars);
-		nodeList._uncheckedLinkNodesWithCharRange(other, other, allChars);
+		nodeList.linkNodes(nodeList.initial, other, CharSet.all(maxCharacter));
+		nodeList.linkNodes(other, other, CharSet.all(maxCharacter));
 		nodeList.finals.add(other);
 
 		return new DFA(nodeList, maxCharacter);
@@ -553,7 +552,7 @@ export namespace DFA {
 			return node;
 		}
 
-		linkNodes(from: Node, to: Node, characters: CharSet | CharRange | Char): void {
+		linkNodes(from: Node, to: Node, characters: CharSet): void {
 			if (from.list !== to.list) {
 				throw new Error("You can't link nodes from different node lists.");
 			}
@@ -561,30 +560,6 @@ export namespace DFA {
 				throw new Error("Use the node list associated with the nodes to link them.");
 			}
 
-			if (isChar(characters)) {
-				this._uncheckedLinkNodesWithCharacter(from, to, characters);
-			} else if (characters instanceof CharSet) {
-				this._uncheckedLinkNodesWithCharSet(from, to, characters);
-			} else {
-				this._uncheckedLinkNodesWithCharRange(from, to, characters);
-			}
-		}
-		// eslint-disable-next-line jsdoc/require-param
-		/** @internal */
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		_uncheckedLinkNodesWithCharacter(from: Node, to: Node, character: Char): void {
-			from.out.set(character, to);
-		}
-		// eslint-disable-next-line jsdoc/require-param
-		/** @internal */
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		_uncheckedLinkNodesWithCharRange(from: Node, to: Node, characters: CharRange): void {
-			from.out.setRange(characters, to);
-		}
-		// eslint-disable-next-line jsdoc/require-param
-		/** @internal */
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		_uncheckedLinkNodesWithCharSet(from: Node, to: Node, characters: CharSet): void {
 			from.out.setCharSet(characters, to);
 		}
 
@@ -717,10 +692,6 @@ export namespace DFA {
 		 */
 		maxCharacter: Char;
 	}
-}
-
-function isChar(value: unknown): value is Char {
-	return typeof value === "number";
 }
 
 function iterStates(list: DFA.ReadonlyNodeList): FAIterator<DFA.ReadonlyNode> {
