@@ -102,7 +102,7 @@ describe("CharSet", function () {
 				title: "[abc123] & [cdf321]",
 				set: CharSet.empty(0xffff)
 					.union(toRanges("abc123".split("")))
-					.intersect(toRanges("cdf123".split(""))),
+					.intersect(CharSet.empty(0xffff).union(toRanges("cdf123".split("")))),
 				expected: "31..33, 63",
 			},
 		];
@@ -298,7 +298,7 @@ describe("CharSet", function () {
 						const cc = left.commonCharacter(r);
 						assert.equal(left.isDisjointWith(r), cc === undefined);
 						if (cc !== undefined) {
-							assert.isTrue(left.intersect([r]).has(cc));
+							assert.isTrue(left.intersect(r).has(cc));
 						}
 					}
 				});

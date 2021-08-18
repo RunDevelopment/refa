@@ -677,7 +677,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 		// If the set contains a dash ("-"), then it might be a good idea to move the dash to the start of the set, so
 		// we don't have to escape it.
 		if (set.has(45 /* === "-".charCodeAt(0) */) && !set.has(46) /* "-" has to be at the end of a range */) {
-			const withoutDash = set.without([{ min: 45, max: 45 }]);
+			const withoutDash = set.without({ min: 45, max: 45 });
 			return shortest(reducedCreator(set), "-" + reducedCreator(withoutDash));
 		} else {
 			return reducedCreator(set);
@@ -690,7 +690,7 @@ function printCharClassContent(set: CharSet, env: CharEnv): string {
 			set.has(94 /* === "^".charCodeAt(0) */) &&
 			!set.has(93) /* "^" has to be at the start of a range */
 		) {
-			const withoutCaret = set.without([{ min: 94, max: 94 }]);
+			const withoutCaret = set.without({ min: 94, max: 94 });
 			return shortest(moveDashCreator(set), moveDashCreator(withoutCaret) + "^");
 		} else {
 			return moveDashCreator(set);
