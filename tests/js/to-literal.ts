@@ -10,7 +10,7 @@ describe("JS.toLiteral", function () {
 	interface TestCase {
 		literal: Literal;
 		options?: ToLiteralOptions;
-		expected: Literal | typeof Error;
+		expected?: Literal | typeof Error;
 	}
 
 	function test(cases: TestCase[]): void {
@@ -19,13 +19,19 @@ describe("JS.toLiteral", function () {
 				const { expression } = Parser.fromLiteral(literal).parse({ simplify: false });
 				try {
 					const actual = toLiteral(expression, options);
-					if ("source" in expected && "flags" in expected) {
+					if (expected === undefined) {
+						assertEqualSnapshot(this, literalToString(actual));
+					} else if ("source" in expected && "flags" in expected) {
 						assert.equal(literalToString(actual), literalToString(expected));
 					} else {
 						assert.fail("Expected it to fail.");
 					}
 				} catch (error) {
-					if (expected !== Error) {
+					if (expected === Error) {
+						// all according to keikaku
+					} else if (expected === undefined) {
+						assertEqualSnapshot(this, "Error: " + String(error));
+					} else {
 						throw error;
 					}
 				}
@@ -174,6 +180,35 @@ describe("JS.toLiteral", function () {
 				literal: /((?=a))?/,
 				expected: /(?:(?=a))?/,
 			},
+
+			// forced flags
+
+			{
+				literal: /\b\B/u,
+				options: { flags: { unicode: false } },
+				expected: /\b\B/,
+			},
+			{
+				literal: /\bk/iu,
+				options: { flags: { unicode: false } },
+				expected:
+					/(?:(?<![\w\u017f\u212a])(?=[\w\u017f\u212a])|(?<=[\w\u017f\u212a])(?![\w\u017f\u212a]))[K\u212a]/i,
+			},
+			{
+				literal: /^$/u,
+				options: { flags: { unicode: false } },
+				expected: /^$/,
+			},
+			{
+				literal: /^$/mu,
+				options: { flags: { unicode: false } },
+				expected: /^$/m,
+			},
+			{
+				literal: /(?!.) (?![^])/u,
+				options: { flags: { unicode: false } },
+				expected: /$ (?![^])/m,
+			},
 		]);
 	});
 
@@ -197,7 +232,7 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/u,
 				options: { flags: { unicode: false } },
-				expected: Error,
+				expected: /\d/,
 			},
 
 			{
@@ -333,6 +368,103 @@ describe("JS.toLiteral", function () {
 				literal: /./,
 				options: { fastCharacters: true },
 				expected: /[\0-\x09\x0b\f\x0e-\u2027\u202a-\uffff]/,
+			},
+		]);
+	});
+
+	describe("Unicode to UTF16", function () {
+		test([
+			{
+				literal: /abc/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /abc/iu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\w+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\w+/iu,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\W+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\W+/iu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /./iu,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /./isu,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\u{1F4A9}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[^\u{1F4A9}]/u,
+				options: { flags: { unicode: false } },
+			},
+
+			{
+				literal: /\p{ASCII_Hex_Digit}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{ASCII_Hex_Digit}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /\p{Script_Extensions=Anatolian_Hieroglyphs}+/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[^\p{ASCII_Hex_Digit}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\p{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /[\P{Script_Extensions=Anatolian_Hieroglyphs}_]/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{ASCII_Hex_Digit})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Anatolian_Hieroglyphs})/u,
+				options: { flags: { unicode: false } },
+			},
+			{
+				literal: /(?:\p{Script_Extensions=Wancho})/u,
+				options: { flags: { unicode: false } },
 			},
 		]);
 	});

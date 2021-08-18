@@ -273,6 +273,43 @@ export class CharSet {
 	}
 
 	/**
+	 * Returns a character set with the given maximum.
+	 *
+	 * The ranges of the returned character set are equivalent to the ranges of
+	 * `this.intersect({ min: 0, max: newMaximum })`.
+	 *
+	 * @param newMaximum
+	 * @returns
+	 */
+	resize(newMaximum: Char): CharSet {
+		if (this.ranges.length === 0) {
+			// empty
+			return CharSet.empty(newMaximum);
+		} else if (newMaximum === this.maximum) {
+			// lucky us
+			return this;
+		} else if (newMaximum > this.maximum) {
+			// we can just reuse the ranges
+			return new CharSet(newMaximum, this.ranges);
+		} else {
+			// the non-trivial case
+			const max = this.ranges[this.ranges.length - 1].max;
+			if (max <= newMaximum) {
+				// we can just reuse the ranges
+				return new CharSet(newMaximum, this.ranges);
+			} else {
+				// we actually have to do the intersection
+				const newRanges = intersectRanges(this.ranges, [{ min: 0, max: newMaximum }]);
+				if (newRanges.length === 0) {
+					return CharSet.empty(newMaximum);
+				} else {
+					return new CharSet(newMaximum, newRanges);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Returns [the complement](https://en.wikipedia.org/wiki/Complement_(set_theory)) of this set.
 	 *
 	 * The returned set will have the same maximum as this set.
