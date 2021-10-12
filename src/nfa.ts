@@ -517,12 +517,10 @@ export class NFA implements ReadonlyNFA {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NFA {
 	export interface ReadonlyNode {
-		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyMap<ReadonlyNode, CharSet>;
 		readonly in: ReadonlyMap<ReadonlyNode, CharSet>;
 	}
 	export interface Node extends ReadonlyNode {
-		readonly list: NodeList;
 		readonly out: Map<Node, CharSet>;
 		readonly in: Map<Node, CharSet>;
 	}
@@ -589,7 +587,6 @@ export namespace NFA {
 
 			const node: Node & { id: number } = {
 				id, // for debugging
-				list: this,
 				out: new Map(),
 				in: new Map(),
 			};
@@ -606,12 +603,6 @@ export namespace NFA {
 		 * @param characters
 		 */
 		linkNodes(from: Node, to: Node, characters: CharSet): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
 			if (characters.isEmpty) {
 				throw new Error("You can't link nodes with the empty character set.");
 			}
@@ -629,13 +620,6 @@ export namespace NFA {
 		 * @param to
 		 */
 		unlinkNodes(from: Node, to: Node): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
-
 			if (!from.out.has(to)) {
 				throw new Error("Can't unlink nodes which aren't linked.");
 			}

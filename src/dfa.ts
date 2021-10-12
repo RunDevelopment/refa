@@ -433,11 +433,9 @@ export class DFA implements ReadonlyDFA {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DFA {
 	export interface ReadonlyNode {
-		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyCharMap<ReadonlyNode>;
 	}
 	export interface Node extends ReadonlyNode {
-		readonly list: NodeList;
 		readonly out: CharMap<Node>;
 	}
 
@@ -492,20 +490,12 @@ export namespace DFA {
 
 			const node: Node & { id: number } = {
 				id, // for debugging
-				list: this,
 				out: new CharMap<Node>(),
 			};
 			return node;
 		}
 
 		linkNodes(from: Node, to: Node, characters: CharSet): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
-
 			from.out.setCharSet(characters, to);
 		}
 

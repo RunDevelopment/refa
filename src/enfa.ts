@@ -510,12 +510,10 @@ export class ENFA implements ReadonlyENFA {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ENFA {
 	export interface ReadonlyNode {
-		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyMap<ReadonlyNode, CharSet | null>;
 		readonly in: ReadonlyMap<ReadonlyNode, CharSet | null>;
 	}
 	export interface Node extends ReadonlyNode {
-		readonly list: NodeList;
 		readonly out: Map<Node, CharSet | null>;
 		readonly in: Map<Node, CharSet | null>;
 	}
@@ -593,7 +591,6 @@ export namespace ENFA {
 
 			const node: Node & { id: number } = {
 				id, // for debugging
-				list: this,
 				out: new Map(),
 				in: new Map(),
 			};
@@ -610,12 +607,6 @@ export namespace ENFA {
 		 * @param characters
 		 */
 		linkNodes(from: Node, to: Node, characters: CharSet | null): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
 			if (from.out.has(to)) {
 				throw new Error("Cannot link nodes that are already linked.");
 			}
@@ -636,13 +627,6 @@ export namespace ENFA {
 		 * @param to
 		 */
 		unlinkNodes(from: Node, to: Node): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
-
 			if (!from.out.has(to)) {
 				throw new Error("Can't unlink nodes which aren't linked.");
 			}
