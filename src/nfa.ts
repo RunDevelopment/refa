@@ -620,10 +620,6 @@ export namespace NFA {
 		 * @param to
 		 */
 		unlinkNodes(from: Node, to: Node): void {
-			if (!from.out.has(to)) {
-				throw new Error("Can't unlink nodes which aren't linked.");
-			}
-
 			from.out.delete(to);
 			to.in.delete(from);
 		}
