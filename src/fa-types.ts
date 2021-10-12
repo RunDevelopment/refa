@@ -116,7 +116,7 @@ export interface FAIterator<S, O = Iterable<S>> {
 }
 
 /**
- * An FA builder has the responsibility of constructing a finite automata.
+ * An FA builder has the responsibility of constructing a finite automaton.
  *
  * The constructed FA is always owned by the builder.
  *
