@@ -185,6 +185,22 @@ export class CharSet {
 
 		return new CharSet(maximum, ranges);
 	}
+	/**
+	 * Returns a character set which contains the given range.
+	 *
+	 * @param maximum The greatest character which will be element of the set.
+	 * @param range
+	 * @throws `RangeError` if the maximum of the given range is greater than `maximum`.
+	 */
+	static fromRange(maximum: Char, range: CharRange): CharSet {
+		if (range.max > maximum) {
+			throw new RangeError(
+				`The range [min=${range.min}, max=${range.max}] contains characters greater than the maximum=${maximum}.`
+			);
+		}
+
+		return new CharSet(maximum, [range]);
+	}
 
 	private _checkCompatibility(value: CharSet): void {
 		if (value.maximum !== this.maximum) {
