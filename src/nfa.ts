@@ -16,21 +16,6 @@ import { ReadonlyWordSet, WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
 
-/*
- * ####################################################################################################################
- * ###                                                                                                              ###
- * ###                                              I M P O R T A N T                                               ###
- * ###                                                                                                              ###
- * ####################################################################################################################
- *
- * Note regarding the normalization of node lists and sub lists:
- *
- * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
- * This simple property makes the implementation of all NFA operations efficient and almost trivial.
- *
- * ALL of the below operations assume that every given (sub) node list is normalized.
- */
-
 const DEFAULT_MAX_NODES = 10_000;
 
 /**
@@ -806,15 +791,18 @@ export namespace NFA {
 	}
 }
 
-interface NonNormalSubList {
+interface NonNormalSubGraph {
 	readonly initial: NFA.Node;
 	readonly finals: Set<NFA.Node>;
 }
-interface SubList {
+/**
+ * This interface guarantees that the initial state does not have incoming transitions.
+ */
+interface SubGraph {
 	readonly initial: NFA.Node;
 	readonly finals: Set<NFA.Node>;
 }
-interface ReadonlySubList {
+interface ReadonlySubGraph {
 	readonly initial: NFA.ReadonlyNode;
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 }
@@ -824,16 +812,16 @@ function createFromRegex(
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>,
 	factory: NodeFactory<NFA.Node>
-): SubList {
+): SubGraph {
 	const infinityThreshold = creationOptions.infinityThreshold ?? Infinity;
 	const assertions = creationOptions.assertions ?? "throw";
 	const unknowns = creationOptions.unknowns ?? "throw";
 
 	return handleAlternation(expression);
 
-	// All sub lists guarantee that the initial node has no incoming edges.
+	// All sub graphs guarantee that the initial node has no incoming edges.
 
-	function handleAlternation(alternatives: readonly NoParent<Concatenation>[]): SubList {
+	function handleAlternation(alternatives: readonly NoParent<Concatenation>[]): SubGraph {
 		if (alternatives.length === 0) {
 			return { initial: factory.createNode(), finals: new Set<NFA.Node>() };
 		}
@@ -846,11 +834,11 @@ function createFromRegex(
 		return base;
 	}
 
-	function handleConcatenation(concatenation: NoParent<Concatenation>): SubList {
+	function handleConcatenation(concatenation: NoParent<Concatenation>): SubGraph {
 		const elements = concatenation.elements;
 
 		if (elements.length === 0) {
-			const base: SubList = { initial: factory.createNode(), finals: new Set<NFA.Node>() };
+			const base: SubGraph = { initial: factory.createNode(), finals: new Set<NFA.Node>() };
 			base.finals.add(base.initial);
 			return base;
 		}
@@ -872,7 +860,7 @@ function createFromRegex(
 		return base;
 	}
 
-	function handleQuantifier(quant: NoParent<Quantifier>): SubList {
+	function handleQuantifier(quant: NoParent<Quantifier>): SubGraph {
 		const base = handleAlternation(quant.alternatives);
 		let max = quant.max;
 		if (max >= infinityThreshold) {
@@ -882,7 +870,7 @@ function createFromRegex(
 		return base;
 	}
 
-	function appendElement(element: NoParent<Element>, base: SubList): void {
+	function appendElement(element: NoParent<Element>, base: SubGraph): void {
 		switch (element.type) {
 			case "CharacterClass": {
 				const chars = element.characters;
@@ -918,7 +906,7 @@ function createFromRegex(
 			}
 		}
 	}
-	function createElement(element: NoParent<Element>): SubList | null {
+	function createElement(element: NoParent<Element>): SubGraph | null {
 		switch (element.type) {
 			case "Alternation":
 				return handleAlternation(element.alternatives);
@@ -965,19 +953,19 @@ function createFromRegex(
 }
 
 /**
- * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
+ * Creates a copy of `toCopy` in the given nodes returning the created sub NFA.
  *
  * @param factory
  * @param toCopy
  */
-function factoryCopyOfSubList(factory: NodeFactory<NFA.Node>, toCopy: ReadonlySubList): SubList {
+function factoryCopyOfSubGraph(factory: NodeFactory<NFA.Node>, toCopy: ReadonlySubGraph): SubGraph {
 	return factoryCopy(factory, {
 		initial: toCopy.initial,
 		getOut: n => n.out,
 		isFinal: n => toCopy.finals.has(n),
 	});
 }
-function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator<T>): SubList {
+function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator<T>): SubGraph {
 	const initial = factory.createNode();
 	const finals = new Set<NFA.Node>();
 
@@ -1008,29 +996,6 @@ function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator
 }
 
 /**
- * Alters `base` to to be the same as the given replacement.
- *
- * `replacement` will be altered as well and cannot be used again after this operation.
- *
- * @param base
- * @param replacement
- */
-function baseReplaceWith(base: SubList, replacement: SubList): void {
-	baseMakeEmpty(base);
-
-	// transfer finals
-	replacement.finals.forEach(f => {
-		base.finals.add(f === replacement.initial ? base.initial : f);
-	});
-
-	// transfer nodes
-	for (const [to, characters] of [...replacement.initial.out]) {
-		base.initial.link(to, characters);
-		replacement.initial.unlink(to);
-	}
-}
-
-/**
  * Alters `base` to end with the `after` expression.
  *
  * `after` will be in an invalid state after this operation but `baseMakeEmpty` can make it valid again.
@@ -1038,7 +1003,7 @@ function baseReplaceWith(base: SubList, replacement: SubList): void {
  * @param base
  * @param after
  */
-function baseAppend(base: SubList, after: SubList): void {
+function baseAppend(base: SubGraph, after: SubGraph): void {
 	if (base.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
 		return;
@@ -1081,7 +1046,7 @@ function baseAppend(base: SubList, after: SubList): void {
  * @param base
  * @param before
  */
-function basePrepend(base: SubList, before: SubList): void {
+function basePrepend(base: SubGraph, before: SubGraph): void {
 	if (base.finals.size === 0) {
 		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
 		return;
@@ -1131,7 +1096,7 @@ function basePrepend(base: SubList, before: SubList): void {
  * @param base
  * @param alternative
  */
-function baseUnion(base: SubList, alternative: SubList): void {
+function baseUnion(base: SubGraph, alternative: SubGraph): void {
 	// add finals
 	alternative.finals.forEach(n => {
 		base.finals.add(n === alternative.initial ? base.initial : n);
@@ -1149,7 +1114,7 @@ function baseUnion(base: SubList, alternative: SubList): void {
 	baseOptimizationMergeSuffixes(base); // suffixes should to be done after ReuseFinalStates
 }
 
-function baseOptimizationReuseFinalStates(base: SubList): void {
+function baseOptimizationReuseFinalStates(base: SubGraph): void {
 	if (base.finals.size < 2) {
 		return;
 	}
@@ -1173,7 +1138,7 @@ function baseOptimizationReuseFinalStates(base: SubList): void {
 	}
 }
 
-function baseOptimizationMergePrefixes(base: SubList): void {
+function baseOptimizationMergePrefixes(base: SubGraph): void {
 	/**
 	 * The basic idea here to to merge suffixes and prefixes.
 	 * So that e.g. /abc|abba/ will merged to /ab(c|ba)/ (similar to suffixes).
@@ -1227,7 +1192,7 @@ function baseOptimizationMergePrefixes(base: SubList): void {
 		}
 	}
 }
-function baseOptimizationMergeSuffixes(base: SubList): void {
+function baseOptimizationMergeSuffixes(base: SubGraph): void {
 	// this will basically be the same as the prefix optimization but in the other direction
 
 	const suffixNodes: NFA.Node[] = [];
@@ -1291,7 +1256,7 @@ function baseOptimizationMergeSuffixes(base: SubList): void {
  * @param base
  * @param times
  */
-function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubList, times: number): void {
+function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubGraph, times: number): void {
 	if (times === 0) {
 		// trivial
 		baseMakeEmpty(base);
@@ -1312,11 +1277,11 @@ function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubList, times: number
 	}
 
 	if (!base.finals.has(base.initial)) {
-		const copy = factoryCopyOfSubList(factory, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseAppend(base, factoryCopyOfSubList(factory, copy));
+			baseAppend(base, factoryCopyOfSubGraph(factory, copy));
 		}
 		// use the original copy
 		baseAppend(base, copy);
@@ -1328,12 +1293,12 @@ function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubList, times: number
 		const realFinal = new Set<NFA.Node>(base.finals);
 		base.finals.delete(base.initial);
 
-		const copy = factoryCopyOfSubList(factory, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseAppend(base, factoryCopyOfSubList(factory, copy));
+			baseAppend(base, factoryCopyOfSubGraph(factory, copy));
 			base.finals.forEach(f => realFinal.add(f));
 		}
 		// use the original copy
@@ -1355,7 +1320,7 @@ function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubList, times: number
  *
  * @param base
  */
-function basePlus(base: SubList): void {
+function basePlus(base: SubGraph): void {
 	// The basic idea here is that we copy all edges from the initial state state to every final state. This means that
 	// all final states will then behave like the initial state.
 	for (const f of base.finals) {
@@ -1372,7 +1337,7 @@ function basePlus(base: SubList): void {
  *
  * @param base
  */
-function baseIsPlusExpression(base: ReadonlySubList): boolean {
+function baseIsPlusExpression(base: ReadonlySubGraph): boolean {
 	// The following condition have to be fulfilled:
 	//
 	// All Final states have to link to all and only to all directly outgoing states of the initial state.
@@ -1398,7 +1363,7 @@ function baseIsPlusExpression(base: ReadonlySubList): boolean {
 	return true;
 }
 
-function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubList, min: number, max: number): void {
+function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubGraph, min: number, max: number): void {
 	if (max === 0) {
 		// this is a special case, so handle it before everything else
 		// e.g. /a{0}/
@@ -1436,7 +1401,7 @@ function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubList, min: number
 		// (A+){min,max} == (A+){min}(A+){0,max-min} == (A+){min}A* == A{min-1}A+A* == A{min-1}A+
 
 		// make a copy of A+
-		const aPlus = factoryCopyOfSubList(factory, base);
+		const aPlus = factoryCopyOfSubGraph(factory, base);
 
 		// remove the + from the current A+
 		for (const final of base.finals) {
@@ -1458,7 +1423,7 @@ function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubList, min: number
 		// The basic idea here is that /a{m,n}/ == /a{m}(a|){n-m}/
 
 		// make a copy of base and include the empty string
-		const copy = factoryCopyOfSubList(factory, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 		copy.finals.add(copy.initial);
 
 		baseRepeat(factory, copy, max - min);
@@ -1470,7 +1435,7 @@ function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubList, min: number
 			// The basic idea here is that /a{4,}/ == /a{3}a+/
 
 			// the plus part (has to be done first because base will be modified by repeat)
-			const copy = factoryCopyOfSubList(factory, base);
+			const copy = factoryCopyOfSubGraph(factory, base);
 			basePlus(copy);
 
 			// repeat
@@ -1491,12 +1456,12 @@ function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubList, min: number
  *
  * @param base
  */
-function baseMakeEmpty(base: NonNormalSubList): void {
+function baseMakeEmpty(base: NonNormalSubGraph): void {
 	base.initial.unlinkAll();
 	base.finals.clear();
 }
 
-function baseReverse(factory: NodeFactory<NFA.Node>, base: SubList): void {
+function baseReverse(factory: NodeFactory<NFA.Node>, base: SubGraph): void {
 	const { initial, finals } = base;
 
 	if (finals.size === 0 || (finals.size === 1 && finals.has(initial))) {
@@ -1553,7 +1518,7 @@ function baseReverse(factory: NodeFactory<NFA.Node>, base: SubList): void {
 	newFinals.forEach(f => finals.add(f));
 }
 
-function baseNormalize(factory: NodeFactory<NFA.Node>, base: NonNormalSubList): void {
+function baseNormalize(factory: NodeFactory<NFA.Node>, base: NonNormalSubGraph): void {
 	if (base.initial.in.size === 0) {
 		// already normalized
 		return;
@@ -1582,7 +1547,7 @@ function baseNormalize(factory: NodeFactory<NFA.Node>, base: NonNormalSubList): 
  *
  * @param base
  */
-function baseRemoveUnreachable(base: NonNormalSubList): void {
+function baseRemoveUnreachable(base: NonNormalSubGraph): void {
 	if (base.finals.size === 0) {
 		baseMakeEmpty(base);
 		return;
