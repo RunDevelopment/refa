@@ -349,6 +349,54 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	/**
+	 * Removes the empty word from the accepted languages of this ENFA.
+	 *
+	 * Unreachable states will be removed by this operation.
+	 *
+	 * @param factory
+	 */
+	withoutEmptyWord(factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()): void {
+		this.normalize(factory);
+
+		const effectivelyInitial = this.initial.reachableViaEpsilon("out");
+		if (!effectivelyInitial.has(this.final)) {
+			// The ENFA does not accept the empty word, so there is nothing to remove.
+			return;
+		}
+		if (effectivelyInitial.size === 2) {
+			// These two states have to be the initial state and the final state linked directly via an
+			// epsilon transition. To remove the empty word, we simply have to unlink the two
+			this.initial.unlink(this.final);
+			return;
+		}
+
+		// Resolve all epsilon transitions of the outgoing transitions of the initial state and write down the result.
+		// It's important to preserve the order.
+		const out: [CharSet, ENFA.Node][] = [];
+		this.initial.resolveEpsilon("out", (transition, to) => out.push([transition, to]));
+
+		// Clear the initial state.
+		// This might create unreachable nodes that we have to clean up later.
+		this.initial.unlinkAllOut();
+
+		// Re-link the initial state with the rest of the graph.
+		for (const [transition, to] of out) {
+			if (this.initial.out.has(to)) {
+				// preserve ambiguity
+				const q = factory.createNode();
+				this.initial.link(q, transition);
+				q.link(to, null);
+			} else {
+				// no need to create a new state
+				this.initial.link(to, transition);
+			}
+		}
+
+		// clean up
+		this.removeUnreachable();
+	}
+
+	/**
 	 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
 	 * removed.
 	 */

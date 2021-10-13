@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { literalToENFA, literalToString, removeIndentation } from "./helper/fa";
 import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
-import { Literal } from "../src/js";
+import { Literal, toLiteral } from "../src/js";
 import { prefixes, suffixes } from "./helper/util";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
@@ -1146,6 +1146,32 @@ describe("ENFA", function () {
 					const acutal = [...new Set([...enfa.words()].map(fromUnicodeToString))];
 					const expected = [...suffixes(words)];
 					assert.sameMembers(acutal, expected);
+				});
+			}
+		}
+	});
+
+	describe("withoutEmptyWord", function () {
+		test([/a*b*c+/, /a?b?/, /a??b?/, /a??b??/, /a?b??/, /a*b*c*/, /(a||b)(|c|d)(||f|g)/]);
+
+		type TestCase = Literal;
+
+		function test(cases: TestCase[]): void {
+			for (const literal of cases) {
+				it(`${literalToString(literal)}`, function () {
+					const enfa = literalToENFA(literal);
+					const before = enfa.toString();
+
+					enfa.withoutEmptyWord();
+					const after = enfa.toString();
+					const afterRegex = literalToString(toLiteral(enfa.toRegex()));
+
+					assert.isFalse(enfa.test([]));
+
+					assertEqualSnapshot(
+						this,
+						`Before: ${literalToString(literal)}\n${before}\n\n\nAfter: ${afterRegex}\n${after}`
+					);
 				});
 			}
 		}
