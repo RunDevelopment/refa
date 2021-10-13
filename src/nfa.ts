@@ -140,7 +140,7 @@ export class NFA implements ReadonlyNFA {
 			isFinal: n => finals.has(n),
 		};
 	}
-	fooofoooonodes(): Iterable<NFA.Node> {
+	nodes(): Iterable<NFA.Node> {
 		return Iter.iterateStates({
 			initial: this.initial,
 			getOut: state => state.out.keys(),
@@ -382,7 +382,7 @@ export class NFA implements ReadonlyNFA {
 			return;
 		}
 
-		for (const node of this.fooofoooonodes()) {
+		for (const node of this.nodes()) {
 			this.finals.add(node);
 		}
 	}
@@ -402,7 +402,7 @@ export class NFA implements ReadonlyNFA {
 			return;
 		}
 
-		for (const node of this.fooofoooonodes()) {
+		for (const node of this.nodes()) {
 			if (node !== this.initial) {
 				let total: CharSet | undefined = undefined;
 
