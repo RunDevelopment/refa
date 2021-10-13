@@ -41,6 +41,7 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
+	nodes(): Iterable<NFA.ReadonlyNode>;
 
 	/**
 	 * Returns the number of nodes reachable from the initial state including the initial state.
