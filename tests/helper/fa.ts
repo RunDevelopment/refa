@@ -46,18 +46,18 @@ export function removeIndentation(expected: string): string {
 
 export function reachableFinalStates(nfa: ReadonlyNFA): number {
 	const iter = Iter.iterateStates({
-		initial: nfa.nodes.initial,
+		initial: nfa.initial,
 		getOut(node) {
 			return node.out.keys();
 		},
 		isFinal(node) {
-			return nfa.nodes.finals.has(node);
+			return nfa.finals.has(node);
 		},
 	});
 
 	let count = 0;
 	for (const final of iter) {
-		if (nfa.nodes.finals.has(final)) {
+		if (nfa.finals.has(final)) {
 			count++;
 		}
 	}

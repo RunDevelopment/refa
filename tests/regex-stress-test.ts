@@ -70,9 +70,10 @@ describe("Regex stress test", function () {
 						const nfa = NFA.fromRegex(
 							expression,
 							{ maxCharacter },
-							{ assertions: "disable", unknowns: "disable", maxNodes }
+							{ assertions: "disable", unknowns: "disable" },
+							new NFA.LimitedNodeFactory(maxNodes)
 						);
-						nfa.nodes.count();
+						nfa.countNodes();
 
 						const re1 = nfa.toRegex({ maxNodes });
 

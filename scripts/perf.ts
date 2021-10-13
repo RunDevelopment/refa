@@ -64,23 +64,24 @@ function perfTest(): void {
 				NFA.fromRegex(
 					finalExpression,
 					{ maxCharacter },
-					{ assertions: "disable", maxNodes: 100_000 }
+					{ assertions: "disable" },
+					new NFA.LimitedNodeFactory(100_000)
 				)
 			);
 			measure("toRegex NFA", () => nfa.toRegex({ maxNodes: 100_000 }));
 
-			const dfa = measure("Create DFA", () => DFA.fromFA(nfa));
-			measure("Minimize DFA", () => dfa.minimize());
+			// const dfa = measure("Create DFA", () => DFA.fromFA(nfa));
+			// measure("Minimize DFA", () => dfa.minimize());
 
-			measure("toRegex mDFA", () => {
-				try {
-					dfa.toRegex({ maxNodes: 100_000 })
-				} catch (error) {
-					if (!String(error).includes("Too many RE AST nodes")) {
-						throw error;
-					}
-				}
-			});
+			// measure("toRegex mDFA", () => {
+			// 	try {
+			// 		dfa.toRegex({ maxNodes: 100_000 })
+			// 	} catch (error) {
+			// 		if (!String(error).includes("Too many RE AST nodes")) {
+			// 			throw error;
+			// 		}
+			// 	}
+			// });
 		} catch (error) {
 			errors++;
 			console.log(`Error in ${literal}`);
