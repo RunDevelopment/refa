@@ -661,6 +661,8 @@ export namespace ENFA {
 		/**
 		 * Removes the transition from `this` to `to`.
 		 *
+		 * This will do nothing if `this` isn't linked to `to`.
+		 *
 		 * @param to
 		 */
 		unlink(to: Node): void {
