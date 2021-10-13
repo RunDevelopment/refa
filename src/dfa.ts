@@ -561,7 +561,7 @@ export namespace DFA {
 		}
 
 		createNode(): Node {
-			TooManyNodesError.assert(++this._counter, this.limit, "NFA");
+			TooManyNodesError.assert(++this._counter, this.limit, "DFA");
 			return new Node();
 		}
 	}
