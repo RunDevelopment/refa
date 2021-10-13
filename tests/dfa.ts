@@ -790,22 +790,22 @@ describe("DFA", function () {
 
 		it(DFA.fromFA.name, function () {
 			assert.throws(() => {
-				DFA.fromFA(testDfa, { maxNodes: 100 });
+				DFA.fromFA(testDfa, new DFA.LimitedNodeFactory(100));
 			});
 		});
 		it(DFA.fromIntersection.name, function () {
 			assert.throws(() => {
-				DFA.fromIntersection(testDfa, testDfa, { maxNodes: 100 });
+				DFA.fromIntersection(testDfa, testDfa, new DFA.LimitedNodeFactory(100));
 			});
 		});
 		it(DFA.fromTransitionIterator.name, function () {
 			assert.throws(() => {
-				DFA.fromTransitionIterator(testDfa.transitionIterator(), testDfa.options, { maxNodes: 100 });
+				DFA.fromTransitionIterator(testDfa.transitionIterator(), testDfa, new DFA.LimitedNodeFactory(100));
 			});
 		});
 		it(DFA.fromWords.name, function () {
 			assert.throws(() => {
-				DFA.fromWords(testDfa.words(), testDfa.options, { maxNodes: 100 });
+				DFA.fromWords(testDfa.words(), testDfa, new DFA.LimitedNodeFactory(100));
 			});
 		});
 	});

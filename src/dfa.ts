@@ -3,9 +3,9 @@ import { ReadonlyWordSet, WordSet } from "./word-set";
 import { cachedFunc, debugAssert, traverse, traverseMultiRoot, withoutSet } from "./util";
 import {
 	FABuilder,
-	FACreationOptions,
 	FAIterator,
 	FiniteAutomaton,
+	NodeFactory,
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
@@ -24,15 +24,25 @@ const DEFAULT_MAX_NODES = 10_000;
  * A readonly {@link DFA}.
  */
 export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.ReadonlyNode> {
-	readonly nodes: DFA.ReadonlyNodeList;
-	readonly options: Readonly<DFA.Options>;
+	readonly initial: DFA.ReadonlyNode;
+	readonly finals: ReadonlySet<DFA.ReadonlyNode>;
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode>;
+	nodes(): Iterable<DFA.ReadonlyNode>;
+
+	/**
+	 * Returns the number of nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states. This will not include unreachable final states.
+	 *
+	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 */
+	countNodes(): number;
 
 	/**
 	 * Creates a new DFA equivalent to this one.
 	 */
-	copy(): DFA;
+	copy(factory?: NodeFactory<DFA.Node>): DFA;
 
 	/**
 	 * Returns whether this and the given DFA are structurally equal meaning that all nodes and all transitions are
@@ -67,41 +77,73 @@ export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.Rea
  * - Between any two states, there can at most be one transition.
  */
 export class DFA implements ReadonlyDFA {
-	readonly nodes: DFA.NodeList;
+	readonly initial: DFA.Node;
+	readonly finals = new Set<DFA.Node>();
 	readonly maxCharacter: Char;
 
-	private constructor(nodes: DFA.NodeList, maxCharacter: Char) {
-		this.nodes = nodes;
+	private constructor(initial: DFA.Node, finals: Set<DFA.Node>, maxCharacter: Char) {
+		this.initial = initial;
+		this.finals = finals;
 		this.maxCharacter = maxCharacter;
 	}
 
-	get options(): Readonly<DFA.Options> {
-		return { maxCharacter: this.maxCharacter };
-	}
-
 	get isEmpty(): boolean {
-		return this.nodes.finals.size === 0;
+		return this.finals.size === 0;
 	}
 	get isFinite(): boolean {
 		return Iter.languageIsFinite(this.stateIterator());
 	}
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode> {
-		return iterStates(this.nodes);
+		const finals: ReadonlySet<DFA.ReadonlyNode> = this.finals;
+
+		return {
+			initial: this.initial,
+			getOut: n => {
+				const out = new Set<DFA.ReadonlyNode>();
+				n.out.forEach(n => out.add(n));
+				return out;
+			},
+			isFinal: n => finals.has(n),
+		};
 	}
 	transitionIterator(): TransitionIterator<DFA.ReadonlyNode> {
-		const finals: ReadonlySet<DFA.ReadonlyNode> = this.nodes.finals;
+		const finals: ReadonlySet<DFA.ReadonlyNode> = this.finals;
 		const maximum = this.maxCharacter;
 
 		return {
-			initial: this.nodes.initial,
+			initial: this.initial,
 			getOut: n => n.out.invert(maximum),
 			isFinal: n => finals.has(n),
 		};
 	}
+	*nodes(): Iterable<DFA.Node> {
+		const visited = new Set<DFA.Node>();
+		let toVisit = [this.initial];
+		while (toVisit.length > 0) {
+			const newVisit: DFA.Node[] = [];
+			for (const node of toVisit) {
+				if (!visited.has(node)) {
+					visited.add(node);
+					yield node;
+					node.out.forEach(outNode => newVisit.push(outNode));
+				}
+			}
+			toVisit = newVisit;
+		}
+	}
+
+	countNodes(): number {
+		let c = 0;
+		traverse(this.initial, n => {
+			c++;
+			return n.out.values();
+		});
+		return c;
+	}
 
 	test(word: ReadonlyWord): boolean {
-		let current = this.nodes.initial;
+		let current = this.initial;
 
 		for (const char of word) {
 			const next = current.out.get(char);
@@ -112,7 +154,7 @@ export class DFA implements ReadonlyDFA {
 			}
 		}
 
-		return this.nodes.finals.has(current);
+		return this.finals.has(current);
 	}
 
 	wordSets(): Iterable<WordSet> {
@@ -142,24 +184,23 @@ export class DFA implements ReadonlyDFA {
 		);
 	}
 
-	copy(): DFA {
-		const newNodeList = new DFA.NodeList();
-		copyTo(this.nodes, newNodeList);
-		return new DFA(newNodeList, this.maxCharacter);
+	copy(factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+		const { initial, finals } = factoryCopy(this, factory);
+		return new DFA(initial, finals, this.maxCharacter);
 	}
 
 	structurallyEqual(other: ReadonlyDFA): boolean {
 		if (this === other) {
 			return true;
 		}
-		if (this.nodes.finals.size !== other.nodes.finals.size) {
+		if (this.finals.size !== other.finals.size) {
 			return false;
 		}
 
 		const visitedThisNodes = new Set<DFA.ReadonlyNode>();
 
-		const thisFinals: ReadonlySet<DFA.ReadonlyNode> = this.nodes.finals;
-		const otherFinals: ReadonlySet<DFA.ReadonlyNode> = other.nodes.finals;
+		const thisFinals: ReadonlySet<DFA.ReadonlyNode> = this.finals;
+		const otherFinals: ReadonlySet<DFA.ReadonlyNode> = other.finals;
 		const isEqual = (thisNode: DFA.ReadonlyNode, otherNode: DFA.ReadonlyNode): boolean => {
 			if (visitedThisNodes.has(thisNode)) {
 				return true;
@@ -187,19 +228,83 @@ export class DFA implements ReadonlyDFA {
 			}
 			return true;
 		};
-		return isEqual(this.nodes.initial, other.nodes.initial);
+		return isEqual(this.initial, other.initial);
+	}
+
+	removeUnreachable(): void {
+		/**
+		 * Remove all non-initial states which are
+		 *
+		 * 1) Not reachable from the initial state.
+		 * 2) Cannot reach a final state.
+		 *
+		 * (For condition 1, we just have to check the final states.)
+		 */
+
+		if (this.finals.size === 0) {
+			// clear all nodes
+			this.initial.out.clear();
+			return;
+		}
+
+		const getInSet = cachedFunc<DFA.Node, Set<DFA.Node>>(() => new Set());
+		const reachableFromInitial: DFA.Node[] = [];
+
+		traverse(this.initial, node => {
+			reachableFromInitial.push(node);
+			getInSet(node);
+
+			const out = new Set<DFA.Node>();
+			node.out.forEach(n => {
+				out.add(n);
+				getInSet(n).add(node);
+			});
+
+			return out;
+		});
+
+		debugAssert(getInSet.cache.has(this.initial));
+
+		// Check condition 1) for all final states
+		const toDelete: DFA.Node[] = [];
+		for (const f of this.finals) {
+			if (!getInSet.cache.has(f)) {
+				toDelete.push(f);
+			}
+		}
+		toDelete.forEach(f => this.finals.delete(f));
+
+		if (this.finals.size === 0) {
+			// clear all nodes
+			this.initial.out.clear();
+			return;
+		}
+
+		// Mark all states reachable from final states
+		const reachableFromFinal = new Set<DFA.Node>();
+		traverseMultiRoot(this.finals, node => {
+			reachableFromFinal.add(node);
+			return getInSet(node);
+		});
+
+		// Check condition 2)
+		if (reachableFromFinal.size < reachableFromInitial.length) {
+			for (const node of reachableFromInitial) {
+				node.out.filter(n => reachableFromFinal.has(n));
+			}
+		}
 	}
 
 	/**
 	 * [Minimizes](https://en.wikipedia.org/wiki/DFA_minimization) this DFA.
 	 */
 	minimize(): void {
-		this.nodes.removeUnreachable();
-		if (this.nodes.initial.out.isEmpty) {
+		this.removeUnreachable();
+		if (this.initial.out.isEmpty) {
 			return;
 		}
 
-		const P = findEquivalenceClasses(this.nodes, this.maxCharacter);
+		const P = findEquivalenceClasses(this, this.maxCharacter);
 
 		const mapping = new Map<DFA.Node, DFA.Node>();
 		const toAdjust: DFA.Node[] = [];
@@ -231,9 +336,9 @@ export class DFA implements ReadonlyDFA {
 		}
 
 		// adjust finals
-		const mappedFinals = [...this.nodes.finals].map(translate);
-		this.nodes.finals.clear();
-		mappedFinals.forEach(n => this.nodes.finals.add(n));
+		const mappedFinals = [...this.finals].map(translate);
+		this.finals.clear();
+		mappedFinals.forEach(n => this.finals.add(n));
 	}
 
 	/**
@@ -246,23 +351,23 @@ export class DFA implements ReadonlyDFA {
 		const all: CharRange = { min: 0, max: this.maxCharacter };
 
 		// create a trap state
-		const trap = this.nodes.createNode();
-		this.nodes.linkNodes(trap, trap, CharSet.all(this.maxCharacter));
+		const trap = new DFA.Node();
+		trap.link(trap, CharSet.all(this.maxCharacter));
 
 		// Link all gaps to the trap state
-		traverse(this.nodes.initial, node => {
+		traverse(this.initial, node => {
 			const outNodes = new Set(node.out.values());
 			node.out.mapRange(all, nodeOrUndef => nodeOrUndef ?? trap);
 			return outNodes;
 		});
 
 		// Complement the set of final states.
-		const nonFinal = withoutSet(Iter.iterateStates(iterStatesMut(this.nodes)), this.nodes.finals);
-		this.nodes.finals.clear();
-		nonFinal.forEach(n => this.nodes.finals.add(n));
+		const nonFinal = withoutSet(this.nodes(), this.finals);
+		this.finals.clear();
+		nonFinal.forEach(n => this.finals.add(n));
 
 		// one or more final states might have become trap states, so let's remove them
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
 	}
 
 	/**
@@ -273,14 +378,14 @@ export class DFA implements ReadonlyDFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	prefixes(): void {
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
 
 		if (this.isEmpty) {
 			return;
 		}
 
-		for (const node of this.nodes) {
-			this.nodes.finals.add(node);
+		for (const node of this.nodes()) {
+			this.finals.add(node);
 		}
 	}
 
@@ -290,9 +395,7 @@ export class DFA implements ReadonlyDFA {
 	 * @param options
 	 */
 	static empty(options: Readonly<DFA.Options>): DFA {
-		const { maxCharacter } = options;
-		const nodeList = new DFA.NodeList();
-		return new DFA(nodeList, maxCharacter);
+		return new DFA(new DFA.Node(), new Set(), options.maxCharacter);
 	}
 
 	/**
@@ -301,16 +404,9 @@ export class DFA implements ReadonlyDFA {
 	 * @param options
 	 */
 	static all(options: Readonly<DFA.Options>): DFA {
-		const { maxCharacter } = options;
-		const nodeList = new DFA.NodeList();
-		nodeList.finals.add(nodeList.initial);
-
-		const other = nodeList.createNode();
-		nodeList.linkNodes(nodeList.initial, other, CharSet.all(maxCharacter));
-		nodeList.linkNodes(other, other, CharSet.all(maxCharacter));
-		nodeList.finals.add(other);
-
-		return new DFA(nodeList, maxCharacter);
+		const initial = new DFA.Node();
+		initial.link(initial, CharSet.all(options.maxCharacter));
+		return new DFA(initial, new Set([initial]), options.maxCharacter);
 	}
 
 	/**
@@ -318,31 +414,24 @@ export class DFA implements ReadonlyDFA {
 	 *
 	 * @param left
 	 * @param right
-	 * @param options
+	 * @param factory
 	 */
 	static fromIntersection<L, R>(
 		left: TransitionIterable<L>,
 		right: TransitionIterable<R>,
-		options?: Readonly<DFA.CreationOptions>
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): DFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
 		if (left instanceof DFA && right instanceof DFA) {
 			// the intersection of two DFA is also a DFA, so we can directly construct it
 
-			const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
-			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
-				const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
+			const builder = new DFA.Builder(factory);
 
-				// traverse the whole iterator to create our NodeList
-				Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
+			const iter = Iter.intersection(builder, left.transitionIterator(), right.transitionIterator());
+			Iter.forEach(Iter.mapOut(iter, n => n.out.values()));
 
-				// A cleanup still has to be performed because while all states are connected to the initial state, they
-				// might not be able to reach a final state. This will remove such trap states.
-				nodeList.removeUnreachable();
-			});
-
-			return new DFA(nodeList, left.maxCharacter);
+			return DFA.fromBuilder(builder, left);
 		} else {
 			// the intersection of two non-DFA is likely a NFA, so we have to make it deterministic.
 
@@ -352,7 +441,7 @@ export class DFA implements ReadonlyDFA {
 				right.transitionIterator()
 			);
 
-			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, options);
+			return DFA.fromTransitionIterator(iter, { maxCharacter: left.maxCharacter }, factory);
 		}
 	}
 
@@ -361,21 +450,19 @@ export class DFA implements ReadonlyDFA {
 	 *
 	 * @param words
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
-		creationOptions?: Readonly<DFA.CreationOptions>
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): DFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWords(nodeList, (node, char) => node.out.get(char), words, maxCharacter);
-		});
+		const builder = new DFA.Builder(factory);
+		Iter.fromWords(builder, (node, char) => node.out.get(char), words, maxCharacter);
 
-		return new DFA(nodeList, maxCharacter);
+		return DFA.fromBuilder(builder, options);
 	}
 
 	/**
@@ -383,45 +470,47 @@ export class DFA implements ReadonlyDFA {
 	 *
 	 * @param wordSets
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<DFA.Options>,
-		creationOptions?: Readonly<DFA.CreationOptions>
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): DFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
-		});
+		const builder = new DFA.Builder(factory);
+		Iter.fromWordSets(builder, wordSets, maxCharacter);
 
-		return new DFA(nodeList, maxCharacter);
+		return DFA.fromBuilder(builder, options);
 	}
 
-	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<DFA.CreationOptions>): DFA {
+	static fromFA<InputNode>(
+		fa: TransitionIterable<InputNode>,
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+	): DFA {
 		if (fa instanceof DFA) {
-			const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
-			const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => copyTo(fa.nodes, nodeList));
-			return new DFA(nodeList, fa.maxCharacter);
+			const { initial, finals } = factoryCopy(fa, factory);
+			return new DFA(initial, finals, fa.maxCharacter);
 		} else {
-			return DFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
+			return DFA.fromTransitionIterator(fa.transitionIterator(), fa, factory);
 		}
 	}
 
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<DFA.Options>,
-		creationOptions?: Readonly<DFA.CreationOptions>
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): DFA {
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
-		const nodeList = DFA.NodeList.withLimit(maxNodes, nodeList => {
-			const deterministicIter = Iter.makeDeterministic(nodeList, iter);
-			Iter.forEach(Iter.mapOut(deterministicIter, s => s.out.values()));
-		});
+		const builder = new DFA.Builder(factory);
+		const deterministicIter = Iter.makeDeterministic(builder, iter);
+		Iter.forEach(Iter.mapOut(deterministicIter, s => s.out.values()));
 
-		return new DFA(nodeList, options.maxCharacter);
+		return DFA.fromBuilder(builder, options);
+	}
+
+	static fromBuilder(builder: DFA.Builder, options: Readonly<DFA.Options>): DFA {
+		return new DFA(builder.initial, builder.finals, options.maxCharacter);
 	}
 }
 
@@ -435,191 +524,72 @@ export namespace DFA {
 	export interface ReadonlyNode {
 		readonly out: ReadonlyCharMap<ReadonlyNode>;
 	}
-	export interface Node extends ReadonlyNode {
-		readonly out: CharMap<Node>;
-	}
+	export class Node implements ReadonlyNode {
+		readonly out = new CharMap<Node>();
 
-	export interface ReadonlyNodeList extends Iterable<ReadonlyNode> {
-		readonly initial: ReadonlyNode;
-		readonly finals: ReadonlySet<ReadonlyNode>;
-		/**
-		 * Returns the number of nodes reachable from the initial state including the initial state.
-		 *
-		 * This may include trap states. This will not include unreachable final states.
-		 *
-		 * This operation has to traverse the whole graph and runs in _O(E + V)_.
-		 */
-		count(): number;
-	}
-	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet> {
-		private _nodeCounter: number = 0;
-		private _nodeLimit: number = Infinity;
+		link(to: Node, via: CharSet): void {
+			this.out.setCharSet(via, to);
+		}
 
-		readonly initial: Node;
-		readonly finals: Set<Node> = new Set();
-
-		constructor() {
-			this.initial = this.createNode();
+		unlink(to: Node): void {
+			this.out.filter(node => node !== to);
 		}
 
 		/**
-		 * Creates and returns a new node list that is only allowed to create a certain number of nodes during the
-		 * execution of the given consumer function.
-		 *
-		 * After this function returns, the limit no longer applies.
-		 *
-		 * @param maxNodes
-		 * @param consumerFn
+		 * Unlinks all outgoing and incoming transitions of this node.
 		 */
-		static withLimit(maxNodes: number, consumerFn: (nodeList: NodeList) => void): NodeList {
-			const nodeList = new NodeList();
-			nodeList._nodeLimit = maxNodes;
-			try {
-				consumerFn(nodeList);
-				nodeList._nodeLimit = Infinity;
-			} catch (error) {
-				nodeList._nodeLimit = Infinity;
-				throw error;
-			}
-			return nodeList;
+		unlinkAll(): void {
+			this.out.clear();
+		}
+	}
+
+	/**
+	 * An unlimited node factory that will simply call the {@link Node} constructor.
+	 */
+	export const nodeFactory: NodeFactory<Node> = {
+		createNode() {
+			return new Node();
+		},
+	};
+
+	export class LimitedNodeFactory implements NodeFactory<Node> {
+		private _counter = 0;
+		readonly limit: number;
+
+		constructor(limit: number) {
+			this.limit = limit;
 		}
 
 		createNode(): Node {
-			const id = this._nodeCounter++;
-			TooManyNodesError.assert(id, this._nodeLimit, "DFA");
-
-			const node: Node & { id: number } = {
-				id, // for debugging
-				out: new CharMap<Node>(),
-			};
-			return node;
+			TooManyNodesError.assert(++this._counter, this.limit, "NFA");
+			return new Node();
 		}
+	}
 
-		linkNodes(from: Node, to: Node, characters: CharSet): void {
-			from.out.setCharSet(characters, to);
-		}
+	export class Builder implements FABuilder<Node, CharSet> {
+		readonly initial: Node;
+		readonly finals = new Set<Node>();
+		readonly factory: NodeFactory<Node>;
 
-		unlinkNodes(from: Node, to: Node): void {
-			from.out.filter(node => node !== to);
+		constructor(factory: NodeFactory<Node>) {
+			this.factory = factory;
+			this.initial = factory.createNode();
 		}
 
 		makeFinal(state: Node): void {
 			this.finals.add(state);
 		}
-
 		isFinal(state: Node): boolean {
 			return this.finals.has(state);
 		}
-
-		removeUnreachable(): void {
-			/**
-			 * Remove all non-initial states which are
-			 *
-			 * 1) Not reachable from the initial state.
-			 * 2) Cannot reach a final state.
-			 *
-			 * (For condition 1, we just have to check the final states.)
-			 */
-
-			if (this.finals.size === 0) {
-				// clear all nodes
-				this.initial.out.clear();
-				return;
-			}
-
-			const getInSet = cachedFunc<Node, Set<Node>>(() => new Set());
-			const reachableFromInitial: Node[] = [];
-
-			traverse(this.initial, node => {
-				reachableFromInitial.push(node);
-				getInSet(node);
-
-				const out = new Set<Node>();
-				node.out.forEach(n => {
-					out.add(n);
-					getInSet(n).add(node);
-				});
-
-				return out;
-			});
-
-			debugAssert(getInSet.cache.has(this.initial));
-
-			// Check condition 1) for all final states
-			const toDelete: Node[] = [];
-			for (const f of this.finals) {
-				if (!getInSet.cache.has(f)) {
-					toDelete.push(f);
-				}
-			}
-			toDelete.forEach(f => this.finals.delete(f));
-
-			if (this.finals.size === 0) {
-				// clear all nodes
-				this.initial.out.clear();
-				return;
-			}
-
-			// Mark all states reachable from final states
-			const reachableFromFinal = new Set<Node>();
-			traverseMultiRoot(this.finals, node => {
-				reachableFromFinal.add(node);
-				return getInSet(node);
-			});
-
-			// Check condition 2)
-			if (reachableFromFinal.size < reachableFromInitial.length) {
-				for (const node of reachableFromInitial) {
-					node.out.filter(n => reachableFromFinal.has(n));
-				}
-			}
+		linkNodes(from: Node, to: Node, transition: CharSet): void {
+			from.link(to, transition);
 		}
-
-		count(): number {
-			let c = 0;
-			traverse(this.initial, n => {
-				c++;
-				return n.out.values();
-			});
-			return c;
-		}
-
-		*[Symbol.iterator](): IterableIterator<Node> {
-			const visited = new Set<Node>();
-			let toVisit = [this.initial];
-			while (toVisit.length > 0) {
-				const newVisit: Node[] = [];
-				for (const node of toVisit) {
-					if (!visited.has(node)) {
-						visited.add(node);
-						yield node;
-						node.out.forEach(outNode => newVisit.push(outNode));
-					}
-				}
-				toVisit = newVisit;
-			}
+		createNode(): Node {
+			return this.factory.createNode();
 		}
 	}
 
-	/**
-	 * Options for the constraints on how a DFA will be created.
-	 */
-	export interface CreationOptions extends FACreationOptions {
-		/**
-		 * The maximum number of nodes the DFA creation operation is allowed to create before throwing a
-		 * `TooManyNodesError`.
-		 *
-		 * If the maximum number of nodes is set to `Infinity`, the DFA creation operation may create as many nodes as
-		 * necessary to construct the DFA. This might cause the machine to run out of memory. I.e. the conversion from
-		 * NFA to DFA may create `O(2^n)` many nodes and an intersection may created `O(n * m)` many.
-		 *
-		 * Note: This limit describes the maximum number of __created__ nodes. If nodes are created and subsequently
-		 * discard, they will still count toward the limit.
-		 *
-		 * @default 10000
-		 */
-		maxNodes?: number;
-	}
 	export interface Options {
 		/**
 		 * The maximum numerical value any character can have.
@@ -630,38 +600,27 @@ export namespace DFA {
 	}
 }
 
-function iterStates(list: DFA.ReadonlyNodeList): FAIterator<DFA.ReadonlyNode> {
-	return {
-		initial: list.initial,
-		getOut: n => {
-			const out = new Set<DFA.ReadonlyNode>();
-			n.out.forEach(n => out.add(n));
-			return out;
-		},
-		isFinal: n => list.finals.has(n),
-	};
+interface SubGraph {
+	readonly initial: DFA.Node;
+	readonly finals: Set<DFA.Node>;
 }
-function iterStatesMut(list: DFA.NodeList): FAIterator<DFA.Node> {
-	return {
-		initial: list.initial,
-		getOut: n => {
-			const out = new Set<DFA.Node>();
-			n.out.forEach(n => out.add(n));
-			return out;
-		},
-		isFinal: n => list.finals.has(n),
-	};
+interface ReadonlySubGraph {
+	readonly initial: DFA.ReadonlyNode;
+	readonly finals: ReadonlySet<DFA.ReadonlyNode>;
 }
 
 function rangeEqual(r1: CharRange, r2: CharRange): boolean {
 	return r1.min === r2.min && r1.max === r2.max;
 }
 
-function copyTo(fromNodeList: DFA.ReadonlyNodeList, toNodeList: DFA.NodeList): void {
-	const translate = cachedFunc<DFA.ReadonlyNode, DFA.Node>(() => toNodeList.createNode());
-	translate.cache.set(fromNodeList.initial, toNodeList.initial);
+function factoryCopy(source: ReadonlySubGraph, factory: NodeFactory<DFA.Node>): SubGraph {
+	const initial = factory.createNode();
+	const finals = new Set<DFA.Node>();
 
-	traverse(fromNodeList.initial, node => {
+	const translate = cachedFunc<DFA.ReadonlyNode, DFA.Node>(() => factory.createNode());
+	translate.cache.set(source.initial, initial);
+
+	traverse(source.initial, node => {
 		const toNode = translate(node);
 
 		const next = new Set<DFA.ReadonlyNode>();
@@ -673,13 +632,15 @@ function copyTo(fromNodeList: DFA.ReadonlyNodeList, toNodeList: DFA.NodeList): v
 		return next;
 	});
 
-	fromNodeList.finals.forEach(f => toNodeList.finals.add(translate(f)));
+	source.finals.forEach(f => finals.add(translate(f)));
+
+	return { initial, finals };
 }
 
-function findEquivalenceClasses(nodeList: DFA.NodeList, maxCharacter: Char): DFA.Node[][];
-function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): DFA.ReadonlyNode[][];
-function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Char): DFA.ReadonlyNode[][] {
-	if (nodeList.finals.size === 0) {
+function findEquivalenceClasses(nodes: SubGraph, maxCharacter: Char): DFA.Node[][];
+function findEquivalenceClasses(nodes: ReadonlySubGraph, maxCharacter: Char): DFA.ReadonlyNode[][];
+function findEquivalenceClasses(nodes: ReadonlySubGraph, maxCharacter: Char): DFA.ReadonlyNode[][] {
+	if (nodes.finals.size === 0) {
 		throw new Error("Cannot find equivalence classes for a DFA without final states.");
 	}
 
@@ -699,7 +660,7 @@ function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Ch
 	//  1. Determine all nodes
 	//  2. Determine all used character sets
 	//  3. Create the out map of all nodes
-	traverse(nodeList.initial, node => {
+	traverse(nodes.initial, node => {
 		numberMap.set(node, numberMap.size);
 		allNodes.push(node);
 
@@ -729,7 +690,7 @@ function findEquivalenceClasses(nodeList: DFA.ReadonlyNodeList, maxCharacter: Ch
 	}
 
 	const finals: MinState[] = [];
-	for (const f of nodeList.finals) {
+	for (const f of nodes.finals) {
 		finals.push(numberMap.get(f)!);
 	}
 
