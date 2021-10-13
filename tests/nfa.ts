@@ -478,7 +478,7 @@ describe("NFA", function () {
 				it(literalToString(literal), function () {
 					const nfa = literalToNFA(literal);
 					assert.strictEqual(nfa.toString(), removeIndentation(expected));
-					assert.strictEqual(nfa.nodes.finals.size, reachableFinalStates(nfa));
+					assert.strictEqual(nfa.finals.size, reachableFinalStates(nfa));
 				});
 			}
 		}
@@ -1387,27 +1387,27 @@ describe("NFA", function () {
 
 		it(NFA.fromFA.name, function () {
 			assert.throws(() => {
-				NFA.fromFA(testNfa, { maxNodes: 100 });
+				NFA.fromFA(testNfa, new NFA.LimitedNodeFactory(100));
 			});
 		});
 		it(NFA.fromIntersection.name, function () {
 			assert.throws(() => {
-				NFA.fromIntersection(testNfa, testNfa, { maxNodes: 100 });
+				NFA.fromIntersection(testNfa, testNfa, new NFA.LimitedNodeFactory(100));
 			});
 		});
 		it(NFA.fromRegex.name, function () {
 			assert.throws(() => {
-				NFA.fromRegex(testNfa.toRegex(), testNfa.options, { maxNodes: 100 });
+				NFA.fromRegex(testNfa.toRegex(), testNfa, {}, new NFA.LimitedNodeFactory(100));
 			});
 		});
 		it(NFA.fromTransitionIterator.name, function () {
 			assert.throws(() => {
-				NFA.fromTransitionIterator(testNfa.transitionIterator(), testNfa.options, { maxNodes: 100 });
+				NFA.fromTransitionIterator(testNfa.transitionIterator(), testNfa, new NFA.LimitedNodeFactory(100));
 			});
 		});
 		it(NFA.fromWords.name, function () {
 			assert.throws(() => {
-				NFA.fromWords(testNfa.words(), testNfa.options, { maxNodes: 100 });
+				NFA.fromWords(testNfa.words(), testNfa, new NFA.LimitedNodeFactory(100));
 			});
 		});
 	});

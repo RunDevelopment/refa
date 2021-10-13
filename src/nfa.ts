@@ -1,11 +1,11 @@
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { CharSet } from "./char-set";
-import { assertNever, cachedFunc, swapRemove, traverse } from "./util";
+import { assertNever, cachedFunc, debugAssert, swapRemove, traverse, traverseMultiRoot } from "./util";
 import {
 	FABuilder,
-	FACreationOptions,
 	FAIterator,
 	FiniteAutomaton,
+	NodeFactory,
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
@@ -16,36 +16,33 @@ import { ReadonlyWordSet, WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
 
-/*
- * ####################################################################################################################
- * ###                                                                                                              ###
- * ###                                              I M P O R T A N T                                               ###
- * ###                                                                                                              ###
- * ####################################################################################################################
- *
- * Note regarding the normalization of node lists and sub lists:
- *
- * Every (sub) node list is normalized meaning that the initial node does not have incoming edges.
- * This simple property makes the implementation of all NFA operations efficient and almost trivial.
- *
- * ALL of the below operations assume that every given (sub) node list is normalized.
- */
-
 const DEFAULT_MAX_NODES = 10_000;
 
 /**
  * A readonly {@link NFA}.
  */
 export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.ReadonlyNode> {
-	readonly nodes: NFA.ReadonlyNodeList;
-	readonly options: Readonly<NFA.Options>;
+	readonly initial: NFA.ReadonlyNode;
+	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
+	nodes(): Iterable<NFA.ReadonlyNode>;
+
+	/**
+	 * Returns the number of nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states. This will not include unreachable final states.
+	 *
+	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 */
+	countNodes(): number;
 
 	/**
 	 * Create a mutable copy of this NFA.
+	 *
+	 * @param factory
 	 */
-	copy(): NFA;
+	copy(factory?: NodeFactory<NFA.Node>): NFA;
 }
 
 /**
@@ -75,30 +72,43 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
  *
  *   This means that all transitions between two nodes will be merged into one. This is implemented as a simple
  *   {@link CharSet.union}. As a consequence, `/a|a/` and `/a/` have the same state machine in this NFA implementation.
+ *
+ * ## Normal form
+ *
+ * The normal form of this NFA implementation has the following restriction:
+ *
+ * - The initial state must not have incoming transitions.
+ *
+ * Non-normalized NFAs will either be tolerated or normalized by operations.
  */
 export class NFA implements ReadonlyNFA {
-	readonly nodes: NFA.NodeList;
+	readonly initial: NFA.Node;
+	readonly finals: Set<NFA.Node>;
 	readonly maxCharacter: Char;
 
-	private constructor(nodes: NFA.NodeList, maxCharacter: Char) {
-		this.nodes = nodes;
+	private constructor(initial: NFA.Node, finals: Set<NFA.Node>, maxCharacter: Char) {
+		this.initial = initial;
+		this.finals = finals;
 		this.maxCharacter = maxCharacter;
 	}
 
-	get options(): Readonly<NFA.Options> {
-		return { maxCharacter: this.maxCharacter };
-	}
-
 	get isEmpty(): boolean {
-		return this.nodes.finals.size === 0;
+		return this.finals.size === 0;
 	}
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator());
 	}
+	get isNormalized(): boolean {
+		return this.initial.in.size === 0;
+	}
+
+	normalize(factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+		baseNormalize(factory, this);
+	}
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode> {
-		const initial: NFA.ReadonlyNode = this.nodes.initial;
-		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
+		const initial: NFA.ReadonlyNode = this.initial;
+		const finals: ReadonlySet<NFA.ReadonlyNode> = this.finals;
 		return {
 			initial,
 			getOut: n => n.out.keys(),
@@ -107,8 +117,8 @@ export class NFA implements ReadonlyNFA {
 		};
 	}
 	transitionIterator(): TransitionIterator<NFA.ReadonlyNode> {
-		const initial: NFA.ReadonlyNode = this.nodes.initial;
-		const finals: ReadonlySet<NFA.ReadonlyNode> = this.nodes.finals;
+		const initial: NFA.ReadonlyNode = this.initial;
+		const finals: ReadonlySet<NFA.ReadonlyNode> = this.finals;
 		return {
 			initial,
 			getOut: n => n.out,
@@ -116,15 +126,33 @@ export class NFA implements ReadonlyNFA {
 			isFinal: n => finals.has(n),
 		};
 	}
+	nodes(): Iterable<NFA.Node> {
+		return Iter.iterateStates({
+			initial: this.initial,
+			getOut: state => state.out.keys(),
+			isFinal: state => this.finals.has(state),
+		});
+	}
 
-	copy(): NFA {
-		return NFA.fromFA(this);
+	countNodes(): number {
+		let c = 0;
+		traverse(this.initial, n => {
+			c++;
+			return n.out.keys();
+		});
+		return c;
+	}
+
+	copy(factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
+		const copy = factoryCopy(factory, this.transitionIterator());
+
+		return new NFA(copy.initial, copy.finals, this.maxCharacter);
 	}
 
 	test(word: ReadonlyWord): boolean {
 		// An implementation of Thompson's algorithm as described by Russ Cox
 		// https://swtch.com/~rsc/regexp/regexp1.html
-		let currentStates = [this.nodes.initial];
+		let currentStates = [this.initial];
 		const newStatesSet = new Set<NFA.Node>();
 
 		for (const char of word) {
@@ -143,7 +171,7 @@ export class NFA implements ReadonlyNFA {
 			currentStates = newStates;
 		}
 
-		return currentStates.some(state => this.nodes.finals.has(state));
+		return currentStates.some(state => this.finals.has(state));
 	}
 
 	wordSets(): Iterable<WordSet> {
@@ -172,42 +200,114 @@ export class NFA implements ReadonlyNFA {
 	 * Modifies this NFA to accept all words from this NFA and the given FA.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	union<O>(other: TransitionIterable<O>): void {
+	union<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+		MaxCharacterError.assert(this, other);
+
 		if (this === (other as unknown)) {
 			// do nothing
 		} else {
-			MaxCharacterError.assert(this, other);
-			baseUnion(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
+			this.normalize(factory);
+			baseUnion(this, factoryCopy(factory, other.transitionIterator()));
 		}
+	}
+
+	/**
+	 * Modifies this NFA to accept all words from this NFA and the given NFA.
+	 *
+	 * This is implemented by simply moving the nodes from the given NFA into this NFA. The given NFA will be empty
+	 * after this operation as nodes are moved, not shared.
+	 *
+	 * @param other
+	 */
+	unionInto(other: NFA): void {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot union an NFA into itself.");
+		}
+
+		this.normalize();
+		other.normalize();
+		baseUnion(this, other);
+		baseMakeEmpty(other);
 	}
 
 	/**
 	 * Modifies this NFA to accept the concatenation of this NFA and the given FA.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	append<O>(other: TransitionIterable<O>): void {
+	append<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+		MaxCharacterError.assert(this, other);
+
 		if (this === (other as unknown)) {
-			this.quantify(2, 2);
+			this.quantify(2, 2, factory);
 		} else {
-			MaxCharacterError.assert(this, other);
-			baseAppend(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
+			this.normalize(factory);
+			baseAppend(this, factoryCopy(factory, other.transitionIterator()));
 		}
+	}
+
+	/**
+	 * Modifies this NFA to accept the concatenation of this NFA and the given FA.
+	 *
+	 * This is implemented by simply moving the nodes from the given NFA into this NFA. The given NFA will be empty
+	 * after this operation as nodes are moved, not shared.
+	 *
+	 * @param other
+	 */
+	appendInto(other: NFA): void {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot append an NFA into itself.");
+		}
+
+		this.normalize();
+		other.normalize();
+		baseAppend(this, other);
+		baseMakeEmpty(other);
 	}
 
 	/**
 	 * Modifies this NFA to accept the concatenation of the given NFA and this FA.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	prepend<O>(other: TransitionIterable<O>): void {
+	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+		MaxCharacterError.assert(this, other);
+
 		if (this === (other as unknown)) {
-			this.quantify(2, 2);
+			this.quantify(2, 2, factory);
 		} else {
-			MaxCharacterError.assert(this, other);
-			basePrepend(this.nodes, this.nodes, localCopyOfIterator(this.nodes, other.transitionIterator()));
+			this.normalize(factory);
+			basePrepend(this, factoryCopy(factory, other.transitionIterator()));
 		}
+	}
+
+	/**
+	 * Modifies this NFA to accept the concatenation of the given NFA and this FA.
+	 *
+	 * This is implemented by simply moving the nodes from the given NFA into this NFA. The given NFA will be empty
+	 * after this operation as nodes are moved, not shared.
+	 *
+	 * @param other
+	 */
+	prependInto(other: NFA): void {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot prepend an NFA into itself.");
+		}
+
+		this.normalize();
+		other.normalize();
+		basePrepend(this, other);
+		baseMakeEmpty(other);
 	}
 
 	/**
@@ -218,19 +318,40 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param min
 	 * @param max
+	 * @param factory
 	 */
-	quantify(min: number, max: number): void {
+	quantify(
+		min: number,
+		max: number,
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+	): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
 		}
-		baseQuantify(this.nodes, this.nodes, min, max);
+
+		this.normalize(factory);
+		baseQuantify(factory, this, min, max);
 	}
 
 	/**
 	 * Removes the empty word from the accepted languages of this NFA.
 	 */
 	withoutEmptyWord(): void {
-		this.nodes.finals.delete(this.nodes.initial);
+		this.normalize();
+
+		this.finals.delete(this.initial);
+	}
+
+	/**
+	 * Removes all states that are unreachable.
+	 *
+	 * Only the following states will remain after this operation:
+	 *
+	 * 1. The initial state.
+	 * 2. All states that are reachable from the initial state and can reach one of the final states.
+	 */
+	removeUnreachable(): void {
+		baseRemoveUnreachable(this);
 	}
 
 	/**
@@ -241,14 +362,14 @@ export class NFA implements ReadonlyNFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	prefixes(): void {
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
 
 		if (this.isEmpty) {
 			return;
 		}
 
-		for (const node of this.nodes) {
-			this.nodes.finals.add(node);
+		for (const node of this.nodes()) {
+			this.finals.add(node);
 		}
 	}
 
@@ -260,38 +381,32 @@ export class NFA implements ReadonlyNFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	suffixes(): void {
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
+		this.normalize();
 
 		if (this.isEmpty) {
 			return;
 		}
 
-		function inSet(node: NFA.Node): CharSet {
-			let total: CharSet | undefined = undefined;
+		for (const node of this.nodes()) {
+			if (node !== this.initial) {
+				let total: CharSet | undefined = undefined;
 
-			node.in.forEach(set => {
-				if (total === undefined) {
-					total = set;
-				} else {
-					total = total.union(set);
-				}
-			});
+				node.in.forEach(set => {
+					if (total === undefined) {
+						total = set;
+					} else {
+						total = total.union(set);
+					}
+				});
 
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			if (total === undefined) {
-				throw new Error("The node doesn't have incoming transitions.");
-			}
-			return total;
-		}
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				debugAssert(total !== undefined, "The node doesn't have incoming transitions.");
 
-		const initial = this.nodes.initial;
-		for (const node of this.nodes) {
-			if (node !== initial) {
-				const set = inSet(node);
-				this.nodes.linkNodes(initial, node, set);
+				this.initial.link(node, total);
 			}
 		}
-		this.nodes.finals.add(initial);
+		this.finals.add(this.initial);
 	}
 
 	/**
@@ -302,8 +417,10 @@ export class NFA implements ReadonlyNFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	reverse(): void {
-		this.nodes.removeUnreachable();
-		baseReverse(this.nodes, this.nodes);
+		this.removeUnreachable();
+		this.normalize();
+
+		baseReverse(NFA.nodeFactory, this);
 	}
 
 	/**
@@ -312,8 +429,7 @@ export class NFA implements ReadonlyNFA {
 	 * @param options
 	 */
 	static empty(options: Readonly<NFA.Options>): NFA {
-		const nodeList = new NFA.NodeList();
-		return new NFA(nodeList, options.maxCharacter);
+		return new NFA(new NFA.Node(), new Set(), options.maxCharacter);
 	}
 
 	/**
@@ -322,16 +438,15 @@ export class NFA implements ReadonlyNFA {
 	 * @param options
 	 */
 	static all(options: Readonly<NFA.Options>): NFA {
-		const nodeList = new NFA.NodeList();
-		nodeList.finals.add(nodeList.initial);
-
 		const allChars = CharSet.all(options.maxCharacter);
-		const other = nodeList.createNode();
-		nodeList.linkNodes(nodeList.initial, other, allChars);
-		nodeList.linkNodes(other, other, allChars);
-		nodeList.finals.add(other);
 
-		return new NFA(nodeList, options.maxCharacter);
+		const initial = new NFA.Node();
+		const other = new NFA.Node();
+
+		initial.link(other, allChars);
+		other.link(other, allChars);
+
+		return new NFA(initial, new Set([initial, other]), options.maxCharacter);
 	}
 
 	/**
@@ -339,74 +454,78 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param left
 	 * @param right
-	 * @param options
+	 * @param factory
 	 */
 	static fromIntersection<L, R>(
 		left: TransitionIterable<L>,
 		right: TransitionIterable<R>,
-		options?: Readonly<NFA.CreationOptions>
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): NFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
-		const maxNodes = options?.maxNodes ?? DEFAULT_MAX_NODES;
-		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
-			const iter = Iter.intersection(nodeList, left.transitionIterator(), right.transitionIterator());
+		const builder = new NFA.Builder(factory);
 
-			// traverse the whole iterator to create our NodeList
-			Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));
+		const iter = Iter.intersection(builder, left.transitionIterator(), right.transitionIterator());
+		Iter.forEach(Iter.mapOut(iter, n => n.out.keys()));
 
-			// A cleanup still has to be performed because while all states are connected to the initial state, they might
-			// not be able to reach a final state. This will remove such trap states.
-			nodeList.removeUnreachable();
+		// A cleanup still has to be performed because while all states are connected to the initial state, they might
+		// not be able to reach a final state. This will remove such trap states.
+		baseRemoveUnreachable(builder);
 
-			// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
-			// having less final states will make a lot of the NFA operations more efficient.
-			baseOptimizationReuseFinalStates(nodeList, nodeList);
-		});
+		baseNormalize(factory, builder);
 
-		return new NFA(nodeList, left.maxCharacter);
+		// Try to merge as many final states as possible. This won't greatly reduce the overall number of states but
+		// having less final states will make a lot of the NFA operations more efficient.
+		baseOptimizationReuseFinalStates(builder);
+
+		return NFA.fromBuilder(builder, left);
 	}
 
 	static fromRegex(
 		concat: NoParent<Node>,
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.FromRegexOptions>
+		creationOptions?: Readonly<NFA.FromRegexOptions>,
+		factory?: NodeFactory<NFA.Node>
 	): NFA;
 	static fromRegex(
 		alternatives: readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.FromRegexOptions>
+		creationOptions?: Readonly<NFA.FromRegexOptions>,
+		factory?: NodeFactory<NFA.Node>
 	): NFA;
 	static fromRegex(
 		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.FromRegexOptions>
+		creationOptions: Readonly<NFA.FromRegexOptions> = {},
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): NFA {
-		let nodeList: NFA.NodeList;
+		let base;
 		if (Array.isArray(value)) {
-			nodeList = createNodeList(value as readonly NoParent<Concatenation>[], options, creationOptions || {});
+			base = createGraphFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
 		} else {
 			const node = value as NoParent<Node>;
 
 			switch (node.type) {
 				case "Expression":
-					nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+					base = createGraphFromRegex(node.alternatives, options, creationOptions, factory);
 					break;
 
 				case "Concatenation":
-					nodeList = createNodeList([node], options, creationOptions || {});
+					base = createGraphFromRegex([node], options, creationOptions, factory);
 					break;
 
 				default:
-					nodeList = createNodeList(
+					base = createGraphFromRegex(
 						[{ type: "Concatenation", elements: [node] }],
 						options,
-						creationOptions || {}
+						creationOptions,
+						factory
 					);
 					break;
 			}
 		}
-		return new NFA(nodeList, options.maxCharacter);
+
+		return new NFA(base.initial, base.finals, options.maxCharacter);
 	}
 
 	/**
@@ -414,36 +533,35 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param words
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.CreationOptions>
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): NFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWords(
-				nodeList,
-				(node, char) => {
-					for (const [to, chars] of node.out) {
-						if (chars.has(char)) {
-							return to;
-						}
+		const builder = new NFA.Builder(factory);
+
+		Iter.fromWords(
+			builder,
+			(node, char) => {
+				for (const [to, chars] of node.out) {
+					if (chars.has(char)) {
+						return to;
 					}
-					return undefined;
-				},
-				words,
-				maxCharacter
-			);
+				}
+				return undefined;
+			},
+			words,
+			maxCharacter
+		);
 
-			baseOptimizationReuseFinalStates(nodeList, nodeList);
-			baseOptimizationMergeSuffixes(nodeList, nodeList);
-		});
+		baseOptimizationReuseFinalStates(builder);
+		baseOptimizationMergeSuffixes(builder);
 
-		return new NFA(nodeList, maxCharacter);
+		return NFA.fromBuilder(builder, options);
 	}
 
 	/**
@@ -451,61 +569,64 @@ export class NFA implements ReadonlyNFA {
 	 *
 	 * @param wordSets
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.CreationOptions>
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): NFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
+		const builder = new NFA.Builder(factory);
 
-			baseOptimizationReuseFinalStates(nodeList, nodeList);
-			baseOptimizationMergeSuffixes(nodeList, nodeList);
-		});
+		Iter.fromWordSets(builder, wordSets, maxCharacter);
 
-		return new NFA(nodeList, maxCharacter);
+		baseOptimizationReuseFinalStates(builder);
+		baseOptimizationMergeSuffixes(builder);
+
+		return NFA.fromBuilder(builder, options);
 	}
 
-	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, creationOptions?: Readonly<NFA.CreationOptions>): NFA {
-		return NFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
+	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, factory?: NodeFactory<NFA.Node>): NFA {
+		return NFA.fromTransitionIterator(fa.transitionIterator(), fa, factory);
 	}
 
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<NFA.Options>,
-		creationOptions?: Readonly<NFA.CreationOptions>
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): NFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
 
-		const nodeList = NFA.NodeList.withLimit(maxNodes, nodeList => {
-			const translate = cachedFunc<InputNode, NFA.Node>(() => nodeList.createNode());
-			translate.cache.set(iter.initial, nodeList.initial);
+		const initial = factory.createNode();
+		const finals = new Set<NFA.Node>();
 
-			traverse(iter.initial, node => {
-				const transNode = translate(node);
+		const translate = cachedFunc<InputNode, NFA.Node>(() => factory.createNode());
+		translate.cache.set(iter.initial, initial);
 
-				if (iter.isFinal(node)) {
-					nodeList.finals.add(transNode);
+		traverse(iter.initial, node => {
+			const transNode = translate(node);
+
+			if (iter.isFinal(node)) {
+				finals.add(transNode);
+			}
+
+			const out = iter.getOut(node);
+			out.forEach((charSet, outDfaNode) => {
+				if (charSet.maximum !== maxCharacter) {
+					throw new Error("Some character sets do not conform to the given maximum.");
 				}
-
-				const out = iter.getOut(node);
-				out.forEach((charSet, outDfaNode) => {
-					if (charSet.maximum !== maxCharacter) {
-						throw new Error("Some character sets do not conform to the given maximum.");
-					}
-					nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
-				});
-				return out.keys();
+				transNode.link(translate(outDfaNode), charSet);
 			});
+			return out.keys();
 		});
 
-		return new NFA(nodeList, maxCharacter);
+		return new NFA(initial, finals, maxCharacter);
+	}
+
+	static fromBuilder(builder: NFA.Builder, options: Readonly<NFA.Options>): NFA {
+		return new NFA(builder.initial, builder.finals, options.maxCharacter);
 	}
 }
 
@@ -517,256 +638,110 @@ export class NFA implements ReadonlyNFA {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NFA {
 	export interface ReadonlyNode {
-		readonly list: ReadonlyNodeList;
 		readonly out: ReadonlyMap<ReadonlyNode, CharSet>;
 		readonly in: ReadonlyMap<ReadonlyNode, CharSet>;
 	}
-	export interface Node extends ReadonlyNode {
-		readonly list: NodeList;
-		readonly out: Map<Node, CharSet>;
-		readonly in: Map<Node, CharSet>;
-	}
 
-	export interface ReadonlyNodeList extends Iterable<ReadonlyNode> {
-		readonly initial: ReadonlyNode;
-		readonly finals: ReadonlySet<ReadonlyNode>;
-		/**
-		 * Returns the number of nodes reachable from the initial state including the initial state.
-		 *
-		 * This may include trap states. This will not include unreachable final states.
-		 *
-		 * This operation has to traverse the whole graph and runs in _O(E + V)_.
-		 */
-		count(): number;
-	}
-	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet> {
-		private _nodeCounter: number = 0;
-		private _nodeLimit: number = Infinity;
+	export class Node implements ReadonlyNode {
+		readonly out = new Map<Node, CharSet>();
+		readonly in = new Map<Node, CharSet>();
 
-		/**
-		 * The initial state of this list.
-		 *
-		 * The initial state is fixed an cannot be changed or removed.
-		 */
-		readonly initial: Node;
-		/**
-		 * The set of final states of this list.
-		 */
-		readonly finals: Set<Node> = new Set();
-
-		constructor() {
-			this.initial = this.createNode();
-		}
-
-		/**
-		 * Creates and returns a new node list that is only allowed to create a certain number of nodes during the
-		 * execution of the given consumer function.
-		 *
-		 * After this function returns, the limit no longer applies.
-		 *
-		 * @param maxNodes
-		 * @param consumerFn
-		 */
-		static withLimit(maxNodes: number, consumerFn: (nodeList: NodeList) => void): NodeList {
-			const nodeList = new NodeList();
-			nodeList._nodeLimit = maxNodes;
-			try {
-				consumerFn(nodeList);
-				nodeList._nodeLimit = Infinity;
-			} catch (error) {
-				nodeList._nodeLimit = Infinity;
-				throw error;
-			}
-			return nodeList;
-		}
-
-		/**
-		 * Creates a new node associated with this node list.
-		 */
-		createNode(): Node {
-			const id = this._nodeCounter++;
-			TooManyNodesError.assert(id, this._nodeLimit, "NFA");
-
-			const node: Node & { id: number } = {
-				id, // for debugging
-				list: this,
-				out: new Map(),
-				in: new Map(),
-			};
-			return node;
-		}
-
-		/**
-		 * Adds a transition from `from` to `to` using the given non-empty set of characters.
-		 *
-		 * If two nodes are already linked, the character sets will be combined.
-		 *
-		 * @param from
-		 * @param to
-		 * @param characters
-		 */
-		linkNodes(from: Node, to: Node, characters: CharSet): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
-			if (characters.isEmpty) {
+		link(to: Node, via: CharSet): void {
+			if (via.isEmpty) {
 				throw new Error("You can't link nodes with the empty character set.");
 			}
 
-			linkNodesAddImpl(from.out, to, characters);
-			linkNodesAddImpl(to.in, from, characters);
+			this._linkNodesAddImpl(this.out, to, via);
+			this._linkNodesAddImpl(to.in, this, via);
+		}
+		private _linkNodesAddImpl(map: Map<NFA.Node, CharSet>, to: NFA.Node, characters: CharSet): void {
+			const current = map.get(to);
+			if (current === undefined) {
+				map.set(to, characters);
+			} else {
+				map.set(to, current.union(characters));
+			}
+		}
+
+		unlink(to: Node): void {
+			this.out.delete(to);
+			to.in.delete(this);
 		}
 
 		/**
-		 * Removes the transition from `from` to `to`.
-		 *
-		 * If there is no transition from `from` to `to`, an error will be thrown.
-		 *
-		 * @param from
-		 * @param to
+		 * Unlinks all outgoing and incoming transitions of this node.
 		 */
-		unlinkNodes(from: Node, to: Node): void {
-			if (from.list !== to.list) {
-				throw new Error("You can't link nodes from different node lists.");
-			}
-			if (from.list !== this) {
-				throw new Error("Use the node list associated with the nodes to link them.");
-			}
+		unlinkAll(): void {
+			this.unlinkAllIn();
+			this.unlinkAllOut();
+		}
+		/**
+		 * Unlinks all outgoing transitions of this node.
+		 */
+		unlinkAllOut(): void {
+			this.out.forEach((_, to) => {
+				to.in.delete(this);
+			});
+			this.out.clear();
+		}
+		/**
+		 * Unlinks all incoming transitions of this node.
+		 */
+		unlinkAllIn(): void {
+			this.in.forEach((_, from) => {
+				from.out.delete(this);
+			});
+			this.in.clear();
+		}
+	}
 
-			if (!from.out.has(to)) {
-				throw new Error("Can't unlink nodes which aren't linked.");
-			}
+	/**
+	 * An unlimited node factory that will simply call the {@link Node} constructor.
+	 */
+	export const nodeFactory: NodeFactory<Node> = {
+		createNode() {
+			return new Node();
+		},
+	};
 
-			from.out.delete(to);
-			to.in.delete(from);
+	export class LimitedNodeFactory implements NodeFactory<Node> {
+		private _counter = 0;
+		readonly limit: number;
+
+		constructor(limit: number) {
+			this.limit = limit;
+		}
+
+		createNode(): Node {
+			TooManyNodesError.assert(++this._counter, this.limit, "NFA");
+			return new Node();
+		}
+	}
+
+	export class Builder implements FABuilder<Node, CharSet> {
+		readonly initial: Node;
+		readonly finals = new Set<Node>();
+		readonly factory: NodeFactory<Node>;
+
+		constructor(factory: NodeFactory<Node>) {
+			this.factory = factory;
+			this.initial = factory.createNode();
 		}
 
 		makeFinal(state: Node): void {
 			this.finals.add(state);
 		}
-
 		isFinal(state: Node): boolean {
 			return this.finals.has(state);
 		}
-
-		/**
-		 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
-		 * removed.
-		 */
-		removeUnreachable(): void {
-			const makeEmpty = (): void => {
-				this.finals.clear();
-				this.initial.in.clear();
-				this.initial.out.clear();
-			};
-
-			if (this.finals.size === 0) {
-				makeEmpty();
-				return;
-			}
-
-			const removeNode = (node: Node): void => {
-				if (node === this.initial) {
-					throw new Error("Cannot remove the initial state.");
-				}
-
-				this.finals.delete(node);
-				for (const outgoing of node.out.keys()) {
-					this.unlinkNodes(node, outgoing);
-				}
-				for (const incoming of node.in.keys()) {
-					this.unlinkNodes(incoming, node);
-				}
-			};
-
-			// 1) Get all nodes
-			const allNodes = new Set<Node>(this.finals);
-			traverse(this.initial, node => {
-				allNodes.add(node);
-				return [...node.in.keys(), ...node.out.keys()];
-			});
-
-			// 2) Get all nodes reachable from the initial state
-			const reachableFromInitial = new Set<Node>();
-			traverse(this.initial, node => {
-				reachableFromInitial.add(node);
-				return node.out.keys();
-			});
-
-			// 3) Remove all final nodes which aren't reachable from the initial node
-			allNodes.forEach(node => {
-				if (!reachableFromInitial.has(node)) {
-					removeNode(node);
-				}
-			});
-
-			// 4) We may not have any final states left
-			if (this.finals.size === 0) {
-				makeEmpty();
-				return;
-			}
-
-			// 5) Get all nodes which can reach a final state
-			const canReachFinal = new Set<Node>();
-			for (const final of this.finals) {
-				traverse(final, node => {
-					if (canReachFinal.has(node)) {
-						return [];
-					}
-					canReachFinal.add(node);
-
-					return node.in.keys();
-				});
-			}
-
-			// 6) Remove all nodes which can't reach a final node
-			reachableFromInitial.forEach(node => {
-				if (!canReachFinal.has(node)) {
-					removeNode(node);
-				}
-			});
+		linkNodes(from: Node, to: Node, transition: CharSet): void {
+			from.link(to, transition);
 		}
-
-		count(): number {
-			let c = 0;
-			traverse(this.initial, n => {
-				c++;
-				return n.out.keys();
-			});
-			return c;
-		}
-
-		[Symbol.iterator](): Iterator<Node> {
-			return Iter.iterateStates({
-				initial: this.initial,
-				getOut: state => state.out.keys(),
-				isFinal: state => this.finals.has(state),
-			})[Symbol.iterator]();
+		createNode(): Node {
+			return this.factory.createNode();
 		}
 	}
 
-	/**
-	 * Options for the constraints on how a NFA will be created.
-	 */
-	export interface CreationOptions extends FACreationOptions {
-		/**
-		 * The maximum number of nodes the NFA creation operation is allowed to create before throwing a
-		 * `TooManyNodesError`.
-		 *
-		 * If the maximum number of nodes is set to `Infinity`, the NFA creation operation may create as many nodes as
-		 * necessary to construct the NFA. This might cause the machine to run out of memory. I.e. some REs can only be
-		 * represented with a huge number of states (e.g `/a{123456789}/`).
-		 *
-		 * Note: This limit describes maximum number of __created__ nodes. If nodes are created and subsequently
-		 * discard, they will still count toward the limit.
-		 *
-		 * @default 10000
-		 */
-		maxNodes?: number;
-	}
 	export interface Options {
 		/**
 		 * The maximum numerical value any character can have.
@@ -775,7 +750,7 @@ export namespace NFA {
 		 */
 		maxCharacter: Char;
 	}
-	export interface FromRegexOptions extends CreationOptions {
+	export interface FromRegexOptions {
 		/**
 		 * How to handle assertions when construction the NFA.
 		 *
@@ -816,193 +791,185 @@ export namespace NFA {
 	}
 }
 
-/**
- * The actual implementation of the linkNodes function.
- *
- * @param map
- * @param to
- * @param characters
- */
-function linkNodesAddImpl(map: Map<NFA.Node, CharSet>, to: NFA.Node, characters: CharSet): void {
-	const current = map.get(to);
-	if (current === undefined) {
-		map.set(to, characters);
-	} else {
-		map.set(to, current.union(characters));
-	}
-}
-
-interface SubList {
+interface NonNormalSubGraph {
 	readonly initial: NFA.Node;
 	readonly finals: Set<NFA.Node>;
 }
-interface ReadonlySubList {
+/**
+ * This interface guarantees that the initial state does not have incoming transitions.
+ */
+interface SubGraph {
+	readonly initial: NFA.Node;
+	readonly finals: Set<NFA.Node>;
+}
+interface ReadonlySubGraph {
 	readonly initial: NFA.ReadonlyNode;
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 }
 
-function createNodeList(
+function createGraphFromRegex(
 	expression: readonly NoParent<Concatenation>[],
 	options: Readonly<NFA.Options>,
-	creationOptions: Readonly<NFA.FromRegexOptions>
-): NFA.NodeList {
-	const infinityThreshold: number = creationOptions.infinityThreshold ?? Infinity;
+	creationOptions: Readonly<NFA.FromRegexOptions>,
+	factory: NodeFactory<NFA.Node>
+): SubGraph {
+	const infinityThreshold = creationOptions.infinityThreshold ?? Infinity;
+	const assertions = creationOptions.assertions ?? "throw";
+	const unknowns = creationOptions.unknowns ?? "throw";
 
-	return NFA.NodeList.withLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-		baseReplaceWith(nodeList, nodeList, handleAlternation(expression));
+	return handleAlternation(expression);
 
-		// All sub lists guarantee that the initial node has no incoming edges.
+	// All sub graphs guarantee that the initial node has no incoming edges.
 
-		function handleAlternation(alternatives: readonly NoParent<Concatenation>[]): SubList {
-			if (alternatives.length === 0) {
-				return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-			}
+	function handleAlternation(alternatives: readonly NoParent<Concatenation>[]): SubGraph {
+		if (alternatives.length === 0) {
+			return { initial: factory.createNode(), finals: new Set<NFA.Node>() };
+		}
 
-			const base = handleConcatenation(alternatives[0]);
-			for (let i = 1, l = alternatives.length; i < l; i++) {
-				baseUnion(nodeList, base, handleConcatenation(alternatives[i]));
-			}
+		const base = handleConcatenation(alternatives[0]);
+		for (let i = 1, l = alternatives.length; i < l; i++) {
+			baseUnion(base, handleConcatenation(alternatives[i]));
+		}
 
+		return base;
+	}
+
+	function handleConcatenation(concatenation: NoParent<Concatenation>): SubGraph {
+		const elements = concatenation.elements;
+
+		if (elements.length === 0) {
+			const base: SubGraph = { initial: factory.createNode(), finals: new Set<NFA.Node>() };
+			base.finals.add(base.initial);
 			return base;
 		}
 
-		function handleConcatenation(concatenation: NoParent<Concatenation>): SubList {
-			const elements = concatenation.elements;
-
-			if (elements.length === 0) {
-				const base: SubList = { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-				base.finals.add(base.initial);
-				return base;
-			}
-
-			const base = createElement(elements[0]);
-			if (base === null) {
-				return { initial: nodeList.createNode(), finals: new Set<NFA.Node>() };
-			}
-
-			for (let i = 1, l = elements.length; i < l; i++) {
-				if (base.finals.size === 0) {
-					// Since base is the empty language, concatenation has no effect, so let's stop early
-					break;
-				}
-
-				appendElement(elements[i], base);
-			}
-
-			return base;
+		const base = createElement(elements[0]);
+		if (base === null) {
+			return { initial: factory.createNode(), finals: new Set<NFA.Node>() };
 		}
 
-		function handleQuantifier(quant: NoParent<Quantifier>): SubList {
-			const base = handleAlternation(quant.alternatives);
-			let max = quant.max;
-			if (max >= infinityThreshold) {
-				max = Infinity;
+		for (let i = 1, l = elements.length; i < l; i++) {
+			if (base.finals.size === 0) {
+				// Since base is the empty language, concatenation has no effect, so let's stop early
+				break;
 			}
-			baseQuantify(nodeList, base, quant.min, max);
-			return base;
+
+			appendElement(elements[i], base);
 		}
 
-		function appendElement(element: NoParent<Element>, base: SubList): void {
-			switch (element.type) {
-				case "CharacterClass": {
-					const chars = element.characters;
-					checkCharacters(chars);
+		return base;
+	}
 
-					if (chars.isEmpty) {
-						// the whole concatenation can't go anywhere
-						baseMakeEmpty(nodeList, base);
-					} else {
-						// we know that base.final isn't empty, so just link all former finals to a new final node
-						const s = nodeList.createNode();
-						base.finals.forEach(f => nodeList.linkNodes(f, s, chars));
-						base.finals.clear();
-						base.finals.add(s);
-					}
-					break;
+	function handleQuantifier(quant: NoParent<Quantifier>): SubGraph {
+		const base = handleAlternation(quant.alternatives);
+		let max = quant.max;
+		if (max >= infinityThreshold) {
+			max = Infinity;
+		}
+		baseQuantify(factory, base, quant.min, max);
+		return base;
+	}
+
+	function appendElement(element: NoParent<Element>, base: SubGraph): void {
+		switch (element.type) {
+			case "CharacterClass": {
+				const chars = element.characters;
+				checkCharacters(chars);
+
+				if (chars.isEmpty) {
+					// the whole concatenation can't go anywhere
+					baseMakeEmpty(base);
+				} else {
+					// we know that base.final isn't empty, so just link all former finals to a new final node
+					const s = factory.createNode();
+					base.finals.forEach(f => f.link(s, chars));
+					base.finals.clear();
+					base.finals.add(s);
 				}
+				break;
+			}
 
-				case "Quantifier": {
-					if (element.max > 0) {
-						baseAppend(nodeList, base, handleQuantifier(element));
-					}
-					break;
+			case "Quantifier": {
+				if (element.max > 0) {
+					baseAppend(base, handleQuantifier(element));
 				}
+				break;
+			}
 
-				default: {
-					const after = createElement(element);
-					if (after === null) {
-						baseMakeEmpty(nodeList, base);
-					} else {
-						baseAppend(nodeList, base, after);
-					}
+			default: {
+				const after = createElement(element);
+				if (after === null) {
+					baseMakeEmpty(base);
+				} else {
+					baseAppend(base, after);
 				}
 			}
 		}
-		function createElement(element: NoParent<Element>): SubList | null {
-			switch (element.type) {
-				case "Alternation":
-					return handleAlternation(element.alternatives);
+	}
+	function createElement(element: NoParent<Element>): SubGraph | null {
+		switch (element.type) {
+			case "Alternation":
+				return handleAlternation(element.alternatives);
 
-				case "Assertion":
-					if (creationOptions.assertions === "disable") {
-						return null;
-					} else {
-						throw new Error("Assertions are not supported yet.");
-					}
-
-				case "CharacterClass": {
-					const chars = element.characters;
-					checkCharacters(chars);
-
-					if (chars.isEmpty) {
-						return null;
-					} else {
-						const i = nodeList.createNode();
-						const f = nodeList.createNode();
-						nodeList.linkNodes(i, f, chars);
-						return { initial: i, finals: new Set([f]) };
-					}
+			case "Assertion":
+				if (assertions === "disable") {
+					return null;
+				} else {
+					throw new Error("Assertions are not supported yet.");
 				}
-				case "Quantifier":
-					return handleQuantifier(element);
 
-				case "Unknown":
-					if (creationOptions.unknowns === "disable") {
-						return null;
-					} else {
-						throw new Error("Unknowns are not supported.");
-					}
+			case "CharacterClass": {
+				const chars = element.characters;
+				checkCharacters(chars);
 
-				default:
-					throw assertNever(element);
+				if (chars.isEmpty) {
+					return null;
+				} else {
+					const i = factory.createNode();
+					const f = factory.createNode();
+					i.link(f, chars);
+					return { initial: i, finals: new Set([f]) };
+				}
 			}
+			case "Quantifier":
+				return handleQuantifier(element);
+
+			case "Unknown":
+				if (unknowns === "disable") {
+					return null;
+				} else {
+					throw new Error("Unknowns are not supported.");
+				}
+
+			default:
+				throw assertNever(element);
 		}
-		function checkCharacters(chars: CharSet): void {
-			if (chars.maximum !== options.maxCharacter) {
-				throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
-			}
+	}
+	function checkCharacters(chars: CharSet): void {
+		if (chars.maximum !== options.maxCharacter) {
+			throw new Error(`The maximum of all character sets has to be ${options.maxCharacter}.`);
 		}
-	});
+	}
 }
 
 /**
- * Creates a copy of `toCopy` in the given node list returning the created sub NFA.
+ * Creates a copy of `toCopy` in the given nodes returning the created sub NFA.
  *
- * @param nodeList
+ * @param factory
  * @param toCopy
  */
-function localCopy(nodeList: NFA.NodeList, toCopy: ReadonlySubList): SubList {
-	return localCopyOfIterator(nodeList, {
+function factoryCopyOfSubGraph(factory: NodeFactory<NFA.Node>, toCopy: ReadonlySubGraph): SubGraph {
+	return factoryCopy(factory, {
 		initial: toCopy.initial,
 		getOut: n => n.out,
 		isFinal: n => toCopy.finals.has(n),
 	});
 }
-function localCopyOfIterator<T>(nodeList: NFA.NodeList, iter: TransitionIterator<T>): SubList {
-	const initial = nodeList.createNode();
+function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator<T>): SubGraph {
+	const initial = factory.createNode();
 	const finals = new Set<NFA.Node>();
 
-	const translate = cachedFunc<T, NFA.Node>(() => nodeList.createNode());
+	const translate = cachedFunc<T, NFA.Node>(() => factory.createNode());
 	translate.cache.set(iter.initial, initial);
 
 	traverse(iter.initial, node => {
@@ -1014,55 +981,36 @@ function localCopyOfIterator<T>(nodeList: NFA.NodeList, iter: TransitionIterator
 
 		const out = iter.getOut(node);
 		for (const [to, characters] of out) {
-			nodeList.linkNodes(trans, translate(to), characters);
+			trans.link(translate(to), characters);
 		}
 		return out.keys();
 	});
 
-	return { initial, finals };
-}
+	const result = { initial, finals };
 
-/**
- * Alters `base` to to be the same as the given replacement.
- *
- * `replacement` will be altered as well and cannot be used again after this operation.
- *
- * @param nodeList
- * @param base
- * @param replacement
- */
-function baseReplaceWith(nodeList: NFA.NodeList, base: SubList, replacement: SubList): void {
-	baseMakeEmpty(nodeList, base);
+	// The initial state might be non-normalized
 
-	// transfer finals
-	replacement.finals.forEach(f => {
-		base.finals.add(f === replacement.initial ? base.initial : f);
-	});
+	baseNormalize(factory, result);
 
-	// transfer nodes
-	for (const [to, characters] of [...replacement.initial.out]) {
-		nodeList.linkNodes(base.initial, to, characters);
-		nodeList.unlinkNodes(replacement.initial, to);
-	}
+	return result;
 }
 
 /**
  * Alters `base` to end with the `after` expression.
  *
- * `after` will be altered as well and cannot be used again after this operation.
+ * `after` will be in an invalid state after this operation but `baseMakeEmpty` can make it valid again.
  *
- * @param nodeList The node list of both `base` and `after`.
  * @param base
  * @param after
  */
-function baseAppend(nodeList: NFA.NodeList, base: SubList, after: SubList): void {
+function baseAppend(base: SubGraph, after: SubGraph): void {
 	if (base.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
 		return;
 	}
 	if (after.finals.size === 0) {
 		// concat(base, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 
@@ -1070,12 +1018,12 @@ function baseAppend(nodeList: NFA.NodeList, base: SubList, after: SubList): void
 	const initialEdges = [...after.initial.out];
 	for (const baseFinal of base.finals) {
 		for (const [to, characters] of initialEdges) {
-			nodeList.linkNodes(baseFinal, to, characters);
+			baseFinal.link(to, characters);
 		}
 	}
 	// unlink after initial
 	for (const [to] of initialEdges) {
-		nodeList.unlinkNodes(after.initial, to);
+		after.initial.unlink(to);
 	}
 
 	// If the initial of after isn't final, we have to clear the base finals
@@ -1093,20 +1041,19 @@ function baseAppend(nodeList: NFA.NodeList, base: SubList, after: SubList): void
 /**
  * Alters `base` to start with the `before` expression.
  *
- * `before` will be altered as well and cannot be used again after this operation.
+ * `before` will be in an invalid state after this operation but `baseMakeEmpty` can make it valid again.
  *
- * @param nodeList The node list of both `base` and `before`.
  * @param base
  * @param before
  */
-function basePrepend(nodeList: NFA.NodeList, base: SubList, before: SubList): void {
+function basePrepend(base: SubGraph, before: SubGraph): void {
 	if (base.finals.size === 0) {
 		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
 		return;
 	}
 	if (before.finals.size === 0) {
 		// concat(EMPTY_LANGUAGE, base) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 
@@ -1114,18 +1061,18 @@ function basePrepend(nodeList: NFA.NodeList, base: SubList, before: SubList): vo
 	const initialEdges = [...base.initial.out];
 	for (const beforeFinal of before.finals) {
 		for (const [to, characters] of initialEdges) {
-			nodeList.linkNodes(beforeFinal, to, characters);
+			beforeFinal.link(to, characters);
 		}
 	}
 	// unlink base initial
 	for (const [to] of initialEdges) {
-		nodeList.unlinkNodes(base.initial, to);
+		base.initial.unlink(to);
 	}
 	// link before initial out to base initial
 	for (const [to, characters] of before.initial.out) {
-		nodeList.linkNodes(base.initial, to, characters);
+		base.initial.link(to, characters);
 		// and unlink before before initial
-		nodeList.unlinkNodes(before.initial, to);
+		before.initial.unlink(to);
 	}
 
 	if (base.finals.has(base.initial)) {
@@ -1144,13 +1091,12 @@ function basePrepend(nodeList: NFA.NodeList, base: SubList, before: SubList): vo
 /**
  * Alters `base` to be the union of itself and the given alternative.
  *
- * `alternative` will be altered as well and cannot be used again after this operation.
+ * `alternative` will be in an invalid state after this operation but `baseMakeEmpty` can make it valid again.
  *
- * @param nodeList The node list of both `base` and `alternative`.
  * @param base
  * @param alternative
  */
-function baseUnion(nodeList: NFA.NodeList, base: SubList, alternative: SubList): void {
+function baseUnion(base: SubGraph, alternative: SubGraph): void {
 	// add finals
 	alternative.finals.forEach(n => {
 		base.finals.add(n === alternative.initial ? base.initial : n);
@@ -1158,17 +1104,17 @@ function baseUnion(nodeList: NFA.NodeList, base: SubList, alternative: SubList):
 
 	// transfer nodes to base
 	alternative.initial.out.forEach((via, to) => {
-		to.in.delete(alternative.initial);
-		nodeList.linkNodes(base.initial, to, via);
+		base.initial.link(to, via);
 	});
+	alternative.initial.unlinkAllOut();
 
 	// optional optimization to reduce the number of nodes
-	baseOptimizationReuseFinalStates(nodeList, base);
-	baseOptimizationMergePrefixes(nodeList, base);
-	baseOptimizationMergeSuffixes(nodeList, base); // suffixes should to be done after ReuseFinalStates
+	baseOptimizationReuseFinalStates(base);
+	baseOptimizationMergePrefixes(base);
+	baseOptimizationMergeSuffixes(base); // suffixes should to be done after ReuseFinalStates
 }
 
-function baseOptimizationReuseFinalStates(nodeList: NFA.NodeList, base: SubList): void {
+function baseOptimizationReuseFinalStates(base: SubGraph): void {
 	if (base.finals.size < 2) {
 		return;
 	}
@@ -1186,13 +1132,13 @@ function baseOptimizationReuseFinalStates(nodeList: NFA.NodeList, base: SubList)
 			base.finals.delete(toRemove);
 			toRemove.in.forEach((via, from) => {
 				from.out.delete(toRemove);
-				nodeList.linkNodes(from, masterFinal, via);
+				from.link(masterFinal, via);
 			});
 		}
 	}
 }
 
-function baseOptimizationMergePrefixes(nodeList: NFA.NodeList, base: SubList): void {
+function baseOptimizationMergePrefixes(base: SubGraph): void {
 	/**
 	 * The basic idea here to to merge suffixes and prefixes.
 	 * So that e.g. /abc|abba/ will merged to /ab(c|ba)/ (similar to suffixes).
@@ -1226,10 +1172,10 @@ function baseOptimizationMergePrefixes(nodeList: NFA.NodeList, base: SubList): v
 				if (currentCharSet.equals(otherCharSet) && otherIsFinal == base.finals.has(current)) {
 					// found a match -> remove `other`
 					for (const [otherTo, otherToCharSet] of other.out) {
-						nodeList.linkNodes(current, otherTo, otherToCharSet);
-						nodeList.unlinkNodes(other, otherTo);
+						current.link(otherTo, otherToCharSet);
+						other.unlink(otherTo);
 					}
-					nodeList.unlinkNodes(node, other);
+					node.unlink(other);
 					if (otherIsFinal) {
 						base.finals.delete(other);
 					}
@@ -1246,7 +1192,7 @@ function baseOptimizationMergePrefixes(nodeList: NFA.NodeList, base: SubList): v
 		}
 	}
 }
-function baseOptimizationMergeSuffixes(nodeList: NFA.NodeList, base: SubList): void {
+function baseOptimizationMergeSuffixes(base: SubGraph): void {
 	// this will basically be the same as the prefix optimization but in the other direction
 
 	const suffixNodes: NFA.Node[] = [];
@@ -1282,10 +1228,10 @@ function baseOptimizationMergeSuffixes(nodeList: NFA.NodeList, base: SubList): v
 				if (currentCharSet.equals(otherCharSet) && otherIsFinal == base.finals.has(current)) {
 					// found a match -> remove other
 					for (const [otherFrom, otherFromCharSet] of other.in) {
-						nodeList.linkNodes(otherFrom, current, otherFromCharSet);
-						nodeList.unlinkNodes(otherFrom, other);
+						otherFrom.link(current, otherFromCharSet);
+						otherFrom.unlink(other);
 					}
-					nodeList.unlinkNodes(other, node);
+					other.unlink(node);
 					if (otherIsFinal) {
 						base.finals.delete(other);
 					}
@@ -1306,14 +1252,14 @@ function baseOptimizationMergeSuffixes(nodeList: NFA.NodeList, base: SubList): v
 /**
  * Alters `base` to be repeated a certain number of times.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param times
  */
-function baseRepeat(nodeList: NFA.NodeList, base: SubList, times: number): void {
+function baseRepeat(factory: NodeFactory<NFA.Node>, base: SubGraph, times: number): void {
 	if (times === 0) {
 		// trivial
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		base.finals.add(base.initial);
 		return;
 	}
@@ -1331,14 +1277,14 @@ function baseRepeat(nodeList: NFA.NodeList, base: SubList, times: number): void 
 	}
 
 	if (!base.finals.has(base.initial)) {
-		const copy = localCopy(nodeList, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseAppend(nodeList, base, localCopy(nodeList, copy));
+			baseAppend(base, factoryCopyOfSubGraph(factory, copy));
 		}
 		// use the original copy
-		baseAppend(nodeList, base, copy);
+		baseAppend(base, copy);
 	} else {
 		// We could use the above approach here as well but this would generate O(n^2) unnecessary transitions.
 		// To get rid of these unnecessary transitions, we remove the initial states from the set of final states
@@ -1347,16 +1293,16 @@ function baseRepeat(nodeList: NFA.NodeList, base: SubList, times: number): void 
 		const realFinal = new Set<NFA.Node>(base.finals);
 		base.finals.delete(base.initial);
 
-		const copy = localCopy(nodeList, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 
 		for (let i = times; i > 2; i--) {
 			// use a copy of the original copy for concatenation
 			// do this `times - 2` times
-			baseAppend(nodeList, base, localCopy(nodeList, copy));
+			baseAppend(base, factoryCopyOfSubGraph(factory, copy));
 			base.finals.forEach(f => realFinal.add(f));
 		}
 		// use the original copy
-		baseAppend(nodeList, base, copy);
+		baseAppend(base, copy);
 		base.finals.forEach(f => realFinal.add(f));
 
 		// transfer the final states
@@ -1372,16 +1318,15 @@ function baseRepeat(nodeList: NFA.NodeList, base: SubList, times: number): void 
 /**
  * Alters `base` to be equal to `/(<base>)+/`.
  *
- * @param nodeList
  * @param base
  */
-function basePlus(nodeList: NFA.NodeList, base: SubList): void {
+function basePlus(base: SubGraph): void {
 	// The basic idea here is that we copy all edges from the initial state state to every final state. This means that
 	// all final states will then behave like the initial state.
 	for (const f of base.finals) {
 		if (f !== base.initial) {
 			base.initial.out.forEach((characters, to) => {
-				nodeList.linkNodes(f, to, characters);
+				f.link(to, characters);
 			});
 		}
 	}
@@ -1392,7 +1337,7 @@ function basePlus(nodeList: NFA.NodeList, base: SubList): void {
  *
  * @param base
  */
-function baseIsPlusExpression(base: ReadonlySubList): boolean {
+function baseIsPlusExpression(base: ReadonlySubGraph): boolean {
 	// The following condition have to be fulfilled:
 	//
 	// All Final states have to link to all and only to all directly outgoing states of the initial state.
@@ -1418,11 +1363,11 @@ function baseIsPlusExpression(base: ReadonlySubList): boolean {
 	return true;
 }
 
-function baseQuantify(nodeList: NFA.NodeList, base: SubList, min: number, max: number): void {
+function baseQuantify(factory: NodeFactory<NFA.Node>, base: SubGraph, min: number, max: number): void {
 	if (max === 0) {
 		// this is a special case, so handle it before everything else
 		// e.g. /a{0}/
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		base.finals.add(base.initial);
 		return;
 	}
@@ -1456,52 +1401,52 @@ function baseQuantify(nodeList: NFA.NodeList, base: SubList, min: number, max: n
 		// (A+){min,max} == (A+){min}(A+){0,max-min} == (A+){min}A* == A{min-1}A+A* == A{min-1}A+
 
 		// make a copy of A+
-		const aPlus = localCopy(nodeList, base);
+		const aPlus = factoryCopyOfSubGraph(factory, base);
 
 		// remove the + from the current A+
 		for (const final of base.finals) {
 			for (const finalOut of final.out.keys()) {
-				nodeList.unlinkNodes(final, finalOut);
+				final.unlink(finalOut);
 			}
 		}
 
-		baseRepeat(nodeList, base, min - 1); // repeat A min-1 many times
-		baseAppend(nodeList, base, aPlus); // concat A{min-1} and A+
+		baseRepeat(factory, base, min - 1); // repeat A min-1 many times
+		baseAppend(base, aPlus); // concat A{min-1} and A+
 		return;
 	}
 
 	if (min === max) {
 		// e.g. /a{4}/
-		baseRepeat(nodeList, base, min);
+		baseRepeat(factory, base, min);
 	} else if (max < Infinity) {
 		// e.g. /a{2,4}/
 		// The basic idea here is that /a{m,n}/ == /a{m}(a|){n-m}/
 
 		// make a copy of base and include the empty string
-		const copy = localCopy(nodeList, base);
+		const copy = factoryCopyOfSubGraph(factory, base);
 		copy.finals.add(copy.initial);
 
-		baseRepeat(nodeList, copy, max - min);
-		baseRepeat(nodeList, base, min);
-		baseAppend(nodeList, base, copy);
+		baseRepeat(factory, copy, max - min);
+		baseRepeat(factory, base, min);
+		baseAppend(base, copy);
 	} else {
 		if (min > 1) {
 			// e.g. /a{4,}/
 			// The basic idea here is that /a{4,}/ == /a{3}a+/
 
 			// the plus part (has to be done first because base will be modified by repeat)
-			const copy = localCopy(nodeList, base);
-			basePlus(nodeList, copy);
+			const copy = factoryCopyOfSubGraph(factory, base);
+			basePlus(copy);
 
 			// repeat
-			baseRepeat(nodeList, base, min - 1);
+			baseRepeat(factory, base, min - 1);
 
-			baseAppend(nodeList, base, copy);
+			baseAppend(base, copy);
 		} else {
 			// e.g. /a*/, /a+/
 			// If `min` is 0 then the initial state will already be final because of the code above.
 			// We can use the plus operator for star as well because /(<RE>)*/ == /(<RE>)+|/
-			basePlus(nodeList, base);
+			basePlus(base);
 		}
 	}
 }
@@ -1509,17 +1454,14 @@ function baseQuantify(nodeList: NFA.NodeList, base: SubList, min: number, max: n
 /**
  * Alters `base` to accept no words.
  *
- * @param nodeList
  * @param base
  */
-function baseMakeEmpty(nodeList: NFA.NodeList, base: SubList): void {
-	for (const out of [...base.initial.out.keys()]) {
-		nodeList.unlinkNodes(base.initial, out);
-	}
+function baseMakeEmpty(base: NonNormalSubGraph): void {
+	base.initial.unlinkAll();
 	base.finals.clear();
 }
 
-function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
+function baseReverse(factory: NodeFactory<NFA.Node>, base: SubGraph): void {
 	const { initial, finals } = base;
 
 	if (finals.size === 0 || (finals.size === 1 && finals.has(initial))) {
@@ -1546,10 +1488,10 @@ function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
 
 	// replace the former initial with a new node and make it final
 	// this will make the initial "free" (no in/out transitions)
-	const mainFinal = nodeList.createNode();
+	const mainFinal = factory.createNode();
 	initial.in.forEach((trans, from) => {
-		nodeList.unlinkNodes(from, initial);
-		nodeList.linkNodes(from, mainFinal, trans);
+		from.unlink(initial);
+		from.link(mainFinal, trans);
 	});
 
 	const newFinals = new Set<NFA.Node>([mainFinal]);
@@ -1561,12 +1503,12 @@ function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
 	// make the former initial the new initial
 	for (const f of finals) {
 		f.out.forEach((trans, to) => {
-			nodeList.linkNodes(initial, to, trans);
+			initial.link(to, trans);
 		});
 		if (f.in.size === 0) {
 			// remove f
 			f.out.forEach((_, to) => {
-				nodeList.unlinkNodes(f, to);
+				f.unlink(to);
 			});
 		}
 	}
@@ -1574,4 +1516,82 @@ function baseReverse(nodeList: NFA.NodeList, base: SubList): void {
 	// transfer finals
 	finals.clear();
 	newFinals.forEach(f => finals.add(f));
+}
+
+function baseNormalize(factory: NodeFactory<NFA.Node>, base: NonNormalSubGraph): void {
+	if (base.initial.in.size === 0) {
+		// already normalized
+		return;
+	}
+
+	const i = factory.createNode();
+
+	// make the new state equivalent to the initial state
+	base.initial.out.forEach((via, to) => {
+		i.link(to === base.initial ? i : to, via);
+	});
+	base.initial.in.forEach((via, from) => {
+		from.link(i, via);
+	});
+
+	base.initial.unlinkAllIn();
+
+	if (base.finals.has(base.initial)) {
+		base.finals.add(i);
+	}
+}
+
+/**
+ * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
+ * removed.
+ *
+ * @param base
+ */
+function baseRemoveUnreachable(base: NonNormalSubGraph): void {
+	if (base.finals.size === 0) {
+		baseMakeEmpty(base);
+		return;
+	}
+
+	// 1) Get all nodes reachable from the initial state
+	const reachableFromInitial = new Set<NFA.Node>();
+	traverse(base.initial, node => {
+		reachableFromInitial.add(node);
+		return node.out.keys();
+	});
+
+	// 2) Get all nodes reachable state
+	const reachable = new Set<NFA.Node>();
+	traverseMultiRoot(base.finals, node => {
+		if (!reachableFromInitial.has(node)) {
+			return [];
+		}
+
+		reachable.add(node);
+		return node.in.keys();
+	});
+
+	if (reachable.size === 0 || !reachable.has(base.initial)) {
+		baseMakeEmpty(base);
+		return;
+	}
+
+	// 3) Remove all unreachable states
+	for (const node of reachable) {
+		node.out.forEach((_, to) => {
+			if (!reachable.has(to)) {
+				to.unlinkAll();
+			}
+		});
+		node.in.forEach((_, from) => {
+			if (!reachable.has(from)) {
+				from.unlinkAll();
+			}
+		});
+	}
+	for (const f of [...base.finals]) {
+		if (!reachable.has(f)) {
+			base.finals.delete(f);
+		}
+	}
 }

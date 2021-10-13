@@ -23,7 +23,7 @@ const maxNodes = 100_000;
 
 function equalLanguage(expected: ReadonlyDFA, re: NoParent<Expression>, maxCharacter: number): void {
 	const nfa = NFA.fromRegex(re, { maxCharacter }, { assertions: "disable" });
-	const dfa = DFA.fromFA(nfa, { maxNodes });
+	const dfa = DFA.fromFA(nfa, new DFA.LimitedNodeFactory(maxNodes));
 	dfa.minimize();
 
 	assert.isTrue(expected.structurallyEqual(dfa));
@@ -70,16 +70,17 @@ describe("Regex stress test", function () {
 						const nfa = NFA.fromRegex(
 							expression,
 							{ maxCharacter },
-							{ assertions: "disable", unknowns: "disable", maxNodes }
+							{ assertions: "disable", unknowns: "disable" },
+							new NFA.LimitedNodeFactory(maxNodes)
 						);
-						nfa.nodes.count();
+						nfa.countNodes();
 
 						const re1 = nfa.toRegex({ maxNodes });
 
-						const dfa = DFA.fromFA(nfa, { maxNodes });
-						const dfaOriginalCount = dfa.nodes.count();
+						const dfa = DFA.fromFA(nfa, new DFA.LimitedNodeFactory(maxNodes));
+						const dfaOriginalCount = dfa.countNodes();
 						dfa.minimize();
-						assert.isTrue(dfa.nodes.count() <= dfaOriginalCount);
+						assert.isTrue(dfa.countNodes() <= dfaOriginalCount);
 
 						if (CHECK_RE_LANGUAGE) {
 							equalLanguage(dfa, re1, maxCharacter);

@@ -129,7 +129,7 @@ describe("toRegex", function () {
 					const re = inter.toRegex(options);
 					const actual = toLiteral(re);
 					assert.strictEqual(`/${actual.source}/${actual.flags}`, expected);
-					assert.isTrue(faEqual(inter, NFA.fromRegex(re, inter.options)));
+					assert.isTrue(faEqual(inter, NFA.fromRegex(re, inter)));
 					assert.isTrue(faEqual(inter, literalToNFA(actual)));
 				});
 			}

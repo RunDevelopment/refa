@@ -64,7 +64,8 @@ function perfTest(): void {
 				NFA.fromRegex(
 					finalExpression,
 					{ maxCharacter },
-					{ assertions: "disable", maxNodes: 100_000 }
+					{ assertions: "disable" },
+					new NFA.LimitedNodeFactory(100_000)
 				)
 			);
 			measure("toRegex NFA", () => nfa.toRegex({ maxNodes: 100_000 }));

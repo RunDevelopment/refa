@@ -1156,30 +1156,28 @@ describe("ENFA", function () {
 
 		it(ENFA.fromFA.name, function () {
 			assert.throws(() => {
-				ENFA.fromFA(testENFA, { maxNodes: 100 });
+				ENFA.fromFA(testENFA, new ENFA.LimitedNodeFactory(100));
 			});
 		});
 		it(ENFA.fromRegex.name, function () {
 			assert.throws(() => {
-				ENFA.fromRegex(testENFA.toRegex(), testENFA.options, { maxNodes: 100 });
+				ENFA.fromRegex(testENFA.toRegex(), testENFA, {}, new ENFA.LimitedNodeFactory(100));
 			});
 		});
 		it(ENFA.fromTransitionIterator.name, function () {
 			assert.throws(() => {
-				ENFA.fromTransitionIterator(testENFA.transitionIterator(), testENFA.options, { maxNodes: 100 });
+				ENFA.fromTransitionIterator(testENFA.transitionIterator(), testENFA, new ENFA.LimitedNodeFactory(100));
 			});
 		});
 		it(ENFA.fromWords.name, function () {
 			assert.throws(() => {
-				ENFA.fromWords(testENFA.words(), testENFA.options, { maxNodes: 100 });
+				ENFA.fromWords(testENFA.words(), testENFA, new ENFA.LimitedNodeFactory(100));
 			});
 		});
 	});
 
-	describe(ENFA.NodeList.name, function () {
-		it(ENFA.NodeList.resolveEpsilon.name, function () {
-			const nodeList = new ENFA.NodeList();
-
+	describe(ENFA.Node.name, function () {
+		it(ENFA.Node.prototype.resolveEpsilon.name, function () {
 			/**
 			 * This creates the graph.
 			 *
@@ -1204,23 +1202,23 @@ describe("ENFA", function () {
 			const d = CharSet.empty(0xffff).union([{ min: 100, max: 100 }]);
 			const e = CharSet.empty(0xffff).union([{ min: 101, max: 101 }]);
 
-			const n0 = nodeList.createNode();
-			const n1 = nodeList.createNode();
-			const n2 = nodeList.createNode();
-			const n3 = nodeList.createNode();
-			const n4 = nodeList.createNode();
+			const n0 = new ENFA.Node();
+			const n1 = new ENFA.Node();
+			const n2 = new ENFA.Node();
+			const n3 = new ENFA.Node();
+			const n4 = new ENFA.Node();
 
-			nodeList.linkNodes(n0, n1, a);
-			nodeList.linkNodes(n0, n2, null);
-			nodeList.linkNodes(n0, n3, b);
+			n0.link(n1, a);
+			n0.link(n2, null);
+			n0.link(n3, b);
 
-			nodeList.linkNodes(n1, n3, c);
+			n1.link(n3, c);
 
-			nodeList.linkNodes(n2, n4, d);
-			nodeList.linkNodes(n2, n1, e);
-			nodeList.linkNodes(n2, n2, null);
+			n2.link(n4, d);
+			n2.link(n1, e);
+			n2.link(n2, null);
 
-			nodeList.linkNodes(n3, n1, null);
+			n3.link(n1, null);
 
 			/**
 			 * The node `(0)` will return the resolved list:
@@ -1234,7 +1232,7 @@ describe("ENFA", function () {
 			 */
 
 			const resolved: [ENFA.ReadonlyNode, CharSet][] = [];
-			ENFA.NodeList.resolveEpsilon(n0, "out", (charSet, node) => resolved.push([node, charSet]));
+			n0.resolveEpsilon("out", (charSet, node) => resolved.push([node, charSet]));
 
 			assert.deepEqual(resolved, [
 				[n1, a],

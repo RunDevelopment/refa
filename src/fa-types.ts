@@ -116,6 +116,19 @@ export interface FAIterator<S, O = Iterable<S>> {
 }
 
 /**
+ * A factory for the nodes of finite automata.
+ */
+export interface NodeFactory<S> {
+	/**
+	 * Creates a new state.
+	 *
+	 * @throws {@link TooManyNodesError}
+	 * May be thrown if the number of created nodes exceeds some limit.
+	 */
+	readonly createNode: () => S;
+}
+
+/**
  * An FA builder has the responsibility of constructing a finite automaton.
  *
  * The constructed FA is always owned by the builder.
@@ -123,7 +136,7 @@ export interface FAIterator<S, O = Iterable<S>> {
  * @template S The type of a state.
  * @template T The transition type of the values linking states.
  */
-export interface FABuilder<S, T> {
+export interface FABuilder<S, T> extends NodeFactory<S> {
 	/**
 	 * The initial state of the FA.
 	 */
@@ -143,13 +156,6 @@ export interface FABuilder<S, T> {
 	 * This operation is assumed to be semantically equivalent to {@link FAIterator.isFinal}.
 	 */
 	readonly isFinal: (state: S) => boolean;
-	/**
-	 * Creates a new state owned by the builder.
-	 *
-	 * @throws {@link TooManyNodesError}
-	 * May be thrown if the number of created nodes exceeds some limit.
-	 */
-	readonly createNode: () => S;
 	/**
 	 * Links to the two given states using the given transition.
 	 *
