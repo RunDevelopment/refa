@@ -90,6 +90,16 @@
 							state machines in this NFA implementation.</p>
 						</li>
 					</ul>
+					<a href="#normal-form" id="normal-form" style="color: inherit; text-decoration: none;">
+						<h2>Normal form</h2>
+					</a>
+					<p>The normal form of this ENFA implementation has the following restriction:</p>
+					<ul>
+						<li>The initial state must not have incoming transitions.</li>
+						<li>The final state must not have outgoing transitions.</li>
+						<li>The initial state and final state are different states.</li>
+					</ul>
+					<p>Non-normalized ENFAs will either be tolerated or normalized by operations.</p>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
@@ -113,8 +123,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="ENFA.html#final" class="tsd-kind-icon">final</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="ENFA.html#initial" class="tsd-kind-icon">initial</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="ENFA.html#maxCharacter" class="tsd-kind-icon">max<wbr>Character</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="ENFA.html#nodes" class="tsd-kind-icon">nodes</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -122,7 +133,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="ENFA.html#isEmpty" class="tsd-kind-icon">is<wbr>Empty</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="ENFA.html#isFinite" class="tsd-kind-icon">is<wbr>Finite</a></li>
-								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="ENFA.html#options" class="tsd-kind-icon">options</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="ENFA.html#isNormalized" class="tsd-kind-icon">is<wbr>Normalized</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -130,9 +141,13 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="ENFA.html#append" class="tsd-kind-icon">append</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#copy" class="tsd-kind-icon">copy</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#countNodes" class="tsd-kind-icon">count<wbr>Nodes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#nodes" class="tsd-kind-icon">nodes</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#normalize" class="tsd-kind-icon">normalize</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#prefixes" class="tsd-kind-icon">prefixes</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="ENFA.html#prepend" class="tsd-kind-icon">prepend</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#quantify" class="tsd-kind-icon">quantify</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#removeUnreachable" class="tsd-kind-icon">remove<wbr>Unreachable</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#stateIterator" class="tsd-kind-icon">state<wbr>Iterator</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#suffixes" class="tsd-kind-icon">suffixes</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#test" class="tsd-kind-icon">test</a></li>
@@ -145,6 +160,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ENFA.html#words" class="tsd-kind-icon">words</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="ENFA.html#all" class="tsd-kind-icon">all</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="ENFA.html#empty" class="tsd-kind-icon">empty</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="ENFA.html#fromBuilder" class="tsd-kind-icon">from<wbr>Builder</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static"><a href="ENFA.html#fromFA" class="tsd-kind-icon">fromFA</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="ENFA.html#fromRegex" class="tsd-kind-icon">from<wbr>Regex</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static"><a href="ENFA.html#fromTransitionIterator" class="tsd-kind-icon">from<wbr>Transition<wbr>Iterator</a></li>
@@ -158,6 +174,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="final" class="tsd-anchor"></a>
+					<h3>final</h3>
+					<div class="tsd-signature tsd-kind-icon">final<span class="tsd-signature-symbol">:</span> <a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#final">final</a></p>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="initial" class="tsd-anchor"></a>
+					<h3>initial</h3>
+					<div class="tsd-signature tsd-kind-icon">initial<span class="tsd-signature-symbol">:</span> <a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#initial">initial</a></p>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="maxCharacter" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> max<wbr>Character</h3>
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Character<span class="tsd-signature-symbol">:</span> <a href="../modules.html#Char" class="tsd-signature-type" data-tsd-kind="Type alias">Char</a></div>
@@ -169,14 +201,6 @@
 							<p>The maximum character that is part of the alphabet of the words that this FA can accept.</p>
 						</div>
 					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="nodes" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> nodes</h3>
-					<div class="tsd-signature tsd-kind-icon">nodes<span class="tsd-signature-symbol">:</span> <a href="ENFA.NodeList.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#nodes">nodes</a></p>
-					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -224,17 +248,16 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
-					<a name="options" class="tsd-anchor"></a>
-					<h3>options</h3>
+					<a name="isNormalized" class="tsd-anchor"></a>
+					<h3>is<wbr>Normalized</h3>
 					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> options<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isNormalized<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#options">options</a></p>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -245,7 +268,7 @@
 					<a name="append" class="tsd-anchor"></a>
 					<h3>append</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">append&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">append&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -266,6 +289,9 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>other: <a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -278,7 +304,7 @@
 					<a name="copy" class="tsd-anchor"></a>
 					<h3>copy</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">copy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">copy<span class="tsd-signature-symbol">(</span>factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -290,7 +316,70 @@
 									<p>Create a mutable copy of this ENFA.</p>
 								</div>
 							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="countNodes" class="tsd-anchor"></a>
+					<h3>count<wbr>Nodes</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">count<wbr>Nodes<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#countNodes">countNodes</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the number of nodes reachable from the initial state including the initial state.</p>
+								</div>
+								<p>This may include trap states. This will not include unreachable final states.</p>
+								<p>This operation has to traverse the whole graph and runs in <em>O(E + V)</em>.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="nodes" class="tsd-anchor"></a>
+					<h3>nodes</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">nodes<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/ReadonlyENFA.html">ReadonlyENFA</a>.<a href="../interfaces/ReadonlyENFA.html#nodes">nodes</a></p>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="normalize" class="tsd-anchor"></a>
+					<h3>normalize</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">normalize<span class="tsd-signature-symbol">(</span>factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -319,7 +408,7 @@
 					<a name="prepend" class="tsd-anchor"></a>
 					<h3>prepend</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">prepend&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">prepend&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -340,6 +429,9 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>other: <a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -352,7 +444,7 @@
 					<a name="quantify" class="tsd-anchor"></a>
 					<h3>quantify</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">quantify<span class="tsd-signature-symbol">(</span>min<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, max<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, lazy<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">quantify<span class="tsd-signature-symbol">(</span>min<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, max<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, lazy<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -375,10 +467,33 @@
 								</li>
 								<li>
 									<h5>lazy: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+								</li>
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
 							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="removeUnreachable" class="tsd-anchor"></a>
+					<h3>remove<wbr>Unreachable</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Unreachable<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
+									removed.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
@@ -565,7 +680,7 @@
 					<a name="union" class="tsd-anchor"></a>
 					<h3>union</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">union&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span>, kind<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">&quot;left&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;right&quot;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">union&lt;O&gt;<span class="tsd-signature-symbol">(</span>other<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span>, kind<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">&quot;left&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;right&quot;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -591,6 +706,9 @@
 								</li>
 								<li>
 									<h5>kind: <span class="tsd-signature-type">&quot;left&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;right&quot;</span><span class="tsd-signature-symbol"> = &quot;right&quot;</span></h5>
+								</li>
+								<li>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -698,11 +816,34 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="fromBuilder" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Builder</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Builder<span class="tsd-signature-symbol">(</span>builder<span class="tsd-signature-symbol">: </span><a href="ENFA.Builder.html" class="tsd-signature-type" data-tsd-kind="Class">Builder</a>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>builder: <a href="ENFA.Builder.html" class="tsd-signature-type" data-tsd-kind="Class">Builder</a></h5>
+								</li>
+								<li>
+									<h5>options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
 					<a name="fromFA" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> fromFA</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">fromFA&lt;InputNode&gt;<span class="tsd-signature-symbol">(</span>fa<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">InputNode</span><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">fromFA&lt;InputNode&gt;<span class="tsd-signature-symbol">(</span>fa<span class="tsd-signature-symbol">: </span><a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">InputNode</span><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -720,7 +861,7 @@
 									<h5>fa: <a href="../interfaces/TransitionIterable.html" class="tsd-signature-type" data-tsd-kind="Interface">TransitionIterable</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">InputNode</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
@@ -731,8 +872,8 @@
 					<a name="fromRegex" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Regex</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Regex<span class="tsd-signature-symbol">(</span>concat<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Expression.html" class="tsd-signature-type" data-tsd-kind="Interface">Expression</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Alternation.html" class="tsd-signature-type" data-tsd-kind="Interface">Alternation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Quantifier.html" class="tsd-signature-type" data-tsd-kind="Interface">Quantifier</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Assertion.html" class="tsd-signature-type" data-tsd-kind="Interface">Assertion</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Concatenation.html" class="tsd-signature-type" data-tsd-kind="Interface">Concatenation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharacterClass.html" class="tsd-signature-type" data-tsd-kind="Interface">CharacterClass</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Unknown.html" class="tsd-signature-type" data-tsd-kind="Interface">Unknown</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Regex<span class="tsd-signature-symbol">(</span>alternatives<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Concatenation.html" class="tsd-signature-type" data-tsd-kind="Interface">Concatenation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Regex<span class="tsd-signature-symbol">(</span>concat<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Expression.html" class="tsd-signature-type" data-tsd-kind="Interface">Expression</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Alternation.html" class="tsd-signature-type" data-tsd-kind="Interface">Alternation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Quantifier.html" class="tsd-signature-type" data-tsd-kind="Interface">Quantifier</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Assertion.html" class="tsd-signature-type" data-tsd-kind="Interface">Assertion</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Concatenation.html" class="tsd-signature-type" data-tsd-kind="Interface">Concatenation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/CharacterClass.html" class="tsd-signature-type" data-tsd-kind="Interface">CharacterClass</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Unknown.html" class="tsd-signature-type" data-tsd-kind="Interface">Unknown</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Regex<span class="tsd-signature-symbol">(</span>alternatives<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">NoParentNode</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/Concatenation.html" class="tsd-signature-type" data-tsd-kind="Interface">Concatenation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -748,6 +889,9 @@
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
@@ -766,6 +910,9 @@
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.FromRegexOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">FromRegexOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
 						</li>
@@ -775,7 +922,7 @@
 					<a name="fromTransitionIterator" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Transition<wbr>Iterator</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Transition<wbr>Iterator&lt;InputNode&gt;<span class="tsd-signature-symbol">(</span>iter<span class="tsd-signature-symbol">: </span><a href="../modules.html#TransitionIterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">InputNode</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Transition<wbr>Iterator&lt;InputNode&gt;<span class="tsd-signature-symbol">(</span>iter<span class="tsd-signature-symbol">: </span><a href="../modules.html#TransitionIterator" class="tsd-signature-type" data-tsd-kind="Type alias">TransitionIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">InputNode</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -796,7 +943,7 @@
 									<h5>options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></h4>
@@ -807,7 +954,7 @@
 					<a name="fromWordSets" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Word<wbr>Sets</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Word<wbr>Sets<span class="tsd-signature-symbol">(</span>wordSets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWordSet" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWordSet</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Word<wbr>Sets<span class="tsd-signature-symbol">(</span>wordSets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWordSet" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWordSet</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -827,7 +974,7 @@
 									<h5>options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -840,7 +987,7 @@
 					<a name="fromWords" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Words</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">from<wbr>Words<span class="tsd-signature-symbol">(</span>words<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWord" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWord</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, creationOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Words<span class="tsd-signature-symbol">(</span>words<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules.html#ReadonlyWord" class="tsd-signature-type" data-tsd-kind="Type alias">ReadonlyWord</a><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span>, factory<span class="tsd-signature-symbol">?: </span><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ENFA.html" class="tsd-signature-type" data-tsd-kind="Class">ENFA</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -860,7 +1007,7 @@
 									<h5>options: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.Options.html" class="tsd-signature-type" data-tsd-kind="Interface">Options</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> creationOptions: <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ENFA.CreationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">CreationOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>factory: <a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="ENFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
@@ -887,10 +1034,13 @@
 						<a href="ENFA.html" class="tsd-kind-icon">ENFA</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="ENFA.html#maxCharacter" class="tsd-kind-icon">max<wbr>Character</a>
+								<a href="ENFA.html#final" class="tsd-kind-icon">final</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="ENFA.html#nodes" class="tsd-kind-icon">nodes</a>
+								<a href="ENFA.html#initial" class="tsd-kind-icon">initial</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="ENFA.html#maxCharacter" class="tsd-kind-icon">max<wbr>Character</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="ENFA.html#isEmpty" class="tsd-kind-icon">is<wbr>Empty</a>
@@ -899,13 +1049,22 @@
 								<a href="ENFA.html#isFinite" class="tsd-kind-icon">is<wbr>Finite</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="ENFA.html#options" class="tsd-kind-icon">options</a>
+								<a href="ENFA.html#isNormalized" class="tsd-kind-icon">is<wbr>Normalized</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 								<a href="ENFA.html#append" class="tsd-kind-icon">append</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="ENFA.html#copy" class="tsd-kind-icon">copy</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="ENFA.html#countNodes" class="tsd-kind-icon">count<wbr>Nodes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="ENFA.html#nodes" class="tsd-kind-icon">nodes</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="ENFA.html#normalize" class="tsd-kind-icon">normalize</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="ENFA.html#prefixes" class="tsd-kind-icon">prefixes</a>
@@ -915,6 +1074,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="ENFA.html#quantify" class="tsd-kind-icon">quantify</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="ENFA.html#removeUnreachable" class="tsd-kind-icon">remove<wbr>Unreachable</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="ENFA.html#stateIterator" class="tsd-kind-icon">state<wbr>Iterator</a>
@@ -951,6 +1113,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
 								<a href="ENFA.html#empty" class="tsd-kind-icon">empty</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="ENFA.html#fromBuilder" class="tsd-kind-icon">from<wbr>Builder</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
 								<a href="ENFA.html#fromFA" class="tsd-kind-icon">fromFA</a>

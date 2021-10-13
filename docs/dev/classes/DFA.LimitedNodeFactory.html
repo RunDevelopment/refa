@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ReadonlyNodeList | refa - v0.9.1</title>
+	<title>LimitedNodeFactory | refa - v0.9.1</title>
 	<meta name="description" content="Documentation for refa - v0.9.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../modules/DFA.html">DFA</a>
 				</li>
 				<li>
-					<a href="DFA.ReadonlyNodeList.html">ReadonlyNodeList</a>
+					<a href="DFA.LimitedNodeFactory.html">LimitedNodeFactory</a>
 				</li>
 			</ul>
-			<h1>Interface ReadonlyNodeList</h1>
+			<h1>Class LimitedNodeFactory</h1>
 		</div>
 	</div>
 </header>
@@ -70,19 +70,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="tsd-signature-type">Iterable</span><span class="tsd-signature-symbol">&lt;</span><a href="DFA.ReadonlyNode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">ReadonlyNodeList</span>
-							</li>
-						</ul>
+						<span class="target">LimitedNodeFactory</span>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel">
-				<h3>Implemented by</h3>
+				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/DFA.NodeList.html" class="tsd-signature-type" data-tsd-kind="Class">NodeList</a></li>
+					<li><a href="../interfaces/NodeFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">NodeFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="DFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -90,58 +85,78 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="DFA.LimitedNodeFactory.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DFA.ReadonlyNodeList.html#finals" class="tsd-kind-icon">finals</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DFA.ReadonlyNodeList.html#initial" class="tsd-kind-icon">initial</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="DFA.LimitedNodeFactory.html#limit" class="tsd-kind-icon">limit</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="DFA.ReadonlyNodeList.html#count" class="tsd-kind-icon">count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA.LimitedNodeFactory.html#createNode" class="tsd-kind-icon">create<wbr>Node</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="finals" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> finals</h3>
-					<div class="tsd-signature tsd-kind-icon">finals<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ReadonlySet</span><span class="tsd-signature-symbol">&lt;</span><a href="DFA.ReadonlyNode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-					</aside>
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Limited<wbr>Node<wbr>Factory<span class="tsd-signature-symbol">(</span>limit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DFA.LimitedNodeFactory.html" class="tsd-signature-type" data-tsd-kind="Class">LimitedNodeFactory</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>limit: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="DFA.LimitedNodeFactory.html" class="tsd-signature-type" data-tsd-kind="Class">LimitedNodeFactory</a></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="initial" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> initial</h3>
-					<div class="tsd-signature tsd-kind-icon">initial<span class="tsd-signature-symbol">:</span> <a href="DFA.ReadonlyNode.html" class="tsd-signature-type" data-tsd-kind="Interface">ReadonlyNode</a></div>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="limit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> limit</h3>
+					<div class="tsd-signature tsd-kind-icon">limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="count" class="tsd-anchor"></a>
-					<h3>count</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">count<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="createNode" class="tsd-anchor"></a>
+					<h3>create<wbr>Node</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Node<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/NodeFactory.html">NodeFactory</a>.<a href="../interfaces/NodeFactory.html#createNode">createNode</a></p>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns the number of nodes reachable from the initial state including the initial state.</p>
+									<p>Creates a new state.</p>
 								</div>
-								<p>This may include trap states. This will not include unreachable final states.</p>
-								<p>This operation has to traverse the whole graph and runs in <em>O(E + V)</em>.</p>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="DFA.Node.html" class="tsd-signature-type" data-tsd-kind="Class">Node</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -179,38 +194,38 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-namespace">
-						<a href="../classes/DFA.NodeList.html" class="tsd-kind-icon">Node<wbr>List</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="DFA.CreationOptions.html" class="tsd-kind-icon">Creation<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="DFA.Node.html" class="tsd-kind-icon">Node</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="DFA.Options.html" class="tsd-kind-icon">Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="DFA.ReadonlyNode.html" class="tsd-kind-icon">Readonly<wbr>Node</a>
+						<a href="DFA.Builder.html" class="tsd-kind-icon">Builder</a>
 					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-namespace">
-						<a href="DFA.ReadonlyNodeList.html" class="tsd-kind-icon">Readonly<wbr>Node<wbr>List</a>
+					<li class="current tsd-kind-class tsd-parent-kind-namespace">
+						<a href="DFA.LimitedNodeFactory.html" class="tsd-kind-icon">Limited<wbr>Node<wbr>Factory</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DFA.ReadonlyNodeList.html#finals" class="tsd-kind-icon">finals</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="DFA.LimitedNodeFactory.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DFA.ReadonlyNodeList.html#initial" class="tsd-kind-icon">initial</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="DFA.LimitedNodeFactory.html#limit" class="tsd-kind-icon">limit</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="DFA.ReadonlyNodeList.html#count" class="tsd-kind-icon">count</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="DFA.LimitedNodeFactory.html#createNode" class="tsd-kind-icon">create<wbr>Node</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-class tsd-parent-kind-namespace">
+						<a href="DFA.Node.html" class="tsd-kind-icon">Node</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="../interfaces/DFA.Options.html" class="tsd-kind-icon">Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-namespace">
+						<a href="../interfaces/DFA.ReadonlyNode.html" class="tsd-kind-icon">Readonly<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-parent-kind-namespace">
+						<a href="../modules/DFA.html#nodeFactory" class="tsd-kind-icon">node<wbr>Factory</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
