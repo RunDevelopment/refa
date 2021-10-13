@@ -16,8 +16,6 @@ import { ReadonlyWordSet, WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
 
-const DEFAULT_MAX_NODES = 10_000;
-
 /**
  * A readonly {@link NFA}.
  */
@@ -143,7 +141,7 @@ export class NFA implements ReadonlyNFA {
 		return c;
 	}
 
-	copy(factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
+	copy(factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()): NFA {
 		const copy = factoryCopy(factory, this.transitionIterator());
 
 		return new NFA(copy.initial, copy.finals, this.maxCharacter);
@@ -202,7 +200,7 @@ export class NFA implements ReadonlyNFA {
 	 * @param other
 	 * @param factory
 	 */
-	union<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+	union<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === (other as unknown)) {
@@ -240,7 +238,7 @@ export class NFA implements ReadonlyNFA {
 	 * @param other
 	 * @param factory
 	 */
-	append<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+	append<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === (other as unknown)) {
@@ -278,7 +276,7 @@ export class NFA implements ReadonlyNFA {
 	 * @param other
 	 * @param factory
 	 */
-	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
+	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === (other as unknown)) {
@@ -320,11 +318,7 @@ export class NFA implements ReadonlyNFA {
 	 * @param max
 	 * @param factory
 	 */
-	quantify(
-		min: number,
-		max: number,
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
-	): void {
+	quantify(min: number, max: number, factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
 		}
@@ -459,7 +453,7 @@ export class NFA implements ReadonlyNFA {
 	static fromIntersection<L, R>(
 		left: TransitionIterable<L>,
 		right: TransitionIterable<R>,
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
@@ -497,7 +491,7 @@ export class NFA implements ReadonlyNFA {
 		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<NFA.Options>,
 		creationOptions: Readonly<NFA.FromRegexOptions> = {},
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
 		let base;
 		if (Array.isArray(value)) {
@@ -538,7 +532,7 @@ export class NFA implements ReadonlyNFA {
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<NFA.Options>,
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
 		const { maxCharacter } = options;
 
@@ -574,7 +568,7 @@ export class NFA implements ReadonlyNFA {
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<NFA.Options>,
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
 		const { maxCharacter } = options;
 
@@ -595,7 +589,7 @@ export class NFA implements ReadonlyNFA {
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<NFA.Options>,
-		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
 		const { maxCharacter } = options;
 
@@ -708,7 +702,7 @@ export namespace NFA {
 		private _counter = 0;
 		readonly limit: number;
 
-		constructor(limit: number) {
+		constructor(limit: number = 10_000) {
 			this.limit = limit;
 		}
 

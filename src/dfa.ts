@@ -18,8 +18,6 @@ import * as Iter from "./iter";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
 
-const DEFAULT_MAX_NODES = 10_000;
-
 /**
  * A readonly {@link DFA}.
  */
@@ -184,7 +182,7 @@ export class DFA implements ReadonlyDFA {
 		);
 	}
 
-	copy(factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+	copy(factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()): DFA {
 		const { initial, finals } = factoryCopy(this, factory);
 		return new DFA(initial, finals, this.maxCharacter);
 	}
@@ -419,7 +417,7 @@ export class DFA implements ReadonlyDFA {
 	static fromIntersection<L, R>(
 		left: TransitionIterable<L>,
 		right: TransitionIterable<R>,
-		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()
 	): DFA {
 		MaxCharacterError.assert(left, right, "TransitionIterable");
 
@@ -455,7 +453,7 @@ export class DFA implements ReadonlyDFA {
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<DFA.Options>,
-		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()
 	): DFA {
 		const { maxCharacter } = options;
 
@@ -475,7 +473,7 @@ export class DFA implements ReadonlyDFA {
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<DFA.Options>,
-		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()
 	): DFA {
 		const { maxCharacter } = options;
 
@@ -487,7 +485,7 @@ export class DFA implements ReadonlyDFA {
 
 	static fromFA<InputNode>(
 		fa: TransitionIterable<InputNode>,
-		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()
 	): DFA {
 		if (fa instanceof DFA) {
 			const { initial, finals } = factoryCopy(fa, factory);
@@ -500,7 +498,7 @@ export class DFA implements ReadonlyDFA {
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<DFA.Options>,
-		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()
 	): DFA {
 		const builder = new DFA.Builder(factory);
 		const deterministicIter = Iter.makeDeterministic(builder, iter);
@@ -556,7 +554,7 @@ export namespace DFA {
 		private _counter = 0;
 		readonly limit: number;
 
-		constructor(limit: number) {
+		constructor(limit: number = 10_000) {
 			this.limit = limit;
 		}
 

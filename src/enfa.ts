@@ -17,8 +17,6 @@ import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
 
-const DEFAULT_MAX_NODES = 10_000;
-
 /**
  * A readonly {@link ENFA}.
  */
@@ -280,7 +278,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param other
 	 * @param factory
 	 */
-	append<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
+	append<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()): void {
 		MaxCharacterError.assert(this, other);
 
 		this.normalize(factory);
@@ -293,7 +291,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param other
 	 * @param factory
 	 */
-	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
+	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()): void {
 		MaxCharacterError.assert(this, other);
 
 		this.normalize(factory);
@@ -313,7 +311,7 @@ export class ENFA implements ReadonlyENFA {
 	union<O>(
 		other: TransitionIterable<O>,
 		kind: "left" | "right" = "right",
-		factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): void {
 		MaxCharacterError.assert(this, other);
 
@@ -340,7 +338,7 @@ export class ENFA implements ReadonlyENFA {
 		min: number,
 		max: number,
 		lazy: boolean = false,
-		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
@@ -364,8 +362,10 @@ export class ENFA implements ReadonlyENFA {
 	 * If the language of this ENFA is empty, then it will remain empty.
 	 *
 	 * Unreachable states will be removed by this operation.
+	 *
+	 * @param factory
 	 */
-	prefixes(): void {
+	prefixes(factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()): void {
 		this.removeUnreachable();
 
 		if (this.isEmpty) {
@@ -374,7 +374,7 @@ export class ENFA implements ReadonlyENFA {
 
 		this.normalize();
 		for (const node of this.nodes()) {
-			baseMakeEffectivelyFinal(ENFA.nodeFactory, this, node);
+			baseMakeEffectivelyFinal(factory, this, node);
 		}
 	}
 
@@ -384,8 +384,10 @@ export class ENFA implements ReadonlyENFA {
 	 * If the language of this ENFA is empty, then it will remain empty.
 	 *
 	 * Unreachable states will be removed by this operation.
+	 *
+	 * @param factory
 	 */
-	suffixes(): void {
+	suffixes(factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()): void {
 		this.removeUnreachable();
 
 		if (this.isEmpty) {
@@ -394,7 +396,7 @@ export class ENFA implements ReadonlyENFA {
 
 		this.normalize();
 		for (const node of this.nodes()) {
-			baseMakeEffectivelyInitial(ENFA.nodeFactory, this, node);
+			baseMakeEffectivelyInitial(factory, this, node);
 		}
 	}
 
@@ -440,7 +442,7 @@ export class ENFA implements ReadonlyENFA {
 		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<ENFA.Options>,
 		creationOptions: Readonly<ENFA.FromRegexOptions> = {},
-		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): ENFA {
 		let base;
 		if (Array.isArray(value)) {
@@ -481,7 +483,7 @@ export class ENFA implements ReadonlyENFA {
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<ENFA.Options>,
-		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): ENFA {
 		const { maxCharacter } = options;
 		const builder = new ENFA.Builder(factory);
@@ -513,7 +515,7 @@ export class ENFA implements ReadonlyENFA {
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<ENFA.Options>,
-		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): ENFA {
 		const { maxCharacter } = options;
 		const builder = new ENFA.Builder(factory);
@@ -528,7 +530,7 @@ export class ENFA implements ReadonlyENFA {
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<ENFA.Options>,
-		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): ENFA {
 		const { maxCharacter } = options;
 		const builder = new ENFA.Builder(factory);
@@ -769,7 +771,7 @@ export namespace ENFA {
 		private _counter = 0;
 		readonly limit: number;
 
-		constructor(limit: number) {
+		constructor(limit: number = 10_000) {
 			this.limit = limit;
 		}
 
