@@ -501,21 +501,21 @@ export class NFA implements ReadonlyNFA {
 	): NFA {
 		let base;
 		if (Array.isArray(value)) {
-			base = createFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
+			base = createGraphFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
 		} else {
 			const node = value as NoParent<Node>;
 
 			switch (node.type) {
 				case "Expression":
-					base = createFromRegex(node.alternatives, options, creationOptions, factory);
+					base = createGraphFromRegex(node.alternatives, options, creationOptions, factory);
 					break;
 
 				case "Concatenation":
-					base = createFromRegex([node], options, creationOptions, factory);
+					base = createGraphFromRegex([node], options, creationOptions, factory);
 					break;
 
 				default:
-					base = createFromRegex(
+					base = createGraphFromRegex(
 						[{ type: "Concatenation", elements: [node] }],
 						options,
 						creationOptions,
@@ -807,7 +807,7 @@ interface ReadonlySubGraph {
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 }
 
-function createFromRegex(
+function createGraphFromRegex(
 	expression: readonly NoParent<Concatenation>[],
 	options: Readonly<NFA.Options>,
 	creationOptions: Readonly<NFA.FromRegexOptions>,
