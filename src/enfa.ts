@@ -4,14 +4,14 @@ import { Char, ReadonlyWord, Word } from "./char-types";
 import { ReadonlyWordSet, WordSet } from "./word-set";
 import {
 	FABuilder,
-	FACreationOptions,
 	FAIterator,
 	FiniteAutomaton,
+	NodeFactory,
 	ToRegexOptions,
 	TransitionIterable,
 	TransitionIterator,
 } from "./fa-types";
-import { assertNever, cachedFunc, debugAssert, intersectSet, traverse, traverseMultiRoot } from "./util";
+import { assertNever, cachedFunc, debugAssert, traverse, traverseMultiRoot } from "./util";
 import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
@@ -23,15 +23,25 @@ const DEFAULT_MAX_NODES = 10_000;
  * A readonly {@link ENFA}.
  */
 export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.ReadonlyNode> {
-	readonly nodes: ENFA.ReadonlyNodeList;
-	readonly options: Readonly<ENFA.Options>;
+	readonly initial: ENFA.ReadonlyNode;
+	readonly final: ENFA.ReadonlyNode;
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
+	nodes(): Iterable<ENFA.ReadonlyNode>;
+
+	/**
+	 * Returns the number of nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states. This will not include unreachable final states.
+	 *
+	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 */
+	countNodes(): number;
 
 	/**
 	 * Create a mutable copy of this ENFA.
 	 */
-	copy(): ENFA;
+	copy(factory?: NodeFactory<ENFA.Node>): ENFA;
 }
 
 /**
@@ -61,43 +71,58 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
  *
  *   Unlike the {@link NFA} class, transition cannot be merged. As a consequence, `/a|a/` and `/a/` have different
  *   state machines in this NFA implementation.
+ *
+ * ## Normal form
+ *
+ * The normal form of this ENFA implementation has the following restriction:
+ *
+ * - The initial state must not have incoming transitions.
+ * - The final state must not have outgoing transitions.
+ * - The initial state and final state are different states.
+ *
+ * Non-normalized ENFAs will either be tolerated or normalized by operations.
  */
 export class ENFA implements ReadonlyENFA {
-	readonly nodes: ENFA.NodeList;
+	initial: ENFA.Node;
+	final: ENFA.Node;
 	readonly maxCharacter: Char;
 
-	private constructor(nodes: ENFA.NodeList, maxCharacter: Char) {
-		this.nodes = nodes;
+	private constructor(initial: ENFA.Node, final: ENFA.Node, maxCharacter: Char) {
+		this.initial = initial;
+		this.final = final;
 		this.maxCharacter = maxCharacter;
 	}
 
-	get options(): Readonly<ENFA.Options> {
-		return { maxCharacter: this.maxCharacter };
-	}
-
 	get isEmpty(): boolean {
-		return this.nodes.initial.out.size === 0;
+		return this.initial.out.size === 0;
 	}
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator(true));
 	}
+	get isNormalized(): boolean {
+		return this.initial.in.size === 0 && this.final.out.size === 0 && this.initial !== this.final;
+	}
+
+	normalize(factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
+		baseNormalize(factory, this);
+	}
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode> {
 		if (resolveEpsilon) {
-			const initial: ENFA.ReadonlyNode = this.nodes.initial;
-			const effectivelyFinal: Set<ENFA.ReadonlyNode> = ENFA.NodeList.reachableViaEpsilon(this.nodes.final, "in");
+			const initial: ENFA.ReadonlyNode = this.initial;
+			const effectivelyFinal: Set<ENFA.ReadonlyNode> = this.final.reachableViaEpsilon("in");
 			return {
 				initial,
 				getOut: n => {
 					const out = new Set<ENFA.ReadonlyNode>();
-					ENFA.NodeList.unorderedResolveEpsilon(n, "out", (_, to) => out.add(to));
+					n.unorderedResolveEpsilon("out", (_, to) => out.add(to));
 					return out;
 				},
 				isFinal: n => effectivelyFinal.has(n),
 			};
 		} else {
-			const initial: ENFA.ReadonlyNode = this.nodes.initial;
-			const final: ENFA.ReadonlyNode = this.nodes.final;
+			const initial: ENFA.ReadonlyNode = this.initial;
+			const final: ENFA.ReadonlyNode = this.final;
 			return {
 				initial,
 				getOut: n => n.out.keys(),
@@ -107,14 +132,14 @@ export class ENFA implements ReadonlyENFA {
 		}
 	}
 	transitionIterator(): TransitionIterator<ENFA.ReadonlyNode> {
-		const initial: ENFA.ReadonlyNode = this.nodes.initial;
-		const effectivelyFinal: Set<ENFA.ReadonlyNode> = ENFA.NodeList.reachableViaEpsilon(this.nodes.final, "in");
+		const initial: ENFA.ReadonlyNode = this.initial;
+		const effectivelyFinal: Set<ENFA.ReadonlyNode> = this.final.reachableViaEpsilon("in");
 
 		return {
 			initial,
 			getOut: n => {
 				const out = new Map<ENFA.ReadonlyNode, CharSet>();
-				ENFA.NodeList.unorderedResolveEpsilon(n, "out", (via, to) => {
+				n.unorderedResolveEpsilon("out", (via, to) => {
 					let transition = out.get(to);
 					if (transition === undefined) {
 						transition = via;
@@ -128,20 +153,40 @@ export class ENFA implements ReadonlyENFA {
 			isFinal: n => effectivelyFinal.has(n),
 		};
 	}
+	nodes(): Iterable<ENFA.Node> {
+		return Iter.iterateStates({
+			initial: this.initial,
+			getOut: state => state.out.keys(),
+			isFinal: state => this.final === state,
+		});
+	}
 
-	copy(): ENFA {
-		const nodeList = new ENFA.NodeList();
-		const { initial, final } = localCopy(nodeList, this.nodes);
-		nodeList.initial = initial;
-		nodeList.final = final;
+	countNodes(): number {
+		let c = 0;
+		let hasSeenFinal = false;
+		traverse(this.initial, n => {
+			c++;
+			if (n === this.final) {
+				hasSeenFinal = true;
+			}
+			return n.out.keys();
+		});
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!hasSeenFinal) {
+			c++;
+		}
+		return c;
+	}
 
-		return new ENFA(nodeList, this.maxCharacter);
+	copy(factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
+		const { initial, final } = factoryCopyOfSubGraph(factory, this);
+		return new ENFA(initial, final, this.maxCharacter);
 	}
 
 	test(word: ReadonlyWord): boolean {
 		// An implementation of Thompson's algorithm as described by Russ Cox
 		// https://swtch.com/~rsc/regexp/regexp1.html
-		let currentStates: ENFA.ReadonlyNode[] = [this.nodes.initial];
+		let currentStates: ENFA.ReadonlyNode[] = [this.initial];
 		const newStatesSet = new Set<ENFA.ReadonlyNode>();
 
 		for (const char of word) {
@@ -167,12 +212,12 @@ export class ENFA implements ReadonlyENFA {
 			currentStates = newStates;
 		}
 
-		if (newStatesSet.has(this.nodes.final)) {
+		if (newStatesSet.has(this.final)) {
 			// this a short cut that uses the set we construct to detect duplicates
 			return true;
 		}
 
-		const effectivelyFinal: Set<ENFA.ReadonlyNode> = ENFA.NodeList.reachableViaEpsilon(this.nodes.final, "in");
+		const effectivelyFinal: Set<ENFA.ReadonlyNode> = this.final.reachableViaEpsilon("in");
 		return currentStates.some(state => effectivelyFinal.has(state));
 	}
 
@@ -185,10 +230,10 @@ export class ENFA implements ReadonlyENFA {
 
 	toString(): string {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
-			initial: this.nodes.initial,
+			initial: this.initial,
 			getOut: n => n.out,
 			stableOut: true,
-			isFinal: n => n === this.nodes.final,
+			isFinal: n => n === this.final,
 		};
 
 		return Iter.toString(
@@ -205,22 +250,21 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
-		const { initial, final } = this.nodes;
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
-			initial,
+			initial: this.initial,
 			getOut: n => n.out,
 			stableOut: true,
-			isFinal: n => n === final,
+			isFinal: n => n === this.final,
 		};
 		return Iter.toRegex(iter, options);
 	}
 
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
-			initial: this.nodes.initial,
+			initial: this.initial,
 			getOut: n => n.out,
 			stableOut: true,
-			isFinal: n => n === this.nodes.final,
+			isFinal: n => n === this.final,
 		};
 
 		const toString: (charSet: null | CharSet) => string = charSetToString
@@ -230,32 +274,30 @@ export class ENFA implements ReadonlyENFA {
 		return Iter.toDot(iter, Iter.createSimpleToDotOptions(toString, true));
 	}
 
-	private _localCopy<O>(other: TransitionIterable<O>): SubList {
-		if (other instanceof ENFA) {
-			return localCopy(this.nodes, other.nodes);
-		} else {
-			return localCopyOfIterator(this.nodes, other.transitionIterator());
-		}
-	}
-
 	/**
 	 * Modifies this ENFA to accept the concatenation of this ENFA and the given FA.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	append<O>(other: TransitionIterable<O>): void {
+	append<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
-		baseAppend(this.nodes, this.nodes, this._localCopy(other));
+
+		this.normalize(factory);
+		baseAppend(this, smartFactoryCopy(factory, other));
 	}
 
 	/**
 	 * Modifies this ENFA to accept the concatenation of the given FA and this ENFA.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	prepend<O>(other: TransitionIterable<O>): void {
+	prepend<O>(other: TransitionIterable<O>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
-		basePrepend(this.nodes, this.nodes, this._localCopy(other));
+
+		this.normalize(factory);
+		basePrepend(this, smartFactoryCopy(factory, other));
 	}
 
 	/**
@@ -266,14 +308,20 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * @param other
 	 * @param kind
+	 * @param factory
 	 */
-	union<O>(other: TransitionIterable<O>, kind: "left" | "right" = "right"): void {
+	union<O>(
+		other: TransitionIterable<O>,
+		kind: "left" | "right" = "right",
+		factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory
+	): void {
 		MaxCharacterError.assert(this, other);
 
+		this.normalize(factory);
 		if (kind === "left") {
-			baseUnionLeft(this.nodes, this.nodes, this._localCopy(other));
+			baseUnionLeft(factory, this, smartFactoryCopy(factory, other));
 		} else {
-			baseUnionRight(this.nodes, this.nodes, this._localCopy(other));
+			baseUnionRight(this, smartFactoryCopy(factory, other));
 		}
 	}
 
@@ -286,13 +334,28 @@ export class ENFA implements ReadonlyENFA {
 	 * @param min
 	 * @param max
 	 * @param lazy
+	 * @param factory
 	 */
-	quantify(min: number, max: number, lazy: boolean = false): void {
+	quantify(
+		min: number,
+		max: number,
+		lazy: boolean = false,
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
+	): void {
 		if (!Number.isInteger(min) || !(Number.isInteger(max) || max === Infinity) || min < 0 || min > max) {
 			throw new RangeError("min and max both have to be non-negative integers with min <= max.");
 		}
 
-		baseQuantify(this.nodes, this.nodes, min, max, lazy);
+		this.normalize(factory);
+		baseQuantify(factory, this, min, max, lazy);
+	}
+
+	/**
+	 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
+	 * removed.
+	 */
+	removeUnreachable(): void {
+		baseRemoveUnreachable(this);
 	}
 
 	/**
@@ -303,14 +366,15 @@ export class ENFA implements ReadonlyENFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	prefixes(): void {
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
 
 		if (this.isEmpty) {
 			return;
 		}
 
-		for (const node of this.nodes) {
-			baseMakeEffectivelyFinal(this.nodes, this.nodes, node);
+		this.normalize();
+		for (const node of this.nodes()) {
+			baseMakeEffectivelyFinal(ENFA.nodeFactory, this, node);
 		}
 	}
 
@@ -322,14 +386,15 @@ export class ENFA implements ReadonlyENFA {
 	 * Unreachable states will be removed by this operation.
 	 */
 	suffixes(): void {
-		this.nodes.removeUnreachable();
+		this.removeUnreachable();
 
 		if (this.isEmpty) {
 			return;
 		}
 
-		for (const node of this.nodes) {
-			baseMakeEffectivelyInitial(this.nodes, this.nodes, node);
+		this.normalize();
+		for (const node of this.nodes()) {
+			baseMakeEffectivelyInitial(ENFA.nodeFactory, this, node);
 		}
 	}
 
@@ -339,8 +404,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param options
 	 */
 	static empty(options: Readonly<ENFA.Options>): ENFA {
-		const nodeList = new ENFA.NodeList();
-		return new ENFA(nodeList, options.maxCharacter);
+		return new ENFA(new ENFA.Node(), new ENFA.Node(), options.maxCharacter);
 	}
 
 	/**
@@ -349,57 +413,62 @@ export class ENFA implements ReadonlyENFA {
 	 * @param options
 	 */
 	static all(options: Readonly<ENFA.Options>): ENFA {
-		const nodeList = new ENFA.NodeList();
+		const initial = new ENFA.Node();
+		const middle = new ENFA.Node();
+		const final = new ENFA.Node();
 
-		const middle = nodeList.createNode();
+		initial.link(middle, null);
+		middle.link(middle, CharSet.all(options.maxCharacter));
+		middle.link(final, null);
 
-		nodeList.linkNodes(nodeList.initial, middle, null);
-		nodeList.linkNodes(middle, middle, CharSet.all(options.maxCharacter));
-		nodeList.linkNodes(middle, nodeList.final, null);
-
-		return new ENFA(nodeList, options.maxCharacter);
+		return new ENFA(initial, final, options.maxCharacter);
 	}
 
 	static fromRegex(
 		concat: NoParent<Node>,
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.FromRegexOptions>
+		creationOptions?: Readonly<ENFA.FromRegexOptions>,
+		factory?: NodeFactory<ENFA.Node>
 	): ENFA;
 	static fromRegex(
 		alternatives: readonly NoParent<Concatenation>[],
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.FromRegexOptions>
+		creationOptions?: Readonly<ENFA.FromRegexOptions>,
+		factory?: NodeFactory<ENFA.Node>
 	): ENFA;
 	static fromRegex(
 		value: NoParent<Node> | readonly NoParent<Concatenation>[],
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.FromRegexOptions>
+		creationOptions: Readonly<ENFA.FromRegexOptions> = {},
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): ENFA {
-		let nodeList: ENFA.NodeList;
+		let base;
 		if (Array.isArray(value)) {
-			nodeList = createNodeList(value as readonly NoParent<Concatenation>[], options, creationOptions || {});
+			base = createGraphFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
 		} else {
 			const node = value as NoParent<Node>;
 
 			switch (node.type) {
 				case "Expression":
-					nodeList = createNodeList(node.alternatives, options, creationOptions || {});
+					base = createGraphFromRegex(node.alternatives, options, creationOptions, factory);
 					break;
 
 				case "Concatenation":
-					nodeList = createNodeList([node], options, creationOptions || {});
+					base = createGraphFromRegex([node], options, creationOptions, factory);
 					break;
 
 				default:
-					nodeList = createNodeList(
+					base = createGraphFromRegex(
 						[{ type: "Concatenation", elements: [node] }],
 						options,
-						creationOptions || {}
+						creationOptions,
+						factory
 					);
 					break;
 			}
 		}
-		return new ENFA(nodeList, options.maxCharacter);
+
+		return new ENFA(base.initial, base.final, options.maxCharacter);
 	}
 
 	/**
@@ -407,33 +476,31 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * @param words
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWords(
 		words: Iterable<ReadonlyWord>,
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.CreationOptions>
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): ENFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+		const builder = new ENFA.Builder(factory);
 
-		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWords(
-				nodeList,
-				(node, char) => {
-					for (const [to, chars] of node.out) {
-						if (chars !== null && chars.has(char)) {
-							return to;
-						}
+		Iter.fromWords(
+			builder,
+			(node, char) => {
+				for (const [to, chars] of node.out) {
+					if (chars !== null && chars.has(char)) {
+						return to;
 					}
-					return undefined;
-				},
-				words,
-				maxCharacter
-			);
-		});
+				}
+				return undefined;
+			},
+			words,
+			maxCharacter
+		);
 
-		return new ENFA(nodeList, maxCharacter);
+		return ENFA.fromBuilder(builder, options);
 	}
 
 	/**
@@ -441,64 +508,59 @@ export class ENFA implements ReadonlyENFA {
 	 *
 	 * @param wordSets
 	 * @param options
-	 * @param creationOptions
+	 * @param factory
 	 */
 	static fromWordSets(
 		wordSets: Iterable<ReadonlyWordSet>,
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.CreationOptions>
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): ENFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
-
-		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
-			Iter.fromWordSets(nodeList, wordSets, maxCharacter);
-		});
-
-		return new ENFA(nodeList, maxCharacter);
+		const builder = new ENFA.Builder(factory);
+		Iter.fromWordSets(builder, wordSets, maxCharacter);
+		return ENFA.fromBuilder(builder, options);
 	}
 
-	static fromFA<InputNode>(
-		fa: TransitionIterable<InputNode>,
-		creationOptions?: Readonly<ENFA.CreationOptions>
-	): ENFA {
-		return ENFA.fromTransitionIterator(fa.transitionIterator(), fa, creationOptions);
+	static fromFA<InputNode>(fa: TransitionIterable<InputNode>, factory?: NodeFactory<ENFA.Node>): ENFA {
+		return ENFA.fromTransitionIterator(fa.transitionIterator(), fa, factory);
 	}
 
 	static fromTransitionIterator<InputNode>(
 		iter: TransitionIterator<InputNode>,
 		options: Readonly<ENFA.Options>,
-		creationOptions?: Readonly<ENFA.CreationOptions>
+		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory(DEFAULT_MAX_NODES)
 	): ENFA {
 		const { maxCharacter } = options;
-		const maxNodes = creationOptions?.maxNodes ?? DEFAULT_MAX_NODES;
+		const builder = new ENFA.Builder(factory);
 
-		const nodeList = ENFA.NodeList.withLimit(maxNodes, nodeList => {
-			const fakeInitial = nodeList.createNode();
-			nodeList.linkNodes(nodeList.initial, fakeInitial, null);
+		const fakeInitial = factory.createNode();
+		builder.initial.link(fakeInitial, null);
 
-			const translate = cachedFunc<InputNode, ENFA.Node>(() => nodeList.createNode());
-			translate.cache.set(iter.initial, fakeInitial);
+		const translate = cachedFunc<InputNode, ENFA.Node>(() => factory.createNode());
+		translate.cache.set(iter.initial, fakeInitial);
 
-			traverse(iter.initial, node => {
-				const transNode = translate(node);
+		traverse(iter.initial, node => {
+			const transNode = translate(node);
 
-				if (iter.isFinal(node)) {
-					nodeList.linkNodes(transNode, nodeList.final, null);
+			if (iter.isFinal(node)) {
+				builder.makeFinal(transNode);
+			}
+
+			const out = iter.getOut(node);
+			out.forEach((charSet, outNode) => {
+				if (charSet.maximum !== maxCharacter) {
+					throw new Error("Some character sets do not conform to the given maximum.");
 				}
-
-				const out = iter.getOut(node);
-				out.forEach((charSet, outDfaNode) => {
-					if (charSet.maximum !== maxCharacter) {
-						throw new Error("Some character sets do not conform to the given maximum.");
-					}
-					nodeList.linkNodes(transNode, translate(outDfaNode), charSet);
-				});
-				return out.keys();
+				transNode.link(translate(outNode), charSet);
 			});
+			return out.keys();
 		});
 
-		return new ENFA(nodeList, maxCharacter);
+		return ENFA.fromBuilder(builder, options);
+	}
+
+	static fromBuilder(builder: ENFA.Builder, options: Readonly<ENFA.Options>): ENFA {
+		return new ENFA(builder.initial, builder.final, options.maxCharacter);
 	}
 }
 
@@ -512,205 +574,6 @@ export namespace ENFA {
 	export interface ReadonlyNode {
 		readonly out: ReadonlyMap<ReadonlyNode, CharSet | null>;
 		readonly in: ReadonlyMap<ReadonlyNode, CharSet | null>;
-	}
-	export interface Node extends ReadonlyNode {
-		readonly out: Map<Node, CharSet | null>;
-		readonly in: Map<Node, CharSet | null>;
-	}
-
-	export interface ReadonlyNodeList extends Iterable<ReadonlyNode> {
-		/**
-		 * The initial state of this list.
-		 *
-		 * The initial state is fixed an cannot be changed or removed.
-		 *
-		 * This state is not allowed to have any incoming transitions.
-		 *
-		 * The initial and final state are guaranteed to be two different states.
-		 */
-		readonly initial: ReadonlyNode;
-		/**
-		 * The final state of this list.
-		 *
-		 * The final state is fixed an cannot be changed or removed.
-		 *
-		 * This state is not allowed to have any outgoing transitions.
-		 *
-		 * The initial and final state are guaranteed to be two different states.
-		 */
-		readonly final: ReadonlyNode;
-		/**
-		 * Returns the number of nodes reachable from the initial state including the initial state.
-		 *
-		 * This may include trap states. This will not include unreachable final states.
-		 *
-		 * This operation has to traverse the whole graph and runs in _O(E + V)_.
-		 */
-		count(): number;
-	}
-	export class NodeList implements ReadonlyNodeList, Iterable<Node>, FABuilder<Node, CharSet | null> {
-		private _nodeCounter: number = 0;
-		private _nodeLimit: number = Infinity;
-
-		initial: Node;
-		final: Node;
-
-		constructor() {
-			this.initial = this.createNode();
-			this.final = this.createNode();
-		}
-
-		/**
-		 * Creates and returns a new node list that is only allowed to create a certain number of nodes during the
-		 * execution of the given consumer function.
-		 *
-		 * After this function returns, the limit no longer applies.
-		 *
-		 * @param maxNodes
-		 * @param consumerFn
-		 */
-		static withLimit(maxNodes: number, consumerFn: (nodeList: NodeList) => void): NodeList {
-			const nodeList = new NodeList();
-			nodeList._nodeLimit = maxNodes;
-			try {
-				consumerFn(nodeList);
-				nodeList._nodeLimit = Infinity;
-			} catch (error) {
-				nodeList._nodeLimit = Infinity;
-				throw error;
-			}
-			return nodeList;
-		}
-
-		/**
-		 * Creates a new node associated with this node list.
-		 */
-		createNode(): Node {
-			const id = this._nodeCounter++;
-			TooManyNodesError.assert(id, this._nodeLimit, "ENFA");
-
-			const node: Node & { id: number } = {
-				id, // for debugging
-				out: new Map(),
-				in: new Map(),
-			};
-			return node;
-		}
-
-		/**
-		 * Adds a transition from `from` to `to` using the given non-empty set of characters.
-		 *
-		 * If two nodes are already linked, the character sets will be combined.
-		 *
-		 * @param from
-		 * @param to
-		 * @param characters
-		 */
-		linkNodes(from: Node, to: Node, characters: CharSet | null): void {
-			if (from.out.has(to)) {
-				throw new Error("Cannot link nodes that are already linked.");
-			}
-			if (characters && characters.isEmpty) {
-				throw new Error("You can't link nodes with the empty character set.");
-			}
-
-			from.out.set(to, characters);
-			to.in.set(from, characters);
-		}
-
-		/**
-		 * Removes the transition from `from` to `to`.
-		 *
-		 * If there is no transition from `from` to `to`, an error will be thrown.
-		 *
-		 * @param from
-		 * @param to
-		 */
-		unlinkNodes(from: Node, to: Node): void {
-			from.out.delete(to);
-			to.in.delete(from);
-		}
-
-		makeFinal(state: Node): void {
-			baseMakeEffectivelyFinal(this, this, state);
-		}
-		isFinal(state: Node): boolean {
-			return state === this.final;
-		}
-
-		/**
-		 * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
-		 * removed.
-		 */
-		removeUnreachable(): void {
-			if (this.final.in.size === 0 || this.initial.out.size === 0) {
-				baseMakeEmpty(this, this);
-				return;
-			}
-
-			const reachableFromInitial = new Set<Node>();
-			traverse(this.initial, n => {
-				reachableFromInitial.add(n);
-				return n.out.keys();
-			});
-			const finalReachableFrom = new Set<Node>();
-			traverse(this.final, n => {
-				finalReachableFrom.add(n);
-				return n.in.keys();
-			});
-
-			const alive = intersectSet(reachableFromInitial, finalReachableFrom);
-
-			if (alive.size === 0) {
-				baseMakeEmpty(this, this);
-			} else {
-				alive.forEach(n => {
-					n.out.forEach((_, to) => {
-						if (!alive.has(to)) {
-							this.unlinkNodes(n, to);
-						}
-					});
-					n.in.forEach((_, from) => {
-						if (!alive.has(from)) {
-							this.unlinkNodes(from, n);
-						}
-					});
-				});
-			}
-		}
-
-		/**
-		 * Changes the nodes, so that the initial state has no incoming transitions and that the final state has no
-		 * outgoing transitions.
-		 */
-		normalize(): void {
-			baseNormalize(this, this);
-		}
-
-		count(): number {
-			let c = 0;
-			let hasSeenFinal = false;
-			traverse(this.initial, n => {
-				c++;
-				if (n === this.final) {
-					hasSeenFinal = true;
-				}
-				return n.out.keys();
-			});
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			if (!hasSeenFinal) {
-				c++;
-			}
-			return c;
-		}
-
-		[Symbol.iterator](): Iterator<Node> {
-			return Iter.iterateStates({
-				initial: this.initial,
-				getOut: state => state.out.keys(),
-				isFinal: state => this.final === state,
-			})[Symbol.iterator]();
-		}
 
 		/**
 		 * Calls the given consumer function on every non-epsilon transition directly reachable from the given node.
@@ -742,26 +605,101 @@ export namespace ENFA {
 		 * [(3), "b"]
 		 * ```
 		 */
-		static resolveEpsilon(
-			node: ENFA.Node,
+		resolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: ReadonlyNode) => void): void;
+
+		/**
+		 * Calls the given consumer function on every non-epsilon transition directly reachable from the given node.
+		 *
+		 * The order in which the consumer function will be called for the pair is implementation-defined. Only use this
+		 * if the order of nodes is irrelevant.
+		 */
+		unorderedResolveEpsilon(
 			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.Node) => void
+			consumerFn: (charSet: CharSet, node: ReadonlyNode) => void
 		): void;
-		static resolveEpsilon(
-			node: ENFA.ReadonlyNode,
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.ReadonlyNode) => void
-		): void;
-		static resolveEpsilon(
-			node: ENFA.Node,
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.Node) => void
-		): void {
+
+		/**
+		 * Returns a set of all nodes that are reachable from the given node by only following epsilon transitions in
+		 * the given direction. The returned set is guaranteed to always contain the given node.
+		 *
+		 * The order of the nodes in the returned set in implementation-defined and cannot be relied upon.
+		 *
+		 * ---
+		 *
+		 * This method can be used to determine the set of all effectively final states.
+		 *
+		 * ```
+		 * const effectivelyFinal = final.reachableViaEpsilon("in");
+		 * ```
+		 */
+		reachableViaEpsilon(direction: "in" | "out"): Set<ReadonlyNode>;
+	}
+	export class Node implements ReadonlyNode {
+		readonly out = new Map<Node, CharSet | null>();
+		readonly in = new Map<Node, CharSet | null>();
+
+		/**
+		 * Adds a transition from `this` to `to` using the given non-empty set of characters.
+		 *
+		 * If two nodes are already linked, an error will be thrown.
+		 *
+		 * @param to
+		 * @param via
+		 */
+		link(to: Node, via: CharSet | null): void {
+			if (this.out.has(to)) {
+				throw new Error("Cannot link nodes that are already linked.");
+			}
+			if (via && via.isEmpty) {
+				throw new Error("You can't link nodes with the empty character set.");
+			}
+
+			this.out.set(to, via);
+			to.in.set(this, via);
+		}
+
+		/**
+		 * Removes the transition from `this` to `to`.
+		 *
+		 * @param to
+		 */
+		unlink(to: Node): void {
+			this.out.delete(to);
+			to.in.delete(this);
+		}
+
+		/**
+		 * Unlinks all outgoing and incoming transitions of this node.
+		 */
+		unlinkAll(): void {
+			this.unlinkAllIn();
+			this.unlinkAllOut();
+		}
+		/**
+		 * Unlinks all outgoing transitions of this node.
+		 */
+		unlinkAllOut(): void {
+			this.out.forEach((_, to) => {
+				to.in.delete(this);
+			});
+			this.out.clear();
+		}
+		/**
+		 * Unlinks all incoming transitions of this node.
+		 */
+		unlinkAllIn(): void {
+			this.in.forEach((_, from) => {
+				from.out.delete(this);
+			});
+			this.in.clear();
+		}
+
+		resolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
 			// TODO: Implement this non-recursively
 
-			const visited = new Set<ENFA.Node>();
+			const visited = new Set<Node>();
 
-			function resolveDFS(n: ENFA.Node): void {
+			function resolveDFS(n: Node): void {
 				if (visited.has(n)) {
 					return;
 				} else {
@@ -776,32 +714,12 @@ export namespace ENFA {
 					}
 				});
 			}
-			resolveDFS(node);
+			resolveDFS(this);
 		}
 
-		/**
-		 * Calls the given consumer function on every non-epsilon transition directly reachable from the given node.
-		 *
-		 * The order in which the consumer function will be called for the pair is implementation-defined. Only use this
-		 * if the order of nodes is irrelevant.
-		 */
-		static unorderedResolveEpsilon(
-			node: ENFA.Node,
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.Node) => void
-		): void;
-		static unorderedResolveEpsilon(
-			node: ENFA.ReadonlyNode,
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.ReadonlyNode) => void
-		): void;
-		static unorderedResolveEpsilon(
-			node: ENFA.Node,
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ENFA.Node) => void
-		): void {
-			traverse(node, n => {
-				const next: ENFA.Node[] = [];
+		unorderedResolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
+			traverse<Node>(this, n => {
+				const next: Node[] = [];
 
 				n[direction].forEach((via, to) => {
 					if (via === null) {
@@ -815,29 +733,13 @@ export namespace ENFA {
 			});
 		}
 
-		/**
-		 * Returns a set of all nodes that are reachable from the given node by only following epsilon transitions in
-		 * the given direction. The returned set is guaranteed to always contain the given node.
-		 *
-		 * The order of the nodes in the returned set in implementation-defined and cannot be relied upon.
-		 *
-		 * ---
-		 *
-		 * This method can be used to determine the set of all effectively final states.
-		 *
-		 * ```
-		 * const effectivelyFinal = ENFA.NodeList.reachableViaEpsilon(final, "in");
-		 * ```
-		 */
-		static reachableViaEpsilon(node: ENFA.Node, direction: "in" | "out"): Set<ENFA.Node>;
-		static reachableViaEpsilon(node: ENFA.ReadonlyNode, direction: "in" | "out"): Set<ENFA.ReadonlyNode>;
-		static reachableViaEpsilon(node: ENFA.ReadonlyNode, direction: "in" | "out"): Set<ENFA.ReadonlyNode> {
-			const result = new Set<ENFA.ReadonlyNode>();
+		reachableViaEpsilon(direction: "in" | "out"): Set<Node> {
+			const result = new Set<Node>();
 
-			traverse(node, n => {
+			traverse<Node>(this, n => {
 				result.add(n);
 
-				const next: ENFA.ReadonlyNode[] = [];
+				const next: Node[] = [];
 
 				n[direction].forEach((via, to) => {
 					if (via === null) {
@@ -853,24 +755,53 @@ export namespace ENFA {
 	}
 
 	/**
-	 * Options for the constraints on how a ENFA will be created.
+	 * An unlimited node factory that will simply call the {@link Node} constructor.
 	 */
-	export interface CreationOptions extends FACreationOptions {
-		/**
-		 * The maximum number of nodes the ENFA creation operation is allowed to create before throwing a
-		 * `TooManyNodesError`.
-		 *
-		 * If the maximum number of nodes is set to `Infinity`, the ENFA creation operation may create as many nodes as
-		 * necessary to construct the ENFA. This might cause the machine to run out of memory. I.e. some REs can only be
-		 * represented with a huge number of states (e.g `/a{123456789}/`).
-		 *
-		 * Note: This limit describes maximum number of __created__ nodes. If nodes are created and subsequently
-		 * discard, they will still count toward the limit.
-		 *
-		 * @default 10000
-		 */
-		maxNodes?: number;
+	export const nodeFactory: NodeFactory<Node> = {
+		createNode() {
+			return new Node();
+		},
+	};
+
+	export class LimitedNodeFactory implements NodeFactory<Node> {
+		private _counter = 0;
+		readonly limit: number;
+
+		constructor(limit: number) {
+			this.limit = limit;
+		}
+
+		createNode(): Node {
+			TooManyNodesError.assert(++this._counter, this.limit, "ENFA");
+			return new Node();
+		}
 	}
+
+	export class Builder implements FABuilder<Node, CharSet | null> {
+		readonly initial: Node;
+		readonly final: Node;
+		readonly factory: NodeFactory<Node>;
+
+		constructor(factory: NodeFactory<Node>) {
+			this.factory = factory;
+			this.initial = factory.createNode();
+			this.final = factory.createNode();
+		}
+
+		makeFinal(state: Node): void {
+			baseMakeEffectivelyFinal(this.factory, this, state);
+		}
+		isFinal(state: Node): boolean {
+			return state === this.final;
+		}
+		linkNodes(from: Node, to: Node, transition: CharSet | null): void {
+			from.link(to, transition);
+		}
+		createNode(): Node {
+			return this.factory.createNode();
+		}
+	}
+
 	export interface Options {
 		/**
 		 * The maximum numerical value any character can have.
@@ -879,7 +810,7 @@ export namespace ENFA {
 		 */
 		maxCharacter: Char;
 	}
-	export interface FromRegexOptions extends CreationOptions {
+	export interface FromRegexOptions {
 		/**
 		 * How to handle assertions when construction the ENFA.
 		 *
@@ -920,29 +851,29 @@ export namespace ENFA {
 	}
 }
 
-function createNodeList(
+function createGraphFromRegex(
 	expression: readonly NoParent<Concatenation>[],
 	options: Readonly<ENFA.Options>,
-	creationOptions: Readonly<ENFA.FromRegexOptions>
-): ENFA.NodeList {
-	return ENFA.NodeList.withLimit(creationOptions.maxNodes ?? DEFAULT_MAX_NODES, nodeList => {
-		const { initial, final } = ThompsonOptimized.create(nodeList, expression, {
-			maxCharacter: options.maxCharacter,
-			assertions: creationOptions.assertions ?? "throw",
-			unknowns: creationOptions.unknowns ?? "throw",
-			infinityThreshold: creationOptions.infinityThreshold ?? Infinity,
-		});
-
-		nodeList.initial = initial;
-		nodeList.final = final;
+	creationOptions: Readonly<ENFA.FromRegexOptions>,
+	factory: NodeFactory<ENFA.Node>
+): SubGraph {
+	return ThompsonOptimized.create(factory, expression, {
+		maxCharacter: options.maxCharacter,
+		assertions: creationOptions.assertions ?? "throw",
+		unknowns: creationOptions.unknowns ?? "throw",
+		infinityThreshold: creationOptions.infinityThreshold ?? Infinity,
 	});
 }
 
-interface SubList {
+interface NonNormalSubGraph {
 	initial: ENFA.Node;
 	final: ENFA.Node;
 }
-interface ReadonlySubList {
+interface SubGraph {
+	initial: ENFA.Node;
+	final: ENFA.Node;
+}
+interface ReadonlySubGraph {
 	readonly initial: ENFA.ReadonlyNode;
 	readonly final: ENFA.ReadonlyNode;
 }
@@ -957,13 +888,13 @@ namespace ThompsonOptimized {
 	}
 
 	export function create(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		expression: readonly NoParent<Concatenation>[],
 		options: Options
-	): SubList {
-		const initial = nodeList.createNode();
+	): SubGraph {
+		const initial = factory.createNode();
 
-		return { initial, final: handleAlternatives(nodeList, expression, initial, options) };
+		return { initial, final: handleAlternatives(factory, expression, initial, options) };
 	}
 
 	// All of the below function guarantee that
@@ -972,74 +903,79 @@ namespace ThompsonOptimized {
 	// 3. the returned final state will have no outgoing transitions.
 
 	function handleElement(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		element: NoParent<Element>,
 		initial: ENFA.Node,
 		options: Options
 	): ENFA.Node {
 		switch (element.type) {
 			case "Alternation":
-				return handleAlternatives(nodeList, element.alternatives, initial, options);
+				return handleAlternatives(factory, element.alternatives, initial, options);
 			case "Assertion":
-				return handleAssertion(nodeList, options);
+				return handleAssertion(factory, options);
 			case "CharacterClass":
-				return handleChar(nodeList, element.characters, initial, options);
+				return handleChar(factory, element.characters, initial, options);
 			case "Quantifier":
-				return handleQuantifier(nodeList, element, initial, options);
+				return handleQuantifier(factory, element, initial, options);
 			case "Unknown":
-				return handleUnknown(nodeList, options);
+				return handleUnknown(factory, options);
 			default:
 				assertNever(element);
 		}
 	}
 	function handleAlternatives(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		alternatives: readonly NoParent<Concatenation>[],
 		initial: ENFA.Node,
 		options: Options
 	): ENFA.Node {
 		if (alternatives.length === 1) {
-			return handleConcat(nodeList, alternatives[0].elements, initial, options);
+			return handleConcat(factory, alternatives[0].elements, initial, options);
 		} else {
-			const final = nodeList.createNode();
+			const final = factory.createNode();
 
 			for (const { elements } of alternatives) {
-				const alternativeFinal = handleConcat(nodeList, elements, initial, options);
-				nodeList.linkNodes(alternativeFinal, final, null);
+				const alternativeFinal = handleConcat(factory, elements, initial, options);
+				alternativeFinal.link(final, null);
 			}
 
 			return final;
 		}
 	}
-	function handleChar(nodeList: ENFA.NodeList, characters: CharSet, initial: ENFA.Node, options: Options): ENFA.Node {
+	function handleChar(
+		factory: NodeFactory<ENFA.Node>,
+		characters: CharSet,
+		initial: ENFA.Node,
+		options: Options
+	): ENFA.Node {
 		if (characters.maximum !== options.maxCharacter) {
 			throw new Error(`Expected a max character of ${options.maxCharacter} but found ${characters.maximum}.`);
 		}
 
-		const final = nodeList.createNode();
+		const final = factory.createNode();
 		if (!characters.isEmpty) {
-			nodeList.linkNodes(initial, final, characters);
+			initial.link(final, characters);
 		}
 		return final;
 	}
 	function handleConcat(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		elements: readonly NoParent<Element>[],
 		initial: ENFA.Node,
 		options: Options
 	): ENFA.Node {
 		let final = initial;
 		for (const e of elements) {
-			const newFinal = handleElement(nodeList, e, final, options);
+			const newFinal = handleElement(factory, e, final, options);
 			debugAssert(final !== newFinal, "The returned final state cannot be the given initial state.");
 			debugAssert(newFinal.out.size === 0, "The returned final cannot have outgoing transitions.");
 			final = newFinal;
 		}
 
-		return safeFinal(nodeList, initial, final);
+		return safeFinal(factory, initial, final);
 	}
 	function handleQuantifier(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		quant: NoParent<Quantifier>,
 		initial: ENFA.Node,
 		options: Options
@@ -1056,7 +992,7 @@ namespace ThompsonOptimized {
 		}
 
 		if (min > 1) {
-			initial = quantConstant(nodeList, quant.alternatives, min - 1, initial, options);
+			initial = quantConstant(factory, quant.alternatives, min - 1, initial, options);
 			max -= min - 1;
 			min = 1;
 		}
@@ -1066,11 +1002,11 @@ namespace ThompsonOptimized {
 
 		if (min === 1) {
 			if (max === Infinity) {
-				return quantPlus(nodeList, quant.alternatives, quant.lazy, initial, options);
+				return quantPlus(factory, quant.alternatives, quant.lazy, initial, options);
 			} else {
 				max--;
 				min--;
-				initial = handleAlternatives(nodeList, quant.alternatives, initial, options);
+				initial = handleAlternatives(factory, quant.alternatives, initial, options);
 			}
 		}
 
@@ -1078,58 +1014,58 @@ namespace ThompsonOptimized {
 		debugAssert(min === 0);
 
 		if (max === 0) {
-			return safeFinal(nodeList, originalInitial, initial);
+			return safeFinal(factory, originalInitial, initial);
 		} else if (max === Infinity) {
-			return quantStar(nodeList, quant.alternatives, quant.lazy, initial, options);
+			return quantStar(factory, quant.alternatives, quant.lazy, initial, options);
 		} else {
 			// 1 <= max < Infinity
 			// What is done here for `A{0,3}` is equivalent to `(A(A(A|)|)|)` if not lazy and `(|A(|A(|A)))` if lazy.
 
-			const final = nodeList.createNode();
+			const final = factory.createNode();
 
 			for (let i = 0; i < max; i++) {
 				if (quant.lazy) {
-					nodeList.linkNodes(initial, final, null);
+					initial.link(final, null);
 				}
 
-				const nextInitial = handleAlternatives(nodeList, quant.alternatives, initial, options);
+				const nextInitial = handleAlternatives(factory, quant.alternatives, initial, options);
 
 				if (!quant.lazy) {
-					nodeList.linkNodes(initial, final, null);
+					initial.link(final, null);
 				}
 
 				initial = nextInitial;
 			}
 
-			nodeList.linkNodes(initial, final, null);
+			initial.link(final, null);
 
 			return final;
 		}
 	}
-	function handleAssertion(nodeList: ENFA.NodeList, options: Options): ENFA.Node {
+	function handleAssertion(factory: NodeFactory<ENFA.Node>, options: Options): ENFA.Node {
 		if (options.assertions === "throw") {
 			throw new Error("Assertions are not supported yet.");
 		}
-		return nodeList.createNode();
+		return factory.createNode();
 	}
-	function handleUnknown(nodeList: ENFA.NodeList, options: Options): ENFA.Node {
+	function handleUnknown(factory: NodeFactory<ENFA.Node>, options: Options): ENFA.Node {
 		if (options.unknowns === "throw") {
 			throw new Error("Unknowns are not supported.");
 		}
-		return nodeList.createNode();
+		return factory.createNode();
 	}
 
-	function safeFinal(nodeList: ENFA.NodeList, initial: ENFA.Node, final: ENFA.Node): ENFA.Node {
+	function safeFinal(factory: NodeFactory<ENFA.Node>, initial: ENFA.Node, final: ENFA.Node): ENFA.Node {
 		if (final === initial) {
-			final = nodeList.createNode();
-			nodeList.linkNodes(initial, final, null);
+			final = factory.createNode();
+			initial.link(final, null);
 		}
 
 		return final;
 	}
 
 	function quantConstant(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		alternatives: readonly NoParent<Concatenation>[],
 		count: number,
 		initial: ENFA.Node,
@@ -1137,74 +1073,74 @@ namespace ThompsonOptimized {
 	): ENFA.Node {
 		let final = initial;
 		for (let i = 0; i < count; i++) {
-			final = handleAlternatives(nodeList, alternatives, final, options);
+			final = handleAlternatives(factory, alternatives, final, options);
 		}
 
-		return safeFinal(nodeList, initial, final);
+		return safeFinal(factory, initial, final);
 	}
 	function quantPlus(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		alternatives: readonly NoParent<Concatenation>[],
 		lazy: boolean,
 		initial: ENFA.Node,
 		options: Options
 	): ENFA.Node {
-		const final = nodeList.createNode();
+		const final = factory.createNode();
 
-		const altInitial = nodeList.createNode();
-		nodeList.linkNodes(initial, altInitial, null);
+		const altInitial = factory.createNode();
+		initial.link(altInitial, null);
 
-		const altFinal = handleAlternatives(nodeList, alternatives, altInitial, options);
+		const altFinal = handleAlternatives(factory, alternatives, altInitial, options);
 		if (lazy) {
-			nodeList.linkNodes(altFinal, final, null);
-			nodeList.linkNodes(altFinal, altInitial, null);
+			altFinal.link(final, null);
+			altFinal.link(altInitial, null);
 		} else {
-			nodeList.linkNodes(altFinal, altInitial, null);
-			nodeList.linkNodes(altFinal, final, null);
+			altFinal.link(altInitial, null);
+			altFinal.link(final, null);
 		}
 
 		return final;
 	}
 	function quantStar(
-		nodeList: ENFA.NodeList,
+		factory: NodeFactory<ENFA.Node>,
 		alternatives: readonly NoParent<Concatenation>[],
 		lazy: boolean,
 		initial: ENFA.Node,
 		options: Options
 	): ENFA.Node {
-		const final = nodeList.createNode();
+		const final = factory.createNode();
 		if (lazy) {
-			nodeList.linkNodes(initial, final, null);
+			initial.link(final, null);
 		}
 
-		const altInitial = nodeList.createNode();
-		nodeList.linkNodes(initial, altInitial, null);
+		const altInitial = factory.createNode();
+		initial.link(altInitial, null);
 
-		const altFinal = handleAlternatives(nodeList, alternatives, altInitial, options);
+		const altFinal = handleAlternatives(factory, alternatives, altInitial, options);
 		if (lazy) {
-			nodeList.linkNodes(altFinal, final, null);
-			nodeList.linkNodes(altFinal, altInitial, null);
+			altFinal.link(final, null);
+			altFinal.link(altInitial, null);
 		} else {
-			nodeList.linkNodes(altFinal, altInitial, null);
-			nodeList.linkNodes(altFinal, final, null);
+			altFinal.link(altInitial, null);
+			altFinal.link(final, null);
 		}
 
 		if (!lazy) {
-			nodeList.linkNodes(initial, final, null);
+			initial.link(final, null);
 		}
 
 		return final;
 	}
 }
 
-function baseMakeEffectivelyFinal(nodeList: ENFA.NodeList, base: SubList, node: ENFA.Node): void {
+function baseMakeEffectivelyFinal(factory: NodeFactory<ENFA.Node>, base: SubGraph, node: ENFA.Node): void {
 	if (node === base.final) {
 		return;
 	}
 
 	const current = node.out.get(base.final);
 	if (current === undefined) {
-		nodeList.linkNodes(node, base.final, null);
+		node.link(base.final, null);
 	} else if (current === null) {
 		return;
 	} else {
@@ -1220,33 +1156,40 @@ function baseMakeEffectivelyFinal(nodeList: ENFA.NodeList, base: SubList, node: 
 			}
 		}
 
-		const newNode = nodeList.createNode();
-		nodeList.linkNodes(node, newNode, null);
-		nodeList.linkNodes(newNode, base.final, null);
+		const newNode = factory.createNode();
+		node.link(newNode, null);
+		newNode.link(base.final, null);
 	}
 }
-function baseMakeEffectivelyInitial(nodeList: ENFA.NodeList, base: SubList, node: ENFA.Node): void {
+function baseMakeEffectivelyInitial(factory: NodeFactory<ENFA.Node>, base: SubGraph, node: ENFA.Node): void {
 	if (node === base.initial) {
 		return;
 	}
 
 	const current = base.initial.out.get(node);
 	if (current === undefined) {
-		nodeList.linkNodes(base.initial, node, null);
+		base.initial.link(node, null);
 	} else if (current === null) {
 		return;
 	} else {
-		const newNode = nodeList.createNode();
-		nodeList.linkNodes(base.initial, newNode, null);
-		nodeList.linkNodes(newNode, node, null);
+		const newNode = factory.createNode();
+		base.initial.link(newNode, null);
+		newNode.link(node, null);
 	}
 }
 
-function localCopy(nodeList: ENFA.NodeList, toCopy: ReadonlySubList): SubList {
-	const initial = nodeList.createNode();
-	const final = nodeList.createNode();
+function smartFactoryCopy<O>(factory: NodeFactory<ENFA.Node>, toCopy: TransitionIterable<O>): SubGraph {
+	if (toCopy instanceof ENFA) {
+		return factoryCopyOfSubGraph(factory, toCopy);
+	} else {
+		return factoryCopy(factory, toCopy.transitionIterator());
+	}
+}
+function factoryCopyOfSubGraph(factory: NodeFactory<ENFA.Node>, toCopy: ReadonlySubGraph): SubGraph {
+	const initial = factory.createNode();
+	const final = factory.createNode();
 
-	const translate = cachedFunc<ENFA.ReadonlyNode, ENFA.Node>(() => nodeList.createNode());
+	const translate = cachedFunc<ENFA.ReadonlyNode, ENFA.Node>(() => factory.createNode());
 	translate.cache.set(toCopy.initial, initial);
 	translate.cache.set(toCopy.final, final);
 
@@ -1254,51 +1197,51 @@ function localCopy(nodeList: ENFA.NodeList, toCopy: ReadonlySubList): SubList {
 		const transNode = translate(node);
 
 		node.out.forEach((charSet, to) => {
-			nodeList.linkNodes(transNode, translate(to), charSet);
+			transNode.link(translate(to), charSet);
 		});
 		return node.out.keys();
 	});
 
-	return { initial, final };
-}
-function localCopyOfIterator<T>(nodeList: ENFA.NodeList, iter: TransitionIterator<T>): SubList {
-	const initial = nodeList.createNode();
-	const final = nodeList.createNode();
+	const result = { initial, final };
 
-	const translate = cachedFunc<T, ENFA.Node>(() => nodeList.createNode());
+	baseNormalize(factory, result);
+
+	return result;
+}
+function factoryCopy<T>(factory: NodeFactory<ENFA.Node>, iter: TransitionIterator<T>): SubGraph {
+	const initial = factory.createNode();
+	const final = factory.createNode();
+
+	const translate = cachedFunc<T, ENFA.Node>(() => factory.createNode());
 	translate.cache.set(iter.initial, initial);
 
 	traverse(iter.initial, node => {
 		const transNode = translate(node);
 
 		if (iter.isFinal(node)) {
-			nodeList.linkNodes(transNode, final, null);
+			transNode.link(final, null);
 		}
 
 		const out = iter.getOut(node);
 		out.forEach((charSet, to) => {
-			nodeList.linkNodes(transNode, translate(to), charSet);
+			transNode.link(translate(to), charSet);
 		});
 		return out.keys();
 	});
 
-	if (initial.in.size === 0) {
-		return { initial, final };
-	} else {
-		const newInitial = nodeList.createNode();
-		nodeList.linkNodes(newInitial, initial, null);
+	const result = { initial, final };
 
-		return { initial: newInitial, final };
-	}
+	baseNormalize(factory, result);
+
+	return result;
 }
 
 /**
  * Alters `base` to accept no words.
  *
- * @param _nodeList
  * @param base
  */
-function baseMakeEmpty(_nodeList: ENFA.NodeList, base: SubList): void {
+function baseMakeEmpty(base: SubGraph): void {
 	base.initial.in.clear();
 	base.initial.out.clear();
 	base.final.in.clear();
@@ -1307,30 +1250,35 @@ function baseMakeEmpty(_nodeList: ENFA.NodeList, base: SubList): void {
 /**
  * Alters `base` to accept only the empty word.
  *
- * @param nodeList
  * @param base
  */
-function baseMakeEmptyWord(nodeList: ENFA.NodeList, base: SubList): void {
-	baseMakeEmpty(nodeList, base);
+function baseMakeEmptyWord(base: SubGraph): void {
+	baseMakeEmpty(base);
 
-	nodeList.linkNodes(base.initial, base.final, null);
+	base.initial.link(base.final, null);
 }
 
-function baseNormalize(nodeList: ENFA.NodeList, base: SubList): void {
-	baseNormalizeInitial(nodeList, base);
-	baseNormalizeFinal(nodeList, base);
+function baseNormalize(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): asserts base is SubGraph {
+	baseNormalizeInitial(factory, base);
+	baseNormalizeFinal(factory, base);
+
+	if (base.initial === base.final) {
+		const newFinal = factory.createNode();
+		base.final.link(newFinal, null);
+		base.final = newFinal;
+	}
 }
-function baseNormalizeInitial(nodeList: ENFA.NodeList, base: SubList): void {
+function baseNormalizeInitial(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): void {
 	if (base.initial.in.size > 0) {
-		const newInitial = nodeList.createNode();
-		nodeList.linkNodes(newInitial, base.initial, null);
+		const newInitial = factory.createNode();
+		newInitial.link(base.initial, null);
 		base.initial = newInitial;
 	}
 }
-function baseNormalizeFinal(nodeList: ENFA.NodeList, base: SubList): void {
+function baseNormalizeFinal(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): void {
 	if (base.final.out.size > 0) {
-		const newFinal = nodeList.createNode();
-		nodeList.linkNodes(base.final, newFinal, null);
+		const newFinal = factory.createNode();
+		base.final.link(newFinal, null);
 		base.final = newFinal;
 	}
 }
@@ -1340,23 +1288,22 @@ function baseNormalizeFinal(nodeList: ENFA.NodeList, base: SubList): void {
  *
  * `after` will be altered as well and cannot be used again after this operation.
  *
- * @param nodeList The node list of both `base` and `after`.
  * @param base
  * @param after
  */
-function baseAppend(nodeList: ENFA.NodeList, base: SubList, after: SubList): void {
+function baseAppend(base: SubGraph, after: SubGraph): void {
 	if (base.initial.out.size === 0 || base.final.in.size === 0) {
 		// concat(EMPTY_LANGUAGE, after) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 	if (after.initial.out.size === 0 || after.final.in.size === 0) {
 		// concat(base, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 
-	nodeList.linkNodes(base.final, after.initial, null);
+	base.final.link(after.initial, null);
 	base.final = after.final;
 }
 
@@ -1365,37 +1312,36 @@ function baseAppend(nodeList: ENFA.NodeList, base: SubList, after: SubList): voi
  *
  * `before` will be altered as well and cannot be used again after this operation.
  *
- * @param nodeList The node list of both `base` and `before`.
  * @param base
  * @param before
  */
-function basePrepend(nodeList: ENFA.NodeList, base: SubList, before: SubList): void {
+function basePrepend(base: SubGraph, before: SubGraph): void {
 	if (base.initial.out.size === 0 || base.final.in.size === 0) {
 		// concat(before, EMPTY_LANGUAGE) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 	if (before.initial.out.size === 0 || before.final.in.size === 0) {
 		// concat(EMPTY_LANGUAGE, base) == EMPTY_LANGUAGE
-		baseMakeEmpty(nodeList, base);
+		baseMakeEmpty(base);
 		return;
 	}
 
-	nodeList.linkNodes(before.final, base.initial, null);
+	before.final.link(base.initial, null);
 	base.initial = before.initial;
 }
 
 /**
  * Alters `base` to be repeated a certain number of times.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param times
  */
-function baseRepeat(nodeList: ENFA.NodeList, base: SubList, times: number): void {
+function baseRepeat(factory: NodeFactory<ENFA.Node>, base: SubGraph, times: number): void {
 	if (times === 0) {
 		// trivial
-		baseMakeEmptyWord(nodeList, base);
+		baseMakeEmptyWord(base);
 		return;
 	}
 	if (times === 1) {
@@ -1407,37 +1353,35 @@ function baseRepeat(nodeList: ENFA.NodeList, base: SubList, times: number): void
 		return;
 	}
 
-	const copy = localCopy(nodeList, base);
+	const copy = factoryCopyOfSubGraph(factory, base);
 
 	let final = base.final;
 	for (let i = 2; i < times; i++) {
-		const iterationCopy = localCopy(nodeList, copy);
-		nodeList.linkNodes(final, iterationCopy.initial, null);
+		const iterationCopy = factoryCopyOfSubGraph(factory, copy);
+		final.link(iterationCopy.initial, null);
 		final = iterationCopy.final;
 	}
 
-	nodeList.linkNodes(final, copy.initial, null);
+	final.link(copy.initial, null);
 	base.final = copy.final;
 }
 
 /**
  * Alters `base` to be equal to `/(<base>)+/`.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param lazy
  */
-function basePlus(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
-	baseNormalize(nodeList, base);
-
-	const newFinal = nodeList.createNode();
+function basePlus(factory: NodeFactory<ENFA.Node>, base: SubGraph, lazy: boolean): void {
+	const newFinal = factory.createNode();
 
 	if (lazy) {
-		nodeList.linkNodes(base.final, newFinal, null);
-		nodeList.linkNodes(base.final, base.initial, null);
+		base.final.link(newFinal, null);
+		base.final.link(base.initial, null);
 	} else {
-		nodeList.linkNodes(base.final, base.initial, null);
-		nodeList.linkNodes(base.final, newFinal, null);
+		base.final.link(base.initial, null);
+		base.final.link(newFinal, null);
 	}
 
 	base.final = newFinal;
@@ -1445,28 +1389,26 @@ function basePlus(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
 /**
  * Alters `base` to be equal to `(<base>)*`.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param lazy
  */
-function baseStar(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
-	baseNormalize(nodeList, base);
-
-	const newInitial = nodeList.createNode();
-	const newFinal = nodeList.createNode();
+function baseStar(factory: NodeFactory<ENFA.Node>, base: SubGraph, lazy: boolean): void {
+	const newInitial = factory.createNode();
+	const newFinal = factory.createNode();
 
 	if (lazy) {
-		nodeList.linkNodes(newInitial, newFinal, null);
-		nodeList.linkNodes(newInitial, base.initial, null);
+		newInitial.link(newFinal, null);
+		newInitial.link(base.initial, null);
 
-		nodeList.linkNodes(base.final, newFinal, null);
-		nodeList.linkNodes(base.final, base.initial, null);
+		base.final.link(newFinal, null);
+		base.final.link(base.initial, null);
 	} else {
-		nodeList.linkNodes(newInitial, base.initial, null);
-		nodeList.linkNodes(newInitial, newFinal, null);
+		newInitial.link(base.initial, null);
+		newInitial.link(newFinal, null);
 
-		nodeList.linkNodes(base.final, base.initial, null);
-		nodeList.linkNodes(base.final, newFinal, null);
+		base.final.link(base.initial, null);
+		base.final.link(newFinal, null);
 	}
 
 	base.initial = newInitial;
@@ -1476,50 +1418,46 @@ function baseStar(nodeList: ENFA.NodeList, base: SubList, lazy: boolean): void {
 /**
  * Alters `base` to be equal to `(<base>){0,<max>}`.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param max
  * @param lazy
  */
-function baseMaximum(nodeList: ENFA.NodeList, base: SubList, max: number, lazy: boolean): void {
+function baseMaximum(factory: NodeFactory<ENFA.Node>, base: SubGraph, max: number, lazy: boolean): void {
 	if (max === Infinity) {
 		// `(<base>){0,}`
-		baseStar(nodeList, base, lazy);
+		baseStar(factory, base, lazy);
 	} else if (max === 0) {
 		// `(<base>){0,0}`
-		baseMakeEmptyWord(nodeList, base);
+		baseMakeEmptyWord(base);
 	} else if (max === 1) {
 		// `(<base>){0,1}`
-		baseNormalizeFinal(nodeList, base);
-
-		const newInitial = nodeList.createNode();
+		const newInitial = factory.createNode();
 		if (lazy) {
-			nodeList.linkNodes(newInitial, base.final, null);
-			nodeList.linkNodes(newInitial, base.initial, null);
+			newInitial.link(base.final, null);
+			newInitial.link(base.initial, null);
 		} else {
-			nodeList.linkNodes(newInitial, base.initial, null);
-			nodeList.linkNodes(newInitial, base.final, null);
+			newInitial.link(base.initial, null);
+			newInitial.link(base.final, null);
 		}
 		base.initial = newInitial;
 	} else {
 		// `(<base>){0,n}`
 		debugAssert(max >= 2);
 
-		baseNormalizeFinal(nodeList, base);
-
 		const copies = [base];
 		for (let i = 1; i < max; i++) {
-			copies.push(localCopy(nodeList, base));
+			copies.push(factoryCopyOfSubGraph(factory, base));
 		}
 
-		const initial = nodeList.createNode();
+		const initial = factory.createNode();
 		const final = copies[copies.length - 1].final;
 		if (lazy) {
-			nodeList.linkNodes(initial, final, null);
-			nodeList.linkNodes(initial, copies[0].initial, null);
+			initial.link(final, null);
+			initial.link(copies[0].initial, null);
 		} else {
-			nodeList.linkNodes(initial, copies[0].initial, null);
-			nodeList.linkNodes(initial, final, null);
+			initial.link(copies[0].initial, null);
+			initial.link(final, null);
 		}
 
 		for (let i = 1; i < max; i++) {
@@ -1527,11 +1465,11 @@ function baseMaximum(nodeList: ENFA.NodeList, base: SubList, max: number, lazy: 
 			const next = copies[i];
 
 			if (lazy) {
-				nodeList.linkNodes(curr.final, final, null);
-				nodeList.linkNodes(curr.final, next.initial, null);
+				curr.final.link(final, null);
+				curr.final.link(next.initial, null);
 			} else {
-				nodeList.linkNodes(curr.final, next.initial, null);
-				nodeList.linkNodes(curr.final, final, null);
+				curr.final.link(next.initial, null);
+				curr.final.link(final, null);
 			}
 		}
 
@@ -1540,29 +1478,29 @@ function baseMaximum(nodeList: ENFA.NodeList, base: SubList, max: number, lazy: 
 	}
 }
 
-function baseQuantify(nodeList: ENFA.NodeList, base: SubList, min: number, max: number, lazy: boolean): void {
+function baseQuantify(factory: NodeFactory<ENFA.Node>, base: SubGraph, min: number, max: number, lazy: boolean): void {
 	if (max === Infinity) {
 		if (min > 1) {
-			const prefix = localCopy(nodeList, base);
-			baseRepeat(nodeList, prefix, min - 1);
-			basePlus(nodeList, base, lazy);
-			basePrepend(nodeList, base, prefix);
+			const prefix = factoryCopyOfSubGraph(factory, base);
+			baseRepeat(factory, prefix, min - 1);
+			basePlus(factory, base, lazy);
+			basePrepend(base, prefix);
 		} else if (min === 1) {
-			basePlus(nodeList, base, lazy);
+			basePlus(factory, base, lazy);
 		} else {
 			debugAssert(min === 0);
-			baseStar(nodeList, base, lazy);
+			baseStar(factory, base, lazy);
 		}
 	} else {
 		if (min === max) {
-			baseRepeat(nodeList, base, min);
+			baseRepeat(factory, base, min);
 		} else if (min === 0) {
-			baseMaximum(nodeList, base, max, lazy);
+			baseMaximum(factory, base, max, lazy);
 		} else {
-			const prefix = localCopy(nodeList, base);
-			baseRepeat(nodeList, prefix, min);
-			baseMaximum(nodeList, base, max - min, lazy);
-			basePrepend(nodeList, base, prefix);
+			const prefix = factoryCopyOfSubGraph(factory, base);
+			baseRepeat(factory, prefix, min);
+			baseMaximum(factory, base, max - min, lazy);
+			basePrepend(base, prefix);
 		}
 	}
 }
@@ -1570,18 +1508,18 @@ function baseQuantify(nodeList: ENFA.NodeList, base: SubList, min: number, max: 
 /**
  * Alters `base` to be equal to `<left>|<base>`.
  *
- * @param nodeList
+ * @param factory
  * @param base
  * @param left
  */
-function baseUnionLeft(nodeList: ENFA.NodeList, base: SubList, left: SubList): void {
-	const initial = nodeList.createNode();
-	const final = nodeList.createNode();
+function baseUnionLeft(factory: NodeFactory<ENFA.Node>, base: SubGraph, left: SubGraph): void {
+	const initial = factory.createNode();
+	const final = factory.createNode();
 
-	nodeList.linkNodes(initial, left.initial, null);
-	nodeList.linkNodes(initial, base.initial, null);
-	nodeList.linkNodes(left.final, final, null);
-	nodeList.linkNodes(base.final, final, null);
+	initial.link(left.initial, null);
+	initial.link(base.initial, null);
+	left.final.link(final, null);
+	base.final.link(final, null);
 
 	base.initial = initial;
 	base.final = final;
@@ -1589,13 +1527,60 @@ function baseUnionLeft(nodeList: ENFA.NodeList, base: SubList, left: SubList): v
 /**
  * Alters `base` to be equal to `<base>|<right>`.
  *
- * @param nodeList
  * @param base
  * @param right
  */
-function baseUnionRight(nodeList: ENFA.NodeList, base: SubList, right: SubList): void {
-	baseNormalize(nodeList, base);
+function baseUnionRight(base: SubGraph, right: SubGraph): void {
+	base.initial.link(right.initial, null);
+	right.final.link(base.final, null);
+}
 
-	nodeList.linkNodes(base.initial, right.initial, null);
-	nodeList.linkNodes(right.final, base.final, null);
+/**
+ * All states which cannot be reached from the initial state or cannot reach (or are) a final state, will be
+ * removed.
+ *
+ * @param base
+ */
+function baseRemoveUnreachable(base: NonNormalSubGraph): void {
+	if (base.final.in.size === 0 || base.initial.out.size === 0) {
+		baseMakeEmpty(base);
+		return;
+	}
+
+	// 1) Get all nodes reachable from the initial state
+	const reachableFromInitial = new Set<ENFA.Node>();
+	traverse(base.initial, node => {
+		reachableFromInitial.add(node);
+		return node.out.keys();
+	});
+
+	// 2) Get all nodes reachable state
+	const reachable = new Set<ENFA.Node>();
+	traverse(base.final, node => {
+		if (!reachableFromInitial.has(node)) {
+			return [];
+		}
+
+		reachable.add(node);
+		return node.in.keys();
+	});
+
+	if (reachable.size === 0 || !reachable.has(base.initial)) {
+		baseMakeEmpty(base);
+		return;
+	}
+
+	// 3) Remove all unreachable states
+	for (const node of reachable) {
+		node.out.forEach((_, to) => {
+			if (!reachable.has(to)) {
+				to.unlinkAll();
+			}
+		});
+		node.in.forEach((_, from) => {
+			if (!reachable.has(from)) {
+				from.unlinkAll();
+			}
+		});
+	}
 }
