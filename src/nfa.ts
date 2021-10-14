@@ -218,16 +218,17 @@ export class NFA implements ReadonlyNFA {
 	 * after this operation as nodes are moved, not shared.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	unionInto(other: NFA): void {
+	unionInto(other: NFA, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
 			throw new Error("Cannot union an NFA into itself.");
 		}
 
-		this.normalize();
-		other.normalize();
+		this.normalize(factory);
+		other.normalize(factory);
 		baseUnion(this, other);
 		baseMakeEmpty(other);
 	}
@@ -256,16 +257,17 @@ export class NFA implements ReadonlyNFA {
 	 * after this operation as nodes are moved, not shared.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	appendInto(other: NFA): void {
+	appendInto(other: NFA, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
 			throw new Error("Cannot append an NFA into itself.");
 		}
 
-		this.normalize();
-		other.normalize();
+		this.normalize(factory);
+		other.normalize(factory);
 		baseAppend(this, other);
 		baseMakeEmpty(other);
 	}
@@ -294,16 +296,17 @@ export class NFA implements ReadonlyNFA {
 	 * after this operation as nodes are moved, not shared.
 	 *
 	 * @param other
+	 * @param factory
 	 */
-	prependInto(other: NFA): void {
+	prependInto(other: NFA, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
 			throw new Error("Cannot prepend an NFA into itself.");
 		}
 
-		this.normalize();
-		other.normalize();
+		this.normalize(factory);
+		other.normalize(factory);
 		basePrepend(this, other);
 		baseMakeEmpty(other);
 	}
