@@ -1328,24 +1328,19 @@ function baseMakeEmptyWord(base: SubGraph): void {
 }
 
 function baseNormalize(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): asserts base is SubGraph {
-	baseNormalizeInitial(factory, base);
-	baseNormalizeFinal(factory, base);
-
-	if (base.initial === base.final) {
-		const newFinal = factory.createNode();
-		base.final.link(newFinal, null);
-		base.final = newFinal;
-	}
-}
-function baseNormalizeInitial(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): void {
 	if (base.initial.in.size > 0) {
 		const newInitial = factory.createNode();
 		newInitial.link(base.initial, null);
 		base.initial = newInitial;
 	}
-}
-function baseNormalizeFinal(factory: NodeFactory<ENFA.Node>, base: NonNormalSubGraph): void {
+
 	if (base.final.out.size > 0) {
+		const newFinal = factory.createNode();
+		base.final.link(newFinal, null);
+		base.final = newFinal;
+	}
+
+	if (base.initial === base.final) {
 		const newFinal = factory.createNode();
 		base.final.link(newFinal, null);
 		base.final = newFinal;
