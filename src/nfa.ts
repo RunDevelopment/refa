@@ -444,6 +444,23 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	/**
+	 * Creates a new NFA which matches the given characters.
+	 *
+	 * @param charSet
+	 * @param factory
+	 */
+	static fromCharSet(charSet: CharSet, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
+		const initial = factory.createNode();
+		const final = factory.createNode();
+
+		if (!charSet.isEmpty) {
+			initial.link(final, charSet);
+		}
+
+		return new NFA(initial, new Set([final]), charSet.maximum);
+	}
+
+	/**
 	 * Returns a new NFA which is equivalent to the intersection of the two given FA.
 	 *
 	 * @param left

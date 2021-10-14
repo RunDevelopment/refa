@@ -474,6 +474,23 @@ export class ENFA implements ReadonlyENFA {
 		return new ENFA(initial, final, options.maxCharacter);
 	}
 
+	/**
+	 * Creates a new ENFA which matches the given characters.
+	 *
+	 * @param charSet
+	 * @param factory
+	 */
+	static fromCharSet(charSet: CharSet, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
+		const initial = factory.createNode();
+		const final = factory.createNode();
+
+		if (!charSet.isEmpty) {
+			initial.link(final, charSet);
+		}
+
+		return new ENFA(initial, final, charSet.maximum);
+	}
+
 	static fromRegex(
 		concat: NoParent<Node>,
 		options: Readonly<ENFA.Options>,

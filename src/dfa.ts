@@ -408,6 +408,23 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	/**
+	 * Creates a new DFA which matches the given characters.
+	 *
+	 * @param charSet
+	 * @param factory
+	 */
+	static fromCharSet(charSet: CharSet, factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+		const initial = factory.createNode();
+		const final = factory.createNode();
+
+		if (!charSet.isEmpty) {
+			initial.link(final, charSet);
+		}
+
+		return new DFA(initial, new Set([final]), charSet.maximum);
+	}
+
+	/**
 	 * Returns a new DFA which is equivalent to the intersection of the two given FA.
 	 *
 	 * @param left
