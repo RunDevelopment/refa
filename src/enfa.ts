@@ -16,6 +16,7 @@ import * as Iter from "./iter";
 import { Concatenation, Element, Expression, NoParent, Node, Quantifier } from "./ast";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
+import { toAlternatives } from "./ast-analysis";
 
 /**
  * A readonly {@link ENFA}.
@@ -509,33 +510,8 @@ export class ENFA implements ReadonlyENFA {
 		creationOptions: Readonly<ENFA.FromRegexOptions> = {},
 		factory: NodeFactory<ENFA.Node> = new ENFA.LimitedNodeFactory()
 	): ENFA {
-		let base;
-		if (Array.isArray(value)) {
-			base = createGraphFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
-		} else {
-			const node = value as NoParent<Node>;
-
-			switch (node.type) {
-				case "Expression":
-					base = createGraphFromRegex(node.alternatives, options, creationOptions, factory);
-					break;
-
-				case "Concatenation":
-					base = createGraphFromRegex([node], options, creationOptions, factory);
-					break;
-
-				default:
-					base = createGraphFromRegex(
-						[{ type: "Concatenation", elements: [node] }],
-						options,
-						creationOptions,
-						factory
-					);
-					break;
-			}
-		}
-
-		return new ENFA(base.initial, base.final, options.maxCharacter);
+		const { initial, final } = createGraphFromRegex(toAlternatives(value), options, creationOptions, factory);
+		return new ENFA(initial, final, options.maxCharacter);
 	}
 
 	/**

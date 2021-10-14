@@ -16,6 +16,9 @@ export function cachedFunc<S, T>(func: (value: S) => T): CachedFunc<S, T> {
 	return wrapper;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isReadonlyArray: (value: unknown) => value is readonly any[] = Array.isArray;
+
 /**
  * This is functionally equivalent to `Array.prototype.filter` but it mutates the given array.
  *

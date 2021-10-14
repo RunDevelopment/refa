@@ -9,10 +9,10 @@ import {
 	Node,
 	Parent,
 	Quantifier,
+	Unknown,
 } from "./ast";
-import { Unknown } from "./ast/nodes";
 import { CharSet } from "./char-set";
-import { assertNever } from "./util";
+import { assertNever, isReadonlyArray } from "./util";
 
 // Most of the functions here are copied from https://github.com/RunDevelopment/eslint-plugin-clean-regex
 
@@ -1334,6 +1334,34 @@ export function structurallyEqualToQuantifiedElement(
 			}
 		} else {
 			return false;
+		}
+	}
+}
+
+/**
+ * Converts the given value into an alternatives array.
+ *
+ * @param value
+ */
+export function toAlternatives(
+	value: NoParent<Node> | readonly NoParent<Concatenation>[]
+): readonly NoParent<Concatenation>[] {
+	if (isReadonlyArray(value)) {
+		return value;
+	} else {
+		switch (value.type) {
+			case "Expression":
+				return value.alternatives;
+			case "Concatenation":
+				return [value];
+			default:
+				return [
+					{
+						type: "Concatenation",
+						elements: [value],
+						source: value.source,
+					},
+				];
 		}
 	}
 }

@@ -15,6 +15,7 @@ import { Char, ReadonlyWord, Word } from "./char-types";
 import { ReadonlyWordSet, WordSet } from "./word-set";
 import { MaxCharacterError, TooManyNodesError } from "./errors";
 import { wordSetsToWords } from "./words";
+import { toAlternatives } from "./ast-analysis";
 
 /**
  * A readonly {@link NFA}.
@@ -513,33 +514,8 @@ export class NFA implements ReadonlyNFA {
 		creationOptions: Readonly<NFA.FromRegexOptions> = {},
 		factory: NodeFactory<NFA.Node> = new NFA.LimitedNodeFactory()
 	): NFA {
-		let base;
-		if (Array.isArray(value)) {
-			base = createGraphFromRegex(value as readonly NoParent<Concatenation>[], options, creationOptions, factory);
-		} else {
-			const node = value as NoParent<Node>;
-
-			switch (node.type) {
-				case "Expression":
-					base = createGraphFromRegex(node.alternatives, options, creationOptions, factory);
-					break;
-
-				case "Concatenation":
-					base = createGraphFromRegex([node], options, creationOptions, factory);
-					break;
-
-				default:
-					base = createGraphFromRegex(
-						[{ type: "Concatenation", elements: [node] }],
-						options,
-						creationOptions,
-						factory
-					);
-					break;
-			}
-		}
-
-		return new NFA(base.initial, base.finals, options.maxCharacter);
+		const { initial, finals } = createGraphFromRegex(toAlternatives(value), options, creationOptions, factory);
+		return new NFA(initial, finals, options.maxCharacter);
 	}
 
 	/**
