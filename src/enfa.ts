@@ -287,6 +287,30 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	/**
+	 * Modifies this ENFA to accept the concatenation of this ENFA and the other ENFA.
+	 *
+	 * This operation is implemented by moving (not copying) the states from the other ENFA into this ENFA. The other
+	 * ENFA will be in an **invalid state** after this operation completes. The initial and final states of the other
+	 * ENFA will be random nodes of this ENFA. Makes sure that you never use the other ENFA again.
+	 *
+	 * This operation will create at most 4 nodes with the given factory.
+	 *
+	 * @param other
+	 * @param factory
+	 */
+	appendInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): asserts other is never {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot append an ENFA into itself.");
+		}
+
+		this.normalize(factory);
+		other.normalize(factory);
+		baseAppend(this, other);
+	}
+
+	/**
 	 * Modifies this ENFA to accept the concatenation of the given FA and this ENFA.
 	 *
 	 * @param other
@@ -297,6 +321,30 @@ export class ENFA implements ReadonlyENFA {
 
 		this.normalize(factory);
 		basePrepend(this, smartFactoryCopy(factory, other));
+	}
+
+	/**
+	 * Modifies this ENFA to accept the concatenation of the other ENFA and this ENFA.
+	 *
+	 * This operation is implemented by moving (not copying) the states from the other ENFA into this ENFA. The other
+	 * ENFA will be in an **invalid state** after this operation completes. The initial and final states of the other
+	 * ENFA will be random nodes of this ENFA. Makes sure that you never use the other ENFA again.
+	 *
+	 * This operation will create at most 4 nodes with the given factory.
+	 *
+	 * @param other
+	 * @param factory
+	 */
+	prependInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): asserts other is never {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot prepend an ENFA into itself.");
+		}
+
+		this.normalize(factory);
+		other.normalize(factory);
+		basePrepend(this, other);
 	}
 
 	/**
@@ -321,6 +369,42 @@ export class ENFA implements ReadonlyENFA {
 			baseUnionLeft(factory, this, smartFactoryCopy(factory, other));
 		} else {
 			baseUnionRight(this, smartFactoryCopy(factory, other));
+		}
+	}
+
+	/**
+	 * Modifies this ENFA to accept the language of this ENFA and the language of the other ENFA.
+	 *
+	 * If the union kind is `left`, then this ENFA will be modified to accept `<other>|<this>`. Otherwise, it will be
+	 * modified to accept `<this>|<other>`.
+	 *
+	 * This operation is implemented by moving (not copying) the states from the other ENFA into this ENFA. The other
+	 * ENFA will be in an **invalid state** after this operation completes. The initial and final states of the other
+	 * ENFA will be random nodes of this ENFA. Makes sure that you never use the other ENFA again.
+	 *
+	 * This operation will create at most 6 nodes with the given factory.
+	 *
+	 * @param other
+	 * @param kind
+	 * @param factory
+	 */
+	unionInto(
+		other: ENFA,
+		kind: "left" | "right" = "right",
+		factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory
+	): asserts other is never {
+		MaxCharacterError.assert(this, other);
+
+		if (this === other) {
+			throw new Error("Cannot union an ENFA into itself.");
+		}
+
+		this.normalize(factory);
+		other.normalize(factory);
+		if (kind === "left") {
+			baseUnionLeft(factory, this, other);
+		} else {
+			baseUnionRight(this, other);
 		}
 	}
 
