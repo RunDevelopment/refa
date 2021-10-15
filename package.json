@@ -12,7 +12,7 @@
     "test:update": "npm run test -- --update --run-transformers",
     "build": "npx rimraf ./index.* .out/** && npx tsc && rollup -c && npm run build:dts",
     "build:dts": "dts-bundle --main ./.out/index.d.ts --name refa --out ../index.d.ts && npm run scripts:flat-dts && prettier --write ./index.d.ts",
-    "build:docs": "typedoc --listInvalidSymbolLinks",
+    "build:docs": "typedoc --treatWarningsAsErrors",
     "coverage": "npx nyc --reporter=html --reporter=text npm run test",
     "scripts:create-case-folding": "npx ts-node --project scripts/tsconfig.json scripts/create-case-folding.ts",
     "scripts:create-unicode": "npx ts-node --project scripts/tsconfig.json scripts/create-unicode.ts",
@@ -58,7 +58,7 @@
     "rollup": "^2.47.0",
     "rollup-plugin-terser": "^7.0.2",
     "ts-node": "^8.10.2",
-    "typedoc": "^0.21.4",
+    "typedoc": "^0.22.5",
     "typescript": "^4.2.4"
   },
   "dependencies": {

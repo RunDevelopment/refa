@@ -9,5 +9,12 @@
 
   "includeVersion": true,
   "disableSources": true,
-  "hideGenerator": true
+  "hideGenerator": true,
+
+  "validation": true,
+  "intentionallyNotExported": [
+    "NodeIdent",
+    "NoParentNode",
+    "NoParentArray"
+  ]
 }
