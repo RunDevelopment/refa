@@ -77,7 +77,7 @@ function perfTest(): void {
 				try {
 					dfa.toRegex({ maxNodes: 100_000 })
 				} catch (error) {
-					if (!String(error).includes("Too many RE AST nodes")) {
+					if (!String(error).includes("toRegex operation")) {
 						throw error;
 					}
 				}
