@@ -313,7 +313,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param other
 	 * @param factory
 	 */
-	appendInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): asserts other is never {
+	appendInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
@@ -350,7 +350,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param other
 	 * @param factory
 	 */
-	prependInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): asserts other is never {
+	prependInto(other: ENFA, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
@@ -403,11 +403,7 @@ export class ENFA implements ReadonlyENFA {
 	 * @param kind
 	 * @param factory
 	 */
-	unionInto(
-		other: ENFA,
-		kind: "left" | "right" = "right",
-		factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory
-	): asserts other is never {
+	unionInto(other: ENFA, kind: "left" | "right" = "right", factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		MaxCharacterError.assert(this, other);
 
 		if (this === other) {
