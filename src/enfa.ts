@@ -831,26 +831,30 @@ export namespace ENFA {
 		}
 
 		resolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
-			// TODO: Implement this non-recursively
+			// The little magic trick of this non-recursive implementation is a reversed stack.
+			// By popping from the stack and pushing elements in reversed order, we get exactly the interaction order
+			// that we need to resolve epsilon while keeping order and ambiguity.
 
-			const visited = new Set<Node>();
+			const stack: [Node, CharSet | null][] = [...this[direction]].reverse();
 
-			function resolveDFS(n: Node): void {
-				if (visited.has(n)) {
-					return;
-				} else {
-					visited.add(n);
-				}
+			const visited = new Set<Node>([this]);
+			for (let item; (item = stack.pop()); ) {
+				const [to, via] = item;
 
-				n[direction].forEach((via, to) => {
-					if (via === null) {
-						resolveDFS(to);
-					} else {
-						consumerFn(via, to);
+				if (via === null) {
+					// recurse
+
+					// check already visited nodes
+					if (visited.has(to)) {
+						continue;
 					}
-				});
+					visited.add(to);
+
+					stack.push(...[...to[direction]].reverse());
+				} else {
+					consumerFn(via, to);
+				}
 			}
-			resolveDFS(this);
 		}
 
 		unorderedResolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
