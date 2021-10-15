@@ -836,11 +836,3 @@ describe("DFA", function () {
 		});
 	});
 });
-
-function getWords(dfa: DFA): string[] {
-	const words = new Set<string>();
-	for (const word of dfa.words()) {
-		words.add(word.map(i => String.fromCodePoint(i)).join(""));
-	}
-	return [...words];
-}

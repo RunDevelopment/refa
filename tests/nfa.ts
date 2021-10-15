@@ -1433,11 +1433,3 @@ describe("NFA", function () {
 		}
 	});
 });
-
-function getWords(nfa: NFA): string[] {
-	const words = new Set<string>();
-	for (const word of nfa.words()) {
-		words.add(word.map(i => String.fromCodePoint(i)).join(""));
-	}
-	return [...words];
-}

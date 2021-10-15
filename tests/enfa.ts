@@ -1269,11 +1269,3 @@ describe("ENFA", function () {
 		});
 	});
 });
-
-function getWords(enfa: ENFA): string[] {
-	const words = new Set<string>();
-	for (const word of enfa.words()) {
-		words.add(word.map(i => String.fromCodePoint(i)).join(""));
-	}
-	return [...words];
-}
