@@ -98,10 +98,23 @@ export class ENFA implements ReadonlyENFA {
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator(true));
 	}
+	/**
+	 * Whether this ENFA is in its normal form.
+	 *
+	 * @see {@link ENFA}
+	 */
 	get isNormalized(): boolean {
 		return this.initial.in.size === 0 && this.final.out.size === 0 && this.initial !== this.final;
 	}
 
+	/**
+	 * Brings this ENFA is in its normal form.
+	 *
+	 * This operation will create at most 2 nodes with the given factory.
+	 *
+	 * @param factory
+	 * @see {@link ENFA}
+	 */
 	normalize(factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): void {
 		baseNormalize(factory, this);
 	}

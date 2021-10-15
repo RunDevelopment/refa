@@ -97,10 +97,23 @@ export class NFA implements ReadonlyNFA {
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator());
 	}
+	/**
+	 * Whether this NFA is in its normal form.
+	 *
+	 * @see {@link NFA}
+	 */
 	get isNormalized(): boolean {
 		return this.initial.in.size === 0;
 	}
 
+	/**
+	 * Brings this NFA is in its normal form.
+	 *
+	 * This operation will create at most 1 nodes with the given factory.
+	 *
+	 * @param factory
+	 * @see {@link NFA}
+	 */
 	normalize(factory: NodeFactory<NFA.Node> = NFA.nodeFactory): void {
 		baseNormalize(factory, this);
 	}
