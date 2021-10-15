@@ -597,18 +597,16 @@ describe("ENFA", function () {
 	describe("union", function () {
 		for (const [literal, other] of TEST_PAIRS) {
 			it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
-				const enfa = literalToENFA(literal);
-				const enfaOther = literalToENFA(other);
-				enfa.union(enfaOther, "left");
-				const actual = enfa.toString();
-				assertEqualSnapshot(this, actual);
+				const a = literalToENFA(literal);
+				const b = literalToENFA(other);
+				a.union(b, "left");
+				assertEqualSnapshot(this, a.toString());
 			});
 			it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
-				const enfa = literalToENFA(literal);
-				const enfaOther = literalToENFA(other);
-				enfa.union(enfaOther, "right");
-				const actual = enfa.toString();
-				assertEqualSnapshot(this, actual);
+				const a = literalToENFA(literal);
+				const b = literalToENFA(other);
+				a.union(b, "right");
+				assertEqualSnapshot(this, a.toString());
 			});
 		}
 	});
@@ -616,15 +614,10 @@ describe("ENFA", function () {
 	describe("append", function () {
 		for (const [left, right] of TEST_PAIRS) {
 			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
-				const enfaLeft = literalToENFA(left);
-				const enfaRight = literalToENFA(right);
-				const enfaRightCopy = enfaRight.copy();
-				enfaLeft.append(enfaRight);
-
-				assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
-
-				const actual = enfaLeft.toString();
-				assertEqualSnapshot(this, actual);
+				const a = literalToENFA(left);
+				const b = literalToENFA(right);
+				a.append(b);
+				assertEqualSnapshot(this, a.toString());
 			});
 		}
 	});
@@ -632,15 +625,10 @@ describe("ENFA", function () {
 	describe("prepend", function () {
 		for (const [left, right] of TEST_PAIRS) {
 			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
-				const enfaLeft = literalToENFA(left);
-				const enfaRight = literalToENFA(right);
-				const enfaRightCopy = enfaRight.copy();
-				enfaLeft.prepend(enfaRight);
-
-				assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
-
-				const actual = enfaLeft.toString();
-				assertEqualSnapshot(this, actual);
+				const a = literalToENFA(left);
+				const b = literalToENFA(right);
+				a.prepend(b);
+				assertEqualSnapshot(this, a.toString());
 			});
 		}
 	});
