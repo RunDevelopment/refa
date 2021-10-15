@@ -611,6 +611,27 @@ describe("ENFA", function () {
 		}
 	});
 
+	describe("unionInto", function () {
+		for (const [literal, other] of TEST_PAIRS) {
+			it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
+				const a = literalToENFA(literal);
+				const b = literalToENFA(literal);
+				const c = literalToENFA(other);
+				a.union(c, "left");
+				b.unionInto(c, "left");
+				assert.strictEqual(a.toString(), b.toString());
+			});
+			it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
+				const a = literalToENFA(literal);
+				const b = literalToENFA(literal);
+				const c = literalToENFA(other);
+				a.union(c, "right");
+				b.unionInto(c, "right");
+				assert.strictEqual(a.toString(), b.toString());
+			});
+		}
+	});
+
 	describe("append", function () {
 		for (const [left, right] of TEST_PAIRS) {
 			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
@@ -622,6 +643,19 @@ describe("ENFA", function () {
 		}
 	});
 
+	describe("appendInto", function () {
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
+				const a = literalToENFA(left);
+				const b = literalToENFA(left);
+				const c = literalToENFA(right);
+				a.append(c);
+				b.appendInto(c);
+				assert.strictEqual(a.toString(), b.toString());
+			});
+		}
+	});
+
 	describe("prepend", function () {
 		for (const [left, right] of TEST_PAIRS) {
 			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
@@ -629,6 +663,19 @@ describe("ENFA", function () {
 				const b = literalToENFA(right);
 				a.prepend(b);
 				assertEqualSnapshot(this, a.toString());
+			});
+		}
+	});
+
+	describe("prependInto", function () {
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
+				const a = literalToENFA(left);
+				const b = literalToENFA(left);
+				const c = literalToENFA(right);
+				a.prepend(c);
+				b.prependInto(c);
+				assert.strictEqual(a.toString(), b.toString());
 			});
 		}
 	});
