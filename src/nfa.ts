@@ -24,6 +24,13 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	readonly initial: NFA.ReadonlyNode;
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 
+	/**
+	 * Whether this NFA is in its normal form.
+	 *
+	 * @see {@link NFA}
+	 */
+	readonly isNormalized: boolean;
+
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
 	nodes(): Iterable<NFA.ReadonlyNode>;
 
@@ -97,11 +104,6 @@ export class NFA implements ReadonlyNFA {
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator());
 	}
-	/**
-	 * Whether this NFA is in its normal form.
-	 *
-	 * @see {@link NFA}
-	 */
 	get isNormalized(): boolean {
 		return this.initial.in.size === 0;
 	}

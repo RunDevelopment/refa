@@ -25,6 +25,13 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	readonly initial: ENFA.ReadonlyNode;
 	readonly final: ENFA.ReadonlyNode;
 
+	/**
+	 * Whether this ENFA is in its normal form.
+	 *
+	 * @see {@link ENFA}
+	 */
+	readonly isNormalized: boolean;
+
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
 	nodes(): Iterable<ENFA.ReadonlyNode>;
 
@@ -98,11 +105,6 @@ export class ENFA implements ReadonlyENFA {
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator(true));
 	}
-	/**
-	 * Whether this ENFA is in its normal form.
-	 *
-	 * @see {@link ENFA}
-	 */
 	get isNormalized(): boolean {
 		return this.initial.in.size === 0 && this.final.out.size === 0 && this.initial !== this.final;
 	}
