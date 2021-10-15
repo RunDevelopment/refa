@@ -1114,7 +1114,17 @@ describe("ENFA", function () {
 	});
 
 	describe("withoutEmptyWord", function () {
-		test([/a*b*c+/, /a?b?/, /a??b?/, /a??b??/, /a?b??/, /a*b*c*/, /(a||b)(|c|d)(||f|g)/]);
+		test([
+			/a*b*c+/,
+			/a?b?/,
+			/a??b?/,
+			/a??b??/,
+			/a?b??/,
+			/a*b*c*/,
+			/(a*b*c*)*/,
+			/(a||b)(|c|d)(||f|g)/,
+			/((a||b)(|c|d)(||f|g))*/,
+		]);
 
 		type TestCase = Literal;
 
