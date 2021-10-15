@@ -1,9 +1,16 @@
 import { Literal } from "../../src/js";
-import { literalToString } from "./fa";
 
 export type LiteralPair = readonly [Literal, Literal];
 
 const data: LiteralPair[] = [
+	[/ab/, /ba/],
+	[/foo/, /bar/],
+	[/a/, /a*/],
+	[/a*/, /a*b*c*/],
+	[/a|b|c{2}/, /a{2}|b{2}|c/],
+];
+
+export const TEST_PAIRS: readonly LiteralPair[] = [
 	// interesting combinations
 	[/()/, /()/],
 	[/()/, /b/],
@@ -31,15 +38,7 @@ const data: LiteralPair[] = [
 	[/a+/, /b*/],
 	[/a+/, /b+/],
 
-	// others
-	[/ab/, /ba/],
-	[/foo/, /bar/],
-	[/a/, /a*/],
-	[/a*/, /a*b*c*/],
-	[/a|b|c{2}/, /a{2}|b{2}|c/],
-];
-
-export const TEST_PAIRS: readonly LiteralPair[] = [
+	// data
 	...data,
-	...data.map<LiteralPair>(([a, b]) => [b, a]).filter(([a, b]) => literalToString(a) !== literalToString(b)),
+	...data.map<LiteralPair>(([a, b]) => [b, a]),
 ];
