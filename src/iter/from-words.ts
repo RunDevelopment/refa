@@ -103,16 +103,15 @@ export function fromWordSets<S>(
 	}
 
 	// translate trie
-	traverse(root, n => {
+	traverse(root, (n, queue) => {
 		if (n.isFinal) {
 			builder.makeFinal(n.builderNode);
 		}
 
 		for (const { to, via } of n.out) {
+			queue.push(to);
 			builder.linkNodes(n.builderNode, to.builderNode, via);
 		}
-
-		return n.out.map(item => item.to);
 	});
 
 	return {

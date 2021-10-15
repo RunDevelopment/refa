@@ -133,9 +133,9 @@ export class DFA implements ReadonlyDFA {
 
 	countNodes(): number {
 		let c = 0;
-		traverse(this.initial, n => {
+		traverse(this.initial, (n, queue) => {
 			c++;
-			return n.out.values();
+			queue.push(...n.out.values());
 		});
 		return c;
 	}
@@ -248,17 +248,14 @@ export class DFA implements ReadonlyDFA {
 		const getInSet = cachedFunc<DFA.Node, Set<DFA.Node>>(() => new Set());
 		const reachableFromInitial: DFA.Node[] = [];
 
-		traverse(this.initial, node => {
+		traverse(this.initial, (node, queue) => {
 			reachableFromInitial.push(node);
 			getInSet(node);
 
-			const out = new Set<DFA.Node>();
 			node.out.forEach(n => {
-				out.add(n);
+				queue.push(n);
 				getInSet(n).add(node);
 			});
-
-			return out;
 		});
 
 		debugAssert(getInSet.cache.has(this.initial));
@@ -280,9 +277,9 @@ export class DFA implements ReadonlyDFA {
 
 		// Mark all states reachable from final states
 		const reachableFromFinal = new Set<DFA.Node>();
-		traverseMultiRoot(this.finals, node => {
+		traverseMultiRoot(this.finals, (node, queue) => {
 			reachableFromFinal.add(node);
-			return getInSet(node);
+			queue.push(...getInSet(node));
 		});
 
 		// Check condition 2)
@@ -353,10 +350,9 @@ export class DFA implements ReadonlyDFA {
 		trap.link(trap, CharSet.all(this.maxCharacter));
 
 		// Link all gaps to the trap state
-		traverse(this.initial, node => {
-			const outNodes = new Set(node.out.values());
+		traverse(this.initial, (node, queue) => {
+			queue.push(...node.out.values());
 			node.out.mapRange(all, nodeOrUndef => nodeOrUndef ?? trap);
-			return outNodes;
 		});
 
 		// Complement the set of final states.
@@ -635,16 +631,13 @@ function factoryCopy(source: ReadonlySubGraph, factory: NodeFactory<DFA.Node>): 
 	const translate = cachedFunc<DFA.ReadonlyNode, DFA.Node>(() => factory.createNode());
 	translate.cache.set(source.initial, initial);
 
-	traverse(source.initial, node => {
+	traverse(source.initial, (node, queue) => {
 		const toNode = translate(node);
 
-		const next = new Set<DFA.ReadonlyNode>();
 		node.out.forEach((n, range) => {
-			next.add(n);
+			queue.push(n);
 			toNode.out.setRange(range, translate(n));
 		});
-
-		return next;
 	});
 
 	source.finals.forEach(f => finals.add(translate(f)));
@@ -675,14 +668,14 @@ function findEquivalenceClasses(nodes: ReadonlySubGraph, maxCharacter: Char): DF
 	//  1. Determine all nodes
 	//  2. Determine all used character sets
 	//  3. Create the out map of all nodes
-	traverse(nodes.initial, node => {
+	traverse(nodes.initial, (node, queue) => {
 		numberMap.set(node, numberMap.size);
 		allNodes.push(node);
 
 		const out = node.out.invert(maxCharacter);
 		outMaps.push(out);
 		out.forEach(cs => allCharacterSets.add(cs));
-		return out.keys();
+		queue.push(...out.keys());
 	});
 
 	const base = new CharBase(allCharacterSets);

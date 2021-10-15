@@ -112,18 +112,14 @@ function getInfo<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Info<S> {
 	const ids = new Map<S, number>();
 	let id = 0;
 
-	traverse(iter.initial, n => {
+	traverse(iter.initial, (n, queue) => {
 		ids.set(n, id);
 		id++;
 
-		const next: S[] = [];
-
 		for (const [to, via] of iter.getOut(n)) {
 			charSets.add(via);
-			next.push(to);
+			queue.push(to);
 		}
-
-		return next;
 	});
 
 	return { charSets, ids };

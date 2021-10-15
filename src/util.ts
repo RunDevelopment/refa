@@ -178,12 +178,21 @@ export function* iterateBFS<S>(startElements: Iterable<S>, next: (element: S) =>
 }
 
 /**
+ * An array that is only allowed to consume items.
+ *
+ * This is a write-only view of an array.
+ */
+export interface ConsumerArray<T> {
+	push(...items: T[]): void;
+}
+
+/**
  * Traverses the given graph in any order. All elements will be visited exactly once.
  *
  * @param root
  * @param next
  */
-export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
+export function traverse<S>(root: S, next: (element: S, queue: ConsumerArray<S>) => void): void {
 	const visited = new Set<S>();
 	const toCheck: S[] = [root];
 
@@ -192,7 +201,7 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
 		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
-			toCheck.push(...next(element));
+			next(element, toCheck);
 		}
 	}
 }
@@ -202,7 +211,7 @@ export function traverse<S>(root: S, next: (element: S) => Iterable<S>): void {
  * @param roots
  * @param next
  */
-export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => Iterable<S>): void {
+export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S, queue: ConsumerArray<S>) => void): void {
 	const visited = new Set<S>();
 	const toCheck: S[] = [...roots];
 
@@ -211,7 +220,7 @@ export function traverseMultiRoot<S>(roots: Iterable<S>, next: (element: S) => I
 		element = toCheck.pop() as S;
 		if (!visited.has(element)) {
 			visited.add(element);
-			toCheck.push(...next(element));
+			next(element, toCheck);
 		}
 	}
 }

@@ -178,12 +178,12 @@ export class ENFA implements ReadonlyENFA {
 	countNodes(): number {
 		let c = 0;
 		let hasSeenFinal = false;
-		traverse(this.initial, n => {
+		traverse(this.initial, (n, queue) => {
 			c++;
 			if (n === this.final) {
 				hasSeenFinal = true;
 			}
-			return n.out.keys();
+			queue.push(...n.out.keys());
 		});
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (!hasSeenFinal) {
@@ -208,19 +208,15 @@ export class ENFA implements ReadonlyENFA {
 			newStatesSet.clear();
 
 			// this is a multi-root version of ENFA.NodeList.unorderedResolveEpsilon
-			traverseMultiRoot(currentStates, state => {
-				const next: ENFA.ReadonlyNode[] = [];
-
+			traverseMultiRoot(currentStates, (state, queue) => {
 				state.out.forEach((charSet, to) => {
 					if (charSet === null) {
-						next.push(to);
+						queue.push(to);
 					} else if (charSet.has(char) && !newStatesSet.has(to)) {
 						newStates.push(to);
 						newStatesSet.add(to);
 					}
 				});
-
-				return next;
 			});
 
 			currentStates = newStates;
@@ -677,7 +673,7 @@ export class ENFA implements ReadonlyENFA {
 		const translate = cachedFunc<InputNode, ENFA.Node>(() => factory.createNode());
 		translate.cache.set(iter.initial, fakeInitial);
 
-		traverse(iter.initial, node => {
+		traverse(iter.initial, (node, queue) => {
 			const transNode = translate(node);
 
 			if (iter.isFinal(node)) {
@@ -689,9 +685,9 @@ export class ENFA implements ReadonlyENFA {
 				if (charSet.maximum !== maxCharacter) {
 					throw new Error("Some character sets do not conform to the given maximum.");
 				}
+				queue.push(outNode);
 				transNode.link(translate(outNode), charSet);
 			});
-			return out.keys();
 		});
 
 		return ENFA.fromBuilder(builder, options);
@@ -858,36 +854,28 @@ export namespace ENFA {
 		}
 
 		unorderedResolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
-			traverse<Node>(this, n => {
-				const next: Node[] = [];
-
+			traverse<Node>(this, (n, queue) => {
 				n[direction].forEach((via, to) => {
 					if (via === null) {
-						next.push(to);
+						queue.push(to);
 					} else {
 						consumerFn(via, to);
 					}
 				});
-
-				return next;
 			});
 		}
 
 		reachableViaEpsilon(direction: "in" | "out"): Set<Node> {
 			const result = new Set<Node>();
 
-			traverse<Node>(this, n => {
+			traverse<Node>(this, (n, queue) => {
 				result.add(n);
-
-				const next: Node[] = [];
 
 				n[direction].forEach((via, to) => {
 					if (via === null) {
-						next.push(to);
+						queue.push(to);
 					}
 				});
-
-				return next;
 			});
 
 			return result;
@@ -1333,13 +1321,13 @@ function factoryCopyOfSubGraph(factory: NodeFactory<ENFA.Node>, toCopy: Readonly
 	translate.cache.set(toCopy.initial, initial);
 	translate.cache.set(toCopy.final, final);
 
-	traverse(toCopy.initial, node => {
+	traverse(toCopy.initial, (node, queue) => {
 		const transNode = translate(node);
 
 		node.out.forEach((charSet, to) => {
+			queue.push(to);
 			transNode.link(translate(to), charSet);
 		});
-		return node.out.keys();
 	});
 
 	const result = { initial, final };
@@ -1355,7 +1343,7 @@ function factoryCopy<T>(factory: NodeFactory<ENFA.Node>, iter: TransitionIterato
 	const translate = cachedFunc<T, ENFA.Node>(() => factory.createNode());
 	translate.cache.set(iter.initial, initial);
 
-	traverse(iter.initial, node => {
+	traverse(iter.initial, (node, queue) => {
 		const transNode = translate(node);
 
 		if (iter.isFinal(node)) {
@@ -1364,9 +1352,9 @@ function factoryCopy<T>(factory: NodeFactory<ENFA.Node>, iter: TransitionIterato
 
 		const out = iter.getOut(node);
 		out.forEach((charSet, to) => {
+			queue.push(to);
 			transNode.link(translate(to), charSet);
 		});
-		return out.keys();
 	});
 
 	const result = { initial, final };
@@ -1684,20 +1672,20 @@ function baseRemoveUnreachable(base: NonNormalSubGraph): void {
 
 	// 1) Get all nodes reachable from the initial state
 	const reachableFromInitial = new Set<ENFA.Node>();
-	traverse(base.initial, node => {
+	traverse(base.initial, (node, queue) => {
 		reachableFromInitial.add(node);
-		return node.out.keys();
+		queue.push(...node.out.keys());
 	});
 
 	// 2) Get all nodes reachable state
 	const reachable = new Set<ENFA.Node>();
-	traverse(base.final, node => {
+	traverse(base.final, (node, queue) => {
 		if (!reachableFromInitial.has(node)) {
-			return [];
+			return;
 		}
 
 		reachable.add(node);
-		return node.in.keys();
+		queue.push(...node.in.keys());
 	});
 
 	if (reachable.size === 0 || !reachable.has(base.initial)) {

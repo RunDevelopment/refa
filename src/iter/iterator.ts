@@ -76,12 +76,14 @@ export function filterOutIter<S, O>(
  */
 export function forEach<S>(iter: FAIterator<S>, consumerFn?: (state: S) => void): void {
 	if (consumerFn) {
-		traverse(iter.initial, s => {
+		traverse(iter.initial, (s, queue) => {
 			consumerFn(s);
-			return iter.getOut(s);
+			queue.push(...iter.getOut(s));
 		});
 	} else {
-		traverse(iter.initial, iter.getOut);
+		traverse(iter.initial, (s, queue) => {
+			queue.push(...iter.getOut(s));
+		});
 	}
 }
 

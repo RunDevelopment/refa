@@ -150,9 +150,9 @@ export class NFA implements ReadonlyNFA {
 
 	countNodes(): number {
 		let c = 0;
-		traverse(this.initial, n => {
+		traverse(this.initial, (n, queue) => {
 			c++;
-			return n.out.keys();
+			queue.push(...n.out.keys());
 		});
 		return c;
 	}
@@ -610,7 +610,7 @@ export class NFA implements ReadonlyNFA {
 		const translate = cachedFunc<InputNode, NFA.Node>(() => factory.createNode());
 		translate.cache.set(iter.initial, initial);
 
-		traverse(iter.initial, node => {
+		traverse(iter.initial, (node, queue) => {
 			const transNode = translate(node);
 
 			if (iter.isFinal(node)) {
@@ -622,9 +622,9 @@ export class NFA implements ReadonlyNFA {
 				if (charSet.maximum !== maxCharacter) {
 					throw new Error("Some character sets do not conform to the given maximum.");
 				}
+				queue.push(outDfaNode);
 				transNode.link(translate(outDfaNode), charSet);
 			});
-			return out.keys();
 		});
 
 		return new NFA(initial, finals, maxCharacter);
@@ -977,7 +977,7 @@ function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator
 	const translate = cachedFunc<T, NFA.Node>(() => factory.createNode());
 	translate.cache.set(iter.initial, initial);
 
-	traverse(iter.initial, node => {
+	traverse(iter.initial, (node, queue) => {
 		const trans = translate(node);
 
 		if (iter.isFinal(node)) {
@@ -986,9 +986,9 @@ function factoryCopy<T>(factory: NodeFactory<NFA.Node>, iter: TransitionIterator
 
 		const out = iter.getOut(node);
 		for (const [to, characters] of out) {
+			queue.push(to);
 			trans.link(translate(to), characters);
 		}
-		return out.keys();
 	});
 
 	const result = { initial, finals };
@@ -1560,20 +1560,20 @@ function baseRemoveUnreachable(base: NonNormalSubGraph): void {
 
 	// 1) Get all nodes reachable from the initial state
 	const reachableFromInitial = new Set<NFA.Node>();
-	traverse(base.initial, node => {
+	traverse(base.initial, (node, queue) => {
 		reachableFromInitial.add(node);
-		return node.out.keys();
+		queue.push(...node.out.keys());
 	});
 
 	// 2) Get all nodes reachable state
 	const reachable = new Set<NFA.Node>();
-	traverseMultiRoot(base.finals, node => {
+	traverseMultiRoot(base.finals, (node, queue) => {
 		if (!reachableFromInitial.has(node)) {
-			return [];
+			return;
 		}
 
 		reachable.add(node);
-		return node.in.keys();
+		queue.push(...node.in.keys());
 	});
 
 	if (reachable.size === 0 || !reachable.has(base.initial)) {
