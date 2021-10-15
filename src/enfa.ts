@@ -832,7 +832,7 @@ export namespace ENFA {
 
 		resolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
 			// The little magic trick of this non-recursive implementation is a reversed stack.
-			// By popping from the stack and pushing elements in reversed order, we get exactly the interaction order
+			// By popping from the stack and pushing elements in reversed order, we get exactly the iteration order
 			// that we need to resolve epsilon while keeping order and ambiguity.
 
 			const stack: [Node, CharSet | null][] = [...this[direction]].reverse();
