@@ -10,52 +10,9 @@ import { DFA } from "../src/dfa";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { isDisjointWith } from "../src/intersection";
 import { assertEqualSnapshot } from "./helper/snapshot";
+import { TEST_PAIRS } from "./helper/literal-pair-data";
 
 describe("NFA", function () {
-	type LiteralPair = readonly [Literal, Literal];
-	const TEST_PAIRS: readonly LiteralPair[] = (() => {
-		const pairs: LiteralPair[] = [
-			// interesting combinations
-			[/()/, /()/],
-			[/()/, /b/],
-			[/()/, /b?/],
-			[/()/, /b*/],
-			[/()/, /b+/],
-			[/a/, /()/],
-			[/a/, /b/],
-			[/a/, /b?/],
-			[/a/, /b*/],
-			[/a/, /b+/],
-			[/a?/, /()/],
-			[/a?/, /b/],
-			[/a?/, /b?/],
-			[/a?/, /b*/],
-			[/a?/, /b+/],
-			[/a*/, /()/],
-			[/a*/, /b/],
-			[/a*/, /b?/],
-			[/a*/, /b*/],
-			[/a*/, /b+/],
-			[/a+/, /()/],
-			[/a+/, /b/],
-			[/a+/, /b?/],
-			[/a+/, /b*/],
-			[/a+/, /b+/],
-
-			// others
-			[/ab/, /ba/],
-			[/foo/, /bar/],
-			[/a/, /a*/],
-			[/a*/, /a*b*c*/],
-			[/a|b|c{2}/, /a{2}|b{2}|c/],
-		];
-
-		return [
-			...pairs,
-			...pairs.map<LiteralPair>(([a, b]) => [b, a]).filter(([a, b]) => literalToString(a) !== literalToString(b)),
-		];
-	})();
-
 	describe("fromRegex", function () {
 		test([
 			{

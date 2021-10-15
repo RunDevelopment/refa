@@ -8,6 +8,7 @@ import { prefixes, suffixes } from "./helper/util";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { CharSet } from "../src/char-set";
 import { assertEqualSnapshot } from "./helper/snapshot";
+import { TEST_PAIRS } from "./helper/literal-pair-data";
 
 describe("ENFA", function () {
 	describe("fromRegex", function () {
@@ -594,127 +595,53 @@ describe("ENFA", function () {
 	});
 
 	describe("union", function () {
-		test([
-			{
-				literal: /a/,
-				other: /b/,
-			},
-			{
-				literal: /ab|ba/,
-				other: /aa|bb/,
-			},
-			{
-				literal: /a/,
-				other: /()/,
-			},
-			{
-				literal: /a/,
-				other: /b*/,
-			},
-			{
-				literal: /a+/,
-				other: /b+/,
-			},
-		]);
-
-		interface TestCase {
-			literal: Literal;
-			other: Literal;
-		}
-
-		function test(cases: TestCase[]): void {
-			for (const { literal, other } of cases) {
-				it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
-					const enfa = literalToENFA(literal);
-					const enfaOther = literalToENFA(other);
-					enfa.union(enfaOther, "left");
-					const actual = enfa.toString();
-					assertEqualSnapshot(this, actual);
-				});
-				it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
-					const enfa = literalToENFA(literal);
-					const enfaOther = literalToENFA(other);
-					enfa.union(enfaOther, "right");
-					const actual = enfa.toString();
-					assertEqualSnapshot(this, actual);
-				});
-			}
+		for (const [literal, other] of TEST_PAIRS) {
+			it(`${literalToString(literal)} ∪ ${literalToString(other)} (left)`, function () {
+				const enfa = literalToENFA(literal);
+				const enfaOther = literalToENFA(other);
+				enfa.union(enfaOther, "left");
+				const actual = enfa.toString();
+				assertEqualSnapshot(this, actual);
+			});
+			it(`${literalToString(literal)} ∪ ${literalToString(other)} (right)`, function () {
+				const enfa = literalToENFA(literal);
+				const enfaOther = literalToENFA(other);
+				enfa.union(enfaOther, "right");
+				const actual = enfa.toString();
+				assertEqualSnapshot(this, actual);
+			});
 		}
 	});
 
 	describe("append", function () {
-		test([
-			{
-				left: /foo/,
-				right: /bar/,
-			},
-			{
-				left: /a*/,
-				right: /b*/,
-			},
-			{
-				left: /a*/,
-				right: /b+/,
-			},
-		]);
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
+				const enfaLeft = literalToENFA(left);
+				const enfaRight = literalToENFA(right);
+				const enfaRightCopy = enfaRight.copy();
+				enfaLeft.append(enfaRight);
 
-		interface TestCase {
-			left: Literal;
-			right: Literal;
-		}
+				assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
 
-		function test(cases: TestCase[]): void {
-			for (const { left, right } of cases) {
-				it(`${literalToString(left)} * ${literalToString(right)}`, function () {
-					const enfaLeft = literalToENFA(left);
-					const enfaRight = literalToENFA(right);
-					const enfaRightCopy = enfaRight.copy();
-					enfaLeft.append(enfaRight);
-
-					assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
-
-					const actual = enfaLeft.toString();
-					assertEqualSnapshot(this, actual);
-				});
-			}
+				const actual = enfaLeft.toString();
+				assertEqualSnapshot(this, actual);
+			});
 		}
 	});
 
 	describe("prepend", function () {
-		test([
-			{
-				left: /foo/,
-				right: /bar/,
-			},
-			{
-				left: /a*/,
-				right: /b*/,
-			},
-			{
-				left: /a*/,
-				right: /b+/,
-			},
-		]);
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
+				const enfaLeft = literalToENFA(left);
+				const enfaRight = literalToENFA(right);
+				const enfaRightCopy = enfaRight.copy();
+				enfaLeft.prepend(enfaRight);
 
-		interface TestCase {
-			left: Literal;
-			right: Literal;
-		}
+				assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
 
-		function test(cases: TestCase[]): void {
-			for (const { left, right } of cases) {
-				it(`${literalToString(right)} * ${literalToString(left)}`, function () {
-					const enfaLeft = literalToENFA(left);
-					const enfaRight = literalToENFA(right);
-					const enfaRightCopy = enfaRight.copy();
-					enfaLeft.prepend(enfaRight);
-
-					assert.strictEqual(enfaRight.toString(), enfaRightCopy.toString());
-
-					const actual = enfaLeft.toString();
-					assertEqualSnapshot(this, actual);
-				});
-			}
+				const actual = enfaLeft.toString();
+				assertEqualSnapshot(this, actual);
+			});
 		}
 	});
 
