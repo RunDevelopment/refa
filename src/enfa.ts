@@ -129,7 +129,7 @@ export class ENFA implements ReadonlyENFA {
 				initial,
 				getOut: n => {
 					const out = new Set<ENFA.ReadonlyNode>();
-					n.unorderedResolveEpsilon("out", (_, to) => out.add(to));
+					n.resolveEpsilon("out", (_, to) => out.add(to));
 					return out;
 				},
 				isFinal: n => effectivelyFinal.has(n),
@@ -153,7 +153,7 @@ export class ENFA implements ReadonlyENFA {
 			initial,
 			getOut: n => {
 				const out = new Map<ENFA.ReadonlyNode, CharSet>();
-				n.unorderedResolveEpsilon("out", (via, to) => {
+				n.resolveEpsilon("out", (via, to) => {
 					let transition = out.get(to);
 					if (transition === undefined) {
 						transition = via;
@@ -742,17 +742,6 @@ export namespace ENFA {
 		resolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: ReadonlyNode) => void): void;
 
 		/**
-		 * Calls the given consumer function on every non-epsilon transition directly reachable from the given node.
-		 *
-		 * The order in which the consumer function will be called for the pair is implementation-defined. Only use this
-		 * if the order of nodes is irrelevant.
-		 */
-		unorderedResolveEpsilon(
-			direction: "in" | "out",
-			consumerFn: (charSet: CharSet, node: ReadonlyNode) => void
-		): void;
-
-		/**
 		 * Returns a set of all nodes that are reachable from the given node by only following epsilon transitions in
 		 * the given direction. The returned set is guaranteed to always contain the given node.
 		 *
@@ -855,18 +844,6 @@ export namespace ENFA {
 					consumerFn(via, to);
 				}
 			}
-		}
-
-		unorderedResolveEpsilon(direction: "in" | "out", consumerFn: (charSet: CharSet, node: Node) => void): void {
-			traverse<Node>(this, (n, queue) => {
-				n[direction].forEach((via, to) => {
-					if (via === null) {
-						queue.push(to);
-					} else {
-						consumerFn(via, to);
-					}
-				});
-			});
 		}
 
 		reachableViaEpsilon(direction: "in" | "out"): Set<Node> {
