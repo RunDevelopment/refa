@@ -9,8 +9,53 @@ import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
 import { isDisjointWith } from "../src/intersection";
+import { assertEqualSnapshot } from "./helper/snapshot";
 
 describe("NFA", function () {
+	type LiteralPair = readonly [Literal, Literal];
+	const TEST_PAIRS: readonly LiteralPair[] = (() => {
+		const pairs: LiteralPair[] = [
+			// interesting combinations
+			[/()/, /()/],
+			[/()/, /b/],
+			[/()/, /b?/],
+			[/()/, /b*/],
+			[/()/, /b+/],
+			[/a/, /()/],
+			[/a/, /b/],
+			[/a/, /b?/],
+			[/a/, /b*/],
+			[/a/, /b+/],
+			[/a?/, /()/],
+			[/a?/, /b/],
+			[/a?/, /b?/],
+			[/a?/, /b*/],
+			[/a?/, /b+/],
+			[/a*/, /()/],
+			[/a*/, /b/],
+			[/a*/, /b?/],
+			[/a*/, /b*/],
+			[/a*/, /b+/],
+			[/a+/, /()/],
+			[/a+/, /b/],
+			[/a+/, /b?/],
+			[/a+/, /b*/],
+			[/a+/, /b+/],
+
+			// others
+			[/ab/, /ba/],
+			[/foo/, /bar/],
+			[/a/, /a*/],
+			[/a*/, /a*b*c*/],
+			[/a|b|c{2}/, /a{2}|b{2}|c/],
+		];
+
+		return [
+			...pairs,
+			...pairs.map<LiteralPair>(([a, b]) => [b, a]).filter(([a, b]) => literalToString(a) !== literalToString(b)),
+		];
+	})();
+
 	describe("fromRegex", function () {
 		test([
 			{
@@ -494,258 +539,80 @@ describe("NFA", function () {
 	});
 
 	describe("union", function () {
-		test([
-			{
-				literal: /a/,
-				other: /b/,
-				expected: `
-					(0) -> [1] : 61..62
-
-					[1] -> none`,
-			},
-			{
-				literal: /ab|ba/,
-				other: /aa|bb/,
-				expected: `
-					(0) -> (1) : 61..62
-
-					(1) -> [2] : 61..62
-
-					[2] -> none`,
-			},
-			{
-				literal: /a/,
-				other: /()/,
-				expected: `
-					[0] -> [1] : 61
-
-					[1] -> none`,
-			},
-			{
-				literal: /a/,
-				other: /b*/,
-				expected: `
-					[0] -> [1] : 61
-					    -> [2] : 62
-
-					[1] -> none
-
-					[2] -> [2] : 62`,
-			},
-			{
-				literal: /a+/,
-				other: /b+/,
-				expected: `
-					(0) -> [1] : 61
-					    -> [2] : 62
-
-					[1] -> [1] : 61
-
-					[2] -> [2] : 62`,
-			},
-			{
-				literal: /a+/,
-				other: /()/,
-				expected: `
-					[0] -> [1] : 61
-
-					[1] -> [1] : 61`,
-			},
-			{
-				literal: /a|b|c{2}/,
-				other: /a{2}|b{2}|c/,
-				expected: `
-					(0) -> (1) : 61
-					    -> [2] : 61..63
-					    -> (3) : 62
-					    -> (4) : 63
-
-					(1) -> [2] : 61
-
-					[2] -> none
-
-					(3) -> [2] : 62
-
-					(4) -> [2] : 63`,
-			},
-		]);
-
-		interface TestCase {
-			literal: Literal;
-			other: Literal;
-			expected: string;
+		for (const [literal, other] of TEST_PAIRS) {
+			it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
+				const a = literalToNFA(literal);
+				const b = literalToNFA(other);
+				a.union(b);
+				assertEqualSnapshot(this, a.toString());
+			});
 		}
+	});
 
-		function test(cases: TestCase[]): void {
-			for (const { literal, other, expected } of cases) {
-				it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
-					const nfa = literalToNFA(literal);
-					const nfaOther = literalToNFA(other);
-					nfa.union(nfaOther);
-					const actual = nfa.toString();
-					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
-				});
-			}
+	describe("unionInto", function () {
+		for (const [literal, other] of TEST_PAIRS) {
+			it(`${literalToString(literal)} ∪ ${literalToString(other)}`, function () {
+				const a = literalToNFA(literal);
+				const b = literalToNFA(literal);
+				const c = literalToNFA(other);
+				a.union(c);
+				b.unionInto(c);
+
+				assert.strictEqual(a.toString(), b.toString());
+				assert.isTrue(c.isEmpty);
+			});
 		}
 	});
 
 	describe("append", function () {
-		test([
-			{
-				left: /foo/,
-				right: /bar/,
-				expected: `
-					(0) -> (1) : 66
-
-					(1) -> (2) : 6f
-
-					(2) -> (3) : 6f
-
-					(3) -> (4) : 62
-
-					(4) -> (5) : 61
-
-					(5) -> [6] : 72
-
-					[6] -> none`,
-			},
-			{
-				left: /a*/,
-				right: /b*/,
-				expected: `
-					[0] -> [1] : 61
-					    -> [2] : 62
-
-					[1] -> [1] : 61
-					    -> [2] : 62
-
-					[2] -> [2] : 62`,
-			},
-			{
-				left: /a+/,
-				right: /b*/,
-				expected: `
-					(0) -> [1] : 61
-
-					[1] -> [1] : 61
-					    -> [2] : 62
-
-					[2] -> [2] : 62`,
-			},
-			{
-				left: /a*/,
-				right: /b+/,
-				expected: `
-					(0) -> (1) : 61
-					    -> [2] : 62
-
-					(1) -> (1) : 61
-					    -> [2] : 62
-
-					[2] -> [2] : 62`,
-			},
-		]);
-
-		interface TestCase {
-			left: Literal;
-			right: Literal;
-			expected: string;
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
+				const a = literalToNFA(left);
+				const c = literalToNFA(right);
+				a.append(c);
+				assertEqualSnapshot(this, a.toString());
+			});
 		}
+	});
 
-		function test(cases: TestCase[]): void {
-			for (const { left, right, expected } of cases) {
-				it(`${literalToString(left)} * ${literalToString(right)}`, function () {
-					const nfaLeft = literalToNFA(left);
-					const nfaRight = literalToNFA(right);
-					const nfaRightCopy = nfaRight.copy();
-					nfaLeft.append(nfaRight);
+	describe("appendInto", function () {
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(left)} * ${literalToString(right)}`, function () {
+				const a = literalToNFA(left);
+				const b = literalToNFA(left);
+				const c = literalToNFA(right);
+				a.append(c);
+				b.appendInto(c);
 
-					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
-
-					const actual = nfaLeft.toString();
-					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
-				});
-			}
+				assert.strictEqual(a.toString(), b.toString());
+				assert.isTrue(c.isEmpty);
+			});
 		}
 	});
 
 	describe("prepend", function () {
-		test([
-			{
-				left: /foo/,
-				right: /bar/,
-				expected: `
-					(0) -> (1) : 62
-
-					(1) -> (2) : 61
-
-					(2) -> (3) : 72
-
-					(3) -> (4) : 66
-
-					(4) -> (5) : 6f
-
-					(5) -> [6] : 6f
-
-					[6] -> none`,
-			},
-			{
-				left: /a*/,
-				right: /b*/,
-				expected: `
-					[0] -> [1] : 61
-					    -> [2] : 62
-
-					[1] -> [1] : 61
-
-					[2] -> [1] : 61
-					    -> [2] : 62`,
-			},
-			{
-				left: /a+/,
-				right: /b*/,
-				expected: `
-					(0) -> [1] : 61
-					    -> (2) : 62
-
-					[1] -> [1] : 61
-
-					(2) -> [1] : 61
-					    -> (2) : 62`,
-			},
-			{
-				left: /a*/,
-				right: /b+/,
-				expected: `
-					(0) -> [1] : 62
-
-					[1] -> [1] : 62
-					    -> [2] : 61
-
-					[2] -> [2] : 61`,
-			},
-		]);
-
-		interface TestCase {
-			left: Literal;
-			right: Literal;
-			expected: string;
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
+				const a = literalToNFA(left);
+				const c = literalToNFA(right);
+				a.prepend(c);
+				assertEqualSnapshot(this, a.toString());
+			});
 		}
+	});
 
-		function test(cases: TestCase[]): void {
-			for (const { left, right, expected } of cases) {
-				it(`${literalToString(right)} * ${literalToString(left)}`, function () {
-					const nfaLeft = literalToNFA(left);
-					const nfaRight = literalToNFA(right);
-					const nfaRightCopy = nfaRight.copy();
-					nfaLeft.prepend(nfaRight);
+	describe("prependInto", function () {
+		for (const [left, right] of TEST_PAIRS) {
+			it(`${literalToString(right)} * ${literalToString(left)}`, function () {
+				const a = literalToNFA(left);
+				const b = literalToNFA(left);
+				const c = literalToNFA(right);
+				a.prepend(c);
+				b.prependInto(c);
 
-					assert.strictEqual(nfaRight.toString(), nfaRightCopy.toString());
-
-					const actual = nfaLeft.toString();
-					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
-				});
-			}
+				assert.strictEqual(a.toString(), b.toString());
+				assert.isTrue(c.isEmpty);
+			});
 		}
 	});
 
