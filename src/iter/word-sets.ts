@@ -4,6 +4,27 @@ import { FAIterator } from "../fa-types";
 import { ensureStableOut, shortestAcceptingPath } from "./iterator";
 import { removeDeadStates } from "./remove-dead-states";
 
+type BFSNode<S> = BFSRootNode<S> | BFSChildNode<S>;
+interface BFSRootNode<S> {
+	state: S;
+	parent: null;
+	value: null;
+}
+interface BFSChildNode<S> {
+	state: S;
+	parent: BFSNode<S>;
+	value: CharSet;
+}
+
+function getPath<S>(node: BFSNode<S>): WordSet {
+	const path: WordSet = [];
+	while (node.value) {
+		path.push(node.value);
+		node = node.parent;
+	}
+	return path.reverse();
+}
+
 /**
  * Iterates all word sets of the given FA.
  *
@@ -16,56 +37,32 @@ import { removeDeadStates } from "./remove-dead-states";
 export function* iterateWordSets<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>): Iterable<WordSet> {
 	const { initial, getOut, isFinal } = ensureStableOut(removeDeadStates(iter, i => i[0]));
 
-	interface BFSNode {
-		state: S;
-		parent: BFSNode | null;
-		value: CharSet | null;
-	}
-
-	const root: BFSNode = {
+	const root: BFSRootNode<S> = {
 		state: initial,
 		parent: null,
 		value: null,
 	};
 
-	let currentWave: BFSNode[] = [root];
-	let nextWave: BFSNode[] = [];
+	let currentWave: BFSNode<S>[] = [root];
 
-	function hasNextNode(): boolean {
-		if (currentWave.length === 0) {
-			currentWave = nextWave;
-			nextWave = [];
-		}
-		return currentWave.length !== 0;
-	}
+	while (currentWave.length > 0) {
+		const nextWave: BFSChildNode<S>[] = [];
 
-	function getPath(node: BFSNode): WordSet {
-		const path: WordSet = [];
-		while (node.value) {
-			path.push(node.value);
-			node = node.parent!;
-		}
-		return path.reverse();
-	}
+		for (const current of currentWave) {
+			if (isFinal(current.state)) {
+				yield getPath(current);
+			}
 
-	function createNextWaveOf(node: BFSNode): void {
-		for (const [to, chars] of getOut(node.state)) {
-			nextWave.push({
-				state: to,
-				parent: node,
-				value: chars,
-			});
-		}
-	}
-
-	while (hasNextNode()) {
-		const current: BFSNode = currentWave.pop()!;
-
-		if (isFinal(current.state)) {
-			yield getPath(current);
+			for (const [to, chars] of getOut(current.state)) {
+				nextWave.push({
+					state: to,
+					parent: current,
+					value: chars,
+				});
+			}
 		}
 
-		createNextWaveOf(current);
+		currentWave = nextWave;
 	}
 }
 
