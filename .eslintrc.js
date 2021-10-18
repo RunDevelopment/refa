@@ -95,31 +95,27 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: [
-				"scripts/**"
-			],
+			files: ["scripts/**"],
 			env: {
 				browser: false,
 				node: true,
 				es6: true
 			},
+			parserOptions: {
+				project: "./scripts/tsconfig.json"
+			},
 			rules: {
 				"@typescript-eslint/no-var-requires": "off"
 			}
-		}
-	],
-	overrides: [
+		},
 		{
-			files: [
-				"tests/**"
-			],
+			files: ["tests/**"],
 			parserOptions: {
 				project: "./tests/tsconfig.json"
 			}
 		}
 	],
 	ignorePatterns: [
-		"scripts/**",
 		"*.js",
 		"index.d.ts",
 		"src/js/unicode/**"

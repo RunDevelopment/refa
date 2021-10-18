@@ -3,15 +3,13 @@ import * as path from "path";
 import { CharSet } from "../src/char-set";
 import { printRanges } from "./util";
 
+const caseFoldingCommon: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/C/code-points");
+const caseFoldingSimple: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/S/code-points");
 
-const CaseFoldingCommon: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/C/code-points");
-const CaseFoldingSimple: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/S/code-points");
+createCaseFoldingFile(canonicalizeIgnoreCaseUTF16, 0xffff, "UTF16", "utf16-case-folding.ts");
+createCaseFoldingFile(canonicalizeIgnoreCaseUnicode, 0x10ffff, "Unicode", "unicode/case-folding.ts");
 
-
-createCaseFoldingFile(UTF16CanonicalizeIgnoreCase, 0xFFFF, "UTF16", "utf16-case-folding.ts");
-createCaseFoldingFile(UnicodeCanonicalizeIgnoreCase, 0x10FFFF, "Unicode", "unicode/case-folding.ts");
-
-function UTF16CanonicalizeIgnoreCase(ch: number): number {
+function canonicalizeIgnoreCaseUTF16(ch: number): number {
 	// https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
 
 	const s = String.fromCharCode(ch);
@@ -26,14 +24,14 @@ function UTF16CanonicalizeIgnoreCase(ch: number): number {
 	return cu;
 }
 
-function UnicodeCanonicalizeIgnoreCase(ch: number): number {
+function canonicalizeIgnoreCaseUnicode(ch: number): number {
 	// https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
 
-	let mapping = CaseFoldingCommon.get(ch);
+	let mapping = caseFoldingCommon.get(ch);
 	if (mapping !== undefined) {
 		return mapping;
 	}
-	mapping = CaseFoldingSimple.get(ch);
+	mapping = caseFoldingSimple.get(ch);
 	if (mapping !== undefined) {
 		return mapping;
 	}
@@ -47,13 +45,12 @@ function createCaseFoldingFile(
 	variablePrefix: string,
 	filename: string
 ): void {
-
 	const canonicalizeMapping = new Map<number, number[]>();
 	for (let ch = 0; ch <= maxCharacter; ch++) {
 		const c = canonicalize(ch);
 		let list = canonicalizeMapping.get(c);
 		if (list === undefined) {
-			canonicalizeMapping.set(c, list = []);
+			canonicalizeMapping.set(c, (list = []));
 		}
 		list.push(ch);
 	}
@@ -66,18 +63,21 @@ function createCaseFoldingFile(
 	});
 
 	let count = 0;
-	const CASE_VARYING = CharSet.fromCharacters(maxCharacter, function* () {
-		for (let i = 0; i < maxCharacter; i++) {
-			const fold = caseFolding[i];
-			if (fold.indexOf(i) === -1) {
-				throw new Error(`The case folding of ${i} does not include itself.`);
+	const CASE_VARYING = CharSet.fromCharacters(
+		maxCharacter,
+		(function* () {
+			for (let i = 0; i < maxCharacter; i++) {
+				const fold = caseFolding[i];
+				if (fold.indexOf(i) === -1) {
+					throw new Error(`The case folding of ${i} does not include itself.`);
+				}
+				if (fold.length > 1) {
+					count++;
+					yield i;
+				}
 			}
-			if (fold.length > 1) {
-				count++;
-				yield i;
-			}
-		}
-	}());
+		})()
+	);
 
 	const map: Record<number, number[]> = {};
 	caseFolding.forEach((fold, i) => {
@@ -87,7 +87,6 @@ function createCaseFoldingFile(
 	});
 
 	console.log(`${variablePrefix}: ${count} characters vary in case`);
-
 
 	const code = `/* eslint-disable */
 
@@ -100,8 +99,9 @@ import { CharSet } from "${"../".repeat(filename.split(/\//g).length)}char-set";
 /**
  * A character set of all characters that have at least one case variation.
  */
-export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${printRanges(CASE_VARYING.ranges)
-		});
+export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacter}).union(${printRanges(
+		CASE_VARYING.ranges
+	)});
 
 /**
  * A map for a given character to all it case variations. The list of case variations also includes the key character
@@ -109,8 +109,9 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  *
  * If the given character do not have case variations, it will not be part of this map.
  */
-export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${JSON.stringify(JSON.stringify(map))
-		});
+export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${JSON.stringify(
+		JSON.stringify(map)
+	)});
 `;
 
 	fs.writeFileSync(path.join(__dirname, "../src/js", filename), code, "utf-8");

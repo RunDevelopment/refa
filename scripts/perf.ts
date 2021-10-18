@@ -1,11 +1,10 @@
-import { NFA, DFA, JS, combineTransformers, Transformers, transform } from "../src";
+import { DFA, JS, NFA, Transformers, combineTransformers, transform } from "../src";
 import { PrismRegexes } from "../tests/helper/prism-regex-data";
 import { performance } from "perf_hooks";
 import { logDurations } from "./util";
 
-
 function perfTest(): void {
-	const durationRecord: Record<string, number[]> = {};
+	const durationRecord: Record<string, number[] | undefined> = {};
 	function measure<T>(label: string, fn: () => T): T {
 		const durations = (durationRecord[label] = durationRecord[label] || []);
 
@@ -18,7 +17,7 @@ function perfTest(): void {
 	function showResult(): void {
 		const maxLen = Math.max(...Object.keys(durationRecord).map(s => s.length));
 		for (const key in durationRecord) {
-			logDurations(durationRecord[key], (key + ":").padEnd(maxLen));
+			logDurations(durationRecord[key]!, (key + ":").padEnd(maxLen));
 		}
 	}
 
@@ -34,12 +33,14 @@ function perfTest(): void {
 		}
 
 		if (TOO_BIG.has(counter)) {
-			continue
+			continue;
 		}
 
 		try {
 			const parser = measure("Create parser", () => JS.Parser.fromLiteral(literal));
-			const { expression, maxCharacter } = measure("parse", () => parser.parse({ backreferences: "disable", maxNodes: 100_000 }));
+			const { expression, maxCharacter } = measure("parse", () =>
+				parser.parse({ backreferences: "disable", maxNodes: 100_000 })
+			);
 			measure("toLiteral", () => JS.toLiteral(expression));
 			measure("toLiteral fast", () => JS.toLiteral(expression, { fastCharacters: true }));
 
@@ -54,10 +55,7 @@ function perfTest(): void {
 				]);
 				const modifiedExpression = transform(applyTransformer, expression);
 
-				return transform(
-					Transformers.patternEdgeAssertions({ remove: true }),
-					modifiedExpression
-				);
+				return transform(Transformers.patternEdgeAssertions({ remove: true }), modifiedExpression);
 			});
 
 			const nfa = measure("Create NFA", () =>
@@ -75,7 +73,7 @@ function perfTest(): void {
 
 			measure("toRegex mDFA", () => {
 				try {
-					dfa.toRegex({ maxNodes: 100_000 })
+					dfa.toRegex({ maxNodes: 100_000 });
 				} catch (error) {
 					if (!String(error).includes("toRegex operation")) {
 						throw error;
@@ -88,7 +86,6 @@ function perfTest(): void {
 			throw error;
 		}
 	}
-
 
 	showResult();
 	console.log(`${errors} errors`);

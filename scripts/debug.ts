@@ -1,4 +1,19 @@
-import { combineTransformers, transform, NFA, DFA, ENFA, Words, JS, CharSet, CharacterClass, FiniteAutomaton, Expression, NoParent, Transformers } from "../src";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+	CharSet,
+	CharacterClass,
+	DFA,
+	ENFA,
+	Expression,
+	FiniteAutomaton,
+	JS,
+	NFA,
+	NoParent,
+	Transformers,
+	Words,
+	combineTransformers,
+	transform,
+} from "../src";
 import { performance } from "perf_hooks";
 import { logDurations } from "./util";
 
@@ -42,16 +57,15 @@ function measure<T>(fn: () => T, samples: number = 1, label?: string): T {
 
 	logDurations(durations, label ?? fn.toString().replace(/^\(\) => /, ""));
 
-	return result
+	return result;
 }
 
 // actual debug code
 // DO NOT commit changes to this file
 
-const dfa = toDFA(/a+(?:b+a+)*/)
+const dfa = toDFA(/a+(?:b+a+)*/);
 dfa.minimize();
 console.log(toRegExp(dfa));
-
 
 console.log(toENFA(/a*b/).toString());
 console.log(toENFA(/a*?b/).toString());
