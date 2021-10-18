@@ -202,15 +202,6 @@ export class CharSet {
 		return new CharSet(maximum, [range]);
 	}
 
-	private _checkCompatibility(value: CharSet): void {
-		if (value.maximum !== this.maximum) {
-			throw new RangeError(
-				`The maximum of the other set (${value.maximum}) ` +
-					`has to be equal the maximum of this set (${this.maximum}).`
-			);
-		}
-	}
-
 	/**
 	 * Returns whether this and the given character set are equivalent.
 	 *
@@ -347,7 +338,7 @@ export class CharSet {
 	union(...data: (Iterable<CharRange> | CharSet)[]): CharSet {
 		const first = data[0];
 		if (data.length === 1 && first instanceof CharSet) {
-			this._checkCompatibility(first);
+			checkCompatibility(this, first);
 			if (first.ranges.length === 0) {
 				return this;
 			} else {
@@ -358,7 +349,7 @@ export class CharSet {
 		const newRanges: CharRange[] = this.ranges.slice();
 		for (const rangesOrSet of data) {
 			if (rangesOrSet instanceof CharSet) {
-				this._checkCompatibility(rangesOrSet);
+				checkCompatibility(this, rangesOrSet);
 				newRanges.push(...rangesOrSet.ranges);
 			} else {
 				for (const range of rangesOrSet) {
@@ -386,7 +377,7 @@ export class CharSet {
 	intersect(other: CharSet | CharRange): CharSet {
 		let newRanges;
 		if (other instanceof CharSet) {
-			this._checkCompatibility(other);
+			checkCompatibility(this, other);
 			newRanges = intersectRanges(this.ranges, other.ranges);
 		} else {
 			newRanges = intersectRanges(this.ranges, [other]);
@@ -410,7 +401,7 @@ export class CharSet {
 	without(other: CharSet | CharRange): CharSet {
 		let newRanges;
 		if (other instanceof CharSet) {
-			this._checkCompatibility(other);
+			checkCompatibility(this, other);
 			newRanges = withoutRanges(this.ranges, other.ranges);
 		} else {
 			newRanges = withoutRanges(this.ranges, [other]);
@@ -524,6 +515,14 @@ export class CharSet {
 		}
 
 		return undefined;
+	}
+}
+
+function checkCompatibility(a: CharSet, b: CharSet): void {
+	if (b.maximum !== a.maximum) {
+		throw new RangeError(
+			`The maximum of the other set (${b.maximum}) has to be equal the maximum of this set (${a.maximum}).`
+		);
 	}
 }
 
