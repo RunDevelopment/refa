@@ -147,6 +147,10 @@ module.exports = {
           'npm-peer'
         ]
       }
+    },
+    {
+      name: 'no-duplicate-dep-types',
+      severity: 'ignore'
     }
   ],
   options: {
