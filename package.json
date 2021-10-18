@@ -7,18 +7,23 @@
     "check": "npm run lint && npm run check:dependencies && npx tsc --noEmit && cd tests && npx tsc --noEmit && cd ../scripts && npx tsc --noEmit",
     "check:dependencies": "npx depcruise --validate .dependency-cruiser.js src",
     "lint": "npx eslint --ignore-path .gitignore **/*.ts",
+
     "test": "cd tests && mocha -r ts-node/register '**/*.ts'",
     "test:all": "npm run test -- --reporter=dot --run-transformers --run-stress-test",
     "test:update": "npm run test -- --update --run-transformers",
+
     "build": "npx rimraf ./index.* .out/** && npx tsc && rollup -c && npm run build:dts",
     "build:dts": "dts-bundle --main ./.out/index.d.ts --name refa --out ../index.d.ts && npm run scripts:flat-dts && prettier --write ./index.d.ts",
     "build:docs": "typedoc --treatWarningsAsErrors",
+
     "coverage": "npx nyc --reporter=html --reporter=text npm run test",
+
     "scripts:create-case-folding": "npx ts-node --project scripts/tsconfig.json scripts/create-case-folding.ts",
     "scripts:create-unicode": "npx ts-node --project scripts/tsconfig.json scripts/create-unicode.ts",
     "scripts:debug": "npx ts-node --project scripts/tsconfig.json scripts/debug.ts",
     "scripts:flat-dts": "npx ts-node --project scripts/tsconfig.json scripts/flat-dts.ts",
     "scripts:perf": "npx ts-node --project scripts/tsconfig.json scripts/perf.ts",
+
     "prepublishOnly": "npm run build"
   },
   "keywords": [
