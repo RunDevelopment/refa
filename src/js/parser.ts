@@ -399,7 +399,7 @@ export class Parser {
 		context: ParserContext
 	): NoParent<Element>[] | EmptySet {
 		const outputElements: NoParent<Element>[] = [];
-		let error: Error | undefined = undefined;
+		let error: { error: unknown } | undefined = undefined;
 
 		for (let i = 0; i < inputElements.length; i++) {
 			const currentElement = inputElements[i];
@@ -407,7 +407,7 @@ export class Parser {
 			let result;
 			try {
 				result = this._createElement(currentElement, context);
-			} catch (e) {
+			} catch (e: unknown) {
 				if (context.disableSimplification) {
 					throw e;
 				} else {
@@ -415,7 +415,7 @@ export class Parser {
 					// the only errors which can be thrown are not-supported errors, so if the alternative gets
 					// removed anyway, we shouldn't throw the error
 					// Note: For multiple errors, only the first one will be re-thrown
-					error ??= e;
+					error ??= { error: e };
 					continue;
 				}
 			}
@@ -455,7 +455,7 @@ export class Parser {
 
 		if (error !== undefined) {
 			// rethrow the error
-			throw error;
+			throw error.error;
 		}
 
 		return outputElements;
