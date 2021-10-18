@@ -1,22 +1,8 @@
 {
+	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"target": "ES2015",
 		"module": "CommonJS",
-		"moduleResolution": "Node",
-		"lib": [
-			"es2015",
-			"es2015.iterable"
-		], /* Specify library files to be included in the compilation. */
-		"noEmit": true,
-		"noImplicitAny": true, /* Raise error on expressions and declarations with an implied 'any' type. */
-		"strictNullChecks": true, /* Enable strict null checks. */
-		"strictFunctionTypes": true, /* Enable strict checking of function types. */
-		"strictBindCallApply": true, /* Enable strict 'bind', 'call', and 'apply' methods on functions. */
-		"strictPropertyInitialization": true, /* Enable strict checking of property initialization in classes. */
-		"noImplicitThis": true,
-		"noImplicitUseStrict": true
+		"noEmit": true
 	},
-	"include": [
-		"**/*.ts"
-	]
+	"include": ["**/*.ts"]
 }
