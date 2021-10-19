@@ -100,7 +100,7 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	get isEmpty(): boolean {
-		return this.initial.out.size === 0;
+		return this.initial !== this.final && this.initial.out.size === 0;
 	}
 	get isFinite(): boolean {
 		return this.isEmpty || Iter.languageIsFinite(this.stateIterator(true));
