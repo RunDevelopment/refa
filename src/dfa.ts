@@ -415,11 +415,13 @@ export class DFA implements ReadonlyDFA {
 	 */
 	static fromCharSet(charSet: CharSet, factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
 		const initial = factory.createNode();
-		const final = factory.createNode();
 
-		if (!charSet.isEmpty) {
-			initial.link(final, charSet);
+		if (charSet.isEmpty) {
+			return new DFA(initial, new Set(), charSet.maximum);
 		}
+
+		const final = factory.createNode();
+		initial.link(final, charSet);
 
 		return new DFA(initial, new Set([final]), charSet.maximum);
 	}

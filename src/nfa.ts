@@ -453,15 +453,9 @@ export class NFA implements ReadonlyNFA {
 	 * @param factory
 	 */
 	static all(options: Readonly<NFA.Options>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
-		const allChars = CharSet.all(options.maxCharacter);
-
 		const initial = factory.createNode();
-		const other = factory.createNode();
-
-		initial.link(other, allChars);
-		other.link(other, allChars);
-
-		return new NFA(initial, new Set([initial, other]), options.maxCharacter);
+		initial.link(initial, CharSet.all(options.maxCharacter));
+		return new NFA(initial, new Set([initial]), options.maxCharacter);
 	}
 
 	/**
@@ -472,11 +466,13 @@ export class NFA implements ReadonlyNFA {
 	 */
 	static fromCharSet(charSet: CharSet, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
 		const initial = factory.createNode();
-		const final = factory.createNode();
 
-		if (!charSet.isEmpty) {
-			initial.link(final, charSet);
+		if (charSet.isEmpty) {
+			return new NFA(initial, new Set(), charSet.maximum);
 		}
+
+		const final = factory.createNode();
+		initial.link(final, charSet);
 
 		return new NFA(initial, new Set([final]), charSet.maximum);
 	}

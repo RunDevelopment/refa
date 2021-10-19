@@ -558,14 +558,8 @@ export class ENFA implements ReadonlyENFA {
 	 */
 	static all(options: Readonly<ENFA.Options>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
 		const initial = factory.createNode();
-		const middle = factory.createNode();
-		const final = factory.createNode();
-
-		initial.link(middle, null);
-		middle.link(middle, CharSet.all(options.maxCharacter));
-		middle.link(final, null);
-
-		return new ENFA(initial, final, options.maxCharacter);
+		initial.link(initial, CharSet.all(options.maxCharacter));
+		return new ENFA(initial, initial, options.maxCharacter);
 	}
 
 	/**
