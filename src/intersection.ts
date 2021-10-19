@@ -57,7 +57,7 @@ export function isDisjointWith<L, R>(
  *
  * 1. Word sets are guaranteed to be yielded in the order of increasing length. (Word sets of equal lengths may be
  *    yielded in any order.)
- * 3. No character set of the yielded word sets is empty.
+ * 2. No character set of the yielded word sets is empty.
  *
  * This is roughly equivalent to `NFA.fromIntersection(left, right).wordSets()` but implemented more efficiently.
  *
