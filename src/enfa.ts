@@ -553,6 +553,19 @@ export class ENFA implements ReadonlyENFA {
 	}
 
 	/**
+	 * Creates a new ENFA which matches only the empty word.
+	 *
+	 * This operation will create exactly 1 nodes with the given factory.
+	 *
+	 * @param options
+	 * @param factory
+	 */
+	static emptyWord(options: Readonly<ENFA.Options>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
+		const initial = factory.createNode();
+		return new ENFA(initial, initial, options.maxCharacter);
+	}
+
+	/**
 	 * Creates a new ENFA which matches all words.
 	 *
 	 * This operation will create exactly 1 node with the given factory.

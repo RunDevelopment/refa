@@ -400,6 +400,19 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	/**
+	 * Creates a new DFA which matches only the empty word.
+	 *
+	 * This operation will create exactly 1 node with the given factory.
+	 *
+	 * @param options
+	 * @param factory
+	 */
+	static emptyWord(options: Readonly<DFA.Options>, factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+		const initial = factory.createNode();
+		return new DFA(initial, new Set([initial]), options.maxCharacter);
+	}
+
+	/**
 	 * Creates a new DFA which matches all words.
 	 *
 	 * This operation will create exactly 1 node with the given factory.

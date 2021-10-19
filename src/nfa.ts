@@ -449,6 +449,19 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	/**
+	 * Creates a new NFA which matches only the empty word.
+	 *
+	 * This operation will create exactly 1 node with the given factory.
+	 *
+	 * @param options
+	 * @param factory
+	 */
+	static emptyWord(options: Readonly<NFA.Options>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
+		const initial = factory.createNode();
+		return new NFA(initial, new Set([initial]), options.maxCharacter);
+	}
+
+	/**
 	 * Creates a new NFA which matches all words.
 	 *
 	 * This operation will create exactly 1 node with the given factory.
