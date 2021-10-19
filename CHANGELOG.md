@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.10.0 (2021-10-18)
+
+### Breaking changes
+
+- `CharSet`: The `intersect` and `without` methods now only take `CharSet`s and `CharRange`s as arguments.
+- `{DFA,ENFA,NFA}#{isDisjointWith,getIntersectionWords,getIntersectionWordSets}` were removed.
+- Removed `NodeList` API for all FA implements. This is a very significant change as to how FAs are implemented but doesn't affect the main FA APIs too much. This change gives users a lot more control over FA implements.
+- Removed `{DFA,ENFA,NFA}.CreationOptions` interfaces. Use the new `NodeFactory` API instead.
+- Removed `{DFA,ENFA,NFA}#options`. Just pass the FA as is instead.
+- Removed `FACreationOptions` interface.
+- `getIntersection{Iterator,Words,WordSets}`, `isDisjointWith`: Replaced optional `FACreationOptions` parameter with optional `maxNodes` parameter.
+- DFA nodes can now only be linked using `CharSet`s. Linking with `Char`s and `CharRange`s is no longer supported.
+- Removed `ENFA`'s `unorderedResolveEpsilon`. Use `resolveEpsilon` instead.
+- `FAIterator.MapFABuilder`: Removed optional `kind` argument.
+
+### Added
+
+- `NodeFactory` interface. This new interface is the basis of all `FABuilder`s and FA implemented.
+- `{DFA,ENFA,NFA}.nodeFactory`: This is an unlimited node factory.
+- `{DFA,ENFA,NFA}.LimitedNodeFactory`: This node factory can be used to limit the number of nodes an FA operation is allowed to create.
+- `CharSet#resize`
+- `CharSet.fromRange`
+- `FAIterator.fromWords` will create a new iterator from a list of words.
+- `FAIterator.fromWordSets` will create a new iterator from a list of word sets.
+- `{DFA,ENFA,NFA}.fromCharSet` will create new FAs from a given `CharSet`.
+- `{DFA,ENFA,NFA}.fromWordSets` will create new FAs from a list of word sets.
+- `{DFA,ENFA,NFA}#countNodes` will return the number of nodes in the FA.
+- `{DFA,ENFA,NFA}#nodes` will iterate through all nodes in the FA.
+- `ENFA.withoutEmptyWord`
+- `ENFA#{append,prepend,union}Into` will move the nodes of the given ENFA instead of copying them. This can be used to improve performance.
+
+### Changed
+
+- `JS.toLiteral`: Setting `unicode: false` in the `flags` option will now always succeed.
+
+### Improved
+
+- `CharMap` is now implemented using a sorted array instead of an AVL tree. This is significantly faster. Most DFA operation are now 10% faster.
+- `FAIterators.iterateWordSets` will now use the natural iteration order of the given FAIterator for words of the same length. This makes `ENFA#wordSets` a lot more logical.
+- `ENFA`'s `resolveEpsilon` is now implemented non-recursively.
+- The docs now have a dark mode thanks to TypeDoc v0.22.0.
+
+
 ## 0.9.1 (2021-07-26)
 
 ### Fixed
