@@ -316,6 +316,11 @@ export class ENFA implements ReadonlyENFA {
 			throw new Error("Cannot append an ENFA into itself.");
 		}
 
+		if (baseIsEmptyWord(other)) {
+			// The other ENFA is equivalent to the empty word, so we can stop here.
+			return;
+		}
+
 		this.normalize(factory);
 		other.normalize(factory);
 		baseAppend(this, other);
@@ -351,6 +356,11 @@ export class ENFA implements ReadonlyENFA {
 
 		if (this === other) {
 			throw new Error("Cannot prepend an ENFA into itself.");
+		}
+
+		if (baseIsEmptyWord(other)) {
+			// The other ENFA is equivalent to the empty word, so we can stop here.
+			return;
 		}
 
 		this.normalize(factory);
@@ -404,6 +414,10 @@ export class ENFA implements ReadonlyENFA {
 
 		if (this === other) {
 			throw new Error("Cannot union an ENFA into itself.");
+		}
+
+		if (other.isEmpty) {
+			return;
 		}
 
 		this.normalize(factory);
@@ -1702,4 +1716,8 @@ function baseRemoveUnreachable(base: NonNormalSubGraph): void {
 			}
 		});
 	}
+}
+
+function baseIsEmptyWord(base: Readonly<NonNormalSubGraph>): boolean {
+	return base.initial === base.final && base.initial.out.size === 0;
 }
