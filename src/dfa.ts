@@ -342,6 +342,8 @@ export class DFA implements ReadonlyDFA {
 	 * This DFA after calling this function will accept all words that are not accepted by this DFA before calling this
 	 * function.
 	 *
+	 * This operation will create at most 1 node with the given factory.
+	 *
 	 * @param factory
 	 */
 	complement(factory: NodeFactory<DFA.Node> = DFA.nodeFactory): void {
@@ -388,6 +390,8 @@ export class DFA implements ReadonlyDFA {
 	/**
 	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
 	 *
+	 * This operation will create exactly 1 node with the given factory.
+	 *
 	 * @param options
 	 * @param factory
 	 */
@@ -397,6 +401,8 @@ export class DFA implements ReadonlyDFA {
 
 	/**
 	 * Creates a new DFA which matches all words.
+	 *
+	 * This operation will create exactly 1 node with the given factory.
 	 *
 	 * @param options
 	 * @param factory
@@ -409,6 +415,8 @@ export class DFA implements ReadonlyDFA {
 
 	/**
 	 * Creates a new DFA which matches the given characters.
+	 *
+	 * This operation will create at most 2 nodes with the given factory.
 	 *
 	 * @param charSet
 	 * @param factory

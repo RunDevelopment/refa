@@ -439,6 +439,8 @@ export class NFA implements ReadonlyNFA {
 	/**
 	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
 	 *
+	 * This operation will create exactly 1 node with the given factory.
+	 *
 	 * @param options
 	 * @param factory
 	 */
@@ -448,6 +450,8 @@ export class NFA implements ReadonlyNFA {
 
 	/**
 	 * Creates a new NFA which matches all words.
+	 *
+	 * This operation will create exactly 1 node with the given factory.
 	 *
 	 * @param options
 	 * @param factory
@@ -460,6 +464,8 @@ export class NFA implements ReadonlyNFA {
 
 	/**
 	 * Creates a new NFA which matches the given characters.
+	 *
+	 * This operation will create at most 2 nodes with the given factory.
 	 *
 	 * @param charSet
 	 * @param factory
