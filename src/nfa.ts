@@ -440,21 +440,23 @@ export class NFA implements ReadonlyNFA {
 	 * Creates a new NFA which matches no words. The language of the returned NFA is empty.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static empty(options: Readonly<NFA.Options>): NFA {
-		return new NFA(new NFA.Node(), new Set(), options.maxCharacter);
+	static empty(options: Readonly<NFA.Options>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
+		return new NFA(factory.createNode(), new Set(), options.maxCharacter);
 	}
 
 	/**
 	 * Creates a new NFA which matches all words.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static all(options: Readonly<NFA.Options>): NFA {
+	static all(options: Readonly<NFA.Options>, factory: NodeFactory<NFA.Node> = NFA.nodeFactory): NFA {
 		const allChars = CharSet.all(options.maxCharacter);
 
-		const initial = new NFA.Node();
-		const other = new NFA.Node();
+		const initial = factory.createNode();
+		const other = factory.createNode();
 
 		initial.link(other, allChars);
 		other.link(other, allChars);

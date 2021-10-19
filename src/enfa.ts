@@ -544,20 +544,22 @@ export class ENFA implements ReadonlyENFA {
 	 * Creates a new ENFA which matches no words. The language of the returned ENFA is empty.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static empty(options: Readonly<ENFA.Options>): ENFA {
-		return new ENFA(new ENFA.Node(), new ENFA.Node(), options.maxCharacter);
+	static empty(options: Readonly<ENFA.Options>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
+		return new ENFA(factory.createNode(), factory.createNode(), options.maxCharacter);
 	}
 
 	/**
 	 * Creates a new ENFA which matches all words.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static all(options: Readonly<ENFA.Options>): ENFA {
-		const initial = new ENFA.Node();
-		const middle = new ENFA.Node();
-		const final = new ENFA.Node();
+	static all(options: Readonly<ENFA.Options>, factory: NodeFactory<ENFA.Node> = ENFA.nodeFactory): ENFA {
+		const initial = factory.createNode();
+		const middle = factory.createNode();
+		const final = factory.createNode();
 
 		initial.link(middle, null);
 		middle.link(middle, CharSet.all(options.maxCharacter));

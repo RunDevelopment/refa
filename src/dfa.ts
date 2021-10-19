@@ -341,12 +341,14 @@ export class DFA implements ReadonlyDFA {
 	 *
 	 * This DFA after calling this function will accept all words that are not accepted by this DFA before calling this
 	 * function.
+	 *
+	 * @param factory
 	 */
-	complement(): void {
+	complement(factory: NodeFactory<DFA.Node> = DFA.nodeFactory): void {
 		const all: CharRange = { min: 0, max: this.maxCharacter };
 
 		// create a trap state
-		const trap = new DFA.Node();
+		const trap = factory.createNode();
 		trap.link(trap, CharSet.all(this.maxCharacter));
 
 		// Link all gaps to the trap state
@@ -387,18 +389,20 @@ export class DFA implements ReadonlyDFA {
 	 * Creates a new DFA which matches no words. The language of the returned DFA is empty.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static empty(options: Readonly<DFA.Options>): DFA {
-		return new DFA(new DFA.Node(), new Set(), options.maxCharacter);
+	static empty(options: Readonly<DFA.Options>, factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+		return new DFA(factory.createNode(), new Set(), options.maxCharacter);
 	}
 
 	/**
 	 * Creates a new DFA which matches all words.
 	 *
 	 * @param options
+	 * @param factory
 	 */
-	static all(options: Readonly<DFA.Options>): DFA {
-		const initial = new DFA.Node();
+	static all(options: Readonly<DFA.Options>, factory: NodeFactory<DFA.Node> = DFA.nodeFactory): DFA {
+		const initial = factory.createNode();
 		initial.link(initial, CharSet.all(options.maxCharacter));
 		return new DFA(initial, new Set([initial]), options.maxCharacter);
 	}
