@@ -22,9 +22,11 @@ export function getIntersectionIterator<L, R>(
 ): TransitionIterator<MapFABuilderNode> {
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
-	const builder = new Iter.MapFABuilder(options?.maxNodes ?? 10_000, "intersection operation");
-
-	return Iter.intersection(builder, left.transitionIterator(), right.transitionIterator());
+	return Iter.intersection(
+		new Iter.MapFABuilder(options?.maxNodes ?? 10_000),
+		left.transitionIterator(),
+		right.transitionIterator()
+	);
 }
 
 /**

@@ -2,24 +2,17 @@ import { CharSet } from "../char-set";
 import { FABuilder } from "../fa-types";
 import { TooManyNodesError } from "../errors";
 
-interface Limit {
-	current: number;
-	readonly maxNodes: number;
-	readonly kind: string;
-}
-
 /**
  * An FA builder that uses `Map` objects as nodes. Each node is the map of its outgoing transitions.
  */
 export class MapFABuilder implements FABuilder<MapFABuilderNode, CharSet> {
-	private readonly _limit: Limit | undefined;
+	private readonly _limit: number;
+	private _counter = 0;
 	readonly initial: MapFABuilderNode = new Map();
 	readonly finals = new Set<MapFABuilderNode>();
 
-	constructor(maxNodes: number = Infinity, kind?: string) {
-		if (maxNodes < Infinity) {
-			this._limit = { current: 0, maxNodes, kind: kind ?? "MapFABuilder" };
-		}
+	constructor(maxNodes: number = Infinity) {
+		this._limit = maxNodes;
 	}
 
 	makeFinal(state: MapFABuilderNode): void {
@@ -29,10 +22,7 @@ export class MapFABuilder implements FABuilder<MapFABuilderNode, CharSet> {
 		return this.finals.has(state);
 	}
 	createNode(): MapFABuilderNode {
-		const limit = this._limit;
-		if (limit) {
-			TooManyNodesError.assert(++limit.current, limit.maxNodes, limit.kind);
-		}
+		TooManyNodesError.assert(++this._counter, this._limit, "MapFABuilder");
 
 		return new Map();
 	}
