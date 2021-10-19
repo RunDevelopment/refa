@@ -164,18 +164,6 @@ export interface FABuilder<S, T> extends NodeFactory<S> {
 	readonly linkNodes: (from: S, to: S, transition: T) => void;
 }
 
-export interface FACreationOptions {
-	/**
-	 * The maximum number of nodes the operation is allowed to create before throwing a `TooManyNodesError`.
-	 *
-	 * If the maximum number of nodes is unset or set to `Infinity`, the operation may create as many nodes as
-	 * necessary. This might cause the machine to run out of memory.
-	 *
-	 * @default 10000
-	 */
-	maxNodes?: number;
-}
-
 /**
  * An {@link FAIterator} where transitions are map of states to character sets.
  *

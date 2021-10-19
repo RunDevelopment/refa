@@ -3,7 +3,7 @@ import { WordSet } from "./word-set";
 import * as Iter from "./iter";
 import { MapFABuilderNode } from "./iter";
 import { MaxCharacterError } from "./errors";
-import { FACreationOptions, TransitionIterable, TransitionIterator } from "./fa-types";
+import { TransitionIterable, TransitionIterator } from "./fa-types";
 import { wordSetsToWords } from "./words";
 
 /**
@@ -13,20 +13,16 @@ import { wordSetsToWords } from "./words";
  *
  * @param left
  * @param right
- * @param options
+ * @param maxNodes
  */
 export function getIntersectionIterator<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<FACreationOptions>
+	maxNodes: number = 10_000
 ): TransitionIterator<MapFABuilderNode> {
 	MaxCharacterError.assert(left, right, "TransitionIterable");
 
-	return Iter.intersection(
-		new Iter.MapFABuilder(options?.maxNodes ?? 10_000),
-		left.transitionIterator(),
-		right.transitionIterator()
-	);
+	return Iter.intersection(new Iter.MapFABuilder(maxNodes), left.transitionIterator(), right.transitionIterator());
 }
 
 /**
@@ -41,14 +37,14 @@ export function getIntersectionIterator<L, R>(
  *
  * @param left
  * @param right
- * @param options
+ * @param maxNodes
  */
 export function isDisjointWith<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<FACreationOptions>
+	maxNodes: number = 10_000
 ): boolean {
-	const iter = getIntersectionIterator(left, right, options);
+	const iter = getIntersectionIterator(left, right, maxNodes);
 
 	return !Iter.canReachFinal(Iter.mapOut(iter, n => n.keys()));
 }
@@ -65,14 +61,14 @@ export function isDisjointWith<L, R>(
  *
  * @param left
  * @param right
- * @param options
+ * @param maxNodes
  */
 export function getIntersectionWordSets<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<FACreationOptions>
+	maxNodes: number = 10_000
 ): Iterable<WordSet> {
-	const iter = getIntersectionIterator(left, right, options);
+	const iter = getIntersectionIterator(left, right, maxNodes);
 
 	return Iter.iterateWordSets(iter);
 }
@@ -88,12 +84,12 @@ export function getIntersectionWordSets<L, R>(
  *
  * @param left
  * @param right
- * @param options
+ * @param maxNodes
  */
 export function getIntersectionWords<L, R>(
 	left: TransitionIterable<L>,
 	right: TransitionIterable<R>,
-	options?: Readonly<FACreationOptions>
+	maxNodes: number = 10_000
 ): Iterable<Word> {
-	return wordSetsToWords(getIntersectionWordSets(left, right, options));
+	return wordSetsToWords(getIntersectionWordSets(left, right, maxNodes));
 }
