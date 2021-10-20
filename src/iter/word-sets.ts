@@ -92,7 +92,7 @@ export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>):
 /**
  * Returns a set of inputs rejected by the given iterator using the given input character set.
  *
- * If the iterator accepts all words, `undefined` will be returned.
+ * If the iterator accepts all words, `undefined` is guaranteed to be returned.
  *
  * This algorithm implements an approximation to determine rejecting inputs in order to guarantee non-exponential
  * worst-case execution time. Consequently, the algorithm can't find rejecting inputs for some iterators and returns
@@ -104,14 +104,13 @@ export function shortestWordSet<S>(iter: FAIterator<S, Iterable<[S, CharSet]>>):
  * All character sets in the returned word set will be subsets of the set of input characters.
  *
  * If all characters are allowed, use `CharSet.all(maxCharacter)`.
- * @throws if the set of input characters is empty.
  */
 export function approximateRejectingWordSet<S>(
 	iter: FAIterator<S, Iterable<[S, CharSet]>>,
 	inputCharacters: CharSet
 ): WordSet | undefined {
 	if (inputCharacters.isEmpty) {
-		throw new Error("The input character set must contain at least one character.");
+		return undefined;
 	}
 
 	const { initial, getOut, isFinal } = ensureStableOut(removeDeadStates(iter, i => i[0]));
