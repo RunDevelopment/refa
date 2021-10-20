@@ -85,6 +85,8 @@ export interface FAIterator<S, O = Iterable<S>> {
 	/**
 	 * Returns the value a state maps to.
 	 *
+	 * Callers of this function are allowed to call the function **without** a `this` argument.
+	 *
 	 * @see {@link stableOut}
 	 */
 	readonly getOut: (state: S) => O;
@@ -111,6 +113,8 @@ export interface FAIterator<S, O = Iterable<S>> {
 	 *
 	 * This function is guaranteed to be deterministic during the time the iterator is used. It is also guaranteed to be
 	 * sufficiently fast, usually `O(1)` can be assumed.
+	 *
+	 * Callers of this function are allowed to call the function **without** a `this` argument.
 	 */
 	readonly isFinal: (state: S) => boolean;
 }
