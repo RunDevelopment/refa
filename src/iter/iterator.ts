@@ -2,6 +2,57 @@ import { FAIterator } from "../fa-types";
 import { debugAssert, iterToArray, iterateBFS, traverse } from "../util";
 
 /**
+ * Creates a new iterator that is equivalent to the given iterator with the given initial state.
+ *
+ * @param iter
+ * @param initial
+ * @returns
+ */
+export function withInitial<S, O>(iter: FAIterator<S, O>, initial: FAIterator<S, O>["initial"]): FAIterator<S, O> {
+	return {
+		initial,
+		getOut: iter.getOut,
+		stableOut: iter.stableOut,
+		isFinal: iter.isFinal,
+	};
+}
+/**
+ * Creates a new iterator that is equivalent to the given iterator with the given `getOut` function.
+ *
+ * @param iter
+ * @param getOut
+ * @param stableOut
+ * @returns
+ */
+export function withGetOut<S, O, T>(
+	iter: FAIterator<S, O>,
+	getOut: FAIterator<S, T>["getOut"],
+	stableOut = false
+): FAIterator<S, T> {
+	return {
+		initial: iter.initial,
+		getOut,
+		stableOut,
+		isFinal: iter.isFinal,
+	};
+}
+/**
+ * Creates a new iterator that is equivalent to the given iterator with the given `isFinal` function.
+ *
+ * @param iter
+ * @param isFinal
+ * @returns
+ */
+export function withIsFinal<S, O>(iter: FAIterator<S, O>, isFinal: FAIterator<S, O>["isFinal"]): FAIterator<S, O> {
+	return {
+		initial: iter.initial,
+		getOut: iter.getOut,
+		stableOut: iter.stableOut,
+		isFinal,
+	};
+}
+
+/**
  * Maps the out type of the given iterator and returns a new iterator.
  *
  * @param iter
@@ -10,11 +61,7 @@ import { debugAssert, iterToArray, iterateBFS, traverse } from "../util";
 export function mapOut<S, O, T>(iter: FAIterator<S, O>, mapFn: (out: O) => T): FAIterator<S, T> {
 	const oldGetOut = iter.getOut;
 
-	return {
-		initial: iter.initial,
-		getOut: state => mapFn(oldGetOut(state)),
-		isFinal: iter.isFinal,
-	};
+	return withGetOut(iter, state => mapFn(oldGetOut(state)));
 }
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -27,17 +74,12 @@ export function mapOutIter<S, O, T>(
 	mapFn: (out: O) => T
 ): FAIterator<S, Iterable<T>> {
 	const oldGetOut = iter.getOut;
-	function* getOut(state: S): IterableIterator<T> {
+
+	return withGetOut(iter, function* getOut(state: S): IterableIterator<T> {
 		for (const item of oldGetOut(state)) {
 			yield mapFn(item);
 		}
-	}
-
-	return {
-		initial: iter.initial,
-		getOut,
-		isFinal: iter.isFinal,
-	};
+	});
 }
 /**
  * Maps the out type of the given iterator and returns a new iterator.
@@ -50,19 +92,14 @@ export function filterOutIter<S, O>(
 	conditionFn: (out: O) => boolean
 ): FAIterator<S, Iterable<O>> {
 	const oldGetOut = iter.getOut;
-	function* getOut(state: S): IterableIterator<O> {
+
+	return withGetOut(iter, function* getOut(state: S): IterableIterator<O> {
 		for (const item of oldGetOut(state)) {
 			if (conditionFn(item)) {
 				yield item;
 			}
 		}
-	}
-
-	return {
-		initial: iter.initial,
-		getOut,
-		isFinal: iter.isFinal,
-	};
+	});
 }
 
 /**
@@ -120,9 +157,9 @@ function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 	const outCache = new Map<S, O>();
 	const oldGetUncached = iter.getOut;
 
-	return {
-		initial: iter.initial,
-		getOut: (state: S) => {
+	return withGetOut(
+		iter,
+		(state: S): O => {
 			let cached = outCache.get(state);
 			if (cached === undefined) {
 				cached = oldGetUncached(state);
@@ -130,9 +167,8 @@ function cacheOut<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
 			}
 			return cached;
 		},
-		stableOut: true,
-		isFinal: iter.isFinal,
-	};
+		true
+	);
 }
 
 /**
@@ -290,13 +326,9 @@ function createInTransitionMap<T>(
  * @param iter
  */
 export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	const { initial, getOut, stableOut, isFinal } = iter;
-	return {
-		initial: initial,
-		getOut,
-		stableOut,
-		isFinal: s => s === initial || isFinal(s),
-	};
+	const { initial, isFinal } = iter;
+
+	return withIsFinal(iter, s => s === initial || isFinal(s));
 }
 /**
  * Creates a new iterator that is equivalent to the given iterator expect that the initial state is guaranteed to be
@@ -305,13 +337,9 @@ export function makeInitialFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O>
  * @param iter
  */
 export function makeInitialNonFinal<S, O>(iter: FAIterator<S, O>): FAIterator<S, O> {
-	const { initial, getOut, stableOut, isFinal } = iter;
-	return {
-		initial: initial,
-		getOut,
-		stableOut,
-		isFinal: s => s !== initial && isFinal(s),
-	};
+	const { initial, isFinal } = iter;
+
+	return withIsFinal(iter, s => s !== initial && isFinal(s));
 }
 
 /**
