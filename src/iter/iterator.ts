@@ -8,7 +8,7 @@ import { debugAssert, iterToArray, iterateBFS, traverse } from "../util";
  * @param initial
  * @returns
  */
-export function withInitial<S, O>(iter: FAIterator<S, O>, initial: FAIterator<S, O>["initial"]): FAIterator<S, O> {
+export function withInitial<S, O>(iter: FAIterator<S, O>, initial: S): FAIterator<S, O> {
 	return {
 		initial,
 		getOut: iter.getOut,
@@ -26,7 +26,7 @@ export function withInitial<S, O>(iter: FAIterator<S, O>, initial: FAIterator<S,
  */
 export function withGetOut<S, O, T>(
 	iter: FAIterator<S, O>,
-	getOut: FAIterator<S, T>["getOut"],
+	getOut: (state: S) => T,
 	stableOut = false
 ): FAIterator<S, T> {
 	return {
@@ -43,7 +43,7 @@ export function withGetOut<S, O, T>(
  * @param isFinal
  * @returns
  */
-export function withIsFinal<S, O>(iter: FAIterator<S, O>, isFinal: FAIterator<S, O>["isFinal"]): FAIterator<S, O> {
+export function withIsFinal<S, O>(iter: FAIterator<S, O>, isFinal: (state: S) => boolean): FAIterator<S, O> {
 	return {
 		initial: iter.initial,
 		getOut: iter.getOut,
