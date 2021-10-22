@@ -38,11 +38,12 @@ export interface FiniteAutomaton {
 	/**
 	 * Returns an iterable that will yield all word sets accepted by this FA. Word sets are yielded by ascending length.
 	 *
-	 * If you analyse the words of this FA, consider using this method instead of `words` because this method will yield
-	 * at most `O(n^3)` word sets while `words` will yield at most `O(n^3 * m)` words (n = number of states, m = number
-	 * of possible characters).
+	 * If this FA accepts infinitely many words, the iterable will never end. If this FA is finite, the iterable will
+	 * end after at most `2^O(n)` word sets (`n` = number of states).
 	 *
-	 * If this FA accepts infinitely many words, the iterable will never end.
+	 * If you analyse the words of an FA, consider using this method instead of `words`. If this method yields `k` word
+	 * sets, then `words` will yield up to `O(k * m ^ l)` words (`m` = number of possible characters, `l` = the maximum
+	 * length of any of the `k` word sets).
 	 */
 	wordSets(): Iterable<WordSet>;
 
