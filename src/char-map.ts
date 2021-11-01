@@ -73,8 +73,6 @@ interface InclusiveRange {
 export class CharMap<T> implements ReadonlyCharMap<T> {
 	private _array: Item<T>[] = [];
 
-	static slowInsertCounter = 9;
-
 	get isEmpty(): boolean {
 		return this._array.length === 0;
 	}
@@ -191,8 +189,6 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 			this._array.push({ range, value });
 			return;
 		}
-
-		CharMap.slowInsertCounter++;
 
 		const left = this._indexOfOrLeft(range.min);
 
