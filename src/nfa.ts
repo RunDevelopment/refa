@@ -784,9 +784,13 @@ export namespace NFA {
 		 *
 		 *   This method will replace any assertion with an empty character class, effectively removing it.
 		 *
+		 * - `"ignore"`
+		 *
+		 *   This method will replace any assertion with an empty group.
+		 *
 		 * @default "throw"
 		 */
-		assertions?: "disable" | "throw";
+		assertions?: "disable" | "ignore" | "throw";
 		/**
 		 * How to handle unknowns when construction the NFA.
 		 *
@@ -934,10 +938,18 @@ function createGraphFromRegex(
 				return handleAlternation(element.alternatives);
 
 			case "Assertion":
-				if (assertions === "disable") {
-					return null;
-				} else {
-					throw new Error("Assertions are not supported yet.");
+				switch (assertions) {
+					case "disable":
+						return null;
+					case "ignore": {
+						const base: SubGraph = { initial: factory.createNode(), finals: new Set<NFA.Node>() };
+						base.finals.add(base.initial);
+						return base;
+					}
+					case "throw":
+						throw new Error("Assertions are not supported yet.");
+					default:
+						throw assertNever(assertions);
 				}
 
 			case "CharacterClass": {
@@ -957,10 +969,13 @@ function createGraphFromRegex(
 				return handleQuantifier(element);
 
 			case "Unknown":
-				if (unknowns === "disable") {
-					return null;
-				} else {
-					throw new Error("Unknowns are not supported.");
+				switch (unknowns) {
+					case "disable":
+						return null;
+					case "throw":
+						throw new Error("Unknowns are not supported.");
+					default:
+						throw assertNever(unknowns);
 				}
 
 			default:

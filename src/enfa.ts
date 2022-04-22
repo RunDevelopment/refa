@@ -960,9 +960,13 @@ export namespace ENFA {
 		 *
 		 *   This method will replace any assertion with an empty character class, effectively removing it.
 		 *
+		 * - `"ignore"`
+		 *
+		 *   This method will replace any assertion with an empty group.
+		 *
 		 * @default "throw"
 		 */
-		assertions?: "disable" | "throw";
+		assertions?: "disable" | "ignore" | "throw";
 		/**
 		 * How to handle unknowns when construction the ENFA.
 		 *
@@ -1020,7 +1024,7 @@ interface ReadonlySubGraph {
 namespace ThompsonOptimized {
 	interface Options {
 		readonly maxCharacter: Char;
-		readonly assertions: "disable" | "throw";
+		readonly assertions: "disable" | "ignore" | "throw";
 		readonly unknowns: "disable" | "throw";
 		readonly infinityThreshold: number;
 	}
@@ -1035,7 +1039,7 @@ namespace ThompsonOptimized {
 		return { initial, final: handleAlternatives(factory, expression, initial, options) };
 	}
 
-	// All of the below function guarantee that
+	// All of the below functions guarantee that
 	// 1. no incoming transitions are added to the initial state.
 	// 2. the returned final state will not be the given initial state.
 	// 3. the returned final state will have no outgoing transitions.
@@ -1050,7 +1054,7 @@ namespace ThompsonOptimized {
 			case "Alternation":
 				return handleAlternatives(factory, element.alternatives, initial, options);
 			case "Assertion":
-				return handleAssertion(factory, options);
+				return handleAssertion(factory, initial, options);
 			case "CharacterClass":
 				return handleChar(factory, element.characters, initial, options);
 			case "Quantifier":
@@ -1180,17 +1184,27 @@ namespace ThompsonOptimized {
 			return final;
 		}
 	}
-	function handleAssertion(factory: NodeFactory<ENFA.Node>, options: Options): ENFA.Node {
-		if (options.assertions === "throw") {
-			throw new Error("Assertions are not supported yet.");
+	function handleAssertion(factory: NodeFactory<ENFA.Node>, initial: ENFA.Node, options: Options): ENFA.Node {
+		switch (options.assertions) {
+			case "disable":
+				return factory.createNode();
+			case "ignore":
+				return safeFinal(factory, initial, initial);
+			case "throw":
+				throw new Error("Assertions are not supported yet.");
+			default:
+				throw assertNever(options.assertions);
 		}
-		return factory.createNode();
 	}
 	function handleUnknown(factory: NodeFactory<ENFA.Node>, options: Options): ENFA.Node {
-		if (options.unknowns === "throw") {
-			throw new Error("Unknowns are not supported.");
+		switch (options.unknowns) {
+			case "disable":
+				return factory.createNode();
+			case "throw":
+				throw new Error("Assertions are not supported yet.");
+			default:
+				throw assertNever(options.unknowns);
 		}
-		return factory.createNode();
 	}
 
 	function safeFinal(factory: NodeFactory<ENFA.Node>, initial: ENFA.Node, final: ENFA.Node): ENFA.Node {

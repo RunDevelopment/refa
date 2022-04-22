@@ -24,6 +24,20 @@ describe("NFA", function () {
 		}
 	});
 
+	describe("fromRegex options", function () {
+		const options: NFA.FromRegexOptions[] = [{ assertions: "disable" }, { assertions: "ignore" }];
+		const literals: Literal[] = [/^foo$|bar/];
+		for (const literal of literals) {
+			for (const o of options) {
+				it(JSON.stringify(o) + ": " + literalToString(literal), function () {
+					const parsed = Parser.fromLiteral(literal).parse();
+					const nfa = NFA.fromRegex(parsed.expression, { maxCharacter: parsed.maxCharacter }, o);
+					assertEqualSnapshot(this, nfa.toString());
+				});
+			}
+		}
+	});
+
 	describe("test", function () {
 		for (const testCase of wordTestData) {
 			it(literalToString(testCase.literal), function () {

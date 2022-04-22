@@ -1317,6 +1317,41 @@ module.exports["ENFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
 [14] -> none
 `.slice(1, -1);
 
+module.exports["ENFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo$|bar/"] = `
+(0) -> (1) : 62
+
+(1) -> (2) : 61
+
+(2) -> (3) : 72
+
+(3) -> [4] : ε
+
+[4] -> none
+`.slice(1, -1);
+
+module.exports["ENFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$|bar/"] = `
+(0) -> (1) : ε
+    -> (2) : 62
+
+(1) -> (3) : 66
+
+(2) -> (4) : 61
+
+(3) -> (5) : 6f
+
+(4) -> (6) : 72
+
+(5) -> (7) : 6f
+
+(6) -> [8] : ε
+
+(7) -> (9) : ε
+
+[8] -> none
+
+(9) -> [8] : ε
+`.slice(1, -1);
+
 module.exports["ENFA >> union >> /()/ ∪ /()/ (left)"] = `
 (0) -> (1) : ε
     -> (2) : ε

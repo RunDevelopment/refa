@@ -597,6 +597,31 @@ module.exports["NFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
     -> (6) : 0..26, 28..ffff
 `.slice(1, -1);
 
+module.exports["NFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo$|bar/"] = `
+(0) -> (1) : 62
+
+(1) -> (2) : 61
+
+(2) -> [3] : 72
+
+[3] -> none
+`.slice(1, -1);
+
+module.exports["NFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$|bar/"] = `
+(0) -> (1) : 62
+    -> (2) : 66
+
+(1) -> (3) : 61
+
+(2) -> (4) : 6f
+
+(3) -> [5] : 72
+
+(4) -> [5] : 6f
+
+[5] -> none
+`.slice(1, -1);
+
 module.exports["NFA >> union >> /()/ ∪ /()/"] = `
 [0] -> none
 `.slice(1, -1);
