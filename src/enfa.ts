@@ -61,9 +61,7 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	/**
 	 * Returns the number of nodes reachable from the initial state including the initial state.
 	 *
-	 * This may include trap states. This will not include unreachable final states.
-	 *
-	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 * This returns the number of nodes returned by {@link nodes}.
 	 */
 	countNodes(): number;
 
@@ -200,18 +198,10 @@ export class ENFA implements ReadonlyENFA {
 
 	countNodes(): number {
 		let c = 0;
-		let hasSeenFinal = false;
 		traverse(this.initial, (n, queue) => {
 			c++;
-			if (n === this.final) {
-				hasSeenFinal = true;
-			}
 			queue.push(...n.out.keys());
 		});
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!hasSeenFinal) {
-			c++;
-		}
 		return c;
 	}
 
