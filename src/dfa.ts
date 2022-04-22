@@ -22,18 +22,38 @@ import { wordSetsToWords } from "./words";
  * A readonly {@link DFA}.
  */
 export interface ReadonlyDFA extends FiniteAutomaton, TransitionIterable<DFA.ReadonlyNode> {
+	/**
+	 * The initial state of the DFA.
+	 */
 	readonly initial: DFA.ReadonlyNode;
+	/**
+	 * The set of final states of the DFA.
+	 *
+	 * This set may be empty or contain nodes not reachable from the initial state.
+	 */
 	readonly finals: ReadonlySet<DFA.ReadonlyNode>;
 
 	stateIterator(): FAIterator<DFA.ReadonlyNode>;
+	/**
+	 * Yields all nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states, but it will not include unreachable final states.
+	 *
+	 * The order in which nodes will be returned is implementation defined and may change after any operation that
+	 * modifies the DFA.
+	 *
+	 * Modifying the DFA while iterating will result in implementation-defined behavior. The implementation may stop the
+	 * iteration or yield an nodes.
+	 *
+	 * This operation runs in _O(E + V)_ where _E_ is the number of nodes reachable from the initial state and _V_ is
+	 * the number of transitions.
+	 */
 	nodes(): Iterable<DFA.ReadonlyNode>;
 
 	/**
 	 * Returns the number of nodes reachable from the initial state including the initial state.
 	 *
-	 * This may include trap states. This will not include unreachable final states.
-	 *
-	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 * This returns the number of nodes returned by {@link nodes}.
 	 */
 	countNodes(): number;
 

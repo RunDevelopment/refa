@@ -22,7 +22,15 @@ import { toAlternatives } from "./ast-analysis";
  * A readonly {@link ENFA}.
  */
 export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.ReadonlyNode> {
+	/**
+	 * The initial state of the ENFA.
+	 */
 	readonly initial: ENFA.ReadonlyNode;
+	/**
+	 * The final state of the ENFA.
+	 *
+	 * This state may not be reachable from the initial state.
+	 */
 	readonly final: ENFA.ReadonlyNode;
 
 	/**
@@ -33,6 +41,21 @@ export interface ReadonlyENFA extends FiniteAutomaton, TransitionIterable<ENFA.R
 	readonly isNormalized: boolean;
 
 	stateIterator(resolveEpsilon: boolean): FAIterator<ENFA.ReadonlyNode>;
+	/**
+	 * Yields all nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states, but it will not include the final states if it is unreachable from the initial
+	 * state.
+	 *
+	 * The order in which nodes will be returned is implementation defined and may change after any operation that
+	 * modifies the ENFA.
+	 *
+	 * Modifying the ENFA while iterating will result in implementation-defined behavior. The implementation may stop
+	 * the iteration or yield an nodes.
+	 *
+	 * This operation runs in _O(E + V)_ where _E_ is the number of nodes reachable from the initial state and _V_ is
+	 * the number of transitions.
+	 */
 	nodes(): Iterable<ENFA.ReadonlyNode>;
 
 	/**
@@ -569,7 +592,7 @@ export class ENFA implements ReadonlyENFA {
 	/**
 	 * Creates a new ENFA which matches only the empty word.
 	 *
-	 * This operation will create exactly 1 nodes with the given factory.
+	 * This operation will create exactly 1 node with the given factory.
 	 *
 	 * @param options
 	 * @param factory

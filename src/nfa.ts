@@ -21,7 +21,15 @@ import { toAlternatives } from "./ast-analysis";
  * A readonly {@link NFA}.
  */
 export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.ReadonlyNode> {
+	/**
+	 * The initial state of the NFA.
+	 */
 	readonly initial: NFA.ReadonlyNode;
+	/**
+	 * The set of final states of the NFA.
+	 *
+	 * This set may be empty or contain nodes not reachable from the initial state.
+	 */
 	readonly finals: ReadonlySet<NFA.ReadonlyNode>;
 
 	/**
@@ -32,14 +40,26 @@ export interface ReadonlyNFA extends FiniteAutomaton, TransitionIterable<NFA.Rea
 	readonly isNormalized: boolean;
 
 	stateIterator(): FAIterator<NFA.ReadonlyNode>;
+	/**
+	 * Yields all nodes reachable from the initial state including the initial state.
+	 *
+	 * This may include trap states, but it will not include unreachable final states.
+	 *
+	 * The order in which nodes will be returned is implementation defined and may change after any operation that
+	 * modifies the NFA.
+	 *
+	 * Modifying the NFA while iterating will result in implementation-defined behavior. The implementation may stop the
+	 * iteration or yield an nodes.
+	 *
+	 * This operation runs in _O(E + V)_ where _E_ is the number of nodes reachable from the initial state and _V_ is
+	 * the number of transitions.
+	 */
 	nodes(): Iterable<NFA.ReadonlyNode>;
 
 	/**
 	 * Returns the number of nodes reachable from the initial state including the initial state.
 	 *
-	 * This may include trap states. This will not include unreachable final states.
-	 *
-	 * This operation has to traverse the whole graph and runs in _O(E + V)_.
+	 * This returns the number of nodes returned by {@link nodes}.
 	 */
 	countNodes(): number;
 
@@ -111,7 +131,7 @@ export class NFA implements ReadonlyNFA {
 	/**
 	 * Brings this NFA is in its normal form.
 	 *
-	 * This operation will create at most 1 nodes with the given factory.
+	 * This operation will create at most 1 node with the given factory.
 	 *
 	 * @param factory
 	 * @see {@link NFA}
