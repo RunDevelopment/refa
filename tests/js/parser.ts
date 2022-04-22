@@ -160,6 +160,16 @@ describe("JS.Parser", function () {
 			},
 			{
 				literal: /(?=abc)a|b/,
+				options: { assertions: "ignore" },
+				expected: "[61]|[62]",
+			},
+			{
+				literal: /(?=abc)a|b/,
+				options: { assertions: "ignore", simplify: false },
+				expected: "(?:)[61]|[62]",
+			},
+			{
+				literal: /(?=abc)a|b/,
 				options: { assertions: "throw" },
 				expected: Error,
 			},

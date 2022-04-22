@@ -90,7 +90,11 @@ export interface ParseOptions {
 	 * - `"disable"`
 	 *
 	 *   The parser will disable all assertion by replacing them with an empty character class. This will cause all
-	 *   paths containing a assertion to be (effectively) removed.
+	 *   paths containing an assertion to be (effectively) removed.
+	 *
+	 * - `"ignore"`
+	 *
+	 *   The parser will ignore all assertion by replacing them with an empty group.
 	 *
 	 * - `"throw"`
 	 *
@@ -105,7 +109,7 @@ export interface ParseOptions {
 	 *
 	 * @default "parse"
 	 */
-	assertions?: "parse" | "disable" | "throw" | "unknown";
+	assertions?: "parse" | "disable" | "ignore" | "throw" | "unknown";
 
 	/**
 	 * By default, the parser will try to simplify the generated RE as much as possible.
@@ -604,6 +608,15 @@ export class Parser {
 
 			case "disable":
 				return this._createDisabledElement(element, context);
+
+			case "ignore":
+				if (context.disableSimplification) {
+					const alternation = context.nc.newAlt(element);
+					alternation.alternatives.push(context.nc.newConcat(element));
+					return alternation;
+				} else {
+					return EMPTY_CONCAT;
+				}
 
 			case "unknown":
 				return this._createUnknownElement(element, context);
