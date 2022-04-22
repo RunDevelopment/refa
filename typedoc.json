@@ -11,7 +11,10 @@
   "disableSources": true,
   "hideGenerator": true,
 
-  "validation": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true
+  },
   "intentionallyNotExported": [
     "NodeIdent",
     "NoParentNode",
