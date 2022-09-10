@@ -3,8 +3,8 @@ import * as path from "path";
 import { CharSet } from "../src/char-set";
 import { printRanges } from "./util";
 
-const caseFoldingCommon: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/C/code-points");
-const caseFoldingSimple: ReadonlyMap<number, number> = require("@unicode/unicode-13.0.0/Case_Folding/S/code-points");
+const caseFoldingCommon: ReadonlyMap<number, number> = require("@unicode/unicode-15.0.0/Case_Folding/C/code-points");
+const caseFoldingSimple: ReadonlyMap<number, number> = require("@unicode/unicode-15.0.0/Case_Folding/S/code-points");
 
 createCaseFoldingFile(canonicalizeIgnoreCaseUTF16, 0xffff, "UTF16", "utf16-case-folding.ts");
 createCaseFoldingFile(canonicalizeIgnoreCaseUnicode, 0x10ffff, "Unicode", "unicode/case-folding.ts");

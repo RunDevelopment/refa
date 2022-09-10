@@ -30,7 +30,7 @@ import { CharRange } from "../../char-set";
 `;
 
 	for (const prop of values) {
-		const codePoints: number[] = require(`@unicode/unicode-13.0.0/${category}/${prop}/code-points`);
+		const codePoints: number[] = require(`@unicode/unicode-15.0.0/${category}/${prop}/code-points`);
 		const ranges = CharSet.fromCharacters(0x10ffff, codePoints).ranges;
 
 		code += `export const ${prop}: readonly CharRange[] = ${printRanges(ranges)};\n`;
