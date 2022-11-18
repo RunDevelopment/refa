@@ -479,6 +479,22 @@ export class CharSet {
 			}
 		}
 	}
+	/**
+	 * Returns whether `this ⊃ other`.
+	 *
+	 * @param other
+	 */
+	isProperSupersetOf(other: CharSet | CharRange): boolean {
+		return !this.isSubsetOf(other);
+	}
+	/**
+	 * Returns whether `this ⊂ other`.
+	 *
+	 * @param other
+	 */
+	isProperSubsetOf(other: CharSet | CharRange): boolean {
+		return !this.isSupersetOf(other);
+	}
 
 	/**
 	 * Returns whether this set and the given set (or range) are disjoint.
