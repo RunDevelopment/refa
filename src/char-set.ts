@@ -423,6 +423,11 @@ export class CharSet {
 		return hasEveryOfRange(this.ranges, character, character);
 	}
 
+	/**
+	 * Returns whether `this ⊇ other`.
+	 *
+	 * @param other
+	 */
 	isSupersetOf(other: CharSet | CharRange): boolean {
 		if (!(other instanceof CharSet)) {
 			return hasEveryOfRange(this.ranges, other.min, other.max);
@@ -458,6 +463,11 @@ export class CharSet {
 		// otherItem is still defined that there are some chars in other which are not in this
 		return !otherItem;
 	}
+	/**
+	 * Returns whether `this ⊆ other`.
+	 *
+	 * @param other
+	 */
 	isSubsetOf(other: CharSet | CharRange): boolean {
 		if (other instanceof CharSet) {
 			return other.isSupersetOf(this);
