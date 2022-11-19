@@ -492,7 +492,7 @@ export class CharSet {
 	 * @param other
 	 */
 	isProperSupersetOf(other: CharSet | CharRange): boolean {
-		return !this.isSubsetOf(other);
+		return this.isSupersetOf(other) && !this.equals(other);
 	}
 	/**
 	 * Returns whether `this ⊂ other`.
@@ -500,7 +500,7 @@ export class CharSet {
 	 * @param other
 	 */
 	isProperSubsetOf(other: CharSet | CharRange): boolean {
-		return !this.isSupersetOf(other);
+		return this.isSubsetOf(other) && !this.equals(other);
 	}
 
 	/**
