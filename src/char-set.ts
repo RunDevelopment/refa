@@ -208,13 +208,20 @@ export class CharSet {
 	 * Two `CharSet`s are equal if and only if:
 	 *
 	 * 1.  They have the same maximum.
-	 * 2.  They have the same number of char ranges.
-	 * 3.  For every `CharRange` in this set, there exists one `CharRange` in the other set with the same minimum and
-	 *     maximum.
+	 * 2.  They contain the same characters.
+	 *
+	 * Since each set of characters has a unique range representation, 2 equal `CharSet`s are guaranteed to have equal
+	 * ranges.
+	 *
+	 * A `CharSet` and a `CharRange` are equal if and only if they contain the same characters.
 	 *
 	 * @param other
 	 */
-	equals(other: CharSet): boolean {
+	equals(other: CharSet | CharRange): boolean {
+		if (!(other instanceof CharSet)) {
+			return this.ranges.length === 1 && this.ranges[0].min === other.min && this.ranges[0].max === other.max;
+		}
+
 		if (other === this) {
 			return true;
 		}
