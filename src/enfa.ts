@@ -282,7 +282,12 @@ export class ENFA implements ReadonlyENFA {
 		return Iter.toRegex(iter, options);
 	}
 
-	toDot(charSetToString?: (charSet: CharSet) => string): string {
+	private _getSimpleOptions(
+		charSetToString?: (charSet: CharSet) => string
+	): [
+		FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>>,
+		Iter.SimplePrintOptions<CharSet | null>
+	] {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.initial,
 			getOut: n => n.out,
@@ -294,7 +299,13 @@ export class ENFA implements ReadonlyENFA {
 			? cs => (cs === null ? "" : charSetToString!(cs))
 			: cs => (cs === null ? "" : cs.toUnicodeString());
 
-		return Iter.toDot(iter, Iter.createSimpleToDotOptions(toString, true));
+		return [iter, { transitionToString: toString, ordered: true }];
+	}
+	toDot(charSetToString?: (charSet: CharSet) => string): string {
+		return Iter.toDot(...this._getSimpleOptions(charSetToString));
+	}
+	toMermaid(charSetToString?: (charSet: CharSet) => string): string {
+		return Iter.toMermaid(...this._getSimpleOptions(charSetToString));
 	}
 
 	/**

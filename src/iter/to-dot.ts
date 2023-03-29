@@ -1,21 +1,18 @@
 import { FAIterator } from "../fa-types";
-import { iterToArray } from "../util";
-import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
+import { NodeInfo, SimplePrintOptions } from "./print-common";
+import { indexNodes } from "./print-util";
 
-export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDotOptions<S, T>): string {
+export function toDot<S, T>(
+	iter: FAIterator<S, Iterable<[S, T]>>,
+	options: ToDotOptions<S, T> | SimplePrintOptions<T>
+): string {
 	const {
 		getEdgeAttributes,
 		getGraphAttributes = DEFAULT_GRAPH_ATTRIBUTES,
 		getNodeAttributes = DEFAULT_GET_NODE_ATTRIBUTES,
-	} = options;
+	} = "transitionToString" in options ? fromSimpleOptions(options) : options;
 
-	const stableIter = ensureStableOut(mapOut(iter, iterToArray));
-	const states: S[] = [...iterateStates(mapOutIter(stableIter, ([s]) => s))];
-
-	const index = new Map<S, number>(states.map((s, i) => [s, i]));
-	const indexOf = (state: S): number => {
-		return index.get(state)!;
-	};
+	const { stableIter, states, info } = indexNodes(iter);
 
 	let s = "";
 
@@ -66,7 +63,7 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDo
 		s += "]";
 	}
 	function writeNodeLabel(node: S): void {
-		s += "n" + indexOf(node);
+		s += "n" + info.getId(node);
 	}
 	function writeNodeLabelFromIndex(index: number): void {
 		s += "n" + index;
@@ -92,13 +89,6 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDo
 			s += ";\n";
 		}
 	}
-
-	const info: ToDotInfo<S> = {
-		isInitial: s => s === stableIter.initial,
-		isFinal: stableIter.isFinal,
-		getId: indexOf,
-		getNumberOfOutgoingEdges: s => stableIter.getOut(s).length,
-	};
 
 	// nodes
 	s += "\n\t// nodes\n";
@@ -133,25 +123,16 @@ export function toDot<S, T>(iter: FAIterator<S, Iterable<[S, T]>>, options: ToDo
 
 export type ToDotAttrs = Record<string, string | number | undefined>;
 export interface ToDotOptions<S, T> {
-	getEdgeAttributes: (transition: T, nth: number, from: S, to: S, info: ToDotInfo<S>) => Readonly<ToDotAttrs>;
+	getEdgeAttributes: (transition: T, nth: number, from: S, to: S, info: NodeInfo<S>) => Readonly<ToDotAttrs>;
 	getGraphAttributes?: () => Readonly<ToDotAttrs>;
-	getNodeAttributes?: (node: S, info: ToDotInfo<S>) => Readonly<ToDotAttrs>;
-}
-export interface ToDotInfo<S> {
-	isInitial(node: S): boolean;
-	isFinal(node: S): boolean;
-	getId(node: S): number;
-	getNumberOfOutgoingEdges(node: S): number;
+	getNodeAttributes?: (node: S, info: NodeInfo<S>) => Readonly<ToDotAttrs>;
 }
 
-export function createSimpleToDotOptions<S, T>(
-	toString: (transition: T) => string,
-	ordered: boolean = false
-): ToDotOptions<S, T> {
+function fromSimpleOptions<S, T>({ transitionToString, ordered = false }: SimplePrintOptions<T>): ToDotOptions<S, T> {
 	return {
 		getEdgeAttributes(trans, nth, from, _, info) {
 			const attrs: ToDotAttrs = {
-				label: toString(trans),
+				label: transitionToString(trans),
 			};
 
 			if (ordered && info.getNumberOfOutgoingEdges(from) > 1) {

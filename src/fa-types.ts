@@ -64,12 +64,21 @@ export interface FiniteAutomaton {
 	 * The output of this function can passed to any graph visualization program. This can be a
 	 * [local installation](https://graphviz.org/download/) or an [online editor](https://edotor.net/).
 	 *
-	 * By default, a hexadecimal range form will be used to represent {@link CharSet}s. It's possible to provide a
+	 * By default, {@link CharSet#toUnicodeString} is used to represent {@link CharSet}s. It's possible to provide a
 	 * custom stringify function using the `charSetToString` parameter.
 	 *
 	 * @param charSetToString
 	 */
 	toDot(charSetToString?: (charSet: CharSet) => string): string;
+	/**
+	 * Returns the string representation of this FA in the [Mermaid format](https://mermaid.js.org/).
+	 *
+	 * By default, {@link CharSet#toUnicodeString} is used to represent {@link CharSet}s. It's possible to provide a
+	 * custom stringify function using the `charSetToString` parameter.
+	 *
+	 * @param charSetToString
+	 */
+	toMermaid(charSetToString?: (charSet: CharSet) => string): string;
 }
 
 /**

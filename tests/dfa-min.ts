@@ -10,6 +10,7 @@ import { TooManyNodesError } from "../src/errors";
 import { CONFIG_RUN_STRESS_TEST } from "./helper/config";
 import { assertEqualSnapshot } from "./helper/snapshot";
 import { createHash } from "crypto";
+import { toString } from "../src/iter";
 
 describe("DFA minimization", function () {
 	if (!CONFIG_RUN_STRESS_TEST) {
@@ -77,7 +78,12 @@ describe("DFA minimization", function () {
 
 			// This way we can detect when the DFA minimization produces incorrect results.
 			// We could also store the DFA string itself but this results in mega bytes of snapshots.
-			assertEqualSnapshot(this, createHash("sha256").update(dfa.toString()).digest("base64"));
+			assertEqualSnapshot(
+				this,
+				createHash("sha256")
+					.update(toString(dfa.transitionIterator(), cs => cs.toRangesString()))
+					.digest("base64")
+			);
 		});
 	}
 });

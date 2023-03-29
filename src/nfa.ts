@@ -224,10 +224,14 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
-		return Iter.toDot(
-			this.transitionIterator(),
-			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toUnicodeString()), false)
-		);
+		return Iter.toDot(this.transitionIterator(), {
+			transitionToString: charSetToString || (cs => cs.toUnicodeString()),
+		});
+	}
+	toMermaid(charSetToString?: (charSet: CharSet) => string): string {
+		return Iter.toMermaid(this.transitionIterator(), {
+			transitionToString: charSetToString || (cs => cs.toUnicodeString()),
+		});
 	}
 
 	/**
