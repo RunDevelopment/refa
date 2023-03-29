@@ -6,13 +6,20 @@
 
 - Upgraded to `@eslint-community/regexpp` v4.5.0 and drop `regexpp`.
 - Drop support for NodeJS 10.
+- Changed default character-set-to-string function of `{DFA,ENFA,NFA}#toDot` to `CharSet#toUnicodeString`.
+- Changed character-set-to-string function of `{DFA,ENFA,NFA}#toString` to `CharSet#toUnicodeString`.
+- Renamed `ToDotInfo` to `NodeInfo`.
+- Removed `createSimpleToDotOptions`.
 
 ### Added
 
+- Added `toMermaid` as part of the `FAIterators` namespace and `FiniteAutomaton` interface.
+- Added a unified interface for the namespaced `toDot` and `toMermaid` functions.
 - Many DFA, ENFA, and NFA operations now take optional node factory arguments to control the number of nodes created. All operations that create nodes no take factory arguments.
 - `{DFA,ENFA,NFA}.emptyWord` will create a new FA that makes exactly the empty word.
 - Added `withInitial`, `withGetOut`, and `withIsFinal` to more easily derive new FA iterators.
 - Added `assertions: "ignore"` to JS parser, `ENFA.fromRegex`, and `NFA.fromRegex`. This is mostly for convenience and performance. The same behavior could previously be achieved using transformers.
+- Added `CharSet#toUnicodeString` to provide an easy way to convert a character set into a human-readable string.
 - Added `CharSet#isProper{Subset,Superset}Of`.
 - `CharSet#equals` now supports `CharRange`s.
 
