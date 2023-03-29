@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-backreference */
 import { assert } from "chai";
 import { Literal, ParseOptions, Parser, toLiteral } from "../../src/js";
 import { literalToString } from "../helper/fa";

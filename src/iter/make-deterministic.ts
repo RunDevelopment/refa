@@ -91,7 +91,7 @@ export function makeDeterministic<B, I>(
 			const inputNodes = getInputNodes(state);
 			for (const set of alphabet.sets) {
 				const out = getOutNode(inputNodes, set.ranges[0].min);
-				if (out) {
+				if (out !== undefined) {
 					builder.linkNodes(state, out, set);
 				}
 			}
