@@ -39,6 +39,9 @@ export interface ToLiteralOptions {
  *
  * The returned literal will be a literal representation of the given AST. However, assertions maybe converted to
  * builtin JS RegExp assertions (e.g `\b`, `$`) instead of using the literal lookahead/lookbehind form.
+ *
+ * @param node
+ * @param options
  */
 export function toLiteral(node: NoParent<Node>, options?: Readonly<ToLiteralOptions>): Literal;
 export function toLiteral(
