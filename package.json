@@ -61,12 +61,12 @@
     "typedoc": "^0.23.28",
     "typescript": "^5.0.2"
   },
-  "dependencies": {
-    "regexpp": "^3.2.0"
-  },
   "files": [
     "index.js",
     "index.mjs",
     "index.d.ts"
-  ]
+  ],
+  "dependencies": {
+    "@eslint-community/regexpp": "^4.5.0"
+  }
 }
