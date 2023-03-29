@@ -37,7 +37,7 @@ yarn add refa
 - DFA, NFA, and ENFA operations
 
   * Construction from other FA, the intersection of two FA, or a finite set of words
-  * Print graph in [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format or a human-readable form
+  * Print as [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) or [Mermaid](https://mermaid.js.org/).
   * Test whether a word is accepted
   * Test whether the accepted language is the empty set/a finite set
   * Accept all prefixes/suffixes of a language
