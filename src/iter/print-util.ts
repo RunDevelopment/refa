@@ -1,29 +1,7 @@
 import { FAIterator } from "../fa-types";
 import { iterToArray } from "../util";
 import { ensureStableOut, iterateStates, mapOut, mapOutIter } from "./iterator";
-
-export interface NodeInfo<S> {
-	isInitial(node: S): boolean;
-	isFinal(node: S): boolean;
-	getId(node: S): number;
-	getNumberOfOutgoingEdges(node: S): number;
-}
-
-export interface SimplePrintOptions<T> {
-	/**
-	 * Returns the string representation of the given transition.
-	 *
-	 * @param transition
-	 * @returns
-	 */
-	transitionToString: (transition: T) => string;
-	/**
-	 * Whether transitions are ordered.
-	 *
-	 * @default false
-	 */
-	ordered?: boolean;
-}
+import { NodeInfo } from "./print-common";
 
 export interface IndexNodes<S, T> {
 	stableIter: FAIterator<S, readonly [S, T][]>;

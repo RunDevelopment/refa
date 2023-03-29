@@ -1,5 +1,6 @@
 import { FAIterator } from "../fa-types";
-import { NodeInfo, SimplePrintOptions, indexNodes } from "./print-util";
+import { NodeInfo, SimplePrintOptions } from "./print-common";
+import { indexNodes } from "./print-util";
 
 export function toMermaid<S, T>(
 	iter: FAIterator<S, Iterable<[S, T]>>,
