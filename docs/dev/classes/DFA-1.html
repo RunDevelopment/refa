@@ -73,6 +73,7 @@
 <a href="DFA-1.html#structurallyEqual" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>structurally<wbr/>Equal</span></a>
 <a href="DFA-1.html#test" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>test</span></a>
 <a href="DFA-1.html#toDot" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Dot</span></a>
+<a href="DFA-1.html#toMermaid" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Mermaid</span></a>
 <a href="DFA-1.html#toRegex" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Regex</span></a>
 <a href="DFA-1.html#toString" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>String</span></a>
 <a href="DFA-1.html#transitionIterator" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transition<wbr/>Iterator</span></a>
@@ -261,7 +262,7 @@ equal.</p>
 <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT format</a>.</p>
 <p>The output of this function can passed to any graph visualization program. This can be a
 <a href="https://graphviz.org/download/">local installation</a> or an <a href="https://edotor.net/">online editor</a>.</p>
-<p>By default, a hexadecimal range form will be used to represent <a href="CharSet.html">CharSet</a>s. It&#39;s possible to provide a
+<p>By default, <a href="CharSet.html#toUnicodeString">toUnicodeString</a> is used to represent <a href="CharSet.html">CharSet</a>s. It&#39;s possible to provide a
 custom stringify function using the <code>charSetToString</code> parameter.</p>
 </div>
 <div class="tsd-parameters">
@@ -282,6 +283,33 @@ custom stringify function using the <code>charSetToString</code> parameter.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/ReadonlyDFA.html">ReadonlyDFA</a>.<a href="../interfaces/ReadonlyDFA.html#toDot">toDot</a></p></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="toMermaid" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>to<wbr/>Mermaid</span><a href="#toMermaid" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="toMermaid.toMermaid-1">to<wbr/>Mermaid<span class="tsd-signature-symbol">(</span>charSetToString<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><a href="#toMermaid.toMermaid-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the string representation of this FA in the <a href="https://mermaid.js.org/">Mermaid format</a>.</p>
+<p>By default, <a href="CharSet.html#toUnicodeString">toUnicodeString</a> is used to represent <a href="CharSet.html">CharSet</a>s. It&#39;s possible to provide a
+custom stringify function using the <code>charSetToString</code> parameter.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> charSetToString: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span></h5>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures tsd-kind-type-literal">
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>charSet: <a href="CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></li></ul></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
+<p>Implementation of <a href="../interfaces/ReadonlyDFA.html">ReadonlyDFA</a>.<a href="../interfaces/ReadonlyDFA.html#toMermaid">toMermaid</a></p></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="toRegex" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>to<wbr/>Regex</span><a href="#toRegex" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -554,6 +582,7 @@ length of any of the <code>k</code> word sets).</p>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#structurallyEqual" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>structurally<wbr/>Equal</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#test" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>test</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#toDot" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Dot</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#toMermaid" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Mermaid</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#toRegex" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Regex</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#toString" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>String</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="DFA-1.html#transitionIterator" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transition<wbr/>Iterator</a></li>

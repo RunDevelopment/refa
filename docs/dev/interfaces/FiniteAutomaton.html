@@ -38,6 +38,7 @@
 <h3 class="tsd-index-heading">Methods</h3>
 <div class="tsd-index-list"><a href="FiniteAutomaton.html#test" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-2048-path"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)" id="icon-2048-text"></path></svg><span>test</span></a>
 <a href="FiniteAutomaton.html#toDot" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Dot</span></a>
+<a href="FiniteAutomaton.html#toMermaid" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Mermaid</span></a>
 <a href="FiniteAutomaton.html#toRegex" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Regex</span></a>
 <a href="FiniteAutomaton.html#toString" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>String</span></a>
 <a href="FiniteAutomaton.html#wordSets" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>word<wbr/>Sets</span></a>
@@ -88,7 +89,33 @@
 <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT format</a>.</p>
 <p>The output of this function can passed to any graph visualization program. This can be a
 <a href="https://graphviz.org/download/">local installation</a> or an <a href="https://edotor.net/">online editor</a>.</p>
-<p>By default, a hexadecimal range form will be used to represent <a href="../classes/CharSet.html">CharSet</a>s. It&#39;s possible to provide a
+<p>By default, <a href="../classes/CharSet.html#toUnicodeString">toUnicodeString</a> is used to represent <a href="../classes/CharSet.html">CharSet</a>s. It&#39;s possible to provide a
+custom stringify function using the <code>charSetToString</code> parameter.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> charSetToString: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span></h5>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures tsd-kind-type-literal">
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>charSet: <a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></li></ul></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="toMermaid" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>to<wbr/>Mermaid</span><a href="#toMermaid" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+<li class="tsd-signature tsd-anchor-link" id="toMermaid.toMermaid-1">to<wbr/>Mermaid<span class="tsd-signature-symbol">(</span>charSetToString<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>charSet<span class="tsd-signature-symbol">: </span><a href="../classes/CharSet.html" class="tsd-signature-type" data-tsd-kind="Class">CharSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><a href="#toMermaid.toMermaid-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the string representation of this FA in the <a href="https://mermaid.js.org/">Mermaid format</a>.</p>
+<p>By default, <a href="../classes/CharSet.html#toUnicodeString">toUnicodeString</a> is used to represent <a href="../classes/CharSet.html">CharSet</a>s. It&#39;s possible to provide a
 custom stringify function using the <code>charSetToString</code> parameter.</p>
 </div>
 <div class="tsd-parameters">
@@ -185,6 +212,7 @@ length of any of the <code>k</code> word sets).</p>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="FiniteAutomaton.html#maxCharacter" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>max<wbr/>Character</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#test" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>test</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#toDot" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Dot</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#toMermaid" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Mermaid</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#toRegex" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Regex</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#toString" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>String</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="FiniteAutomaton.html#wordSets" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>word<wbr/>Sets</a></li>
