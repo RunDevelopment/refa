@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.11.0 (2023-03-29)
+
+### Breaking changes
+
+- Upgraded to `@eslint-community/regexpp` v4.5.0 and drop `regexpp`.
+- Drop support for NodeJS 10.
+
+### Added
+
+- Many DFA, ENFA, and NFA operations now take optional node factory arguments to control the number of nodes created. All operations that create nodes no take factory arguments.
+- `{DFA,ENFA,NFA}.emptyWord` will create a new FA that makes exactly the empty word.
+- Added `withInitial`, `withGetOut`, and `withIsFinal` to more easily derive new FA iterators.
+- Added `assertions: "ignore"` to JS parser, `ENFA.fromRegex`, and `NFA.fromRegex`. This is mostly for convenience and performance. The same behavior could previously be achieved using transformers.
+- Added `CharSet#isProper{Subset,Superset}Of`.
+- `CharSet#equals` now supports `CharRange`s.
+
+### Fixed
+
+- Fixed `ENFA#isEmpty` for non-normalized graphs.
+
+### Changed
+
+- `{DFA,NFA}.fromCharSet` and `{ENFA,NFA}.all` now use constructions with fewer states.
+- `approximateRejectingWordSet` will now return `undefined` instead of throwing an error if the input character set is empty.
+- Changed behavior of `ENFA#countNodes` to be consistent with NFA and DFA.
+- Upgraded from Unicode 13.0.0 to Unicode 15.0.0.
+- Generally added and improved documentation.
+
+
 ## 0.10.0 (2021-10-18)
 
 ### Breaking changes
