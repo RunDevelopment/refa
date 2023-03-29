@@ -123,12 +123,63 @@ export class CharSet {
 			if (s !== "") {
 				s += ", ";
 			}
-			if (min == max) {
+			if (min === max) {
 				s += min.toString(16);
 			} else {
 				s += min.toString(16) + ".." + max.toString(16);
 			}
 		}
+		return s;
+	}
+	/**
+	 * Returns a string representation of the Unicode ranges of this character set.
+	 *
+	 * The primary purpose of this function is provide an easy way to get a readable representation of a Unicode or
+	 * Unicode-like character set. The format is optimized for ease of reading for humans.
+	 *
+	 * The format follows these rules:
+	 * - If the character set is empty, `empty` will be returned.
+	 * - If the character set contains all characters, `all` will be returned.
+	 * - Ranges may be negated, which is indicated with `not`. E.g. `not a b` is the character set that contains all
+	 *   characters except for a and b.
+	 * - A contiguous range of characters is represented using `min-max` where `min` and `max` are formatted characters.
+	 * - Single characters are formatted as either:
+	 *   - a Unicode character (e.g. `a`),
+	 *   - a quoted Unicode character (e.g. `'-'`), or
+	 *   - a Unicode escape (e.g. `U+FF`).
+	 *
+	 * The returned string representation will have the following format:
+	 *
+	 * ```
+	 * string  = "all" | "empty" | ranges | "not " ranges
+	 * ranges  = range *( " " range )
+	 * range   = char [ "-" char ]
+	 * char    = literal | quoted | escape
+	 * literal = ?Printable Unicode characters?
+	 * literal = "'" ?any character? "'"
+	 * escape  = "U+" +hex
+	 * hex     = "A" | "B" | "C" | "D" | "E" | "F" | digit
+	 * digit   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+	 * ```
+	 */
+	toUnicodeString(): string {
+		if (this.isEmpty) {
+			return "empty";
+		}
+		if (this.isAll) {
+			return "all";
+		}
+
+		const s = toUnicodeRangesString(this.ranges);
+
+		if (s.includes("U+")) {
+			const comp = toUnicodeRangesString(this.negate().ranges);
+			const compEscapes = countOccurrences(comp, "U+");
+			if (compEscapes === 0 || compEscapes <= countOccurrences(s, "U+") / 2) {
+				return "not " + comp;
+			}
+		}
+
 		return s;
 	}
 
@@ -931,4 +982,68 @@ function runEncodeCharacters(characters: Iterable<Char>): CharRange[] {
 	}
 
 	return ranges;
+}
+
+function unicodeEscape(char: Char): string {
+	return "U+" + char.toString(16).toUpperCase();
+}
+const PRINTABLE_RANGES: readonly CharRange[] = [
+	{ min: 0x30, max: 0x39 }, // 0-9
+	{ min: 0x41, max: 0x5a }, // A-Z
+	{ min: 0x61, max: 0x7a }, // a-z
+];
+function isPrintableRange(min: Char, max: Char): boolean {
+	for (const range of PRINTABLE_RANGES) {
+		if (range.min <= min && max <= range.max) {
+			return true;
+		}
+	}
+	return false;
+}
+
+const PRINTABLE = /^[\p{L}\p{Number}]$/u;
+const PRINTABLE_QUOTED = /^[\p{P}\p{Math}]$/u;
+function printUnicodeChar(char: Char): string {
+	const c = String.fromCodePoint(char);
+	if (PRINTABLE.test(c)) {
+		return c;
+	} else if (PRINTABLE_QUOTED.test(c)) {
+		return "'" + c + "'";
+	} else {
+		return unicodeEscape(char);
+	}
+}
+
+function toUnicodeRangesString(ranges: readonly CharRange[]): string {
+	let s = "";
+	for (const { min, max } of ranges) {
+		if (s !== "") {
+			s += " ";
+		}
+		if (min === max) {
+			s += printUnicodeChar(min);
+		} else if (min + 1 === max) {
+			s += printUnicodeChar(min) + " " + printUnicodeChar(max);
+		} else {
+			if (isPrintableRange(min, max)) {
+				s += String.fromCodePoint(min) + "-" + String.fromCodePoint(max);
+			} else {
+				s += unicodeEscape(min) + "-" + unicodeEscape(max);
+			}
+		}
+	}
+	return s;
+}
+
+function countOccurrences(s: string, needle: string): number {
+	let count = 0;
+	for (let i = 0; ; ) {
+		const j = s.indexOf(needle, i);
+		if (j === -1) {
+			break;
+		}
+		count++;
+		i = j + needle.length;
+	}
+	return count;
 }

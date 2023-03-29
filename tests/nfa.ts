@@ -163,7 +163,7 @@ describe("NFA", function () {
 				min: 1,
 				max: 1,
 				expected: `
-					(0) -> [1] : 61
+					(0) -> [1] : a
 
 					[1] -> none`,
 			},
@@ -172,9 +172,9 @@ describe("NFA", function () {
 				min: 1,
 				max: 1,
 				expected: `
-					[0] -> [1] : 61
+					[0] -> [1] : a
 
-					[1] -> [1] : 61`,
+					[1] -> [1] : a`,
 			},
 
 			{
@@ -182,7 +182,7 @@ describe("NFA", function () {
 				min: 0,
 				max: 1,
 				expected: `
-					[0] -> [1] : 61
+					[0] -> [1] : a
 
 					[1] -> none`,
 			},
@@ -191,22 +191,22 @@ describe("NFA", function () {
 				min: 0,
 				max: 1,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 1,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 
 			{
@@ -214,11 +214,11 @@ describe("NFA", function () {
 				min: 3,
 				max: 3,
 				expected: `
-					(0) -> (1) : 61
+					(0) -> (1) : a
 
-					(1) -> (2) : 61
+					(1) -> (2) : a
 
-					(2) -> [3] : 61
+					(2) -> [3] : a
 
 					[3] -> none`,
 			},
@@ -227,30 +227,30 @@ describe("NFA", function () {
 				min: 3,
 				max: 3,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: 3,
 				expected: `
-					(0) -> (1) : 61
+					(0) -> (1) : a
 
-					(1) -> (2) : 62
+					(1) -> (2) : b
 
-					(2) -> (3) : 61
+					(2) -> (3) : a
 
-					(3) -> (4) : 62
+					(3) -> (4) : b
 
-					(4) -> (5) : 61
+					(4) -> (5) : a
 
-					(5) -> [6] : 62
+					(5) -> [6] : b
 
-					[6] -> (5) : 61`,
+					[6] -> (5) : a`,
 			},
 
 			{
@@ -258,11 +258,11 @@ describe("NFA", function () {
 				min: 0,
 				max: 3,
 				expected: `
-					[0] -> [1] : 61
+					[0] -> [1] : a
 
-					[1] -> [2] : 61
+					[1] -> [2] : a
 
-					[2] -> [3] : 61
+					[2] -> [3] : a
 
 					[3] -> none`,
 			},
@@ -271,22 +271,22 @@ describe("NFA", function () {
 				min: 0,
 				max: 3,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: 3,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 
 			{
@@ -294,31 +294,31 @@ describe("NFA", function () {
 				min: 0,
 				max: Infinity,
 				expected: `
-					[0] -> [1] : 61
+					[0] -> [1] : a
 
-					[1] -> [1] : 61`,
+					[1] -> [1] : a`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 0,
 				max: Infinity,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 0,
 				max: Infinity,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 
 			{
@@ -326,43 +326,43 @@ describe("NFA", function () {
 				min: 3,
 				max: Infinity,
 				expected: `
-					(0) -> (1) : 61
+					(0) -> (1) : a
 
-					(1) -> (2) : 61
+					(1) -> (2) : a
 
-					(2) -> [3] : 61
+					(2) -> [3] : a
 
-					[3] -> [3] : 61`,
+					[3] -> [3] : a`,
 			},
 			{
 				literal: /(ab)*/,
 				min: 3,
 				max: Infinity,
 				expected: `
-					[0] -> (1) : 61
+					[0] -> (1) : a
 
-					(1) -> [2] : 62
+					(1) -> [2] : b
 
-					[2] -> (1) : 61`,
+					[2] -> (1) : a`,
 			},
 			{
 				literal: /(ab)+/,
 				min: 3,
 				max: Infinity,
 				expected: `
-					(0) -> (1) : 61
+					(0) -> (1) : a
 
-					(1) -> (2) : 62
+					(1) -> (2) : b
 
-					(2) -> (3) : 61
+					(2) -> (3) : a
 
-					(3) -> (4) : 62
+					(3) -> (4) : b
 
-					(4) -> (5) : 61
+					(4) -> (5) : a
 
-					(5) -> [6] : 62
+					(5) -> [6] : b
 
-					[6] -> (5) : 61`,
+					[6] -> (5) : a`,
 			},
 		]);
 
@@ -394,71 +394,37 @@ describe("NFA", function () {
 			{
 				left: /a/,
 				right: /b/,
-				expected: `
-					(0) -> none`,
 			},
 			{
 				left: /a*/,
 				right: /a/,
-				expected: `
-					(0) -> [1] : 61
-
-					[1] -> none`,
 			},
 			{
 				left: /b*(ab+)*a/,
 				right: /a*(ba+)*/,
-				// expected == /b?(ab)*a/
-				expected: `
-					(0) -> (1) : 61
-					    -> [2] : 61
-					    -> (3) : 62
-
-					(1) -> (4) : 62
-
-					[2] -> none
-
-					(3) -> [2] : 61
-					    -> (5) : 61
-
-					(4) -> [2] : 61
-					    -> (5) : 61
-
-					(5) -> (4) : 62`,
 			},
 			{
 				left: /a+/,
 				right: /(?:a+){2,}/,
-				// expected == /a{2,})/
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> [2] : 61
-
-					[2] -> [2] : 61`,
 			},
 			{
 				left: /a*/,
 				right: /b*/,
-				// expected == /(?:)/
-				expected: `
-					[0] -> none`,
 			},
 		]);
 
 		interface TestCase {
 			left: Literal;
 			right: Literal;
-			expected: string;
 		}
 
 		function test(cases: TestCase[]): void {
-			for (const { left, right, expected } of cases) {
+			for (const { left, right } of cases) {
 				it(`${literalToString(left)} ∩ ${literalToString(right)}`, function () {
 					const nfaLeft = literalToNFA(left);
 					const nfaRight = literalToNFA(right);
 					const actual = NFA.fromIntersection(nfaLeft, nfaRight).toString();
-					assert.strictEqual(actual, removeIndentation(expected), "Actual:\n" + actual + "\n");
+					assertEqualSnapshot(this, actual);
 				});
 			}
 		}

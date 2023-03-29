@@ -216,7 +216,7 @@ export class NFA implements ReadonlyNFA {
 	}
 
 	toString(): string {
-		return Iter.toString(this.transitionIterator(), cs => cs.toRangesString());
+		return Iter.toString(this.transitionIterator(), cs => cs.toUnicodeString());
 	}
 
 	toRegex(options?: Readonly<ToRegexOptions>): NoParent<Expression> {
@@ -226,7 +226,7 @@ export class NFA implements ReadonlyNFA {
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
 		return Iter.toDot(
 			this.transitionIterator(),
-			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toRangesString()), false)
+			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toUnicodeString()), false)
 		);
 	}
 

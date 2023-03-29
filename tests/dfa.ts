@@ -1,6 +1,6 @@
 import { DFA } from "../src/dfa";
 import { assert } from "chai";
-import { literalToDFA, literalToNFA, literalToString, removeIndentation } from "./helper/fa";
+import { literalToDFA, literalToNFA, literalToString } from "./helper/fa";
 import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal } from "../src/js";
 import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
@@ -36,118 +36,23 @@ describe("DFA", function () {
 
 	describe("Minimize", function () {
 		test([
-			{
-				literal: /[^\s\S]/,
-				expected: `
-					(0) -> none`,
-			},
-			{
-				literal: /[^\s\S]*/,
-				expected: `
-					[0] -> none`,
-			},
-			{
-				literal: /a*b*c*/,
-				expected: `
-					[0] -> [0] : 61
-					    -> [1] : 62
-					    -> [2] : 63
-
-					[1] -> [1] : 62
-					    -> [2] : 63
-
-					[2] -> [2] : 63`,
-			},
-			{
-				literal: /a+b+c+/,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> (1) : 61
-					    -> (2) : 62
-
-					(2) -> (2) : 62
-					    -> [3] : 63
-
-					[3] -> [3] : 63`,
-			},
-			{
-				literal: /a+b+c+|a*/,
-				expected: `
-					[0] -> [1] : 61
-
-					[1] -> [1] : 61
-					    -> (2) : 62
-
-					(2) -> (2) : 62
-					    -> [3] : 63
-
-					[3] -> [3] : 63`,
-			},
-			{
-				literal: /a*(a+b+c+)?/,
-				expected: `
-					[0] -> [1] : 61
-
-					[1] -> [1] : 61
-					    -> (2) : 62
-
-					(2) -> (2) : 62
-					    -> [3] : 63
-
-					[3] -> [3] : 63`,
-			},
-			{
-				literal: /a+|a*aa*/,
-				expected: `
-					(0) -> [1] : 61
-
-					[1] -> [1] : 61`,
-			},
-			{
-				literal: /(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/,
-				expected: `
-					(0) -> (1) : 2e
-					    -> [2] : 30..39
-
-					(1) -> [3] : 30..39
-
-					[2] -> [2] : 30..39
-					    -> [3] : 2e
-					    -> (4) : 45
-
-					[3] -> [3] : 30..39
-					    -> (4) : 45
-
-					(4) -> (5) : 2b, 2d
-					    -> [6] : 30..39
-
-					(5) -> [6] : 30..39
-
-					[6] -> [6] : 30..39`,
-			},
-			{
-				literal: /ab+/,
-				expected: `
-					(0) -> (1) : 61
-
-					(1) -> [2] : 62
-
-					[2] -> [2] : 62`,
-			},
+			/[^\s\S]/,
+			/[^\s\S]*/,
+			/a*b*c*/,
+			/a+b+c+/,
+			/a+b+c+|a*/,
+			/a*(a+b+c+)?/,
+			/a+|a*aa*/,
+			/(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/,
+			/ab+/,
 		]);
 
-		interface TestCase {
-			literal: Literal;
-			expected: string;
-		}
-
-		function test(cases: TestCase[]): void {
-			for (const { literal, expected } of cases) {
+		function test(cases: Literal[]): void {
+			for (const literal of cases) {
 				it(literalToString(literal), function () {
 					const dfa = literalToDFA(literal);
 					dfa.minimize();
-					assert.strictEqual(dfa.toString(), removeIndentation(expected));
+					assertEqualSnapshot(this, dfa.toString());
 				});
 			}
 		}
@@ -193,77 +98,14 @@ describe("DFA", function () {
 	});
 
 	describe("Complement", function () {
-		test([
-			{
-				literal: /[^\s\S]/,
-				expected: `
-					[0] -> [1] : 0..ffff
+		test([/[^\s\S]/, /(?:)/, /[\s\S]*/, /[\s\S]+/, /a+/, /a*b*c*/]);
 
-					[1] -> [1] : 0..ffff`,
-			},
-			{
-				literal: /(?:)/,
-				expected: `
-					(0) -> [1] : 0..ffff
-
-					[1] -> [1] : 0..ffff`,
-			},
-			{
-				literal: /[\s\S]*/,
-				expected: `
-					(0) -> none`,
-			},
-			{
-				literal: /[\s\S]+/,
-				expected: `
-					[0] -> none`,
-			},
-			{
-				literal: /a+/,
-				expected: `
-					[0] -> [1] : 0..60, 62..ffff
-					    -> (2) : 61
-
-					[1] -> [1] : 0..ffff
-
-					(2) -> [1] : 0..60, 62..ffff
-					    -> (2) : 61`,
-			},
-			{
-				literal: /a*b*c*/,
-				expected: `
-					(0) -> [1] : 0..60, 64..ffff
-					    -> (2) : 61
-					    -> (3) : 62
-					    -> (4) : 63
-
-					[1] -> [1] : 0..ffff
-
-					(2) -> [1] : 0..60, 64..ffff
-					    -> (2) : 61
-					    -> (3) : 62
-					    -> (4) : 63
-
-					(3) -> [1] : 0..61, 64..ffff
-					    -> (3) : 62
-					    -> (4) : 63
-
-					(4) -> [1] : 0..62, 64..ffff
-					    -> (4) : 63`,
-			},
-		]);
-
-		interface TestCase {
-			literal: Literal;
-			expected: string;
-		}
-
-		function test(cases: TestCase[]): void {
-			for (const { literal, expected } of cases) {
+		function test(cases: Literal[]): void {
+			for (const literal of cases) {
 				it(literalToString(literal), function () {
 					const dfa = literalToDFA(literal);
 					dfa.complement();
-					assert.strictEqual(dfa.toString(), removeIndentation(expected));
+					assertEqualSnapshot(this, dfa.toString());
 				});
 			}
 		}
