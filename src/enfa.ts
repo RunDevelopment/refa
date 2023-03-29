@@ -265,7 +265,7 @@ export class ENFA implements ReadonlyENFA {
 				if (cs === null) {
 					return "ε";
 				} else {
-					return cs.toRangesString();
+					return cs.toUnicodeString();
 				}
 			},
 			true
@@ -292,7 +292,7 @@ export class ENFA implements ReadonlyENFA {
 
 		const toString: (charSet: null | CharSet) => string = charSetToString
 			? cs => (cs === null ? "" : charSetToString!(cs))
-			: cs => (cs === null ? "" : cs.toRangesString());
+			: cs => (cs === null ? "" : cs.toUnicodeString());
 
 		return Iter.toDot(iter, Iter.createSimpleToDotOptions(toString, true));
 	}
