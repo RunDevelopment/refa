@@ -1,4 +1,4 @@
-import { AST } from "regexpp";
+import { AST } from "@eslint-community/regexpp";
 import { MatchingDirection } from "../ast-analysis";
 
 /**

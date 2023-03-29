@@ -17,7 +17,7 @@ import {
 	setParent,
 	setSource,
 } from "../ast";
-import { AST, RegExpParser, visitRegExpAST } from "regexpp";
+import { AST, RegExpParser, visitRegExpAST } from "@eslint-community/regexpp";
 import {
 	UnionIterable,
 	assertNever,

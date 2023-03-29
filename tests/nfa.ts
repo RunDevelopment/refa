@@ -4,7 +4,7 @@ import { fromStringToUnicode, fromUnicodeToString } from "../src/words";
 import { literalToDFA, literalToNFA, literalToString, reachableFinalStates, removeIndentation } from "./helper/fa";
 import { EMPTY_LITERALS, FINITE_LITERALS, NON_EMPTY_LITERALS, NON_FINITE_LITERALS } from "./helper/regexp-literals";
 import { Literal, Parser, toLiteral } from "../src/js";
-import { RegExpParser } from "regexpp";
+import { RegExpParser } from "@eslint-community/regexpp";
 import { prefixes, suffixes } from "./helper/util";
 import { DFA } from "../src/dfa";
 import { testWordTestCases, wordTestData } from "./helper/word-test-data";
