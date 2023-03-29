@@ -11,6 +11,8 @@ export * from "./make-deterministic";
 export * from "./map-fa-builder";
 export * from "./remove-dead-states";
 export * from "./to-dot";
+export * from "./to-mermaid";
+export { NodeInfo, SimplePrintOptions } from "./print-util";
 export * from "./to-regex";
 export * from "./to-string";
 export * from "./word-sets";

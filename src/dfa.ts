@@ -196,10 +196,14 @@ export class DFA implements ReadonlyDFA {
 	}
 
 	toDot(charSetToString?: (charSet: CharSet) => string): string {
-		return Iter.toDot(
-			this.transitionIterator(),
-			Iter.createSimpleToDotOptions(charSetToString || (cs => cs.toUnicodeString()), false)
-		);
+		return Iter.toDot(this.transitionIterator(), {
+			transitionToString: charSetToString || (cs => cs.toUnicodeString()),
+		});
+	}
+	toMermaid(charSetToString?: (charSet: CharSet) => string): string {
+		return Iter.toMermaid(this.transitionIterator(), {
+			transitionToString: charSetToString || (cs => cs.toUnicodeString()),
+		});
 	}
 
 	copy(factory: NodeFactory<DFA.Node> = new DFA.LimitedNodeFactory()): DFA {
