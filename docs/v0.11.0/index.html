@@ -1,0 +1,266 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>refa - v0.11.0</title><meta name="description" content="Documentation for refa - v0.11.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base=".">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">refa - v0.11.0</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="container container-main">
+<div class="col-8 col-content">
+<div class="tsd-page-title">
+<h2>refa - v0.11.0</h2></div>
+<div class="tsd-panel tsd-typography">
+<a href="#regular-expressions-and-finite-automata-refa" id="regular-expressions-and-finite-automata-refa" style="color: inherit; text-decoration: none;">
+  <h1>Regular Expressions and Finite Automata (refa)</h1>
+</a>
+<p><a href="https://github.com/RunDevelopment/refa/actions"><img src="https://github.com/RunDevelopment/refa/workflows/Node.js%20CI/badge.svg" alt="Actions Status"></a>
+<a href="https://www.npmjs.com/package/refa"><img src="https://img.shields.io/npm/v/refa" alt="npm"></a></p>
+<p>A library for regular expressions (RE) and finite automata (FA) in the context of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp">Javascript RegExp</a>.</p>
+
+<a href="#about" id="about" style="color: inherit; text-decoration: none;">
+  <h2>About</h2>
+</a>
+<p>refa is a general library for <a href="https://en.wikipedia.org/wiki/Deterministic_finite_automaton">DFA</a>, <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA</a>, and REs of <a href="https://en.wikipedia.org/wiki/Induction_of_regular_languages">formal regular languages</a>. It also includes methods to easily convert from JS RegExp to the internal RE AST and vice versa.</p>
+
+<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+  <h2>Installation</h2>
+</a>
+<p>Get <a href="https://www.npmjs.com/package/refa">refa from NPM</a>:</p>
+<pre><code><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-0">i</span><span class="hl-1"> --</span><span class="hl-0">save</span><span class="hl-1"> </span><span class="hl-0">refa</span>
+</code></pre>
+<p>or</p>
+<pre><code><span class="hl-0">yarn</span><span class="hl-1"> </span><span class="hl-0">add</span><span class="hl-1"> </span><span class="hl-0">refa</span>
+</code></pre>
+
+<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+  <h2>Features</h2>
+</a>
+<ul>
+<li><p>Conversions</p>
+<ul>
+<li>RE AST to NFA and ENFA (<em>assertions are not implemented yet</em>)</li>
+<li>DFA, NFA, and ENFA can all be converted into each other</li>
+<li>DFA, NFA, and ENFA to RE AST</li>
+</ul>
+</li>
+<li><p>DFA, NFA, and ENFA operations</p>
+<ul>
+<li>Construction from other FA, the intersection of two FA, or a finite set of words</li>
+<li>Print as <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT</a> or <a href="https://mermaid.js.org/">Mermaid</a>.</li>
+<li>Test whether a word is accepted</li>
+<li>Test whether the accepted language is the empty set/a finite set</li>
+<li>Accept all prefixes/suffixes of a language</li>
+</ul>
+</li>
+<li><p>DFA specific operations</p>
+<ul>
+<li>Minimization</li>
+<li>Complement</li>
+<li>Structural equality</li>
+</ul>
+</li>
+<li><p>NFA and ENFA specific operations</p>
+<ul>
+<li>Union and Concatenation with other FA</li>
+<li>Quantification</li>
+<li>Reverse</li>
+</ul>
+</li>
+<li><p>JavaScript RegExp</p>
+<ul>
+<li>RegExp to RE AST and RE AST to RegExp<ul>
+<li>All flags are fully supported</li>
+<li>Unicode properties</li>
+<li>Change flags</li>
+<li>Limited support for simple backreferences</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>See the <a href="https://rundevelopment.github.io/refa/docs/latest/">API documentation</a> for a complete list of all currently implemented operations.</p>
+
+<a href="#re-ast-format" id="re-ast-format" style="color: inherit; text-decoration: none;">
+  <h3>RE AST format</h3>
+</a>
+<p>refa uses its own AST format to represent regular expressions. The RE AST format is language agnostic and relatively simple.</p>
+<p>It supports:</p>
+<ul>
+<li>Concatenation (e.g. <code>ab</code>)</li>
+<li>Alternation (e.g. <code>a|b</code>)</li>
+<li>Quantifiers (greedy and lazy) (e.g. <code>a{4,6}</code>, <code>a{2,}?</code>, <code>a?</code>, <code>a*</code>)</li>
+<li>Assertions (e.g. <code>(?=a)</code>, <code>(?&lt;!a)</code>)</li>
+<li>Characters/character sets (represented by interval sets)</li>
+<li>Unknowns (elements that cannot be represented otherwise. E.g. backreferences)</li>
+</ul>
+<p>Some features like atomic groups and capturing groups are not supported (but might be added in the future).</p>
+<p>For information on how to parse JS RegExp and convert RE AST to JS RegExp, see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules/JS.html"><code>JS</code> namespace</a>.</p>
+
+<a href="#universal-characters" id="universal-characters" style="color: inherit; text-decoration: none;">
+  <h3>Universal characters</h3>
+</a>
+<p>refa does not use JavaScript strings represent characters or a sequences of characters. Instead it uses integers to represent characters (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#Char"><code>Char</code> type</a>) and arrays of numbers to represent words/strings (see the <a href="https://rundevelopment.github.io/refa/docs/latest/modules.html#Word"><code>Word</code> type</a>).</p>
+<p>This means that any text encoding can be used.</p>
+<p>The <a href="https://rundevelopment.github.io/refa/docs/latest/modules/Words.html"><code>Words</code> namespace</a> contains functions to convert JavaScript data into refa-compatible words and characters.</p>
+<p>For the sets of characters, the <a href="https://rundevelopment.github.io/refa/docs/latest/classes/CharSet.html"><code>CharSet</code> class</a> is used.</p>
+
+<a href="#general-limitations" id="general-limitations" style="color: inherit; text-decoration: none;">
+  <h3>General limitations</h3>
+</a>
+<p>This library will never be able to support some modern features of regex engines such as <a href="https://www.rexegg.com/regex-capture.html">backreferences</a> and <a href="https://www.rexegg.com/regex-recursion.html">recursion</a> because these features, generally, cannot be be represented by a DFA or NFA.</p>
+
+<a href="#usage-examples" id="usage-examples" style="color: inherit; text-decoration: none;">
+  <h2>Usage examples</h2>
+</a>
+<p>refa is a relatively low-level library. It only provides the basic building blocks. In the following examples, JS RegExps are used a lot so we will define a few useful helper function beforehand.</p>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">DFA</span><span class="hl-1">, </span><span class="hl-0">FiniteAutomaton</span><span class="hl-1">, </span><span class="hl-0">JS</span><span class="hl-1">, </span><span class="hl-0">NFA</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&quot;refa&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">function</span><span class="hl-1"> </span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">: </span><span class="hl-6">RegExp</span><span class="hl-1">): </span><span class="hl-6">NFA</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1">, </span><span class="hl-7">maxCharacter</span><span class="hl-1"> } = </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">();</span><br/><span class="hl-1">    </span><span class="hl-2">return</span><span class="hl-1"> </span><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromRegex</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">, { </span><span class="hl-0">maxCharacter</span><span class="hl-1"> });</span><br/><span class="hl-1">}</span><br/><span class="hl-4">function</span><span class="hl-1"> </span><span class="hl-5">toDFA</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">: </span><span class="hl-6">RegExp</span><span class="hl-1">): </span><span class="hl-6">DFA</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-2">return</span><span class="hl-1"> </span><span class="hl-7">DFA</span><span class="hl-1">.</span><span class="hl-5">fromFA</span><span class="hl-1">(</span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">));</span><br/><span class="hl-1">}</span><br/><span class="hl-4">function</span><span class="hl-1"> </span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-0">fa</span><span class="hl-1">: </span><span class="hl-6">FiniteAutomaton</span><span class="hl-1">): </span><span class="hl-6">RegExp</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">literal</span><span class="hl-1"> = </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">fa</span><span class="hl-1">.</span><span class="hl-5">toRegex</span><span class="hl-1">());</span><br/><span class="hl-1">    </span><span class="hl-2">return</span><span class="hl-1"> </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-5">RegExp</span><span class="hl-1">(</span><span class="hl-0">literal</span><span class="hl-1">.</span><span class="hl-0">source</span><span class="hl-1">, </span><span class="hl-0">literal</span><span class="hl-1">.</span><span class="hl-0">flags</span><span class="hl-1">);</span><br/><span class="hl-1">}</span>
+</code></pre>
+<ul>
+<li><code>toNFA</code> parses the given RegExp and constructs a new NFA from the parsed AST.</li>
+<li><code>toDFA</code> constructs a new NFA from the RegExp first and then converts that NFA into a new DFA.</li>
+<li><code>toRegex</code> takes an FA (= NFA or DFA) and converts it into a RegExp.</li>
+</ul>
+
+<a href="#testing-whether-a-word-is-accepted" id="testing-whether-a-word-is-accepted" style="color: inherit; text-decoration: none;">
+  <h3>Testing whether a word is accepted</h3>
+</a>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">Words</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&quot;refa&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /\w</span><span class="hl-9">+</span><span class="hl-8">\d</span><span class="hl-9">+</span><span class="hl-8">/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">nfa</span><span class="hl-1"> = </span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">);</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">.</span><span class="hl-5">test</span><span class="hl-1">(</span><span class="hl-0">Words</span><span class="hl-1">.</span><span class="hl-5">fromStringToUTF16</span><span class="hl-1">(</span><span class="hl-3">&quot;abc&quot;</span><span class="hl-1">)));</span><br/><span class="hl-10">// =&gt; false</span><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">.</span><span class="hl-5">test</span><span class="hl-1">(</span><span class="hl-0">Words</span><span class="hl-1">.</span><span class="hl-5">fromStringToUTF16</span><span class="hl-1">(</span><span class="hl-3">&quot;123&quot;</span><span class="hl-1">)));</span><br/><span class="hl-10">// =&gt; true</span><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">.</span><span class="hl-5">test</span><span class="hl-1">(</span><span class="hl-0">Words</span><span class="hl-1">.</span><span class="hl-5">fromStringToUTF16</span><span class="hl-1">(</span><span class="hl-3">&quot;abc123&quot;</span><span class="hl-1">)));</span><br/><span class="hl-10">// =&gt; true</span><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">.</span><span class="hl-5">test</span><span class="hl-1">(</span><span class="hl-0">Words</span><span class="hl-1">.</span><span class="hl-5">fromStringToUTF16</span><span class="hl-1">(</span><span class="hl-3">&quot;123abc&quot;</span><span class="hl-1">)));</span><br/><span class="hl-10">// =&gt; false</span>
+</code></pre>
+
+<a href="#finding-the-intersection-of-two-js-regexps" id="finding-the-intersection-of-two-js-regexps" style="color: inherit; text-decoration: none;">
+  <h3>Finding the intersection of two JS RegExps</h3>
+</a>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex1</span><span class="hl-1"> =</span><span class="hl-8"> /a</span><span class="hl-9">+</span><span class="hl-8">B</span><span class="hl-9">+</span><span class="hl-8">c</span><span class="hl-9">+</span><span class="hl-8">/</span><span class="hl-4">i</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex2</span><span class="hl-1"> =</span><span class="hl-8"> /Ab</span><span class="hl-9">*</span><span class="hl-8">C\d</span><span class="hl-9">?</span><span class="hl-8">/</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">intersection</span><span class="hl-1"> = </span><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromIntersection</span><span class="hl-1">(</span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-0">regex1</span><span class="hl-1">), </span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-0">regex2</span><span class="hl-1">));</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-0">intersection</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; /Ab+C/</span>
+</code></pre>
+
+<a href="#finding-the-complement-of-a-js-regexp" id="finding-the-complement-of-a-js-regexp" style="color: inherit; text-decoration: none;">
+  <h3>Finding the complement of a JS RegExp</h3>
+</a>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /a</span><span class="hl-9">+</span><span class="hl-8">b</span><span class="hl-9">*</span><span class="hl-8">/</span><span class="hl-4">i</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">dfa</span><span class="hl-1"> = </span><span class="hl-5">toDFA</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">);</span><br/><span class="hl-0">dfa</span><span class="hl-1">.</span><span class="hl-5">complement</span><span class="hl-1">();</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-0">dfa</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; /(?:(?:[^A]|A+(?:[^AB]|B+[^B]))[^]*)?/i</span>
+</code></pre>
+
+<a href="#converting-a-js-regexp-to-an-nfa" id="converting-a-js-regexp-to-an-nfa" style="color: inherit; text-decoration: none;">
+  <h3>Converting a JS RegExp to an NFA</h3>
+</a>
+<p>In the above examples, we have been using the <code>toNFA</code> helper function to parse and convert RegExps. This function assumes that the given RegExp is a pure regular expression without assertions and backreferences and will throw an error if the assumption is not met.</p>
+<p>However, the JS parser and <code>NFA.fromRegex</code> provide some options to work around and even solve this problem.</p>
+
+<a href="#backreferences" id="backreferences" style="color: inherit; text-decoration: none;">
+  <h4>Backreferences</h4>
+</a>
+<p>Firstly, the parser will automatically resolve simple backreferences. Even <code>toNFA</code> will do this since it&#39;s on by default:</p>
+<pre><code class="language-ts"><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-8">/</span><span class="hl-11">(</span><span class="hl-8">&quot;</span><span class="hl-12">|</span><span class="hl-8">&#39;</span><span class="hl-11">)</span><span class="hl-8">.</span><span class="hl-9">*?</span><span class="hl-4">\1</span><span class="hl-8">/</span><span class="hl-1">)));</span><br/><span class="hl-10">// =&gt; /&quot;.*&quot;|&#39;.*&#39;/i</span>
+</code></pre>
+<p>But it will throw an error for non-trivial backreferences that cannot be resolved:</p>
+<pre><code class="language-ts"><span class="hl-5">toNFA</span><span class="hl-1">(</span><span class="hl-8">/</span><span class="hl-11">(</span><span class="hl-8">#</span><span class="hl-9">+</span><span class="hl-11">)</span><span class="hl-8">.</span><span class="hl-9">*</span><span class="hl-4">\1</span><span class="hl-12">|</span><span class="hl-8">foo/</span><span class="hl-1">);</span><br/><span class="hl-10">// Error: Backreferences are not supported.</span>
+</code></pre>
+<p>The only way to parse the RegExp despite unresolvable backreferences is to remove the backreferences. This means that the result will be imperfect but it might still be useful.</p>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /</span><span class="hl-11">(</span><span class="hl-8">#</span><span class="hl-9">+</span><span class="hl-11">)</span><span class="hl-8">.</span><span class="hl-9">*</span><span class="hl-4">\1</span><span class="hl-12">|</span><span class="hl-8">foo/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1"> } =</span><br/><span class="hl-1">    </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">({ </span><span class="hl-0">backreferences:</span><span class="hl-1"> </span><span class="hl-3">&quot;disable&quot;</span><span class="hl-1"> });</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;foo&#39;, flags: &#39;&#39; }</span>
+</code></pre>
+<p>Note that the <code>foo</code> alternative is kept because it is completely unaffected by the unresolvable backreferences.</p>
+
+<a href="#assertions" id="assertions" style="color: inherit; text-decoration: none;">
+  <h4>Assertions</h4>
+</a>
+<p>While the parser and AST format can handle assertions, the NFA construction cannot.</p>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /</span><span class="hl-12">\b</span><span class="hl-11">(?!</span><span class="hl-8">\d</span><span class="hl-11">)</span><span class="hl-8">\w</span><span class="hl-9">+</span><span class="hl-12">\b|</span><span class="hl-8">-&gt;/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1">, </span><span class="hl-7">maxCharacter</span><span class="hl-1"> } = </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">();</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;\\b(?!\\d)\\w+\\b|-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromRegex</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">, { </span><span class="hl-0">maxCharacter</span><span class="hl-1"> });</span><br/><span class="hl-10">// Error: Assertions are not supported yet.</span>
+</code></pre>
+<p>Similarly to backreferences, we can let the parser remove them:</p>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /</span><span class="hl-12">\b</span><span class="hl-11">(?!</span><span class="hl-8">\d</span><span class="hl-11">)</span><span class="hl-8">\w</span><span class="hl-9">+</span><span class="hl-12">\b|</span><span class="hl-8">-&gt;/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1">, </span><span class="hl-7">maxCharacter</span><span class="hl-1"> } =</span><br/><span class="hl-1">    </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">({ </span><span class="hl-0">assertions:</span><span class="hl-1"> </span><span class="hl-3">&quot;disable&quot;</span><span class="hl-1"> });</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">nfa</span><span class="hl-1"> = </span><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromRegex</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">, { </span><span class="hl-0">maxCharacter</span><span class="hl-1"> });</span><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; /-&gt;/i</span>
+</code></pre>
+<details>
+
+<p>Or we can let the NFA construction method remove them:</p>
+<pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /</span><span class="hl-12">\b</span><span class="hl-11">(?!</span><span class="hl-8">\d</span><span class="hl-11">)</span><span class="hl-8">\w</span><span class="hl-9">+</span><span class="hl-12">\b|</span><span class="hl-8">-&gt;/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1">, </span><span class="hl-7">maxCharacter</span><span class="hl-1"> } = </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">();</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;\\b(?!\\d)\\w+\\b|-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">nfa</span><span class="hl-1"> = </span><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromRegex</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">, { </span><span class="hl-0">maxCharacter</span><span class="hl-1"> }, { </span><span class="hl-0">assertions:</span><span class="hl-1"> </span><span class="hl-3">&quot;disable&quot;</span><span class="hl-1"> });</span><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-5">toRegExp</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; /-&gt;/i</span>
+</code></pre>
+<p>Prefer using the parser to remove assertions if possible. The parser is quite clever and will optimize based on that assertions can be removed resulting in faster parse times.</p>
+</details>
+
+<p>However, simply removing assertions is not ideal since they are a lot more common than backreferences. To work around this, refa has AST transformers. AST transformers can make changes to a given AST. While each transformer is rather simple, they can also work together to accomplish more complex tasks. Applying and removing assertions is one such task.</p>
+<p>The details about the transformers used in this example can be found in their documentation.</p>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-1"> { </span><span class="hl-0">combineTransformers</span><span class="hl-1">, </span><span class="hl-0">JS</span><span class="hl-1">, </span><span class="hl-0">NFA</span><span class="hl-1">, </span><span class="hl-0">transform</span><span class="hl-1">, </span><span class="hl-0">Transformers</span><span class="hl-1"> } </span><span class="hl-2">from</span><span class="hl-1"> </span><span class="hl-3">&quot;refa&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">regex</span><span class="hl-1"> =</span><span class="hl-8"> /</span><span class="hl-12">\b</span><span class="hl-11">(?!</span><span class="hl-8">\d</span><span class="hl-11">)</span><span class="hl-8">\w</span><span class="hl-9">+</span><span class="hl-12">\b|</span><span class="hl-8">-&gt;/</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">expression</span><span class="hl-1">, </span><span class="hl-7">maxCharacter</span><span class="hl-1"> } = </span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-0">Parser</span><span class="hl-1">.</span><span class="hl-5">fromLiteral</span><span class="hl-1">(</span><span class="hl-0">regex</span><span class="hl-1">).</span><span class="hl-5">parse</span><span class="hl-1">();</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">expression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;\\b(?!\\d)\\w+\\b|-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">applyTransformer</span><span class="hl-1"> = </span><span class="hl-5">combineTransformers</span><span class="hl-1">([</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">inline</span><span class="hl-1">(),</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">removeDeadBranches</span><span class="hl-1">(),</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">removeUnnecessaryAssertions</span><span class="hl-1">(),</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">sortAssertions</span><span class="hl-1">(),</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">applyAssertions</span><span class="hl-1">(),</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">removeUnnecessaryAssertions</span><span class="hl-1">(),</span><br/><span class="hl-1">]);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">modifiedExpression</span><span class="hl-1"> = </span><span class="hl-5">transform</span><span class="hl-1">(</span><span class="hl-0">applyTransformer</span><span class="hl-1">, </span><span class="hl-0">expression</span><span class="hl-1">);</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">modifiedExpression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;(?&lt;!\\w)[A-Z_]\\w*(?!\\w)|-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-10">// Most assertions have been removed but the patterns are still equivalent.</span><br/><span class="hl-10">// The only assertions left assert characters beyond the edge of the pattern.</span><br/><span class="hl-10">// Removing those assertions is easy but slightly changes the pattern.</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">finalExpression</span><span class="hl-1"> = </span><span class="hl-5">transform</span><span class="hl-1">(</span><br/><span class="hl-1">    </span><span class="hl-0">Transformers</span><span class="hl-1">.</span><span class="hl-5">patternEdgeAssertions</span><span class="hl-1">({ </span><span class="hl-0">remove:</span><span class="hl-1"> </span><span class="hl-4">true</span><span class="hl-1"> }),</span><br/><span class="hl-1">    </span><span class="hl-0">modifiedExpression</span><br/><span class="hl-1">);</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">finalExpression</span><span class="hl-1">));</span><br/><span class="hl-10">// =&gt; { source: &#39;[A-Z_]\\w*|-&gt;&#39;, flags: &#39;i&#39; }</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">nfa</span><span class="hl-1"> = </span><span class="hl-7">NFA</span><span class="hl-1">.</span><span class="hl-5">fromRegex</span><span class="hl-1">(</span><span class="hl-0">finalExpression</span><span class="hl-1">, { </span><span class="hl-0">maxCharacter</span><span class="hl-1"> });</span><br/><br/><span class="hl-0">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-7">JS</span><span class="hl-1">.</span><span class="hl-5">toLiteral</span><span class="hl-1">(</span><span class="hl-0">nfa</span><span class="hl-1">.</span><span class="hl-5">toRegex</span><span class="hl-1">()));</span><br/><span class="hl-10">// =&gt; { source: &#39;-&gt;|[A-Z_]\\w*&#39;, flags: &#39;i&#39; }</span>
+</code></pre>
+<p>AST transformers can handle a lot of assertions but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST.</p>
+</div></div>
+<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<nav class="tsd-navigation primary">
+<details class="tsd-index-accordion" open><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li class="current selected"><a href="modules.html">refa -<wbr/> v0.11.0</a>
+<ul>
+<li class="tsd-kind-namespace"><a href="modules/DFA.html">DFA</a></li>
+<li class="tsd-kind-namespace"><a href="modules/ENFA.html">ENFA</a></li>
+<li class="tsd-kind-namespace"><a href="modules/FAIterators.html">FAIterators</a></li>
+<li class="tsd-kind-namespace"><a href="modules/JS.html">JS</a></li>
+<li class="tsd-kind-namespace"><a href="modules/NFA.html">NFA</a></li>
+<li class="tsd-kind-namespace"><a href="modules/Transformers.html">Transformers</a></li>
+<li class="tsd-kind-namespace"><a href="modules/Words.html">Words</a></li></ul></li></ul></div></details></nav>
+<nav class="tsd-navigation secondary menu-sticky">
+<ul>
+<li class="tsd-kind-class"><a href="classes/CharBase.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-128-path"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)" id="icon-128-text"></path></svg>Char<wbr/>Base</a></li>
+<li class="tsd-kind-class"><a href="classes/CharMap.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Char<wbr/>Map</a></li>
+<li class="tsd-kind-class"><a href="classes/CharSet.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Char<wbr/>Set</a></li>
+<li class="tsd-kind-class"><a href="classes/DFA-1.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>DFA</a></li>
+<li class="tsd-kind-class"><a href="classes/ENFA-1.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>ENFA</a></li>
+<li class="tsd-kind-class"><a href="classes/MaxCharacterError.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Max<wbr/>Character<wbr/>Error</a></li>
+<li class="tsd-kind-class"><a href="classes/NFA-1.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>NFA</a></li>
+<li class="tsd-kind-class"><a href="classes/TooManyNodesError.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Too<wbr/>Many<wbr/>Nodes<wbr/>Error</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Alternation.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg>Alternation</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Assertion.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Assertion</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/CharRange.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Char<wbr/>Range</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/CharacterClass.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Character<wbr/>Class</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Concatenation.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Concatenation</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Expression.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Expression</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/FABuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>FABuilder</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/FAIterator.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>FAIterator</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/FiniteAutomaton.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Finite<wbr/>Automaton</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/NodeFactory.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Node<wbr/>Factory</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Quantifier.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Quantifier</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ReadonlyCharMap.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Readonly<wbr/>Char<wbr/>Map</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ReadonlyDFA.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>ReadonlyDFA</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ReadonlyENFA.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>ReadonlyENFA</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ReadonlyNFA.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>ReadonlyNFA</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/SourceLocation.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Source<wbr/>Location</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ToRegexOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>To<wbr/>Regex<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/TransformContext.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Transform<wbr/>Context</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/TransformOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Transform<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Transformer.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Transformer</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/TransitionIterable.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Transition<wbr/>Iterable</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Unknown.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Unknown</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/VisitAstHandler.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Visit<wbr/>Ast<wbr/>Handler</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/VisitNoParentAstHandler.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Visit<wbr/>No<wbr/>Parent<wbr/>Ast<wbr/>Handler</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Char.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-4194304-path"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)" id="icon-4194304-text"></path></svg>Char</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Element.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Element</a></li>
+<li class="tsd-kind-type-alias"><a href="types/NoParent.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>No<wbr/>Parent</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Node.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Node</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Parent.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Parent</a></li>
+<li class="tsd-kind-type-alias"><a href="types/ReadonlyWord.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Readonly<wbr/>Word</a></li>
+<li class="tsd-kind-type-alias"><a href="types/ReadonlyWordSet.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Readonly<wbr/>Word<wbr/>Set</a></li>
+<li class="tsd-kind-type-alias"><a href="types/TransitionIterator.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Transition<wbr/>Iterator</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Word.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Word</a></li>
+<li class="tsd-kind-type-alias"><a href="types/WordSet.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Word<wbr/>Set</a></li>
+<li class="tsd-kind-function"><a href="functions/combineTransformers.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-64-path"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)" id="icon-64-text"></path></svg>combine<wbr/>Transformers</a></li>
+<li class="tsd-kind-function"><a href="functions/getIntersectionIterator.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Intersection<wbr/>Iterator</a></li>
+<li class="tsd-kind-function"><a href="functions/getIntersectionWordSets.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Intersection<wbr/>Word<wbr/>Sets</a></li>
+<li class="tsd-kind-function"><a href="functions/getIntersectionWords.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Intersection<wbr/>Words</a></li>
+<li class="tsd-kind-function"><a href="functions/isDisjointWith.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>is<wbr/>Disjoint<wbr/>With</a></li>
+<li class="tsd-kind-function"><a href="functions/setParent.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>set<wbr/>Parent</a></li>
+<li class="tsd-kind-function"><a href="functions/setSource.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>set<wbr/>Source</a></li>
+<li class="tsd-kind-function"><a href="functions/transform.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>transform</a></li>
+<li class="tsd-kind-function"><a href="functions/visitAst.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>visit<wbr/>Ast</a></li></ul></nav></div></div>
+<div class="overlay"></div><script src="assets/main.js"></script></body></html>
