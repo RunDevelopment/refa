@@ -109,9 +109,9 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  *
  * If the given character do not have case variations, it will not be part of this map.
  */
-export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse(${JSON.stringify(
-		JSON.stringify(map)
-	)});
+export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse('${JSON.stringify(
+		map
+	)}');
 `;
 
 	fs.writeFileSync(path.join(__dirname, "../src/js", filename), code, "utf-8");

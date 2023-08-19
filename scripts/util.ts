@@ -1,7 +1,7 @@
 import { CharRange } from "../src/char-set";
 
 export function printRanges(ranges: Iterable<CharRange>): string {
-	return `JSON.parse(${JSON.stringify(JSON.stringify([...ranges]))})`;
+	return `JSON.parse('${JSON.stringify([...ranges])}')`;
 }
 
 export function logDurations(durations: number[], label?: string): void {
