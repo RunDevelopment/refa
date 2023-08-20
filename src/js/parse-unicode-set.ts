@@ -197,6 +197,7 @@ function compileClassElement(
 				break;
 			default:
 				withStrings.push(compileElement(e, flags));
+				break;
 		}
 	}
 

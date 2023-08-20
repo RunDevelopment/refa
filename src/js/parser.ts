@@ -723,7 +723,7 @@ export class Parser {
 		// ECMAScript spec says that alternatives are sorted by descending length.
 		// This isn't enough for uniqueness though, so we also sort by code point.
 		const words = [...chars.words];
-		if (chars.chars.isEmpty) {
+		if (!chars.chars.isEmpty) {
 			words.push([chars.chars]);
 		}
 		words.sort((a, b) => {
