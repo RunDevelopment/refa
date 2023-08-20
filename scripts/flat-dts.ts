@@ -45,25 +45,6 @@ function ensureUniqueNames(parsed: ParsedDts): void {
 			}
 			names.set(mem.name, { modName });
 		}
-		for (const imp of mod.imports) {
-			if (!isExternal(parsed, imp.from)) {
-				continue;
-			}
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			if (imp.type === "ns") {
-				for (const name of imp.names) {
-					const collision = names.get(name);
-					if (collision) {
-						throw new Error(
-							`The name ${JSON.stringify(name)} is present in both ${JSON.stringify(
-								modName
-							)} and ${JSON.stringify(collision.modName)}.`
-						);
-					}
-					names.set(name, { modName });
-				}
-			}
-		}
 	}
 }
 function ensureInternalExportAll(parsed: ParsedDts): void {
@@ -155,6 +136,7 @@ function inline(parsed: Readonly<ParsedDts>): ParsedDts {
 		}
 
 		inlined.members.push(...mod.members);
+		inlined.imports = mergeImports(inlined.imports);
 		return inlined;
 	}
 
@@ -987,4 +969,22 @@ function charToHexEscape(char: number): string {
 
 function assertNever(value: never): never {
 	throw new Error(value);
+}
+
+function mergeImports(imports: readonly Import[]): Import[] {
+	const map = new Map<string, Import>();
+	for (const imp of imports) {
+		const existing = map.get(imp.from);
+		if (existing) {
+			existing.names.push(...imp.names);
+		} else {
+			map.set(imp.from, { ...imp });
+		}
+	}
+
+	const result = [...map.values()];
+	for (const i of result) {
+		i.names = [...new Set(i.names)];
+	}
+	return result;
 }

@@ -1,52 +1,140 @@
 import { CharRange, CharSet } from "../char-set";
+import { Char, ReadonlyWord } from "../char-types";
 import { assertNever } from "../util";
-import { CharEnv, CharEnvUnicode } from "./char-env";
-import { Alias, Binary_Property, General_Category, Script, Script_Extensions } from "./unicode";
+import { CharEnv, CharEnvIgnoreCase, CharEnvUnicode } from "./char-env";
+import { ExtendedCharSet } from "./extended-char-set";
+import { StringSet } from "./string-set";
+import { Alias, Binary_Property, General_Category, PropertiesOfStrings, Script, Script_Extensions } from "./unicode";
 
 interface CacheEntry {
 	readonly value: CharSet;
 	readonly negated: CharSet;
 }
 
-export function getProperty(
+const ignoreCaseCache = new Map<string, CacheEntry>();
+const ignoreCaseUnicodeSetsCache = new Map<string, CacheEntry>();
+const nonIgnoreCaseCache = new Map<string, CacheEntry>();
+
+export function getCharacterProperty(
 	key: string,
 	value: string | null,
 	negated: boolean,
-	env: CharEnv & CharEnvUnicode
+	env: CharEnv & CharEnvUnicode,
+	unicodeSets: boolean
 ): CharSet {
-	const entry = getCacheEntry(key, value, env);
+	const cache = env.ignoreCase ? (unicodeSets ? ignoreCaseCache : ignoreCaseUnicodeSetsCache) : nonIgnoreCaseCache;
+	const cacheKey = key + "=" + value;
+
+	let entry = cache.get(cacheKey);
+	if (entry === undefined) {
+		entry = getCharacterPropertyUncached(key, value, env, unicodeSets);
+		cache.set(cacheKey, entry);
+	}
+
 	if (negated) {
 		return entry.negated;
 	} else {
 		return entry.value;
 	}
 }
-
-const ignoreCaseCache = new Map<string, CacheEntry>();
-const nonIgnoreCaseCache = new Map<string, CacheEntry>();
-
-function getCacheEntry(key: string, value: string | null, env: CharEnv & CharEnvUnicode): CacheEntry {
-	const cache = env.ignoreCase ? ignoreCaseCache : nonIgnoreCaseCache;
-	const cacheKey = key + "=" + value;
-
-	let entry = cache.get(cacheKey);
-	if (entry === undefined) {
-		entry = newCacheEntry(key, value, env);
-		cache.set(cacheKey, entry);
+function getCharacterPropertyUncached(
+	key: string,
+	value: string | null,
+	env: CharEnv & CharEnvUnicode,
+	unicodeSets: boolean
+): CacheEntry {
+	const rawData = getPropertyData(key, value);
+	if (!rawData.accept.isEmpty) {
+		throw new Error(
+			`The given property ${key} is a property of strings, which is invalid for 'getCharacterProperty'.`
+		);
 	}
+	const set = rawData.chars;
 
-	return entry;
-}
-
-function newCacheEntry(key: string, value: string | null, env: CharEnv & CharEnvUnicode): CacheEntry {
-	const set = env.empty.union(getPropertyRanges(key, value));
 	if (env.ignoreCase) {
-		return { value: env.withCaseVaryingCharacters(set), negated: env.withCaseVaryingCharacters(set.negate()) };
+		if (unicodeSets) {
+			const value = env.withCaseVaryingCharacters(set);
+			return { value: value, negated: value.negate() };
+		} else {
+			return { value: env.withCaseVaryingCharacters(set), negated: env.withCaseVaryingCharacters(set.negate()) };
+		}
 	} else {
 		return { value: set, negated: set.negate() };
 	}
 }
 
+const ignoreCaseStringCache = new Map<string, ExtendedCharSet>();
+
+export function getStringProperty(key: string, env: CharEnv & CharEnvUnicode): ExtendedCharSet {
+	if (!env.ignoreCase) {
+		return getPropertyData(key, null);
+	}
+
+	let entry = ignoreCaseStringCache.get(key);
+	if (entry === undefined) {
+		entry = getStringPropertyUncached(key, env);
+		ignoreCaseStringCache.set(key, entry);
+	}
+	return entry;
+}
+function getStringPropertyUncached(key: string, env: CharEnv & CharEnvUnicode & CharEnvIgnoreCase): ExtendedCharSet {
+	const data = getPropertyData(key, null);
+
+	const chars = env.withCaseVaryingCharacters(data.chars);
+	const words = data.accept.map(word => word.map(env.canonicalize));
+
+	return ExtendedCharSet.from(chars, words);
+}
+
+const propertyDataCache = new Map<string, ExtendedCharSet>();
+export function getPropertyData(key: string, value: string | null): ExtendedCharSet {
+	const cacheKey = key + "=" + value;
+	let cached = propertyDataCache.get(cacheKey);
+	if (cached === undefined) {
+		cached = getPropertyDataUncached(key, value);
+		propertyDataCache.set(cacheKey, cached);
+	}
+	return cached;
+}
+function getPropertyDataUncached(key: string, value: string | null): ExtendedCharSet {
+	if (value === null) {
+		const strings = getPropertyStrings(key);
+		if (strings) {
+			return stringsToCharSet(strings);
+		}
+	}
+
+	const ranges = getPropertyRanges(key, value);
+	const chars = CharSet.empty(0x10ffff).union(ranges);
+	return ExtendedCharSet.fromChars(chars);
+}
+
+function stringsToCharSet(strings: readonly ReadonlyWord[]): ExtendedCharSet {
+	const chars: Char[] = [];
+	const words: ReadonlyWord[] = [];
+
+	for (const str of strings) {
+		if (str.length === 1) {
+			chars.push(str[0]);
+		} else {
+			words.push(str);
+		}
+	}
+
+	// characters are sorted (see create-unicode.ts)
+	const charSet = CharSet.fromCharacters(0x10ffff, chars);
+
+	return ExtendedCharSet.from(charSet, StringSet.from(words));
+}
+
+function getPropertyStrings(key: string): readonly ReadonlyWord[] | undefined {
+	if (key in Alias.Binary_Property_Of_String) {
+		// binary property of strings
+		const name = Alias.Binary_Property_Of_String[key as keyof typeof Alias.Binary_Property_Of_String];
+		return PropertiesOfStrings[name as keyof typeof PropertiesOfStrings];
+	}
+	return undefined;
+}
 function getPropertyRanges(key: string, value: string | null): readonly CharRange[] {
 	if (value == null) {
 		if (key in Alias.Binary_Property) {

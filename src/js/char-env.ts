@@ -30,6 +30,7 @@ export interface CharEnvIgnoreCase {
 	readonly caseFolding: Readonly<Record<number, readonly Char[] | undefined>>;
 	readonly caseVarying: CharSet;
 	readonly withCaseVaryingCharacters: (cs: CharSet) => CharSet;
+	readonly canonicalize: (char: Char) => Char;
 }
 export interface CharEnvNonIgnoreCase {
 	readonly ignoreCase: false;
@@ -144,6 +145,7 @@ const CHAR_ENV_I: CharEnv = {
 	caseFolding: UTF16CaseFolding,
 	caseVarying: UTF16CaseVarying,
 	withCaseVaryingCharacters: cs => withCaseVaryingCharacters(cs, UTF16CaseFolding, UTF16CaseVarying),
+	canonicalize: char => UTF16CaseFolding[char]?.[0] ?? char,
 
 	// unicode
 	unicode: false,
@@ -197,6 +199,7 @@ const CHAR_ENV_IU: CharEnv = {
 	caseFolding: UnicodeCaseFolding,
 	caseVarying: UnicodeCaseVarying,
 	withCaseVaryingCharacters: cs => withCaseVaryingCharacters(cs, UnicodeCaseFolding, UnicodeCaseVarying),
+	canonicalize: char => UnicodeCaseFolding[char]?.[0] ?? char,
 
 	// unicode
 	unicode: true,
@@ -233,7 +236,7 @@ function withCaseVaryingCharacters(
 }
 
 export function getCharEnv(flags: Readonly<Flags>): CharEnv {
-	if (flags.unicode) {
+	if (flags.unicode || flags.unicodeSets) {
 		return flags.ignoreCase ? CHAR_ENV_IU : CHAR_ENV_U;
 	} else {
 		return flags.ignoreCase ? CHAR_ENV_I : CHAR_ENV;

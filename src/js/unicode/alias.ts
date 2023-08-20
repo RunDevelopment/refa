@@ -111,6 +111,18 @@ export const Binary_Property = {
 	"XIDS": "XID_Start"
 };
 
+// Binary Unicode property of strings names
+// https://tc39.es/ecma262/#table-binary-unicode-properties-of-strings
+export const Binary_Property_Of_String = {
+	"Basic_Emoji": "Basic_Emoji",
+	"Emoji_Keycap_Sequence": "Emoji_Keycap_Sequence",
+	"RGI_Emoji_Modifier_Sequence": "RGI_Emoji_Modifier_Sequence",
+	"RGI_Emoji_Flag_Sequence": "RGI_Emoji_Flag_Sequence",
+	"RGI_Emoji_Tag_Sequence": "RGI_Emoji_Tag_Sequence",
+	"RGI_Emoji_ZWJ_Sequence": "RGI_Emoji_ZWJ_Sequence",
+	"RGI_Emoji": "RGI_Emoji",
+};
+
 // Value aliases and canonical values for the Unicode property General_Category
 // https://tc39.es/ecma262/#table-unicode-general-category-values
 export const General_Category = {
