@@ -19,6 +19,7 @@ export function hasSomeDescendant(node: AST.Node, conditionFn: (node: AST.Node) 
 
 	switch (node.type) {
 		case "Alternative":
+		case "StringAlternative":
 			return node.elements.some(e => hasSomeDescendant(e, conditionFn));
 		case "Assertion":
 			if (node.kind === "lookahead" || node.kind === "lookbehind") {
@@ -28,11 +29,17 @@ export function hasSomeDescendant(node: AST.Node, conditionFn: (node: AST.Node) 
 		case "CapturingGroup":
 		case "Group":
 		case "Pattern":
+		case "ClassStringDisjunction":
 			return node.alternatives.some(a => hasSomeDescendant(a, conditionFn));
 		case "CharacterClass":
 			return node.elements.some(e => hasSomeDescendant(e, conditionFn));
+		case "ExpressionCharacterClass":
+			return hasSomeDescendant(node.expression, conditionFn);
 		case "CharacterClassRange":
 			return hasSomeDescendant(node.min, conditionFn) || hasSomeDescendant(node.max, conditionFn);
+		case "ClassIntersection":
+		case "ClassSubtraction":
+			return hasSomeDescendant(node.left, conditionFn) || hasSomeDescendant(node.right, conditionFn);
 		case "Quantifier":
 			return hasSomeDescendant(node.element, conditionFn);
 		case "RegExpLiteral":

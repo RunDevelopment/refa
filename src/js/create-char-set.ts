@@ -3,7 +3,7 @@ import { CharRange, CharSet } from "../char-set";
 import { assertNever } from "../util";
 import { Flags } from "./flags";
 import { CharEnv, getCharEnv } from "./char-env";
-import { getProperty } from "./property";
+import { getCharacterProperty } from "./property";
 
 export type PredefinedCharacterSet =
 	| AnyCharacterSet
@@ -18,11 +18,20 @@ export interface DigitCharacterSet {
 	kind: "digit";
 	negate: boolean;
 }
-export interface PropertyCharacterSet {
+export type PropertyCharacterSet = CharacterPropertyCharacterSet | StringPropertyCharacterSet;
+export interface CharacterPropertyCharacterSet {
 	kind: "property";
 	key: string;
 	value: string | null;
+	strings: false;
 	negate: boolean;
+}
+export interface StringPropertyCharacterSet {
+	kind: "property";
+	key: string;
+	value: null;
+	strings: true;
+	negate: false;
 }
 export interface SpaceCharacterSet {
 	kind: "space";
@@ -40,7 +49,7 @@ export interface WordCharacterSet {
  * @param flags The flags of the pattern.
  */
 export function createCharSet(
-	chars: Iterable<Char | CharRange | Readonly<PredefinedCharacterSet>>,
+	chars: Iterable<Char | CharRange | Readonly<Exclude<PredefinedCharacterSet, StringPropertyCharacterSet>>>,
 	flags: Readonly<Flags>
 ): CharSet {
 	// https://tc39.es/ecma262/#sec-runtime-semantics-charactersetmatcher-abstract-operation
@@ -118,30 +127,34 @@ function isChar(value: unknown): value is Char {
 	return typeof value === "number";
 }
 
-function getPredefinedSet(char: Readonly<PredefinedCharacterSet>, flags: Readonly<Flags>, env: CharEnv): CharSet {
-	switch (char.kind) {
+function getPredefinedSet(
+	set: Readonly<Exclude<PredefinedCharacterSet, StringPropertyCharacterSet>>,
+	flags: Readonly<Flags>,
+	env: CharEnv
+): CharSet {
+	switch (set.kind) {
 		case "any":
 			return flags.dotAll ? env.all : env.nonLineTerminator;
 
 		case "digit":
-			return char.negate ? env.nonDigit : env.digit;
+			return set.negate ? env.nonDigit : env.digit;
 
 		case "space":
-			return char.negate ? env.nonSpace : env.space;
+			return set.negate ? env.nonSpace : env.space;
 
 		case "word":
-			return char.negate ? env.nonWord : env.word;
+			return set.negate ? env.nonWord : env.word;
 
 		case "property": {
 			if (!env.unicode) {
 				throw new Error("Unicode property escapes cannot be used without the u flag.");
 			}
 
-			const { key, value, negate } = char;
-			return getProperty(key, value, negate, env);
+			const { key, value, negate } = set;
+			return getCharacterProperty(key, value, negate, env, flags.unicodeSets ?? false);
 		}
 
 		default:
-			throw assertNever(char, "Invalid predefined character set type");
+			throw assertNever(set, "Invalid predefined character set type");
 	}
 }

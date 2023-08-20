@@ -27,7 +27,6 @@ import {
 	unionSequences,
 } from "../util";
 import { createAssertion } from "./create-assertion";
-import { createCharSet } from "./create-char-set";
 import { Literal } from "./literal";
 import { TooManyNodesError } from "../errors";
 import { MatchingDirection, isPotentiallyEmpty } from "../ast-analysis";
@@ -38,6 +37,8 @@ import {
 	somePathToBackreference,
 } from "./regexpp-util";
 import { UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { Flags, isFlags } from "./flags";
+import { UnicodeSet, parseUnicodeSet } from "./parse-unicode-set";
 
 const DEFAULT_MAX_NODES = 10_000;
 const DEFAULT_BACK_REF_MAX_WORDS = 100;
@@ -199,13 +200,17 @@ export class Parser {
 	 */
 	readonly ast: RegexppAst;
 	/**
+	 * This contains the same flags as `ast.flags` but with a better type.
+	 */
+	readonly flags: Required<Flags>;
+	/**
 	 * The maximum character of all character sets in the parsed AST.
 	 *
 	 * This value will also be returned as part of the {@link ParseResult}.
 	 */
 	readonly maxCharacter: Char;
 
-	private readonly _charCache = new Map<string, CharSet>();
+	private readonly _charCache = new Map<string, UnicodeSet>();
 	private readonly _simpleCharCache = new Map<Char, CharSet>();
 
 	private readonly _backRefCanReachGroupCache = new Map<AST.Backreference, boolean>();
@@ -218,7 +223,12 @@ export class Parser {
 		this.literal = { source: ast.pattern.raw, flags: ast.flags.raw };
 		this.ast = ast;
 		this.maxCharacter = this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
-		this._charSetToCharFn = createCharSetToCharsFn(this.ast.flags);
+
+		if (!isFlags(ast.flags)) {
+			throw new Error("The flags in the given AST are not a valid set of flags.");
+		}
+		this.flags = ast.flags;
+		this._charSetToCharFn = createCharSetToCharsFn(this.flags);
 	}
 
 	/**
@@ -233,7 +243,7 @@ export class Parser {
 	static fromLiteral(literal: Literal, parserOptions?: RegExpParser.Options): Parser {
 		const parser = new RegExpParser(parserOptions);
 		const flags = parser.parseFlags(literal.flags);
-		const pattern = parser.parsePattern(literal.source, undefined, undefined, flags.unicode);
+		const pattern = parser.parsePattern(literal.source, undefined, undefined, flags);
 		const ast = { pattern, flags };
 		return new Parser(ast);
 	}
@@ -588,6 +598,7 @@ export class Parser {
 			case "Character":
 			case "CharacterClass":
 			case "CharacterSet":
+			case "ExpressionCharacterClass":
 				return this._createCharacterClass(element, context);
 
 			case "Quantifier":
@@ -672,7 +683,7 @@ export class Parser {
 			case "end":
 			case "start":
 			case "word": {
-				const assertion = createAssertion(element, this.ast.flags);
+				const assertion = createAssertion(element, this.flags);
 				setSource(assertion, copySource(element));
 
 				return assertion;
@@ -684,61 +695,60 @@ export class Parser {
 	}
 
 	private _createCharacterClass(
-		element: AST.Character | AST.CharacterClass | AST.CharacterSet,
+		element: AST.Character | AST.CharacterClass | AST.CharacterSet | AST.ExpressionCharacterClass,
 		context: ParserContext
-	): NoParent<CharacterClass> | EmptySet {
-		let characters: CharSet;
-
+	): NoParent<Element> | EmptySet {
 		let cacheKey: string;
-		if (element.type === "Character" || element.type === "CharacterSet") {
-			cacheKey = getCharacterClassCacheKey([element]);
+		if (element.type === "Character") {
+			cacheKey = element.value.toString(16);
 		} else {
-			cacheKey = getCharacterClassCacheKey(element.elements, element.negate);
+			cacheKey = element.raw;
 		}
 
-		const cached = this._charCache.get(cacheKey);
-		if (cached !== undefined) {
-			// cache hit
-
-			characters = cached;
-		} else {
+		let chars = this._charCache.get(cacheKey);
+		if (chars === undefined) {
 			// cache miss
+			chars = parseUnicodeSet(element, this.flags);
+			this._charCache.set(cacheKey, chars);
+		}
 
-			if (element.type === "Character") {
-				// e.g. a
-				characters = createCharSet([element.value], this.ast.flags);
-			} else if (element.type === "CharacterSet") {
-				// e.g. \w
-				characters = createCharSet([element], this.ast.flags);
-			} else {
-				// e.g. [^a-f\s]
-				characters = createCharSet(
-					element.elements.map(e => {
-						switch (e.type) {
-							case "Character":
-								return e.value;
-							case "CharacterClassRange":
-								return { min: e.min.value, max: e.max.value };
-							case "CharacterSet":
-								return e;
-							default:
-								throw assertNever(e, "Unsupported element");
-						}
-					}),
-					this.ast.flags
-				);
+		if (chars.words.length === 0) {
+			// simple case where we only have a single char
+			if (chars.chars.isEmpty && !context.disableSimplification) {
+				return EMPTY_SET;
+			}
+			return context.nc.newCharClass(element, chars.chars);
+		}
 
-				if (element.negate) {
-					characters = characters.negate();
+		// ECMAScript spec says that alternatives are sorted by descending length.
+		// This isn't enough for uniqueness though, so we also sort by code point.
+		const words = [...chars.words];
+		if (chars.chars.isEmpty) {
+			words.push([chars.chars]);
+		}
+		words.sort((a, b) => {
+			if (a.length !== b.length) {
+				return b.length - a.length;
+			}
+			for (let i = 0; i < a.length; i++) {
+				const diff = a[i].compare(b[i]);
+				if (diff !== 0) {
+					return diff;
 				}
 			}
+			return 0;
+		});
 
-			this._charCache.set(cacheKey, characters);
+		const alternation = context.nc.newAlt(element);
+		for (const word of words) {
+			const alternative = context.nc.newConcat(element);
+			alternation.alternatives.push(alternative);
+
+			for (const char of word) {
+				alternative.elements.push(context.nc.newCharClass(element, char));
+			}
 		}
-
-		return !context.disableSimplification && characters.isEmpty
-			? EMPTY_SET
-			: context.nc.newCharClass(element, characters);
+		return alternation;
 	}
 
 	private _createGroup(element: AST.Group | AST.CapturingGroup, context: ParserContext): NoParent<Element> | Empty {
@@ -932,7 +942,7 @@ export class Parser {
 	private _charToCharSet(char: Char): CharSet {
 		let cached = this._simpleCharCache.get(char);
 		if (cached === undefined) {
-			cached = CharSet.empty(this.maxCharacter).union([{ min: char, max: char }]);
+			cached = CharSet.fromRange(this.maxCharacter, { min: char, max: char });
 			this._simpleCharCache.set(char, cached);
 		}
 		return cached;
@@ -1064,29 +1074,6 @@ function copySource(node: Readonly<SourceLocation>): SourceLocation {
 	};
 }
 
-function getCharacterClassCacheKey(
-	elements: readonly (AST.CharacterClassElement | AST.CharacterSet)[],
-	negate?: boolean
-): string {
-	let s = negate ? "^" : "";
-	for (const e of elements) {
-		switch (e.type) {
-			case "Character":
-				s += "x" + e.value.toString(16);
-				break;
-			case "CharacterClassRange":
-				s += "x" + e.min.value.toString(16) + "-x" + e.max.value.toString(16);
-				break;
-			case "CharacterSet":
-				s += e.raw;
-				break;
-			default:
-				throw assertNever(e);
-		}
-	}
-	return s;
-}
-
 function removeLeadingLookbehinds(element: NoParent<Expression | Alternation | Quantifier>): void {
 	for (const alt of element.alternatives) {
 		while (alt.elements.length > 0) {
@@ -1154,7 +1141,7 @@ function removeDuplicateEmptyAlternative(element: NoParent<Expression | Alternat
 }
 
 type CharSetToCharsFn = (charSet: CharSet) => Iterable<LogicalChar>;
-function createCharSetToCharsFn(flags: AST.Flags): CharSetToCharsFn {
+function createCharSetToCharsFn(flags: Flags): CharSetToCharsFn {
 	if (!flags.ignoreCase) {
 		return cs => cs.characters();
 	} else {

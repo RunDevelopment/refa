@@ -109,7 +109,7 @@ export const ${variablePrefix}CaseVarying: CharSet = CharSet.empty(${maxCharacte
  *
  * If the given character do not have case variations, it will not be part of this map.
  */
-export const ${variablePrefix}CaseFolding: Readonly<Record<number, readonly number[]>> = JSON.parse('${JSON.stringify(
+export const ${variablePrefix}CaseFolding: Readonly<Partial<Record<number, readonly number[]>>> = JSON.parse('${JSON.stringify(
 		map
 	)}');
 `;
