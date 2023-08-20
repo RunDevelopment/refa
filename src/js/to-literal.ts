@@ -104,6 +104,9 @@ function toFlagsString(flags: Readonly<Flags>): string {
 	if (flags.unicode) {
 		flagsString += "u";
 	}
+	if (flags.unicodeSets) {
+		flagsString += "v";
+	}
 	if (flags.sticky) {
 		flagsString += "y";
 	}

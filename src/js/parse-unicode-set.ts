@@ -1,7 +1,7 @@
 import { Char, Word } from "../char-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever, debugAssert } from "../util";
-import { Flags, LegacyFlags, UnicodeFlags, UnicodeSetsFlags } from "./flags";
+import { Flags, NonUnicodeSetsFlags, UnicodeSetsFlags } from "./flags";
 import { getCharEnv } from "./char-env";
 import { getStringProperty } from "./property";
 import { ExtendedCharSet } from "./extended-char-set";
@@ -97,6 +97,7 @@ function compileElement(
 		case "CharacterSet": {
 			if (element.kind === "property" && element.strings) {
 				const env = getCharEnv(flags);
+				debugAssert(env.unicode);
 				return getStringProperty(element.key, env);
 			} else {
 				return ExtendedCharSet.fromChars(createCharSet([element], flags));
@@ -214,7 +215,7 @@ export function parseCharSet(
 		| AST.Character
 		| AST.CharacterClassRange
 		| Exclude<AST.CharacterSet, AST.StringsUnicodePropertyCharacterSet>,
-	flags: Readonly<UnicodeFlags | LegacyFlags>
+	flags: Readonly<NonUnicodeSetsFlags>
 ): CharSet {
 	switch (element.type) {
 		case "Character": {

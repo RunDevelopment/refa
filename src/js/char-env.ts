@@ -1,6 +1,6 @@
 import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
-import { Flags, LegacyFlags, UnicodeFlags, UnicodeSetsFlags } from "./flags";
+import { Flags } from "./flags";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
 
@@ -235,9 +235,6 @@ function withCaseVaryingCharacters(
 	return cs.union(CharSet.fromCharacters(cs.maximum, caseVariationArray));
 }
 
-export function getCharEnv(flags: Readonly<LegacyFlags>): CharEnv & CharEnvNonUnicode;
-export function getCharEnv(flags: Readonly<UnicodeFlags | UnicodeSetsFlags>): CharEnv & CharEnvUnicode;
-export function getCharEnv(flags: Readonly<Flags>): CharEnv;
 export function getCharEnv(flags: Readonly<Flags>): CharEnv {
 	if (flags.unicode || flags.unicodeSets) {
 		return flags.ignoreCase ? CHAR_ENV_IU : CHAR_ENV_U;

@@ -29,25 +29,16 @@ export function isFlags(flags: UncheckedFlags): flags is Flags {
 }
 
 /**
- * A partial set of legacy RegExp flags. Neither the `u` nor `v` flags are set.
+ * A partial set of non-Unicode-sets RegExp flags. The `v` flag is guaranteed to be unset.
  */
-export interface LegacyFlags extends UncheckedFlags {
+export interface NonUnicodeSetsFlags extends UncheckedFlags {
 	/** @default false */
-	unicode?: false;
+	unicode?: boolean;
 	/** @default false */
 	unicodeSets?: false;
 }
 /**
- * A partial set of Unicode RegExp flags. The `u` flag is guaranteed to be set.
- */
-export interface UnicodeFlags extends UncheckedFlags {
-	/** @default false */
-	unicode: true;
-	/** @default false */
-	unicodeSets?: false;
-}
-/**
- * A partial set of Unicode sets RegExp flags. The `v` flag is guaranteed to be set.
+ * A partial set of Unicode-sets RegExp flags. The `v` flag is guaranteed to be set.
  */
 export interface UnicodeSetsFlags extends UncheckedFlags {
 	/** @default false */
@@ -59,4 +50,4 @@ export interface UnicodeSetsFlags extends UncheckedFlags {
 /**
  * A partial set of RegExp flags.
  */
-export type Flags = LegacyFlags | UnicodeFlags | UnicodeSetsFlags;
+export type Flags = NonUnicodeSetsFlags | UnicodeSetsFlags;
