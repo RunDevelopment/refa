@@ -61,6 +61,7 @@
 <a href="CharSet.html#without" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>without</span></a>
 <a href="CharSet.html#all" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>all</span></a>
 <a href="CharSet.html#empty" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>empty</span></a>
+<a href="CharSet.html#fromCharacter" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Character</span></a>
 <a href="CharSet.html#fromCharacters" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Characters</span></a>
 <a href="CharSet.html#fromRange" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Range</span></a>
 </div></section></div></details></section></section>
@@ -411,6 +412,25 @@ maximum of one of the given ranges is greater than the maximum of this set.</p>
 <div class="tsd-comment tsd-typography"><p>The greatest character which can be element of the set.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type tsd-kind-class">CharSet</a></h4></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="fromCharacter" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>from<wbr/>Character</span><a href="#fromCharacter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="fromCharacter.fromCharacter-1"><span class="tsd-kind-call-signature">from<wbr/>Character</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">maximum</span><span class="tsd-signature-symbol">: </span><a href="../types/Char.html" class="tsd-signature-type tsd-kind-type-alias">Char</a>, <span class="tsd-kind-parameter">char</span><span class="tsd-signature-symbol">: </span><a href="../types/Char.html" class="tsd-signature-type tsd-kind-type-alias">Char</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CharSet.html" class="tsd-signature-type tsd-kind-class">CharSet</a><a href="#fromCharacter.fromCharacter-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns a character set which contains the given character.</p>
+
+<h3>Throws</h3><p><code>RangeError</code> if the maximum of the given range is greater than <code>maximum</code>.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">maximum</span>: <a href="../types/Char.html" class="tsd-signature-type tsd-kind-type-alias">Char</a></h5>
+<div class="tsd-comment tsd-typography"><p>The greatest character which will be element of the set.</p>
+</div></li>
+<li>
+<h5><span class="tsd-kind-parameter">char</span>: <a href="../types/Char.html" class="tsd-signature-type tsd-kind-type-alias">Char</a></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="CharSet.html" class="tsd-signature-type tsd-kind-class">CharSet</a></h4></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="fromCharacters" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>from<wbr/>Characters</span><a href="#fromCharacters" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -492,6 +512,7 @@ maximum of one of the given ranges is greater than the maximum of this set.</p>
 <li><a href="#without" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>without</span></a></li>
 <li><a href="#all" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>all</span></a></li>
 <li><a href="#empty" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>empty</span></a></li>
+<li><a href="#fromCharacter" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Character</span></a></li>
 <li><a href="#fromCharacters" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Characters</span></a></li>
 <li><a href="#fromRange" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>from<wbr/>Range</span></a></li></ul></div></details></div>
 <div class="site-menu">
