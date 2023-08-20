@@ -942,7 +942,7 @@ export class Parser {
 	private _charToCharSet(char: Char): CharSet {
 		let cached = this._simpleCharCache.get(char);
 		if (cached === undefined) {
-			cached = CharSet.fromRange(this.maxCharacter, { min: char, max: char });
+			cached = CharSet.fromCharacter(this.maxCharacter, char);
 			this._simpleCharCache.set(char, cached);
 		}
 		return cached;
@@ -1160,7 +1160,7 @@ function createCharSetToCharsFn(flags: Flags): CharSetToCharsFn {
 					continue;
 				}
 
-				const equivalenceClass: readonly number[] | undefined = env.caseFolding[c];
+				const equivalenceClass = env.caseFolding[c];
 				if (equivalenceClass) {
 					for (const char of equivalenceClass) {
 						seen.add(char);
@@ -1168,7 +1168,7 @@ function createCharSetToCharsFn(flags: Flags): CharSetToCharsFn {
 
 					let cached = charSetCache.get(equivalenceClass);
 					if (cached === undefined) {
-						cached = CharSet.empty(env.maxCharacter).union(equivalenceClass.map(c => ({ min: c, max: c })));
+						cached = CharSet.fromCharacters(env.maxCharacter, equivalenceClass);
 						charSetCache.set(equivalenceClass, cached);
 					}
 					yield cached;

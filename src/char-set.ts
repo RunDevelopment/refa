@@ -252,6 +252,20 @@ export class CharSet {
 
 		return new CharSet(maximum, [range]);
 	}
+	/**
+	 * Returns a character set which contains the given character.
+	 *
+	 * @param maximum The greatest character which will be element of the set.
+	 * @param char
+	 * @throws `RangeError` if the maximum of the given range is greater than `maximum`.
+	 */
+	static fromCharacter(maximum: Char, char: Char): CharSet {
+		if (char > maximum) {
+			throw new RangeError(`The character ${char} is greater than the maximum=${maximum}.`);
+		}
+
+		return new CharSet(maximum, [{ min: char, max: char }]);
+	}
 
 	/**
 	 * Returns whether this and the given character set are equivalent.

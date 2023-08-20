@@ -272,5 +272,5 @@ function createCharSetFromChar(char: Char, flags: Readonly<Flags>): CharSet {
 		}
 	}
 
-	return CharSet.fromRange(env.maxCharacter, { min: char, max: char });
+	return CharSet.fromCharacter(env.maxCharacter, char);
 }
