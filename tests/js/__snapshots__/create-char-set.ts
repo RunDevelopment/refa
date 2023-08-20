@@ -1,5 +1,249 @@
 /* eslint-disable */
 
+module.exports["JS createCharSet >> Literal tests >> /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/"] = `
+[61][62][63][64][65][66][67][68][69][6a][6b][6c][6d][6e][6f][70][71][72][73][74][75][76][77][78][79][7a][20][41][42][43][44][45][46][47][48][49][4a][4b][4c][4d][4e][4f][50][51][52][53][54][55][56][57][58][59][5a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/i"] = `
+[41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a][20][41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/u"] = `
+[61][62][63][64][65][66][67][68][69][6a][6b][6c][6d][6e][6f][70][71][72][73][74][75][76][77][78][79][7a][20][41][42][43][44][45][46][47][48][49][4a][4b][4c][4d][4e][4f][50][51][52][53][54][55][56][57][58][59][5a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/iu"] = `
+[41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a][20][41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/"] = `
+[30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/i"] = `
+[30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/u"] = `
+[30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/iu"] = `
+[30..39, 41..5a, 5f, 61..7a, 17f, 212a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/v"] = `
+[30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\w/iv"] = `
+[30..39, 41..5a, 5f, 61..7a, 17f, 212a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/i"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/u"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/iu"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..17e, 180..2129, 212b..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/v"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\W/iv"] = `
+[0..2f, 3a..40, 5b..5e, 60, 7b..17e, 180..2129, 212b..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\d/"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\d/i"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\d/u"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\d/iu"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\D/"] = `
+[0..2f, 3a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\D/i"] = `
+[0..2f, 3a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\D/u"] = `
+[0..2f, 3a..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\D/iu"] = `
+[0..2f, 3a..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\s/"] = `
+[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\s/i"] = `
+[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\s/u"] = `
+[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\s/iu"] = `
+[9..d, 20, a0, 1680, 2000..200a, 2028..2029, 202f, 205f, 3000, feff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\S/"] = `
+[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\S/i"] = `
+[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\S/u"] = `
+[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\S/iu"] = `
+[0..8, e..1f, 21..9f, a1..167f, 1681..1fff, 200b..2027, 202a..202e, 2030..205e, 2060..2fff, 3001..fefe, ff00..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./"] = `
+[0..9, b..c, e..2027, 202a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./i"] = `
+[0..9, b..c, e..2027, 202a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./m"] = `
+[0..9, b..c, e..2027, 202a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./s"] = `
+[0..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./u"] = `
+[0..9, b..c, e..2027, 202a..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./iu"] = `
+[0..9, b..c, e..2027, 202a..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./mu"] = `
+[0..9, b..c, e..2027, 202a..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /./su"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\s\\S]/"] = `
+[0..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\s\\S]/u"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^]/u"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^\\D][^\\d]/"] = `
+[30..39][0..2f, 3a..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^a-cx-z]/"] = `
+[0..60, 64..77, 7b..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /a[A][aA]/i"] = `
+[41, 61][41, 61][41, 61]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^a-cx-z]/i"] = `
+[0..40, 44..57, 5b..60, 64..77, 7b..ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{ASCII}/u"] = `
+[0..7f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{ASCII}/iu"] = `
+[0..7f, 17f, 212a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{ASCII}/iv"] = `
+[0..7f, 17f, 212a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{ASCII}/u"] = `
+[80..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{ASCII}/iu"] = `
+[4b, 53, 6b, 73, 80..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{ASCII}/iv"] = `
+[80..17e, 180..2129, 212b..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{Any}/u"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{Any}/iu"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{Any}/u"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{Any}/iu"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{General_Category=Control}/u"] = `
+[0..1f, 7f..9f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{gc=Control}/u"] = `
+[0..1f, 7f..9f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{Control}/u"] = `
+[0..1f, 7f..9f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{Cc}/u"] = `
+[0..1f, 7f..9f]
+`.slice(1, -1);
+
 module.exports["JS createCharSet >> Literal tests >> /\\p{Emoji_Presentation}/u"] = `
 [231a..231b, 23e9..23ec, 23f0, 23f3, 25fd..25fe, 2614..2615, 2648..2653, 267f, 2693, 26a1, 26aa..26ab, 26bd..26be, 26c4..26c5, 26ce, 26d4, 26ea, 26f2..26f3, 26f5, 26fa, 26fd, 2705, 270a..270b, 2728, 274c, 274e, 2753..2755, 2757, 2795..2797, 27b0, 27bf, 2b1b..2b1c, 2b50, 2b55, 1f004, 1f0cf, 1f18e, 1f191..1f19a, 1f1e6..1f1ff, 1f201, 1f21a, 1f22f, 1f232..1f236, 1f238..1f23a, 1f250..1f251, 1f300..1f320, 1f32d..1f335, 1f337..1f37c, 1f37e..1f393, 1f3a0..1f3ca, 1f3cf..1f3d3, 1f3e0..1f3f0, 1f3f4, 1f3f8..1f43e, 1f440, 1f442..1f4fc, 1f4ff..1f53d, 1f54b..1f54e, 1f550..1f567, 1f57a, 1f595..1f596, 1f5a4, 1f5fb..1f64f, 1f680..1f6c5, 1f6cc, 1f6d0..1f6d2, 1f6d5..1f6d7, 1f6dc..1f6df, 1f6eb..1f6ec, 1f6f4..1f6fc, 1f7e0..1f7eb, 1f7f0, 1f90c..1f93a, 1f93c..1f945, 1f947..1f9ff, 1fa70..1fa7c, 1fa80..1fa88, 1fa90..1fabd, 1fabf..1fac5, 1face..1fadb, 1fae0..1fae8, 1faf0..1faf8]
 `.slice(1, -1);
@@ -52,6 +296,14 @@ module.exports["JS createCharSet >> Literal tests >> /\\P{Ll}/iu"] = `
 [0..130, 132..137, 139..148, 14a..18c, 18e..19a, 19c..1a9, 1ac..1b9, 1bb..1bd, 1bf..1ef, 1f1..220, 222..233, 23a..254, 256..257, 259, 25b..25c, 260..261, 263, 265..266, 268..26c, 26f, 271..272, 275, 27d, 280, 282..283, 287..28c, 292, 294, 29d..29e, 2b0..38f, 391..3af, 3b1..3fb, 3fd..55f, 561..586, 589..1cff, 1d2c..1d6a, 1d78..1d79, 1d7d, 1d8e, 1d9b..1e95, 1e9b, 1e9e, 1ea0..1f4f, 1f51, 1f53, 1f55, 1f57..1fb1, 1fb3, 1fb5, 1fb8..1fc1, 1fc3, 1fc5, 1fc8..1fd1, 1fd4..1fd5, 1fd8..1fe1, 1fe5, 1fe8..1ff1, 1ff3, 1ff5, 1ff8..2109, 210b..210d, 2110..2112, 2114..212e, 2130..2133, 2135..2138, 213a..213b, 213e..2145, 214a..2c70, 2c72..2c73, 2c75..2c76, 2c7c..2ce3, 2ce5..a72f, a732..a770, a779..a78d, a78f..a794, a796..a7ae, a7b0..a7d2, a7d4, a7d6..a7f9, a7fb..ab2f, ab53, ab5b..ab5f, ab69..faff, fb07..fb12, fb18..1d419, 1d434..1d44d, 1d455, 1d468..1d481, 1d49c..1d4b5, 1d4ba, 1d4bc, 1d4c4, 1d4d0..1d4e9, 1d504..1d51d, 1d538..1d551, 1d56c..1d585, 1d5a0..1d5b9, 1d5d4..1d5ed, 1d608..1d621, 1d63c..1d655, 1d670..1d689, 1d6a6..1d6c1, 1d6db, 1d6e2..1d6fb, 1d715, 1d71c..1d735, 1d74f, 1d756..1d76f, 1d789, 1d790..1d7a9, 1d7c3, 1d7ca, 1d7cc..1deff, 1df0a, 1df1f..1df24, 1df2b..10ffff]
 `.slice(1, -1);
 
+module.exports["JS createCharSet >> Literal tests >> /\\p{Ll}/iv"] = `
+[41..5a, 61..7a, b5, c0..d6, d8..f6, f8..12f, 131..1ba, 1bc..1bf, 1c4..293, 295..2af, 345, 370..373, 376..377, 37b..37d, 37f, 386, 388..38a, 38c, 38e..3a1, 3a3..3d1, 3d5..3f5, 3f7..481, 48a..52f, 531..556, 560..588, 10a0..10c5, 10c7, 10cd, 10d0..10fa, 10fd..10ff, 13a0..13f5, 13f8..13fd, 1c80..1c88, 1c90..1cba, 1cbd..1cbf, 1d00..1d2b, 1d6b..1d77, 1d79..1d9a, 1e00..1f15, 1f18..1f1d, 1f20..1f45, 1f48..1f4d, 1f50..1f57, 1f59, 1f5b, 1f5d, 1f5f..1f7d, 1f80..1fb4, 1fb6..1fbc, 1fbe, 1fc2..1fc4, 1fc6..1fcc, 1fd0..1fd3, 1fd6..1fdb, 1fe0..1fec, 1ff2..1ff4, 1ff6..1ffc, 210a, 210e..210f, 2113, 2126, 212a..212b, 212f, 2132, 2134, 2139, 213c..213d, 2146..2149, 214e, 2183..2184, 2c00..2c7b, 2c7e..2ce4, 2ceb..2cee, 2cf2..2cf3, 2d00..2d25, 2d27, 2d2d, a640..a66d, a680..a69b, a722..a76f, a771..a787, a78b..a78e, a790..a7ca, a7d0..a7d1, a7d3, a7d5..a7d9, a7f5..a7f6, a7fa, ab30..ab5a, ab60..ab68, ab70..abbf, fb00..fb06, fb13..fb17, ff21..ff3a, ff41..ff5a, 10400..1044f, 104b0..104d3, 104d8..104fb, 10570..1057a, 1057c..1058a, 1058c..10592, 10594..10595, 10597..105a1, 105a3..105b1, 105b3..105b9, 105bb..105bc, 10c80..10cb2, 10cc0..10cf2, 118a0..118df, 16e40..16e7f, 1d41a..1d433, 1d44e..1d454, 1d456..1d467, 1d482..1d49b, 1d4b6..1d4b9, 1d4bb, 1d4bd..1d4c3, 1d4c5..1d4cf, 1d4ea..1d503, 1d51e..1d537, 1d552..1d56b, 1d586..1d59f, 1d5ba..1d5d3, 1d5ee..1d607, 1d622..1d63b, 1d656..1d66f, 1d68a..1d6a5, 1d6c2..1d6da, 1d6dc..1d6e1, 1d6fc..1d714, 1d716..1d71b, 1d736..1d74e, 1d750..1d755, 1d770..1d788, 1d78a..1d78f, 1d7aa..1d7c2, 1d7c4..1d7c9, 1d7cb, 1df00..1df09, 1df0b..1df1e, 1df25..1df2a, 1e900..1e943]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\P{Ll}/iv"] = `
+[0..40, 5b..60, 7b..b4, b6..bf, d7, f7, 130, 1bb, 1c0..1c3, 294, 2b0..344, 346..36f, 374..375, 378..37a, 37e, 380..385, 387, 38b, 38d, 3a2, 3d2..3d4, 3f6, 482..489, 530, 557..55f, 589..109f, 10c6, 10c8..10cc, 10ce..10cf, 10fb..10fc, 1100..139f, 13f6..13f7, 13fe..1c7f, 1c89..1c8f, 1cbb..1cbc, 1cc0..1cff, 1d2c..1d6a, 1d78, 1d9b..1dff, 1f16..1f17, 1f1e..1f1f, 1f46..1f47, 1f4e..1f4f, 1f58, 1f5a, 1f5c, 1f5e, 1f7e..1f7f, 1fb5, 1fbd, 1fbf..1fc1, 1fc5, 1fcd..1fcf, 1fd4..1fd5, 1fdc..1fdf, 1fed..1ff1, 1ff5, 1ffd..2109, 210b..210d, 2110..2112, 2114..2125, 2127..2129, 212c..212e, 2130..2131, 2133, 2135..2138, 213a..213b, 213e..2145, 214a..214d, 214f..2182, 2185..2bff, 2c7c..2c7d, 2ce5..2cea, 2cef..2cf1, 2cf4..2cff, 2d26, 2d28..2d2c, 2d2e..a63f, a66e..a67f, a69c..a721, a770, a788..a78a, a78f, a7cb..a7cf, a7d2, a7d4, a7da..a7f4, a7f7..a7f9, a7fb..ab2f, ab5b..ab5f, ab69..ab6f, abc0..faff, fb07..fb12, fb18..ff20, ff3b..ff40, ff5b..103ff, 10450..104af, 104d4..104d7, 104fc..1056f, 1057b, 1058b, 10593, 10596, 105a2, 105b2, 105ba, 105bd..10c7f, 10cb3..10cbf, 10cf3..1189f, 118e0..16e3f, 16e80..1d419, 1d434..1d44d, 1d455, 1d468..1d481, 1d49c..1d4b5, 1d4ba, 1d4bc, 1d4c4, 1d4d0..1d4e9, 1d504..1d51d, 1d538..1d551, 1d56c..1d585, 1d5a0..1d5b9, 1d5d4..1d5ed, 1d608..1d621, 1d63c..1d655, 1d670..1d689, 1d6a6..1d6c1, 1d6db, 1d6e2..1d6fb, 1d715, 1d71c..1d735, 1d74f, 1d756..1d76f, 1d789, 1d790..1d7a9, 1d7c3, 1d7ca, 1d7cc..1deff, 1df0a, 1df1f..1df24, 1df2b..1e8ff, 1e944..10ffff]
+`.slice(1, -1);
+
 module.exports["JS createCharSet >> Literal tests >> /[^\\p{Ll}]/u"] = `
 [0..60, 7b..b4, b6..de, f7, 100, 102, 104, 106, 108, 10a, 10c, 10e, 110, 112, 114, 116, 118, 11a, 11c, 11e, 120, 122, 124, 126, 128, 12a, 12c, 12e, 130, 132, 134, 136, 139, 13b, 13d, 13f, 141, 143, 145, 147, 14a, 14c, 14e, 150, 152, 154, 156, 158, 15a, 15c, 15e, 160, 162, 164, 166, 168, 16a, 16c, 16e, 170, 172, 174, 176, 178..179, 17b, 17d, 181..182, 184, 186..187, 189..18b, 18e..191, 193..194, 196..198, 19c..19d, 19f..1a0, 1a2, 1a4, 1a6..1a7, 1a9, 1ac, 1ae..1af, 1b1..1b3, 1b5, 1b7..1b8, 1bb..1bc, 1c0..1c5, 1c7..1c8, 1ca..1cb, 1cd, 1cf, 1d1, 1d3, 1d5, 1d7, 1d9, 1db, 1de, 1e0, 1e2, 1e4, 1e6, 1e8, 1ea, 1ec, 1ee, 1f1..1f2, 1f4, 1f6..1f8, 1fa, 1fc, 1fe, 200, 202, 204, 206, 208, 20a, 20c, 20e, 210, 212, 214, 216, 218, 21a, 21c, 21e, 220, 222, 224, 226, 228, 22a, 22c, 22e, 230, 232, 23a..23b, 23d..23e, 241, 243..246, 248, 24a, 24c, 24e, 294, 2b0..370, 372, 374..376, 378..37a, 37e..38f, 391..3ab, 3cf, 3d2..3d4, 3d8, 3da, 3dc, 3de, 3e0, 3e2, 3e4, 3e6, 3e8, 3ea, 3ec, 3ee, 3f4, 3f6..3f7, 3f9..3fa, 3fd..42f, 460, 462, 464, 466, 468, 46a, 46c, 46e, 470, 472, 474, 476, 478, 47a, 47c, 47e, 480, 482..48a, 48c, 48e, 490, 492, 494, 496, 498, 49a, 49c, 49e, 4a0, 4a2, 4a4, 4a6, 4a8, 4aa, 4ac, 4ae, 4b0, 4b2, 4b4, 4b6, 4b8, 4ba, 4bc, 4be, 4c0..4c1, 4c3, 4c5, 4c7, 4c9, 4cb, 4cd, 4d0, 4d2, 4d4, 4d6, 4d8, 4da, 4dc, 4de, 4e0, 4e2, 4e4, 4e6, 4e8, 4ea, 4ec, 4ee, 4f0, 4f2, 4f4, 4f6, 4f8, 4fa, 4fc, 4fe, 500, 502, 504, 506, 508, 50a, 50c, 50e, 510, 512, 514, 516, 518, 51a, 51c, 51e, 520, 522, 524, 526, 528, 52a, 52c, 52e, 530..55f, 589..10cf, 10fb..10fc, 1100..13f7, 13fe..1c7f, 1c89..1cff, 1d2c..1d6a, 1d78, 1d9b..1e00, 1e02, 1e04, 1e06, 1e08, 1e0a, 1e0c, 1e0e, 1e10, 1e12, 1e14, 1e16, 1e18, 1e1a, 1e1c, 1e1e, 1e20, 1e22, 1e24, 1e26, 1e28, 1e2a, 1e2c, 1e2e, 1e30, 1e32, 1e34, 1e36, 1e38, 1e3a, 1e3c, 1e3e, 1e40, 1e42, 1e44, 1e46, 1e48, 1e4a, 1e4c, 1e4e, 1e50, 1e52, 1e54, 1e56, 1e58, 1e5a, 1e5c, 1e5e, 1e60, 1e62, 1e64, 1e66, 1e68, 1e6a, 1e6c, 1e6e, 1e70, 1e72, 1e74, 1e76, 1e78, 1e7a, 1e7c, 1e7e, 1e80, 1e82, 1e84, 1e86, 1e88, 1e8a, 1e8c, 1e8e, 1e90, 1e92, 1e94, 1e9e, 1ea0, 1ea2, 1ea4, 1ea6, 1ea8, 1eaa, 1eac, 1eae, 1eb0, 1eb2, 1eb4, 1eb6, 1eb8, 1eba, 1ebc, 1ebe, 1ec0, 1ec2, 1ec4, 1ec6, 1ec8, 1eca, 1ecc, 1ece, 1ed0, 1ed2, 1ed4, 1ed6, 1ed8, 1eda, 1edc, 1ede, 1ee0, 1ee2, 1ee4, 1ee6, 1ee8, 1eea, 1eec, 1eee, 1ef0, 1ef2, 1ef4, 1ef6, 1ef8, 1efa, 1efc, 1efe, 1f08..1f0f, 1f16..1f1f, 1f28..1f2f, 1f38..1f3f, 1f46..1f4f, 1f58..1f5f, 1f68..1f6f, 1f7e..1f7f, 1f88..1f8f, 1f98..1f9f, 1fa8..1faf, 1fb5, 1fb8..1fbd, 1fbf..1fc1, 1fc5, 1fc8..1fcf, 1fd4..1fd5, 1fd8..1fdf, 1fe8..1ff1, 1ff5, 1ff8..2109, 210b..210d, 2110..2112, 2114..212e, 2130..2133, 2135..2138, 213a..213b, 213e..2145, 214a..214d, 214f..2183, 2185..2c2f, 2c60, 2c62..2c64, 2c67, 2c69, 2c6b, 2c6d..2c70, 2c72, 2c75, 2c7c..2c80, 2c82, 2c84, 2c86, 2c88, 2c8a, 2c8c, 2c8e, 2c90, 2c92, 2c94, 2c96, 2c98, 2c9a, 2c9c, 2c9e, 2ca0, 2ca2, 2ca4, 2ca6, 2ca8, 2caa, 2cac, 2cae, 2cb0, 2cb2, 2cb4, 2cb6, 2cb8, 2cba, 2cbc, 2cbe, 2cc0, 2cc2, 2cc4, 2cc6, 2cc8, 2cca, 2ccc, 2cce, 2cd0, 2cd2, 2cd4, 2cd6, 2cd8, 2cda, 2cdc, 2cde, 2ce0, 2ce2, 2ce5..2ceb, 2ced, 2cef..2cf2, 2cf4..2cff, 2d26, 2d28..2d2c, 2d2e..a640, a642, a644, a646, a648, a64a, a64c, a64e, a650, a652, a654, a656, a658, a65a, a65c, a65e, a660, a662, a664, a666, a668, a66a, a66c, a66e..a680, a682, a684, a686, a688, a68a, a68c, a68e, a690, a692, a694, a696, a698, a69a, a69c..a722, a724, a726, a728, a72a, a72c, a72e, a732, a734, a736, a738, a73a, a73c, a73e, a740, a742, a744, a746, a748, a74a, a74c, a74e, a750, a752, a754, a756, a758, a75a, a75c, a75e, a760, a762, a764, a766, a768, a76a, a76c, a76e, a770, a779, a77b, a77d..a77e, a780, a782, a784, a786, a788..a78b, a78d, a78f..a790, a792, a796, a798, a79a, a79c, a79e, a7a0, a7a2, a7a4, a7a6, a7a8, a7aa..a7ae, a7b0..a7b4, a7b6, a7b8, a7ba, a7bc, a7be, a7c0, a7c2, a7c4..a7c7, a7c9, a7cb..a7d0, a7d2, a7d4, a7d6, a7d8, a7da..a7f5, a7f7..a7f9, a7fb..ab2f, ab5b..ab5f, ab69..ab6f, abc0..faff, fb07..fb12, fb18..ff40, ff5b..10427, 10450..104d7, 104fc..10596, 105a2, 105b2, 105ba, 105bd..10cbf, 10cf3..118bf, 118e0..16e5f, 16e80..1d419, 1d434..1d44d, 1d455, 1d468..1d481, 1d49c..1d4b5, 1d4ba, 1d4bc, 1d4c4, 1d4d0..1d4e9, 1d504..1d51d, 1d538..1d551, 1d56c..1d585, 1d5a0..1d5b9, 1d5d4..1d5ed, 1d608..1d621, 1d63c..1d655, 1d670..1d689, 1d6a6..1d6c1, 1d6db, 1d6e2..1d6fb, 1d715, 1d71c..1d735, 1d74f, 1d756..1d76f, 1d789, 1d790..1d7a9, 1d7c3, 1d7ca, 1d7cc..1deff, 1df0a, 1df1f..1df24, 1df2b..1e921, 1e944..10ffff]
 `.slice(1, -1);
@@ -66,4 +318,216 @@ module.exports["JS createCharSet >> Literal tests >> /[^\\p{Ll}]/iu"] = `
 
 module.exports["JS createCharSet >> Literal tests >> /[^\\P{Ll}]/iu"] = `
 [131, 138, 149, 18d, 19b, 1aa..1ab, 1ba, 1be, 1f0, 221, 234..239, 255, 258, 25a, 25d..25f, 262, 264, 267, 26d..26e, 270, 273..274, 276..27c, 27e..27f, 281, 284..286, 28d..291, 293, 295..29c, 29f..2af, 390, 3b0, 3fc, 560, 587..588, 1d00..1d2b, 1d6b..1d77, 1d7a..1d7c, 1d7e..1d8d, 1d8f..1d9a, 1e96..1e9a, 1e9c..1e9d, 1e9f, 1f50, 1f52, 1f54, 1f56, 1fb2, 1fb4, 1fb6..1fb7, 1fc2, 1fc4, 1fc6..1fc7, 1fd2..1fd3, 1fd6..1fd7, 1fe2..1fe4, 1fe6..1fe7, 1ff2, 1ff4, 1ff6..1ff7, 210a, 210e..210f, 2113, 212f, 2134, 2139, 213c..213d, 2146..2149, 2c71, 2c74, 2c77..2c7b, 2ce4, a730..a731, a771..a778, a78e, a795, a7af, a7d3, a7d5, a7fa, ab30..ab52, ab54..ab5a, ab60..ab68, fb00..fb06, fb13..fb17, 1d41a..1d433, 1d44e..1d454, 1d456..1d467, 1d482..1d49b, 1d4b6..1d4b9, 1d4bb, 1d4bd..1d4c3, 1d4c5..1d4cf, 1d4ea..1d503, 1d51e..1d537, 1d552..1d56b, 1d586..1d59f, 1d5ba..1d5d3, 1d5ee..1d607, 1d622..1d63b, 1d656..1d66f, 1d68a..1d6a5, 1d6c2..1d6da, 1d6dc..1d6e1, 1d6fc..1d714, 1d716..1d71b, 1d736..1d74e, 1d750..1d755, 1d770..1d788, 1d78a..1d78f, 1d7aa..1d7c2, 1d7c4..1d7c9, 1d7cb, 1df00..1df09, 1df0b..1df1e, 1df25..1df2a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\w--\\d]/v"] = `
+[41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\w&&\\d]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\w&&[\\d\\q{a|foo}]]/v"] = `
+[30..39, 61]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d\\q{a|foo|}]/v"] = `
+[66][6f][6f]|[30..39, 61]|
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^\\d\\q{a|b}]/v"] = `
+[0..2f, 3a..60, 63..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&[0-9]]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&\\d]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&_]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]--[0-9]]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]--\\d]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]--\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[31, 33, 35..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]--_]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9][0-9]]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]\\d]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[39][fe0f][20e3]|[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[0-9]_]/v"] = `
+[30..39, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d&&[0-9]]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d&&\\d]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d&&\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d&&_]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d--[0-9]]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d--\\d]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d--\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[31, 33, 35..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d--_]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d[0-9]]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d\\d]/v"] = `
+[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[39][fe0f][20e3]|[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\d_]/v"] = `
+[30..39, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}&&[0-9]]/v"] = `
+[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}&&\\d]/v"] = `
+[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}&&\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[39][fe0f][20e3]|[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}&&_]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}--[0-9]]/v"] = `
+[39][fe0f][20e3]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}--\\d]/v"] = `
+[39][fe0f][20e3]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}--\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}--_]/v"] = `
+[39][fe0f][20e3]|[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}[0-9]]/v"] = `
+[39][fe0f][20e3]|[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}\\d]/v"] = `
+[39][fe0f][20e3]|[30..39]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[39][fe0f][20e3]|[30, 32, 34]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{0|2|4|9\\uFE0F\\u20E3}_]/v"] = `
+[39][fe0f][20e3]|[30, 32, 34, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_&&[0-9]]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_&&\\d]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_&&\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_&&_]/v"] = `
+[5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_--[0-9]]/v"] = `
+[5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_--\\d]/v"] = `
+[5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_--\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_--_]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_[0-9]]/v"] = `
+[30..39, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_\\d]/v"] = `
+[30..39, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[_\\q{0|2|4|9\\uFE0F\\u20E3}]/v"] = `
+[39][fe0f][20e3]|[30, 32, 34, 5f]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[__]/v"] = `
+[5f]
 `.slice(1, -1);
