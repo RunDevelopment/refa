@@ -31,6 +31,7 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="JS.Parser.html#ast" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>ast</span></a>
+<a href="JS.Parser.html#flags" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>flags</span></a>
 <a href="JS.Parser.html#literal" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>literal</span></a>
 <a href="JS.Parser.html#maxCharacter" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>max<wbr/>Character</span></a>
 </div></section>
@@ -49,6 +50,11 @@
 <div class="tsd-comment tsd-typography"><p>The parsed AST of the literal this parser works on.</p>
 <p>While not explicitly typed that way, the parser will assume that the AST is readonly and makes optimizations
 based on that assumption. It is not safe to change the AST in any way.</p>
+</div></section>
+<section class="tsd-panel tsd-member"><a id="flags" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>flags</span><a href="#flags" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">flags</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Required</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/JS.Flags.html" class="tsd-signature-type tsd-kind-type-alias">Flags</a><span class="tsd-signature-symbol">&gt;</span></div>
+<div class="tsd-comment tsd-typography"><p>This contains the same flags as <code>ast.flags</code> but with a better type.</p>
 </div></section>
 <section class="tsd-panel tsd-member"><a id="literal" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>literal</span><a href="#literal" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
@@ -143,6 +149,7 @@ given RegExp parser options.</p>
 <div class="tsd-accordion-details">
 <ul>
 <li><a href="#ast" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>ast</span></a></li>
+<li><a href="#flags" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>flags</span></a></li>
 <li><a href="#literal" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>literal</span></a></li>
 <li><a href="#maxCharacter" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>max<wbr/>Character</span></a></li>
 <li><a href="#parse" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>parse</span></a></li>
@@ -219,24 +226,34 @@ given RegExp parser options.</p>
 <div class="tsd-accordion-details">
 <ul class="tsd-nested-navigation">
 <li><a href="JS.Parser.html" class="current"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Parser</span></a></li>
+<li><a href="JS.UnicodeSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Unicode<wbr/>Set</span></a></li>
 <li><a href="../interfaces/JS.AnyCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Any<wbr/>Character<wbr/>Set</span></a></li>
+<li><a href="../interfaces/JS.CharacterPropertyCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Character<wbr/>Property<wbr/>Character<wbr/>Set</span></a></li>
 <li><a href="../interfaces/JS.DigitCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Digit<wbr/>Character<wbr/>Set</span></a></li>
-<li><a href="../interfaces/JS.Flags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Flags</span></a></li>
 <li><a href="../interfaces/JS.Literal.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Literal</span></a></li>
+<li><a href="../interfaces/JS.NonUnicodeSetsFlags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Non<wbr/>Unicode<wbr/>Sets<wbr/>Flags</span></a></li>
 <li><a href="../interfaces/JS.ParseOptions.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Parse<wbr/>Options</span></a></li>
 <li><a href="../interfaces/JS.ParseResult.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Parse<wbr/>Result</span></a></li>
-<li><a href="../interfaces/JS.PropertyCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Property<wbr/>Character<wbr/>Set</span></a></li>
 <li><a href="../interfaces/JS.RegexppAst.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Regexpp<wbr/>Ast</span></a></li>
 <li><a href="../interfaces/JS.SpaceCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Space<wbr/>Character<wbr/>Set</span></a></li>
+<li><a href="../interfaces/JS.StringPropertyCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>String<wbr/>Property<wbr/>Character<wbr/>Set</span></a></li>
 <li><a href="../interfaces/JS.TextBoundaryAssertion.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Text<wbr/>Boundary<wbr/>Assertion</span></a></li>
 <li><a href="../interfaces/JS.ToLiteralOptions.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>To<wbr/>Literal<wbr/>Options</span></a></li>
+<li><a href="../interfaces/JS.UncheckedFlags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Unchecked<wbr/>Flags</span></a></li>
+<li><a href="../interfaces/JS.UnicodeSetsFlags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Unicode<wbr/>Sets<wbr/>Flags</span></a></li>
 <li><a href="../interfaces/JS.WordBoundaryAssertion.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Word<wbr/>Boundary<wbr/>Assertion</span></a></li>
 <li><a href="../interfaces/JS.WordCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Word<wbr/>Character<wbr/>Set</span></a></li>
 <li><a href="../types/JS.BoundaryAssertion.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Boundary<wbr/>Assertion</span></a></li>
+<li><a href="../types/JS.CharacterElement.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Character<wbr/>Element</span></a></li>
+<li><a href="../types/JS.Flags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Flags</span></a></li>
 <li><a href="../types/JS.ParsableElement.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Parsable<wbr/>Element</span></a></li>
 <li><a href="../types/JS.PredefinedCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Predefined<wbr/>Character<wbr/>Set</span></a></li>
+<li><a href="../types/JS.PropertyCharacterSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Property<wbr/>Character<wbr/>Set</span></a></li>
 <li><a href="../functions/JS.createAssertion.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>create<wbr/>Assertion</span></a></li>
 <li><a href="../functions/JS.createCharSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>create<wbr/>Char<wbr/>Set</span></a></li>
+<li><a href="../functions/JS.isFlags.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>is<wbr/>Flags</span></a></li>
+<li><a href="../functions/JS.parseCharSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>parse<wbr/>Char<wbr/>Set</span></a></li>
+<li><a href="../functions/JS.parseUnicodeSet.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>parse<wbr/>Unicode<wbr/>Set</span></a></li>
 <li><a href="../functions/JS.toLiteral.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>to<wbr/>Literal</span></a></li></ul></div></details></li>
 <li>
 <details class="tsd-index-accordion" data-key="NFA"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg><a href="../modules/NFA.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4-path"></use><use href="#icon-4-text"></use></svg><span>NFA</span></a></summary>
