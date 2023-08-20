@@ -4,5 +4,6 @@
   "useTabs": true,
   "arrowParens": "avoid",
   "quoteProps": "consistent",
-  "semi": true
+  "semi": true,
+  "trailingComma": "es5"
 }

@@ -286,7 +286,7 @@ export class ENFA implements ReadonlyENFA {
 		charSetToString?: (charSet: CharSet) => string
 	): [
 		FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>>,
-		Iter.SimplePrintOptions<CharSet | null>
+		Iter.SimplePrintOptions<CharSet | null>,
 	] {
 		const iter: FAIterator<ENFA.ReadonlyNode, ReadonlyMap<ENFA.ReadonlyNode, CharSet | null>> = {
 			initial: this.initial,
