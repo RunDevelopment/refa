@@ -363,7 +363,7 @@ function getSingleCharSetInAssertion(assertion: NoParent<Assertion>): CharSet | 
 function makeIgnoreCaseSingleChar(char: Char, env: CharEnv & CharEnvIgnoreCase): CharSet | null {
 	const folding = env.caseFolding[char];
 	if (folding) {
-		return env.empty.union(folding.map(c => ({ min: c, max: c })));
+		return CharSet.fromCharacters(env.maxCharacter, folding);
 	} else {
 		return null;
 	}
@@ -746,7 +746,7 @@ function printCharClassContentSimpleIgnoreCase(set: CharSet, env: CharEnv & Char
 	for (const range of set.ranges) {
 		if (!hasAlready.isSupersetOf(range)) {
 			s += printCharRange(range);
-			hasAlready = hasAlready.union(env.withCaseVaryingCharacters(env.empty.union([range])));
+			hasAlready = hasAlready.union(env.withCaseVaryingCharacters(CharSet.fromRange(env.maxCharacter, range)));
 		}
 	}
 	return s;
