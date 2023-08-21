@@ -340,6 +340,10 @@ module.exports["JS createCharSet >> Literal tests >> /[^\\d\\q{a|b}]/v"] = `
 [0..2f, 3a..60, 63..10ffff]
 `.slice(1, -1);
 
+module.exports["JS createCharSet >> Literal tests >> /[^\\W--%]/v"] = `
+[25, 30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
 module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&[0-9]]/v"] = `
 [30..39]
 `.slice(1, -1);

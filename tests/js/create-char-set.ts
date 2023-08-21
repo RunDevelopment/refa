@@ -168,6 +168,7 @@ describe("JS createCharSet", function () {
 			{ literal: { source: String.raw`[\d\q{a|foo|}]`, flags: "v" } },
 			{ literal: { source: String.raw`[^\d\q{a|b}]`, flags: "v" } },
 			{ literal: { source: String.raw`[^\q{ab}]`, flags: "v" }, expected: Error },
+			{ literal: { source: String.raw`[^\W--%]`, flags: "v" } },
 
 			{ literal: { source: "[[0-9]&&[0-9]]", flags: "v" } },
 			{ literal: { source: "[[0-9]&&\\d]", flags: "v" } },

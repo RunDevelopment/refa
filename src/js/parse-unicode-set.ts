@@ -113,7 +113,7 @@ function compileElement(
 			// negate
 			if (!chars.accept.isEmpty) {
 				throw new Error(
-					"The character class " + element.raw + " cannot be negated because it contains string."
+					"The character class " + element.raw + " cannot be negated because it contains strings."
 				);
 			}
 			return ExtendedCharSet.fromChars(chars.chars.negate());
@@ -130,7 +130,19 @@ function compileElement(
 			return left.without(right);
 		}
 		case "ExpressionCharacterClass": {
-			return compileElement(element.expression, flags);
+			const expr = compileElement(element.expression, flags);
+
+			if (!element.negate) {
+				return expr;
+			}
+
+			// negate
+			if (!expr.accept.isEmpty) {
+				throw new Error(
+					"The character class " + element.raw + " cannot be negated because it contains strings."
+				);
+			}
+			return ExtendedCharSet.fromChars(expr.chars.negate());
 		}
 
 		case "ClassStringDisjunction": {
