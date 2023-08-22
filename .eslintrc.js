@@ -80,6 +80,7 @@ module.exports = {
 		"jsdoc/empty-tags": "error",
 		"jsdoc/check-param-names": ["error", { enableFixer: true }],
 		"jsdoc/require-param": "error",
+		"jsdoc/tag-lines": ["warn", "any", { startLines: 1 }],
 
 		"no-empty-character-class": "off",
 		"@typescript-eslint/explicit-member-accessibility": "off",
