@@ -253,11 +253,6 @@ export function parseCharSet(
 						case "CharacterClassRange":
 							return { min: e.min.value, max: e.max.value };
 						case "CharacterSet":
-							// https://github.com/eslint-community/regexpp/issues/121
-							// TODO: remove this once the type has bee fixed
-							if (e.kind === "property" && e.strings) {
-								throw new Error("Invalid flags. The AST contains a Unicode property escape.");
-							}
 							return e;
 						default:
 							throw assertNever(e, "Unsupported element");
