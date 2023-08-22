@@ -76,7 +76,6 @@ module.exports = {
 
 		"jsdoc/no-types": "error",
 		"jsdoc/no-bad-blocks": "error",
-		"jsdoc/newline-after-description": "error",
 		"jsdoc/multiline-blocks": "error",
 		"jsdoc/empty-tags": "error",
 		"jsdoc/check-param-names": ["error", { enableFixer: true }],
