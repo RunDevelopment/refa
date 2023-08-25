@@ -233,10 +233,6 @@ export class StringSet {
 		}
 		return new StringSet(items, this._caseFolding);
 	}
-
-	values(): Iterable<ReadonlyWord> {
-		return this.words;
-	}
 }
 
 function normalize(items: ReadonlyWord[]): void {
