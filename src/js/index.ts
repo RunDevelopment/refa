@@ -17,3 +17,6 @@ export * from "./flags";
 export * from "./literal";
 export * from "./parser";
 export * from "./parse-unicode-set";
+export * from "./string-set";
+export * from "./unicode-set";
+export * from "./char-case-folding";

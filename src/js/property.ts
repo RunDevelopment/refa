@@ -2,9 +2,11 @@ import { CharRange, CharSet } from "../char-set";
 import { Char, ReadonlyWord } from "../char-types";
 import { assertNever } from "../util";
 import { CharEnv, CharEnvIgnoreCase, CharEnvUnicode } from "./char-env";
-import { ExtendedCharSet } from "./extended-char-set";
+import { UnicodeSet } from "./unicode-set";
 import { StringSet } from "./string-set";
 import { Alias, Binary_Property, General_Category, PropertiesOfStrings, Script, Script_Extensions } from "./unicode";
+import { Maximum } from "./maximum";
+import { getCharCaseFolding } from "./char-case-folding";
 
 interface CacheEntry {
 	readonly value: CharSet;
@@ -63,9 +65,9 @@ function getCharacterPropertyUncached(
 	}
 }
 
-const ignoreCaseStringCache = new Map<string, ExtendedCharSet>();
+const ignoreCaseStringCache = new Map<string, UnicodeSet>();
 
-export function getStringProperty(key: string, env: CharEnv & CharEnvUnicode): ExtendedCharSet {
+export function getStringProperty(key: string, env: CharEnv & CharEnvUnicode): UnicodeSet {
 	if (!env.ignoreCase) {
 		return getPropertyData(key, null);
 	}
@@ -77,17 +79,17 @@ export function getStringProperty(key: string, env: CharEnv & CharEnvUnicode): E
 	}
 	return entry;
 }
-function getStringPropertyUncached(key: string, env: CharEnv & CharEnvUnicode & CharEnvIgnoreCase): ExtendedCharSet {
+function getStringPropertyUncached(key: string, env: CharEnv & CharEnvUnicode & CharEnvIgnoreCase): UnicodeSet {
 	const data = getPropertyData(key, null);
 
 	const chars = env.withCaseVaryingCharacters(data.chars);
-	const words = data.accept.map(word => word.map(env.canonicalize));
+	const words = StringSet.from(data.accept.words, env.charCaseFolding);
 
-	return ExtendedCharSet.from(chars, words);
+	return UnicodeSet.from(chars, words);
 }
 
-const propertyDataCache = new Map<string, ExtendedCharSet>();
-export function getPropertyData(key: string, value: string | null): ExtendedCharSet {
+const propertyDataCache = new Map<string, UnicodeSet>();
+export function getPropertyData(key: string, value: string | null): UnicodeSet {
 	const cacheKey = key + "=" + value;
 	let cached = propertyDataCache.get(cacheKey);
 	if (cached === undefined) {
@@ -96,20 +98,20 @@ export function getPropertyData(key: string, value: string | null): ExtendedChar
 	}
 	return cached;
 }
-function getPropertyDataUncached(key: string, value: string | null): ExtendedCharSet {
+function getPropertyDataUncached(key: string, value: string | null): UnicodeSet {
 	if (value === null) {
 		const strings = getPropertyStrings(key);
 		if (strings) {
-			return stringsToCharSet(strings);
+			return stringsToUnicodeSet(strings);
 		}
 	}
 
 	const ranges = getPropertyRanges(key, value);
-	const chars = CharSet.empty(0x10ffff).union(ranges);
-	return ExtendedCharSet.fromChars(chars);
+	const chars = CharSet.empty(Maximum.UNICODE).union(ranges);
+	return UnicodeSet.fromChars(chars);
 }
 
-function stringsToCharSet(strings: readonly ReadonlyWord[]): ExtendedCharSet {
+function stringsToUnicodeSet(strings: readonly ReadonlyWord[]): UnicodeSet {
 	const chars: Char[] = [];
 	const words: ReadonlyWord[] = [];
 
@@ -122,9 +124,9 @@ function stringsToCharSet(strings: readonly ReadonlyWord[]): ExtendedCharSet {
 	}
 
 	// characters are sorted (see create-unicode.ts)
-	const charSet = CharSet.fromCharacters(0x10ffff, chars);
+	const charSet = CharSet.fromCharacters(Maximum.UNICODE, chars);
 
-	return ExtendedCharSet.from(charSet, StringSet.from(words));
+	return UnicodeSet.from(charSet, StringSet.from(words, getCharCaseFolding(true, false)));
 }
 
 function getPropertyStrings(key: string): readonly ReadonlyWord[] | undefined {

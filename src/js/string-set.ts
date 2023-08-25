@@ -1,172 +1,241 @@
 import { ReadonlyWord } from "../char-types";
-import { filterMut } from "../util";
+import { debugAssert, filterMut } from "../util";
+import { ReadonlyWordSet } from "../word-set";
+import { CharCaseFolding } from "./char-case-folding";
+
+const noopCaseFolding: CharCaseFolding = {
+	toCharSet() {
+		throw new Error("Cannot convert char to char set with noop case folding.");
+	},
+};
 
 /**
- * A sorted set of words.
+ * A set of words.
  *
- * Words are guaranteed to be sorted by ascending length followed by ascending character value.
+ * Words are stored as a sorted list of canonicalized words. The actual value of the set is {@link wordSets}.
  */
 export class StringSet {
 	/**
-	 * A sorted list of words.
+	 * A sorted list of canonicalized words.
 	 *
-	 * Words are guaranteed to be sorted by ascending length.
+	 * Words are guaranteed to be sorted by ascending length followed by ascending character value.
 	 */
-	private readonly _items: readonly ReadonlyWord[];
+	readonly words: readonly ReadonlyWord[];
+
+	private readonly _caseFolding: CharCaseFolding;
 
 	/**
-	 * Returns the number of words in this set.
-	 */
-	get size(): number {
-		return this._items.length;
-	}
-	/**
-	 * Returns true if this set is empty.
-	 *
-	 * This is equivalent to `size === 0`.
+	 * `true` if this set is empty.
 	 */
 	get isEmpty(): boolean {
-		return this._items.length === 0;
+		return this.words.length === 0;
 	}
 
 	/**
-	 * Returns true if this set contains the empty word.
+	 * `true` if this set contains the empty word.
 	 */
 	get hasEmptyWord(): boolean {
-		return this._items.length > 0 && this._items[0].length === 0;
+		return this.words.length > 0 && this.words[0].length === 0;
 	}
 	/**
-	 * Returns true if this set contains at least one single-character word.
+	 * `true` if this set contains at least one single-character word.
 	 */
-	get hasSingleCharacterWord(): boolean {
+	get hasSingleCharacter(): boolean {
 		const startIndex = this.hasEmptyWord ? 1 : 0;
-		return this._items.length > startIndex && this._items[startIndex].length === 1;
+		return this.words.length > startIndex && this.words[startIndex].length === 1;
 	}
 
-	private constructor(items: readonly ReadonlyWord[]) {
-		this._items = items;
+	private _wordSet: readonly ReadonlyWordSet[] | undefined;
+
+	/**
+	 * {@link words} with {@link CharCaseFolding#toCharSet} applied to each character.
+	 *
+	 * Word sets are guaranteed to be sorted by ascending length.
+	 *
+	 * Note: This is a lazy getter. Try to avoid calling it for best performance.
+	 */
+	get wordSets(): readonly ReadonlyWordSet[] {
+		return (this._wordSet ??= toWordSets(this.words, this._caseFolding));
 	}
 
-	static empty = new StringSet([]);
+	private constructor(items: readonly ReadonlyWord[], caseFolding: CharCaseFolding) {
+		this.words = items;
+		this._caseFolding = caseFolding;
+	}
 
-	static from(words: Iterable<ReadonlyWord>): StringSet {
-		if (words instanceof StringSet) {
-			return words;
-		}
+	static empty = new StringSet([], noopCaseFolding);
 
+	static from(words: Iterable<ReadonlyWord>, caseFolding: CharCaseFolding): StringSet {
 		const items = [...words];
 		if (items.length === 0) {
 			return StringSet.empty;
 		}
+
+		if (caseFolding.canonicalize) {
+			for (let i = 0; i < items.length; i++) {
+				items[i] = items[i].map(caseFolding.canonicalize);
+			}
+		}
+
 		normalize(items);
-		return new StringSet(items);
+		return new StringSet(items, caseFolding);
 	}
 
+	/**
+	 * Returns whether this set is compatible with the given set. Compatibility is defined as follows:
+	 *
+	 * 1. The empty set is compatible with all sets.
+	 * 2. Sets with different case folding are incompatible.
+	 *
+	 * @param other
+	 */
+	isCompatibleWith(other: StringSet): boolean {
+		return this.isEmpty || other.isEmpty || this._caseFolding === other._caseFolding;
+	}
+
+	/**
+	 * Returns whether this set is equal to the given set.
+	 *
+	 * Equality is defined as the `wordSets` of both sets being the same formal language.
+	 *
+	 * @param other
+	 */
 	equals(other: StringSet): boolean {
 		if (this === other) {
 			return true;
 		}
 
-		const a = this._items;
-		const b = other._items;
-
-		if (a.length !== a.length) {
+		if (this.words.length !== other.words.length) {
 			return false;
 		}
-		for (let i = 0; i < a.length; i++) {
-			if (compare(a[i], b[i]) !== 0) {
-				return false;
+
+		// empty sets
+		if (this.words.length === 0) {
+			return true;
+		}
+
+		if (this._caseFolding === other._caseFolding) {
+			// we use the same case folding, so we don't need to use word sets
+			const a = this.words;
+			const b = other.words;
+			for (let i = 0; i < a.length; i++) {
+				if (compareWords(a[i], b[i]) !== 0) {
+					return false;
+				}
 			}
-		}
-		return true;
-	}
-	compare(other: StringSet): number {
-		if (other === this) {
-			return 0;
-		}
-
-		const a = this._items;
-		const b = other._items;
-
-		if (a.length !== a.length) {
-			return a.length - b.length;
-		}
-		for (let i = 0; i < a.length; i++) {
-			const diff = compare(a[i], b[i]);
-			if (diff !== 0) {
-				return diff;
+			return true;
+		} else {
+			// before we use word sets, we check the length of all words to avoid unnecessary work
+			const a = this.words;
+			const b = other.words;
+			for (let i = 0; i < a.length; i++) {
+				if (a[i].length !== b[i].length) {
+					return false;
+				}
 			}
-		}
-		return 0;
-	}
 
-	has(word: ReadonlyWord): boolean {
-		return this._items.some(item => compare(item, word) === 0);
+			// compare word sets
+			const aSets = this.wordSets;
+			const bSets = other.wordSets;
+			for (let i = 0; i < aSets.length; i++) {
+				if (!equalWordSets(aSets[i], bSets[i])) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 
 	union(...others: StringSet[]): StringSet {
 		if (others.length === 0) {
 			return this;
-		}
+		} else if (others.length === 1) {
+			const other = others[0];
+			if (this.isEmpty || other.isEmpty) {
+				return StringSet.empty;
+			}
+			if (this._caseFolding !== other._caseFolding) {
+				throw new Error("Cannot intersect incompatible string sets.");
+			}
 
-		const items = [...this._items];
-		const len = items.length;
-		for (const words of others) {
-			items.push(...words._items);
+			const items: ReadonlyWord[] = [...this.words, ...other.words];
+			normalize(items);
+			return new StringSet(items, this._caseFolding);
+		} else {
+			const items: ReadonlyWord[] = [...this.words];
+			for (const set of others) {
+				items.push(...set.words);
+			}
+
+			if (items.length === 0) {
+				return StringSet.empty;
+			}
+
+			let caseFolding: CharCaseFolding | undefined = this.isEmpty ? undefined : this._caseFolding;
+			for (const set of others) {
+				if (!set.isEmpty) {
+					if (caseFolding === undefined) {
+						caseFolding = set._caseFolding;
+					} else if (caseFolding !== set._caseFolding) {
+						throw new Error("Cannot union incompatible string sets.");
+					}
+				}
+			}
+			debugAssert(caseFolding !== undefined);
+
+			normalize(items);
+			return new StringSet(items, caseFolding);
 		}
-		if (items.length === len) {
-			// nothing changed
-			return this;
-		}
-		normalize(items);
-		return new StringSet(items);
 	}
 
 	intersect(other: StringSet): StringSet {
 		if (this.isEmpty || other.isEmpty) {
 			return StringSet.empty;
 		}
+		if (this._caseFolding !== other._caseFolding) {
+			throw new Error("Cannot intersect incompatible string sets.");
+		}
 
-		const items = this._items.filter(item => other.has(item));
-		if (items.length === this._items.length) {
+		const items = intersectSorted(this.words, other.words, compareWords);
+		if (items.length === this.words.length) {
 			return this;
-		} else if (items.length === other._items.length) {
+		} else if (items.length === other.words.length) {
 			return other;
 		} else if (items.length === 0) {
 			return StringSet.empty;
 		}
-		return new StringSet(items);
+		return new StringSet(items, this._caseFolding);
 	}
 
 	without(other: StringSet): StringSet {
 		if (this.isEmpty || other.isEmpty) {
 			return this;
 		}
+		if (this._caseFolding !== other._caseFolding) {
+			throw new Error("Cannot intersect incompatible string sets.");
+		}
 
-		const items = this._items.filter(item => !other.has(item));
-		if (items.length === this._items.length) {
+		const items = withoutSorted(this.words, other.words, compareWords);
+		if (items.length === this.words.length) {
 			return this;
 		} else if (items.length === 0) {
 			return StringSet.empty;
 		}
-		return new StringSet(items);
+		return new StringSet(items, this._caseFolding);
 	}
 
 	filter(predicate: (word: ReadonlyWord) => boolean): StringSet {
-		const items = this._items.filter(predicate);
-		if (items.length === this._items.length) {
+		const items = this.words.filter(predicate);
+		if (items.length === this.words.length) {
 			return this;
 		} else if (items.length === 0) {
 			return StringSet.empty;
 		}
-		return new StringSet(items);
-	}
-	map(mapFn: (word: ReadonlyWord) => ReadonlyWord): StringSet {
-		return StringSet.from(this._items.map(mapFn));
+		return new StringSet(items, this._caseFolding);
 	}
 
 	values(): Iterable<ReadonlyWord> {
-		return this._items;
+		return this.words;
 	}
 }
 
@@ -176,13 +245,13 @@ function normalize(items: ReadonlyWord[]): void {
 	}
 
 	// sort
-	items.sort(compare);
+	items.sort(compareWords);
 
 	// remove duplicates
-	filterMut(items, (item, prev) => !prev || compare(item, prev) !== 0);
+	filterMut(items, (item, prev) => !prev || compareWords(item, prev) !== 0);
 }
 
-function compare(a: ReadonlyWord, b: ReadonlyWord): number {
+function compareWords(a: ReadonlyWord, b: ReadonlyWord): number {
 	if (a.length !== b.length) {
 		return a.length - b.length;
 	}
@@ -194,4 +263,72 @@ function compare(a: ReadonlyWord, b: ReadonlyWord): number {
 		}
 	}
 	return 0;
+}
+function equalWordSets(a: ReadonlyWordSet, b: ReadonlyWordSet): boolean {
+	if (a.length !== b.length) {
+		return false;
+	}
+
+	for (let i = 0; i < a.length; i++) {
+		if (!a[i].equals(b[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function toWordSets(items: readonly ReadonlyWord[], caseFolding: CharCaseFolding): readonly ReadonlyWordSet[] {
+	if (items.length === 0) {
+		return [];
+	}
+
+	return items.map(word => {
+		return word.map(char => caseFolding.toCharSet(char));
+	});
+}
+
+function intersectSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T, b: T) => number): T[] {
+	const result: T[] = [];
+	let i1 = 0;
+	let i2 = 0;
+
+	while (i1 < s1.length && i2 < s2.length) {
+		const diff = compare(s1[i1], s2[i2]);
+		if (diff === 0) {
+			result.push(s1[i1]);
+			i1++;
+			i2++;
+		} else if (diff < 0) {
+			i1++;
+		} else {
+			i2++;
+		}
+	}
+
+	return result;
+}
+
+function withoutSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T, b: T) => number): T[] {
+	const result: T[] = [];
+	let i1 = 0;
+	let i2 = 0;
+
+	while (i1 < s1.length && i2 < s2.length) {
+		const diff = compare(s1[i1], s2[i2]);
+		if (diff === 0) {
+			i1++;
+			i2++;
+		} else if (diff < 0) {
+			result.push(s1[i1]);
+			i1++;
+		} else {
+			i2++;
+		}
+	}
+
+	if (i1 < s1.length) {
+		result.push(...s1.slice(i1));
+	}
+
+	return result;
 }

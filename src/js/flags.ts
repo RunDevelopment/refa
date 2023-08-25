@@ -23,6 +23,11 @@ export interface UncheckedFlags {
 	unicodeSets?: boolean;
 }
 
+/**
+ * Returns whether the given flags are valid.
+ *
+ * @param flags
+ */
 export function isFlags(flags: UncheckedFlags): flags is Flags {
 	const { unicode = false, unicodeSets = false } = flags;
 	return (!unicode && !unicodeSets) || (unicode && !unicodeSets) || (!unicode && unicodeSets);
