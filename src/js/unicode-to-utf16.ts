@@ -1,6 +1,6 @@
 import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
-import { UNICODE_MAXIMUM, UTF16_MAXIMUM } from "./char-env";
+import { Maximum } from "./maximum";
 
 const enum HighSurrogate {
 	MIN = 0xd800,
@@ -11,11 +11,11 @@ const enum LowSurrogate {
 	MAX = 0xdfff,
 }
 
-const BMP: CharRange = { min: 0, max: UTF16_MAXIMUM };
+const BMP: CharRange = { min: 0, max: Maximum.UTF16 };
 const SURROGATE_RANGE: CharRange = { min: 0xd800, max: 0xdfff };
 const HIGH_SURROGATE_RANGE: CharRange = { min: HighSurrogate.MIN, max: HighSurrogate.MAX };
 const LOW_SURROGATE_RANGE: CharRange = { min: LowSurrogate.MIN, max: LowSurrogate.MAX };
-const LOW_SURROGATE_SET: CharSet = CharSet.empty(UTF16_MAXIMUM).union([LOW_SURROGATE_RANGE]);
+const LOW_SURROGATE_SET: CharSet = CharSet.empty(Maximum.UTF16).union([LOW_SURROGATE_RANGE]);
 
 /**
  * A representation of UTF16 character codes.
@@ -43,20 +43,20 @@ export interface UTF16Result {
  * @returns
  */
 export function toUTF16(charSet: CharSet): UTF16Result {
-	if (charSet.maximum === UTF16_MAXIMUM) {
+	if (charSet.maximum === Maximum.UTF16) {
 		return {
 			bmp: charSet,
-			high: CharSet.empty(UTF16_MAXIMUM),
-			low: CharSet.empty(UTF16_MAXIMUM),
+			high: CharSet.empty(Maximum.UTF16),
+			low: CharSet.empty(Maximum.UTF16),
 			astral: [],
 		};
 	}
 
-	if (charSet.maximum !== UNICODE_MAXIMUM) {
-		throw new RangeError(`Expected Unicode maximum (${UNICODE_MAXIMUM}) but found ${charSet.maximum}`);
+	if (charSet.maximum !== Maximum.UNICODE) {
+		throw new RangeError(`Expected Unicode maximum (${Maximum.UNICODE}) but found ${charSet.maximum}`);
 	}
 
-	const nativeUTF16 = charSet.resize(UTF16_MAXIMUM);
+	const nativeUTF16 = charSet.resize(Maximum.UTF16);
 	const bmp = nativeUTF16.without(SURROGATE_RANGE);
 	const high = nativeUTF16.intersect(HIGH_SURROGATE_RANGE);
 	const low = nativeUTF16.intersect(LOW_SURROGATE_RANGE);
@@ -151,7 +151,7 @@ function convertAstral(astral: CharSet): UTF16Result["astral"] {
 	const result: UTF16Result["astral"] = [];
 
 	if (full.length > 0) {
-		result.push([CharSet.empty(UTF16_MAXIMUM).union(full), LOW_SURROGATE_SET]);
+		result.push([CharSet.empty(Maximum.UTF16).union(full), LOW_SURROGATE_SET]);
 	}
 
 	for (const { high, low } of compressedPartials) {
@@ -159,7 +159,7 @@ function convertAstral(astral: CharSet): UTF16Result["astral"] {
 		// TODO: Are we allowed to assume stable sorting?
 		high.sort((a, b) => a - b);
 
-		result.push([CharSet.fromCharacters(UTF16_MAXIMUM, high), CharSet.empty(UTF16_MAXIMUM).union(low)]);
+		result.push([CharSet.fromCharacters(Maximum.UTF16, high), CharSet.empty(Maximum.UTF16).union(low)]);
 	}
 
 	// finally, sort the result by ascending high surrogate

@@ -4,9 +4,10 @@ import { assertNever, cachedFunc, debugAssert } from "../util";
 import { CharRange, CharSet } from "../char-set";
 import { Flags } from "./flags";
 import { Literal } from "./literal";
-import { CharEnv, CharEnvIgnoreCase, UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { CharEnv, CharEnvIgnoreCase, getCharEnv } from "./char-env";
 import { UTF16Result, toUTF16 } from "./unicode-to-utf16";
 import { UTF16CaseVarying } from "./utf16-case-folding";
+import { Maximum } from "./maximum";
 
 export interface ToLiteralOptions {
 	/**
@@ -201,7 +202,7 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 				throw new Error(`All characters were expected to have a maximum of ${context.inputEnv.maxCharacter}.`);
 			}
 
-			if (node.characters.maximum === UNICODE_MAXIMUM && !context.flags.unicode) {
+			if (node.characters.maximum === Maximum.UNICODE && !context.flags.unicode) {
 				// convert Unicode character set to UTF16
 				debugAssert(context.converter instanceof UnicodeToUTF16CharSetConverter);
 				const utf16Result = context.converter.getUTF16Result(node.characters);
@@ -374,9 +375,9 @@ function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 		for (const node of value) {
 			visitAst(node, {
 				onCharacterClassEnter(node) {
-					if (node.characters.maximum === UNICODE_MAXIMUM) {
+					if (node.characters.maximum === Maximum.UNICODE) {
 						throw true;
-					} else if (node.characters.maximum === UTF16_MAXIMUM) {
+					} else if (node.characters.maximum === Maximum.UTF16) {
 						throw false;
 					} else {
 						throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
@@ -394,7 +395,7 @@ function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
 	return undefined; // no characters
 }
 
-const UTF16_ASCII_CASE_VARYING = CharSet.empty(UTF16_MAXIMUM).union([
+const UTF16_ASCII_CASE_VARYING = CharSet.empty(Maximum.UTF16).union([
 	{ min: 0x41, max: 0x5a }, // A-Z
 	{ min: 0x61, max: 0x7a }, // a-z
 ]);

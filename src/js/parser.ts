@@ -36,9 +36,11 @@ import {
 	inheritedMatchingDirection,
 	somePathToBackreference,
 } from "./regexpp-util";
-import { UNICODE_MAXIMUM, UTF16_MAXIMUM, getCharEnv } from "./char-env";
+import { getCharEnv } from "./char-env";
 import { Flags, isFlags } from "./flags";
-import { UnicodeSet, parseUnicodeSet } from "./parse-unicode-set";
+import { parseUnicodeSet } from "./parse-unicode-set";
+import { UnicodeSet } from "./unicode-set";
+import { Maximum } from "./maximum";
 
 const DEFAULT_MAX_NODES = 10_000;
 const DEFAULT_BACK_REF_MAX_WORDS = 100;
@@ -222,7 +224,7 @@ export class Parser {
 	private constructor(ast: RegexppAst) {
 		this.literal = { source: ast.pattern.raw, flags: ast.flags.raw };
 		this.ast = ast;
-		this.maxCharacter = this.ast.flags.unicode ? UNICODE_MAXIMUM : UTF16_MAXIMUM;
+		this.maxCharacter = this.ast.flags.unicode ? Maximum.UNICODE : Maximum.UTF16;
 
 		if (!isFlags(ast.flags)) {
 			throw new Error("The flags in the given AST are not a valid set of flags.");
@@ -712,7 +714,7 @@ export class Parser {
 			this._charCache.set(cacheKey, chars);
 		}
 
-		if (chars.words.length === 0) {
+		if (chars.accept.isEmpty) {
 			// simple case where we only have a single char
 			if (chars.chars.isEmpty && !context.disableSimplification) {
 				return EMPTY_SET;
@@ -722,7 +724,7 @@ export class Parser {
 
 		// ECMAScript spec says that alternatives are sorted by descending length.
 		// This isn't enough for uniqueness though, so we also sort by code point.
-		const words = [...chars.words];
+		const words = [...chars.accept.wordSets];
 		if (!chars.chars.isEmpty) {
 			words.push([chars.chars]);
 		}

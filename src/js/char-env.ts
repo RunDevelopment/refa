@@ -1,11 +1,10 @@
 import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
+import { CharCaseFolding, getCharCaseFolding } from "./char-case-folding";
 import { Flags } from "./flags";
+import { Maximum } from "./maximum";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
-
-export const UNICODE_MAXIMUM = 0x10ffff;
-export const UTF16_MAXIMUM = 0xffff;
 
 interface CharEnvBase {
 	readonly maxCharacter: Char;
@@ -24,13 +23,14 @@ interface CharEnvBase {
 
 	readonly word: CharSet;
 	readonly nonWord: CharSet;
+
+	readonly charCaseFolding: CharCaseFolding;
 }
 export interface CharEnvIgnoreCase {
 	readonly ignoreCase: true;
 	readonly caseFolding: Readonly<Record<number, readonly Char[] | undefined>>;
 	readonly caseVarying: CharSet;
 	readonly withCaseVaryingCharacters: (cs: CharSet) => CharSet;
-	readonly canonicalize: (char: Char) => Char;
 }
 export interface CharEnvNonIgnoreCase {
 	readonly ignoreCase: false;
@@ -70,27 +70,27 @@ const LINE_TERMINATOR: readonly CharRange[] = [
 	{ min: 0x2028, max: 0x2029 },
 ];
 
-const lineTerminatorUTF16 = CharSet.empty(UTF16_MAXIMUM).union(LINE_TERMINATOR);
+const lineTerminatorUTF16 = CharSet.empty(Maximum.UTF16).union(LINE_TERMINATOR);
 const nonLineTerminatorUTF16 = lineTerminatorUTF16.negate();
-const lineTerminatorUnicode = CharSet.empty(UNICODE_MAXIMUM).union(LINE_TERMINATOR);
+const lineTerminatorUnicode = CharSet.empty(Maximum.UNICODE).union(LINE_TERMINATOR);
 const nonLineTerminatorUnicode = lineTerminatorUnicode.negate();
 
-const spaceUTF16 = CharSet.empty(UTF16_MAXIMUM).union(SPACE);
+const spaceUTF16 = CharSet.empty(Maximum.UTF16).union(SPACE);
 const nonSpaceUTF16 = spaceUTF16.negate();
-const spaceUnicode = CharSet.empty(UNICODE_MAXIMUM).union(SPACE);
+const spaceUnicode = CharSet.empty(Maximum.UNICODE).union(SPACE);
 const nonSpaceUnicode = spaceUnicode.negate();
 
-const digitUTF16 = CharSet.empty(UTF16_MAXIMUM).union(DIGIT);
+const digitUTF16 = CharSet.empty(Maximum.UTF16).union(DIGIT);
 const nonDigitUTF16 = digitUTF16.negate();
-const digitUnicode = CharSet.empty(UNICODE_MAXIMUM).union(DIGIT);
+const digitUnicode = CharSet.empty(Maximum.UNICODE).union(DIGIT);
 const nonDigitUnicode = digitUnicode.negate();
 
-const wordUTF16 = CharSet.empty(UTF16_MAXIMUM).union(WORD);
+const wordUTF16 = CharSet.empty(Maximum.UTF16).union(WORD);
 const nonWordUTF16 = wordUTF16.negate();
-const wordUnicode = CharSet.empty(UNICODE_MAXIMUM).union(WORD);
+const wordUnicode = CharSet.empty(Maximum.UNICODE).union(WORD);
 const nonWordUnicode = wordUnicode.negate();
 const wordIgnoreCaseUnicode = withCaseVaryingCharacters(
-	CharSet.empty(UNICODE_MAXIMUM).union(WORD),
+	CharSet.empty(Maximum.UNICODE).union(WORD),
 	UnicodeCaseFolding,
 	UnicodeCaseVarying
 );
@@ -98,10 +98,10 @@ const nonWordIgnoreCaseUnicode = wordIgnoreCaseUnicode.negate();
 
 const CHAR_ENV: CharEnv = {
 	// base
-	maxCharacter: UTF16_MAXIMUM,
+	maxCharacter: Maximum.UTF16,
 
-	all: CharSet.all(UTF16_MAXIMUM),
-	empty: CharSet.empty(UTF16_MAXIMUM),
+	all: CharSet.all(Maximum.UTF16),
+	empty: CharSet.empty(Maximum.UTF16),
 
 	lineTerminator: lineTerminatorUTF16,
 	nonLineTerminator: nonLineTerminatorUTF16,
@@ -114,6 +114,8 @@ const CHAR_ENV: CharEnv = {
 
 	word: wordUTF16,
 	nonWord: nonWordUTF16,
+
+	charCaseFolding: getCharCaseFolding(false, false),
 
 	// ignore case
 	ignoreCase: false,
@@ -123,10 +125,10 @@ const CHAR_ENV: CharEnv = {
 };
 const CHAR_ENV_I: CharEnv = {
 	// base
-	maxCharacter: UTF16_MAXIMUM,
+	maxCharacter: Maximum.UTF16,
 
-	all: CharSet.all(UTF16_MAXIMUM),
-	empty: CharSet.empty(UTF16_MAXIMUM),
+	all: CharSet.all(Maximum.UTF16),
+	empty: CharSet.empty(Maximum.UTF16),
 
 	lineTerminator: lineTerminatorUTF16,
 	nonLineTerminator: nonLineTerminatorUTF16,
@@ -140,22 +142,23 @@ const CHAR_ENV_I: CharEnv = {
 	word: wordUTF16,
 	nonWord: nonWordUTF16,
 
+	charCaseFolding: getCharCaseFolding(false, true),
+
 	// ignore case
 	ignoreCase: true,
 	caseFolding: UTF16CaseFolding,
 	caseVarying: UTF16CaseVarying,
 	withCaseVaryingCharacters: cs => withCaseVaryingCharacters(cs, UTF16CaseFolding, UTF16CaseVarying),
-	canonicalize: char => UTF16CaseFolding[char]?.[0] ?? char,
 
 	// unicode
 	unicode: false,
 };
 const CHAR_ENV_U: CharEnv = {
 	// base
-	maxCharacter: UNICODE_MAXIMUM,
+	maxCharacter: Maximum.UNICODE,
 
-	all: CharSet.all(UNICODE_MAXIMUM),
-	empty: CharSet.empty(UNICODE_MAXIMUM),
+	all: CharSet.all(Maximum.UNICODE),
+	empty: CharSet.empty(Maximum.UNICODE),
 
 	lineTerminator: lineTerminatorUnicode,
 	nonLineTerminator: nonLineTerminatorUnicode,
@@ -169,6 +172,8 @@ const CHAR_ENV_U: CharEnv = {
 	word: wordUnicode,
 	nonWord: nonWordUnicode,
 
+	charCaseFolding: getCharCaseFolding(true, false),
+
 	// ignore case
 	ignoreCase: false,
 
@@ -177,10 +182,10 @@ const CHAR_ENV_U: CharEnv = {
 };
 const CHAR_ENV_IU: CharEnv = {
 	// base
-	maxCharacter: UNICODE_MAXIMUM,
+	maxCharacter: Maximum.UNICODE,
 
-	all: CharSet.all(UNICODE_MAXIMUM),
-	empty: CharSet.empty(UNICODE_MAXIMUM),
+	all: CharSet.all(Maximum.UNICODE),
+	empty: CharSet.empty(Maximum.UNICODE),
 
 	lineTerminator: lineTerminatorUnicode,
 	nonLineTerminator: nonLineTerminatorUnicode,
@@ -194,12 +199,13 @@ const CHAR_ENV_IU: CharEnv = {
 	word: wordIgnoreCaseUnicode,
 	nonWord: nonWordIgnoreCaseUnicode,
 
+	charCaseFolding: getCharCaseFolding(true, true),
+
 	// ignore case
 	ignoreCase: true,
 	caseFolding: UnicodeCaseFolding,
 	caseVarying: UnicodeCaseVarying,
 	withCaseVaryingCharacters: cs => withCaseVaryingCharacters(cs, UnicodeCaseFolding, UnicodeCaseVarying),
-	canonicalize: char => UnicodeCaseFolding[char]?.[0] ?? char,
 
 	// unicode
 	unicode: true,

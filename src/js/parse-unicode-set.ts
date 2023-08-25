@@ -1,43 +1,14 @@
 import { Char, Word } from "../char-types";
 import { CharRange, CharSet } from "../char-set";
 import { assertNever, debugAssert } from "../util";
-import { Flags, NonUnicodeSetsFlags, UnicodeSetsFlags } from "./flags";
+import { Flags, UnicodeSetsFlags } from "./flags";
 import { getCharEnv } from "./char-env";
 import { getStringProperty } from "./property";
-import { ExtendedCharSet } from "./extended-char-set";
+import { UnicodeSet } from "./unicode-set";
 import { AST } from "@eslint-community/regexpp";
 import { PredefinedCharacterSet, StringPropertyCharacterSet, createCharSet } from "./create-char-set";
-import { ReadonlyWordSet, WordSet } from "../word-set";
 import { StringSet } from "./string-set";
-
-export class UnicodeSet {
-	/**
-	 * All single characters in the set.
-	 */
-	readonly chars: CharSet;
-	/**
-	 * All words in the set.
-	 *
-	 * The list is guaranteed to not contain any single-character words.
-	 */
-	readonly words: readonly ReadonlyWordSet[];
-
-	private constructor(chars: CharSet, words: readonly ReadonlyWordSet[]) {
-		this.chars = chars;
-		this.words = words;
-	}
-
-	static fromChars(chars: CharSet): UnicodeSet {
-		return new UnicodeSet(chars, []);
-	}
-	static from(chars: CharSet, words: readonly ReadonlyWordSet[]): UnicodeSet {
-		if (words.some(w => w.length === 1)) {
-			throw new Error("The given words contain single-character words.");
-		}
-
-		return new UnicodeSet(chars, words);
-	}
-}
+import { Maximum } from "./maximum";
 
 export type CharacterElement =
 	| AST.CharacterClass
@@ -70,29 +41,20 @@ export function parseUnicodeSet(element: CharacterElement, flags: Readonly<Flags
 			);
 		}
 
-		const charSet = compileElement(element, flags);
-		const words: WordSet[] = [];
-		for (const word of charSet.accept.values()) {
-			debugAssert(word.length !== 1);
-			words.push(word.map(char => createCharSetFromChar(char, flags)));
-		}
-
-		return UnicodeSet.from(charSet.chars, words);
+		return compileElement(element, flags);
 	}
 }
 
 function compileElement(
 	element: Exclude<CharacterElement, AST.ClassRangesCharacterClass>,
 	flags: Readonly<UnicodeSetsFlags>
-): ExtendedCharSet {
+): UnicodeSet {
 	switch (element.type) {
 		case "Character": {
-			return ExtendedCharSet.fromChars(createCharSetFromChar(element.value, flags));
+			return UnicodeSet.fromChars(createCharSetFromChar(element.value, flags));
 		}
 		case "CharacterClassRange": {
-			return ExtendedCharSet.fromChars(
-				createCharSet([{ min: element.min.value, max: element.max.value }], flags)
-			);
+			return UnicodeSet.fromChars(createCharSet([{ min: element.min.value, max: element.max.value }], flags));
 		}
 		case "CharacterSet": {
 			if (element.kind === "property" && element.strings) {
@@ -100,7 +62,7 @@ function compileElement(
 				debugAssert(env.unicode);
 				return getStringProperty(element.key, env);
 			} else {
-				return ExtendedCharSet.fromChars(createCharSet([element], flags));
+				return UnicodeSet.fromChars(createCharSet([element], flags));
 			}
 		}
 		case "CharacterClass": {
@@ -116,7 +78,7 @@ function compileElement(
 					"The character class " + element.raw + " cannot be negated because it contains strings."
 				);
 			}
-			return ExtendedCharSet.fromChars(chars.chars.negate());
+			return UnicodeSet.fromChars(chars.chars.negate());
 		}
 
 		case "ClassIntersection": {
@@ -142,7 +104,7 @@ function compileElement(
 					"The character class " + element.raw + " cannot be negated because it contains strings."
 				);
 			}
-			return ExtendedCharSet.fromChars(expr.chars.negate());
+			return UnicodeSet.fromChars(expr.chars.negate());
 		}
 
 		case "ClassStringDisjunction": {
@@ -154,11 +116,6 @@ function compileElement(
 			for (const alternative of element.alternatives) {
 				if (alternative.elements.length === 1) {
 					chars.push(alternative.elements[0].value);
-					continue;
-				}
-
-				if (env.ignoreCase) {
-					words.push(alternative.elements.map(e => env.canonicalize(e.value)));
 				} else {
 					words.push(alternative.elements.map(e => e.value));
 				}
@@ -168,7 +125,7 @@ function compileElement(
 			if (env.ignoreCase) {
 				charSet = env.withCaseVaryingCharacters(charSet);
 			}
-			return ExtendedCharSet.from(charSet, StringSet.from(words));
+			return UnicodeSet.from(charSet, StringSet.from(words, env.charCaseFolding));
 		}
 
 		default:
@@ -178,8 +135,8 @@ function compileElement(
 function compileClassElement(
 	elements: readonly AST.UnicodeSetsCharacterClassElement[],
 	flags: Readonly<UnicodeSetsFlags>
-): ExtendedCharSet {
-	const empty = ExtendedCharSet.empty(0x10ffff);
+): UnicodeSet {
+	const empty = UnicodeSet.empty(Maximum.UNICODE);
 
 	if (elements.length === 0) {
 		return empty;
@@ -188,7 +145,7 @@ function compileClassElement(
 	}
 
 	const singleChars: (Char | CharRange | Exclude<PredefinedCharacterSet, StringPropertyCharacterSet>)[] = [];
-	const withStrings: ExtendedCharSet[] = [];
+	const withStrings: UnicodeSet[] = [];
 
 	for (const e of elements) {
 		switch (e.type) {
@@ -213,7 +170,7 @@ function compileClassElement(
 		}
 	}
 
-	const chars = ExtendedCharSet.fromChars(createCharSet(singleChars, flags));
+	const chars = UnicodeSet.fromChars(createCharSet(singleChars, flags));
 	if (withStrings.length === 0) {
 		return chars;
 	}
@@ -228,7 +185,7 @@ export function parseCharSet(
 		| AST.Character
 		| AST.CharacterClassRange
 		| Exclude<AST.CharacterSet, AST.StringsUnicodePropertyCharacterSet>,
-	flags: Readonly<NonUnicodeSetsFlags>
+	flags: Readonly<Flags>
 ): CharSet {
 	switch (element.type) {
 		case "Character": {
