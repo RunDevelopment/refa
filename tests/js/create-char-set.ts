@@ -38,6 +38,11 @@ describe("JS createCharSet", function () {
 			{ literal: /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/u },
 			{ literal: /abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ/iu },
 
+			{ literal: /[a-z]/ },
+			{ literal: /[a-z]/i },
+			{ literal: /[a-z]/u },
+			{ literal: /[a-z]/iu },
+
 			// \w \W
 
 			{ literal: /\w/ },
@@ -167,8 +172,18 @@ describe("JS createCharSet", function () {
 			{ literal: { source: String.raw`[\w&&[\d\q{a|foo}]]`, flags: "v" } },
 			{ literal: { source: String.raw`[\d\q{a|foo|}]`, flags: "v" } },
 			{ literal: { source: String.raw`[^\d\q{a|b}]`, flags: "v" } },
+			{ literal: { source: String.raw`[^\d\q{a|b}]`, flags: "vi" } },
+			{ literal: { source: String.raw`[\q{foo|bar|x|X|"|""|"""}]`, flags: "v" } },
+			{ literal: { source: String.raw`[\q{foo|bar|x|X|"|""|"""}]`, flags: "vi" } },
+			{ literal: { source: String.raw`[\q{foo|bar}\q{x}X]`, flags: "vi" } },
 			{ literal: { source: String.raw`[^\q{ab}]`, flags: "v" }, expected: Error },
 			{ literal: { source: String.raw`[^\W--%]`, flags: "v" } },
+			{ literal: { source: String.raw`[^]`, flags: "v" } },
+			{ literal: { source: String.raw`[]`, flags: "v" } },
+			{ literal: { source: String.raw`[a-cd]`, flags: "v" } },
+			{ literal: { source: String.raw`\p{Basic_Emoji}`, flags: "v" } },
+			{ literal: { source: String.raw`[[\p{Basic_Emoji}abc]&&[^]]`, flags: "v" } },
+			{ literal: { source: String.raw`[[\p{Basic_Emoji}abc]&&[^]]`, flags: "vi" } },
 
 			{ literal: { source: "[[0-9]&&[0-9]]", flags: "v" } },
 			{ literal: { source: "[[0-9]&&\\d]", flags: "v" } },

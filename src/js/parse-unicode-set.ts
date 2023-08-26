@@ -1,6 +1,6 @@
 import { Char, Word } from "../char-types";
 import { CharRange, CharSet } from "../char-set";
-import { assertNever, debugAssert } from "../util";
+import { assertNever } from "../util";
 import { Flags, UnicodeSetsFlags } from "./flags";
 import { getCharEnv } from "./char-env";
 import { getStringProperty } from "./property";
@@ -61,7 +61,6 @@ function compileElement(
 		case "CharacterSet": {
 			if (element.kind === "property" && element.strings) {
 				const env = getCharEnv(flags);
-				debugAssert(env.unicode);
 				return getStringProperty(element.key, env);
 			} else {
 				return UnicodeSet.fromChars(createCharSet([element], flags));

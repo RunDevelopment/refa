@@ -16,6 +16,22 @@ module.exports["JS createCharSet >> Literal tests >> /abcdefghijklmnopqrstuvwxyz
 [41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a][20][41, 61][42, 62][43, 63][44, 64][45, 65][46, 66][47, 67][48, 68][49, 69][4a, 6a][4b, 6b, 212a][4c, 6c][4d, 6d][4e, 6e][4f, 6f][50, 70][51, 71][52, 72][53, 73, 17f][54, 74][55, 75][56, 76][57, 77][58, 78][59, 79][5a, 7a]
 `.slice(1, -1);
 
+module.exports["JS createCharSet >> Literal tests >> /[a-z]/"] = `
+[61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[a-z]/i"] = `
+[41..5a, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[a-z]/u"] = `
+[61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[a-z]/iu"] = `
+[41..5a, 61..7a, 17f, 212a]
+`.slice(1, -1);
+
 module.exports["JS createCharSet >> Literal tests >> /\\w/"] = `
 [30..39, 41..5a, 5f, 61..7a]
 `.slice(1, -1);
@@ -340,8 +356,48 @@ module.exports["JS createCharSet >> Literal tests >> /[^\\d\\q{a|b}]/v"] = `
 [0..2f, 3a..60, 63..10ffff]
 `.slice(1, -1);
 
+module.exports["JS createCharSet >> Literal tests >> /[^\\d\\q{a|b}]/vi"] = `
+[0..2f, 3a..40, 43..60, 63..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{foo|bar|x|X|\"|\"\"|\"\"\"}]/v"] = `
+[22][22][22]|[62][61][72]|[66][6f][6f]|[22][22]|[22, 58, 78]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{foo|bar|x|X|\"|\"\"|\"\"\"}]/vi"] = `
+[22][22][22]|[42, 62][41, 61][52, 72]|[46, 66][4f, 6f][4f, 6f]|[22][22]|[22, 58, 78]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[\\q{foo|bar}\\q{x}X]/vi"] = `
+[42, 62][41, 61][52, 72]|[46, 66][4f, 6f][4f, 6f]|[58, 78]
+`.slice(1, -1);
+
 module.exports["JS createCharSet >> Literal tests >> /[^\\W--%]/v"] = `
 [25, 30..39, 41..5a, 5f, 61..7a]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[^]/v"] = `
+[0..10ffff]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[]/v"] = `
+[]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[a-cd]/v"] = `
+[61..64]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /\\p{Basic_Emoji}/v"] = `
+[a9][fe0f]|[ae][fe0f]|[203c][fe0f]|[2049][fe0f]|[2122][fe0f]|[2139][fe0f]|[2194][fe0f]|[2195][fe0f]|[2196][fe0f]|[2197][fe0f]|[2198][fe0f]|[2199][fe0f]|[21a9][fe0f]|[21aa][fe0f]|[2328][fe0f]|[23cf][fe0f]|[23ed][fe0f]|[23ee][fe0f]|[23ef][fe0f]|[23f1][fe0f]|[23f2][fe0f]|[23f8][fe0f]|[23f9][fe0f]|[23fa][fe0f]|[24c2][fe0f]|[25aa][fe0f]|[25ab][fe0f]|[25b6][fe0f]|[25c0][fe0f]|[25fb][fe0f]|[25fc][fe0f]|[2600][fe0f]|[2601][fe0f]|[2602][fe0f]|[2603][fe0f]|[2604][fe0f]|[260e][fe0f]|[2611][fe0f]|[2618][fe0f]|[261d][fe0f]|[2620][fe0f]|[2622][fe0f]|[2623][fe0f]|[2626][fe0f]|[262a][fe0f]|[262e][fe0f]|[262f][fe0f]|[2638][fe0f]|[2639][fe0f]|[263a][fe0f]|[2640][fe0f]|[2642][fe0f]|[265f][fe0f]|[2660][fe0f]|[2663][fe0f]|[2665][fe0f]|[2666][fe0f]|[2668][fe0f]|[267b][fe0f]|[267e][fe0f]|[2692][fe0f]|[2694][fe0f]|[2695][fe0f]|[2696][fe0f]|[2697][fe0f]|[2699][fe0f]|[269b][fe0f]|[269c][fe0f]|[26a0][fe0f]|[26a7][fe0f]|[26b0][fe0f]|[26b1][fe0f]|[26c8][fe0f]|[26cf][fe0f]|[26d1][fe0f]|[26d3][fe0f]|[26e9][fe0f]|[26f0][fe0f]|[26f1][fe0f]|[26f4][fe0f]|[26f7][fe0f]|[26f8][fe0f]|[26f9][fe0f]|[2702][fe0f]|[2708][fe0f]|[2709][fe0f]|[270c][fe0f]|[270d][fe0f]|[270f][fe0f]|[2712][fe0f]|[2714][fe0f]|[2716][fe0f]|[271d][fe0f]|[2721][fe0f]|[2733][fe0f]|[2734][fe0f]|[2744][fe0f]|[2747][fe0f]|[2763][fe0f]|[2764][fe0f]|[27a1][fe0f]|[2934][fe0f]|[2935][fe0f]|[2b05][fe0f]|[2b06][fe0f]|[2b07][fe0f]|[3030][fe0f]|[303d][fe0f]|[3297][fe0f]|[3299][fe0f]|[1f170][fe0f]|[1f171][fe0f]|[1f17e][fe0f]|[1f17f][fe0f]|[1f202][fe0f]|[1f237][fe0f]|[1f321][fe0f]|[1f324][fe0f]|[1f325][fe0f]|[1f326][fe0f]|[1f327][fe0f]|[1f328][fe0f]|[1f329][fe0f]|[1f32a][fe0f]|[1f32b][fe0f]|[1f32c][fe0f]|[1f336][fe0f]|[1f37d][fe0f]|[1f396][fe0f]|[1f397][fe0f]|[1f399][fe0f]|[1f39a][fe0f]|[1f39b][fe0f]|[1f39e][fe0f]|[1f39f][fe0f]|[1f3cb][fe0f]|[1f3cc][fe0f]|[1f3cd][fe0f]|[1f3ce][fe0f]|[1f3d4][fe0f]|[1f3d5][fe0f]|[1f3d6][fe0f]|[1f3d7][fe0f]|[1f3d8][fe0f]|[1f3d9][fe0f]|[1f3da][fe0f]|[1f3db][fe0f]|[1f3dc][fe0f]|[1f3dd][fe0f]|[1f3de][fe0f]|[1f3df][fe0f]|[1f3f3][fe0f]|[1f3f5][fe0f]|[1f3f7][fe0f]|[1f43f][fe0f]|[1f441][fe0f]|[1f4fd][fe0f]|[1f549][fe0f]|[1f54a][fe0f]|[1f56f][fe0f]|[1f570][fe0f]|[1f573][fe0f]|[1f574][fe0f]|[1f575][fe0f]|[1f576][fe0f]|[1f577][fe0f]|[1f578][fe0f]|[1f579][fe0f]|[1f587][fe0f]|[1f58a][fe0f]|[1f58b][fe0f]|[1f58c][fe0f]|[1f58d][fe0f]|[1f590][fe0f]|[1f5a5][fe0f]|[1f5a8][fe0f]|[1f5b1][fe0f]|[1f5b2][fe0f]|[1f5bc][fe0f]|[1f5c2][fe0f]|[1f5c3][fe0f]|[1f5c4][fe0f]|[1f5d1][fe0f]|[1f5d2][fe0f]|[1f5d3][fe0f]|[1f5dc][fe0f]|[1f5dd][fe0f]|[1f5de][fe0f]|[1f5e1][fe0f]|[1f5e3][fe0f]|[1f5e8][fe0f]|[1f5ef][fe0f]|[1f5f3][fe0f]|[1f5fa][fe0f]|[1f6cb][fe0f]|[1f6cd][fe0f]|[1f6ce][fe0f]|[1f6cf][fe0f]|[1f6e0][fe0f]|[1f6e1][fe0f]|[1f6e2][fe0f]|[1f6e3][fe0f]|[1f6e4][fe0f]|[1f6e5][fe0f]|[1f6e9][fe0f]|[1f6f0][fe0f]|[1f6f3][fe0f]|[231a..231b, 23e9..23ec, 23f0, 23f3, 25fd..25fe, 2614..2615, 2648..2653, 267f, 2693, 26a1, 26aa..26ab, 26bd..26be, 26c4..26c5, 26ce, 26d4, 26ea, 26f2..26f3, 26f5, 26fa, 26fd, 2705, 270a..270b, 2728, 274c, 274e, 2753..2755, 2757, 2795..2797, 27b0, 27bf, 2b1b..2b1c, 2b50, 2b55, 1f004, 1f0cf, 1f18e, 1f191..1f19a, 1f201, 1f21a, 1f22f, 1f232..1f236, 1f238..1f23a, 1f250..1f251, 1f300..1f320, 1f32d..1f335, 1f337..1f37c, 1f37e..1f393, 1f3a0..1f3ca, 1f3cf..1f3d3, 1f3e0..1f3f0, 1f3f4, 1f3f8..1f43e, 1f440, 1f442..1f4fc, 1f4ff..1f53d, 1f54b..1f54e, 1f550..1f567, 1f57a, 1f595..1f596, 1f5a4, 1f5fb..1f64f, 1f680..1f6c5, 1f6cc, 1f6d0..1f6d2, 1f6d5..1f6d7, 1f6dc..1f6df, 1f6eb..1f6ec, 1f6f4..1f6fc, 1f7e0..1f7eb, 1f7f0, 1f90c..1f93a, 1f93c..1f945, 1f947..1f9ff, 1fa70..1fa7c, 1fa80..1fa88, 1fa90..1fabd, 1fabf..1fac5, 1face..1fadb, 1fae0..1fae8, 1faf0..1faf8]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[\\p{Basic_Emoji}abc]&&[^]]/v"] = `
+[61..63, 231a..231b, 23e9..23ec, 23f0, 23f3, 25fd..25fe, 2614..2615, 2648..2653, 267f, 2693, 26a1, 26aa..26ab, 26bd..26be, 26c4..26c5, 26ce, 26d4, 26ea, 26f2..26f3, 26f5, 26fa, 26fd, 2705, 270a..270b, 2728, 274c, 274e, 2753..2755, 2757, 2795..2797, 27b0, 27bf, 2b1b..2b1c, 2b50, 2b55, 1f004, 1f0cf, 1f18e, 1f191..1f19a, 1f201, 1f21a, 1f22f, 1f232..1f236, 1f238..1f23a, 1f250..1f251, 1f300..1f320, 1f32d..1f335, 1f337..1f37c, 1f37e..1f393, 1f3a0..1f3ca, 1f3cf..1f3d3, 1f3e0..1f3f0, 1f3f4, 1f3f8..1f43e, 1f440, 1f442..1f4fc, 1f4ff..1f53d, 1f54b..1f54e, 1f550..1f567, 1f57a, 1f595..1f596, 1f5a4, 1f5fb..1f64f, 1f680..1f6c5, 1f6cc, 1f6d0..1f6d2, 1f6d5..1f6d7, 1f6dc..1f6df, 1f6eb..1f6ec, 1f6f4..1f6fc, 1f7e0..1f7eb, 1f7f0, 1f90c..1f93a, 1f93c..1f945, 1f947..1f9ff, 1fa70..1fa7c, 1fa80..1fa88, 1fa90..1fabd, 1fabf..1fac5, 1face..1fadb, 1fae0..1fae8, 1faf0..1faf8]
+`.slice(1, -1);
+
+module.exports["JS createCharSet >> Literal tests >> /[[\\p{Basic_Emoji}abc]&&[^]]/vi"] = `
+[41..43, 61..63, 231a..231b, 23e9..23ec, 23f0, 23f3, 25fd..25fe, 2614..2615, 2648..2653, 267f, 2693, 26a1, 26aa..26ab, 26bd..26be, 26c4..26c5, 26ce, 26d4, 26ea, 26f2..26f3, 26f5, 26fa, 26fd, 2705, 270a..270b, 2728, 274c, 274e, 2753..2755, 2757, 2795..2797, 27b0, 27bf, 2b1b..2b1c, 2b50, 2b55, 1f004, 1f0cf, 1f18e, 1f191..1f19a, 1f201, 1f21a, 1f22f, 1f232..1f236, 1f238..1f23a, 1f250..1f251, 1f300..1f320, 1f32d..1f335, 1f337..1f37c, 1f37e..1f393, 1f3a0..1f3ca, 1f3cf..1f3d3, 1f3e0..1f3f0, 1f3f4, 1f3f8..1f43e, 1f440, 1f442..1f4fc, 1f4ff..1f53d, 1f54b..1f54e, 1f550..1f567, 1f57a, 1f595..1f596, 1f5a4, 1f5fb..1f64f, 1f680..1f6c5, 1f6cc, 1f6d0..1f6d2, 1f6d5..1f6d7, 1f6dc..1f6df, 1f6eb..1f6ec, 1f6f4..1f6fc, 1f7e0..1f7eb, 1f7f0, 1f90c..1f93a, 1f93c..1f945, 1f947..1f9ff, 1fa70..1fa7c, 1fa80..1fa88, 1fa90..1fabd, 1fabf..1fac5, 1face..1fadb, 1fae0..1fae8, 1faf0..1faf8]
 `.slice(1, -1);
 
 module.exports["JS createCharSet >> Literal tests >> /[[0-9]&&[0-9]]/v"] = `

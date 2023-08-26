@@ -1,7 +1,7 @@
 import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
 import { CharCaseFolding, getCharCaseFolding } from "./char-case-folding";
-import { Flags } from "./flags";
+import { Flags, UnicodeSetsFlags } from "./flags";
 import { Maximum } from "./maximum";
 import { UnicodeCaseFolding, UnicodeCaseVarying } from "./unicode";
 import { UTF16CaseFolding, UTF16CaseVarying } from "./utf16-case-folding";
@@ -23,8 +23,6 @@ interface CharEnvBase {
 
 	readonly word: CharSet;
 	readonly nonWord: CharSet;
-
-	readonly charCaseFolding: CharCaseFolding;
 }
 export interface CharEnvIgnoreCase {
 	readonly ignoreCase: true;
@@ -37,6 +35,7 @@ export interface CharEnvNonIgnoreCase {
 }
 export interface CharEnvUnicode {
 	readonly unicode: true;
+	readonly charCaseFolding: CharCaseFolding;
 }
 export interface CharEnvNonUnicode {
 	readonly unicode: false;
@@ -115,8 +114,6 @@ const CHAR_ENV: CharEnv = {
 	word: wordUTF16,
 	nonWord: nonWordUTF16,
 
-	charCaseFolding: getCharCaseFolding(false, false),
-
 	// ignore case
 	ignoreCase: false,
 
@@ -141,8 +138,6 @@ const CHAR_ENV_I: CharEnv = {
 
 	word: wordUTF16,
 	nonWord: nonWordUTF16,
-
-	charCaseFolding: getCharCaseFolding(false, true),
 
 	// ignore case
 	ignoreCase: true,
@@ -241,6 +236,8 @@ function withCaseVaryingCharacters(
 	return cs.union(CharSet.fromCharacters(cs.maximum, caseVariationArray));
 }
 
+export function getCharEnv(flags: Readonly<UnicodeSetsFlags>): CharEnv & CharEnvUnicode;
+export function getCharEnv(flags: Readonly<Flags>): CharEnv;
 export function getCharEnv(flags: Readonly<Flags>): CharEnv {
 	if (flags.unicode || flags.unicodeSets) {
 		return flags.ignoreCase ? CHAR_ENV_IU : CHAR_ENV_U;

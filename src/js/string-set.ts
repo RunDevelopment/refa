@@ -218,7 +218,7 @@ export class StringSet {
 			return this;
 		}
 		if (this._caseFolding !== other._caseFolding) {
-			throw new Error("Cannot intersect incompatible string sets.");
+			throw new Error("Cannot subtract incompatible string sets.");
 		}
 
 		const items = withoutSorted(this.words, other.words, compareWords);
