@@ -80,6 +80,12 @@ export class StringSet {
 		normalize(items);
 		return new StringSet(items, caseFolding);
 	}
+	static fromWord(word: ReadonlyWord, caseFolding: CharCaseFolding): StringSet {
+		if (caseFolding.canonicalize) {
+			word = word.map(caseFolding.canonicalize);
+		}
+		return new StringSet([word], caseFolding);
+	}
 
 	/**
 	 * Returns whether this set is compatible with the given set. Compatibility is defined as follows:
@@ -232,6 +238,14 @@ export class StringSet {
 			return StringSet.empty;
 		}
 		return new StringSet(items, this._caseFolding);
+	}
+	map(mapFn: (word: ReadonlyWord) => ReadonlyWord): StringSet {
+		if (this.isEmpty) {
+			return this;
+		}
+
+		const items = this.words.map(mapFn);
+		return StringSet.from(items, this._caseFolding);
 	}
 }
 

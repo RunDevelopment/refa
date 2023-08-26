@@ -16,6 +16,7 @@ export type CharacterElement =
 	| AST.CharacterClassRange
 	| AST.CharacterSet
 	| AST.ClassSetOperand
+	| AST.StringAlternative
 	| AST.ExpressionCharacterClass["expression"];
 
 export function parseUnicodeSet(element: CharacterElement, flags: Readonly<Flags>): UnicodeSet {
@@ -25,6 +26,7 @@ export function parseUnicodeSet(element: CharacterElement, flags: Readonly<Flags
 			element.type === "ClassIntersection" ||
 			element.type === "ClassSubtraction" ||
 			element.type === "ClassStringDisjunction" ||
+			element.type === "StringAlternative" ||
 			(element.type === "CharacterClass" && element.unicodeSets) ||
 			(element.type === "CharacterSet" && element.kind === "property" && element.strings)
 		) {
@@ -126,6 +128,20 @@ function compileElement(
 				charSet = env.withCaseVaryingCharacters(charSet);
 			}
 			return UnicodeSet.from(charSet, StringSet.from(words, env.charCaseFolding));
+		}
+		case "StringAlternative": {
+			const env = getCharEnv(flags);
+			const caseFolding = env.charCaseFolding;
+
+			if (element.elements.length === 1) {
+				return UnicodeSet.fromChars(caseFolding.toCharSet(element.elements[0].value));
+			} else {
+				const strings = StringSet.fromWord(
+					element.elements.map(e => e.value),
+					caseFolding
+				);
+				return UnicodeSet.from(env.empty, strings);
+			}
 		}
 
 		default:
