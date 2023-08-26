@@ -127,6 +127,16 @@ describe("JS.toLiteral", function () {
 				literal: { source: /(abc)/.source, flags: "d" },
 				expected: { source: /(?:abc)/.source, flags: "" },
 			},
+
+			{
+				literal: { source: String.raw`[\w&&a]`, flags: "v" },
+				expected: { source: String.raw`a`, flags: "u" },
+			},
+			{
+				literal: { source: String.raw`[\w&&a]`, flags: "v" },
+				options: { flags: { unicodeSets: true } },
+				expected: { source: String.raw`a`, flags: "v" },
+			},
 		]);
 	});
 
@@ -217,6 +227,11 @@ describe("JS.toLiteral", function () {
 			{
 				literal: /\d/,
 				options: { flags: { unicode: true } },
+				expected: Error,
+			},
+			{
+				literal: /\d/,
+				options: { flags: { unicodeSets: true } },
 				expected: Error,
 			},
 			{

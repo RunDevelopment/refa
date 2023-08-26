@@ -2,7 +2,7 @@ import { Char } from "../char-types";
 import { Alternation, Assertion, Concatenation, Expression, NoParent, Node, visitAst } from "../ast";
 import { assertNever, cachedFunc, debugAssert } from "../util";
 import { CharRange, CharSet } from "../char-set";
-import { Flags } from "./flags";
+import { Flags, UncheckedFlags, isFlags } from "./flags";
 import { Literal } from "./literal";
 import { CharEnv, CharEnvIgnoreCase, getCharEnv } from "./char-env";
 import { UTF16Result, toUTF16 } from "./unicode-to-utf16";
@@ -202,7 +202,7 @@ function nodeToSource(node: NoParent<Node>, context: PrintContext): string {
 				throw new Error(`All characters were expected to have a maximum of ${context.inputEnv.maxCharacter}.`);
 			}
 
-			if (node.characters.maximum === Maximum.UNICODE && !context.flags.unicode) {
+			if (node.characters.maximum === Maximum.UNICODE && !(context.flags.unicode || context.flags.unicodeSets)) {
 				// convert Unicode character set to UTF16
 				debugAssert(context.converter instanceof UnicodeToUTF16CharSetConverter);
 				const utf16Result = context.converter.getUTF16Result(node.characters);
@@ -370,31 +370,6 @@ function makeIgnoreCaseSingleChar(char: Char, env: CharEnv & CharEnvIgnoreCase):
 	}
 }
 
-function getUnicodeFlag(value: readonly NoParent<Node>[]): boolean | undefined {
-	try {
-		for (const node of value) {
-			visitAst(node, {
-				onCharacterClassEnter(node) {
-					if (node.characters.maximum === Maximum.UNICODE) {
-						throw true;
-					} else if (node.characters.maximum === Maximum.UTF16) {
-						throw false;
-					} else {
-						throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
-					}
-				},
-			});
-		}
-	} catch (e) {
-		if (typeof e === "boolean") {
-			return e;
-		}
-		throw e;
-	}
-
-	return undefined; // no characters
-}
-
 const UTF16_ASCII_CASE_VARYING = CharSet.empty(Maximum.UTF16).union([
 	{ min: 0x41, max: 0x5a }, // A-Z
 	{ min: 0x61, max: 0x7a }, // a-z
@@ -526,30 +501,105 @@ function getMultilineFlag(value: readonly NoParent<Node>[], env: CharEnv): boole
 
 	return undefined;
 }
+
+function isUnicodeMode(value: readonly NoParent<Node>[]): boolean | undefined {
+	try {
+		for (const node of value) {
+			visitAst(node, {
+				onCharacterClassEnter(node) {
+					if (node.characters.maximum === Maximum.UNICODE) {
+						throw true;
+					} else if (node.characters.maximum === Maximum.UTF16) {
+						throw false;
+					} else {
+						throw new Error("All character sets have to have a maximum of either 0xFFFF or 0x10FFFF.");
+					}
+				},
+			});
+		}
+	} catch (e) {
+		if (typeof e === "boolean") {
+			return e;
+		}
+		throw e;
+	}
+
+	return undefined; // no characters
+}
+function getUnicodeFlags(
+	value: readonly NoParent<Node>[],
+	template: Flags
+): { unicode: boolean; unicodeSets: boolean; converter: CharSetConverter; inputUnicode: boolean | undefined } {
+	const inputUnicode = isUnicodeMode(value);
+	if (inputUnicode === undefined) {
+		// input doesn't contain characters, so we can choose
+		return {
+			unicode: template.unicode ?? false,
+			unicodeSets: template.unicodeSets ?? false,
+			converter: new NoopCharConverter(),
+			inputUnicode,
+		};
+	}
+
+	if (template.unicodeSets) {
+		if (!inputUnicode) {
+			throw new Error(
+				`Incompatible flags: The v flag is required by the flags options but a UTF16 regex cannot be converted to a Unicode regex.`
+			);
+		}
+
+		return {
+			unicode: false,
+			unicodeSets: true,
+			converter: new NoopCharConverter(),
+			inputUnicode,
+		};
+	}
+
+	if (template.unicode) {
+		if (inputUnicode === false) {
+			throw new Error(
+				`Incompatible flags: The u flag is required by the flags options but a UTF16 regex cannot be converted to a Unicode regex.`
+			);
+		}
+
+		return {
+			unicode: true,
+			unicodeSets: false,
+			converter: new NoopCharConverter(),
+			inputUnicode,
+		};
+	}
+
+	const unicode: boolean = template.unicode ?? inputUnicode;
+	const converter: CharSetConverter =
+		unicode === inputUnicode ? new NoopCharConverter() : new UnicodeToUTF16CharSetConverter();
+
+	return {
+		unicode,
+		unicodeSets: false,
+		converter,
+		inputUnicode,
+	};
+}
+
 function getFlags(
 	value: readonly NoParent<Node>[],
 	options: Readonly<ToLiteralOptions> | undefined,
 	fastCharacters: boolean
-): { flags: Flags; converter: CharSetConverter; inputUnicode: boolean } {
+): { flags: Required<Flags>; converter: CharSetConverter; inputUnicode: boolean } {
 	const template = options?.flags ?? {};
 
-	// u flag
-	const inputUnicode: boolean = getUnicodeFlag(value) ?? template.unicode ?? false;
-	const unicode: boolean = template.unicode ?? inputUnicode;
-	if (inputUnicode === false && unicode === true) {
-		throw new Error(
-			`Incompatible flags: The u flag is required by the flags options but a UTF16 regex cannot be converted to a Unicode regex.`
-		);
-	}
+	// u flag and v flag
+	const { unicode, unicodeSets, converter, inputUnicode } = getUnicodeFlags(value, template);
 
-	const converter: CharSetConverter =
-		unicode === inputUnicode ? new NoopCharConverter() : new UnicodeToUTF16CharSetConverter();
+	const effectiveUnicode = unicode || unicodeSets;
 
 	// i flag
 	let ignoreCase: boolean;
 	if (template.ignoreCase === true) {
 		// check that it's actually possible to enable the i flag
-		if (getIgnoreCaseFlag(value, unicode, converter) === GetIgnoreCaseFlagResult.FORBIDDEN) {
+		if (getIgnoreCaseFlag(value, effectiveUnicode, converter) === GetIgnoreCaseFlagResult.FORBIDDEN) {
 			throw new Error(
 				`Incompatible flags: The i flag is forbidden to create a literal but required by the flags options.`
 			);
@@ -563,7 +613,7 @@ function getFlags(
 		if (fastCharacters) {
 			ignoreCase = false;
 		} else {
-			const result = getIgnoreCaseFlag(value, unicode, converter);
+			const result = getIgnoreCaseFlag(value, effectiveUnicode, converter);
 			ignoreCase = result === GetIgnoreCaseFlagResult.BENEFICIAL ? true : false;
 		}
 	}
@@ -571,21 +621,25 @@ function getFlags(
 	// m flag
 	let multiline = template.multiline;
 	if (multiline === undefined) {
-		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode }));
+		multiline = getMultilineFlag(value, getCharEnv({ unicode: inputUnicode })) ?? false;
 	}
 
+	const flags: Required<UncheckedFlags> = {
+		dotAll: template.dotAll ?? false,
+		global: template.global ?? false,
+		hasIndices: template.hasIndices ?? false,
+		ignoreCase,
+		multiline,
+		sticky: template.sticky ?? false,
+		unicode,
+		unicodeSets,
+	};
+	debugAssert(isFlags(flags));
+
 	return {
-		flags: {
-			dotAll: template.dotAll,
-			global: template.global,
-			hasIndices: template.hasIndices,
-			ignoreCase,
-			multiline,
-			sticky: template.sticky,
-			unicode,
-		},
+		flags: flags,
 		converter,
-		inputUnicode,
+		inputUnicode: inputUnicode ?? false,
 	};
 }
 
