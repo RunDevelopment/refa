@@ -1,5 +1,141 @@
 /* eslint-disable */
 
+module.exports["Transformers >> apply-assertions >> /(?=\\d)\\wa/"] = `
+/\\da/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)\\wa/"] = `
+/[A-Z_a-z]a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\w[^9])a\\d/"] = `
+/a[0-8]/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /\\da(?<=[^9]\\w)/"] = `
+/[0-8]a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!4)(?=\\d)\\w(?<!2)a(?<=[^9]a)/"] = `
+/[0135-8]a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=aa)\\wa/"] = `
+/aa/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!aa)\\wa/"] = `
+/(?!aa)\\wa/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!a)aa/"] = `
+/[]a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /a$a/"] = `
+/a[]/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /a^a/"] = `
+/[]a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)(?<!\\w)\\w/"] = `
+/(?<!\\w)[A-Z_]/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)\\w+/"] = `
+/[A-Z_]\\w*/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /\\w+(?<!\\d)/"] = `
+/\\w*[A-Z_]/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\da)\\w+/"] = `
+/\\d(?:a\\w*|(?=a))/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /\\w+(?<=a\\d)/"] = `
+/(?:\\w*a|(?<=a))\\d/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)\\w{1,2}/"] = `
+/[A-Z_]\\w?/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)\\w*/"] = `
+/(?:[A-Z_]\\w*|(?!\\d))/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\d)(?:\\w+|:|123)/"] = `
+/(?:[A-Z_]\\w*|:)/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\d)\\s*\\w+/"] = `
+/\\d\\w*/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /a$(?:a|b)/"] = `
+/a\$(?:[])/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /a$(?:a|b)?/"] = `
+/a\$/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /a$(?:a|b|)/"] = `
+/a\$(?:)/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?!\\s)[^]*\\S/"] = `
+/(?:\\S[^]*|)\\S/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=a)[^]*/"] = `
+/(?:a[^]*|(?=a))/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=a)[^]*b/"] = `
+/(?:a[^]*)b/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=a)[^]*a/"] = `
+/(?:a[^]*|)a/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\d)[^]*\\w/"] = `
+/(?:\\d[^]*\\w|\\d)/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\d)[^]*\\w+/"] = `
+/(?:\\d[^]*\\w|\\d)\\w*/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?=\\d)[^]?\\w+/"] = `
+/(?:\\d[^]{0}\\w|\\d)\\w*/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /=begin\\s[^]*^=end/m"] = `
+/=begin(?:\\s[^]*[\\n\\r\\u2028\\u2029]|[\\n\\r\\u2028\\u2029])=end/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /-?(?<!\\w)\\d+(?:\\.\\d+)?(?:E[-+]?\\d+)?/i"] = `
+/(?:-{0}-|(?<!\\w))\\d+(?:\\.\\d+)?(?:E[-+]?\\d+)?/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?:a(?!\\d)|foo(?=\\w)|bar(?!\\w)|b)\\w+/i"] = `
+/(?:A[A-Z_]|FOO\\w|B\\w)\\w*/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?:\\[)(?!\\d)\\w+(?=\\])/i"] = `
+/(?:\\[)[A-Z_]\\w*(?=\\])/i
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(?:^|[^&])(?<!\\w)(?:TRUE|FALSE)/i"] = `
+/(?:^(?<!\\w)|[^\\w&])(?:TRUE|FALSE)/i
+`.slice(1, -1);
+
 module.exports["Transformers >> apply-assertions >> Prism regex snapshot"] = `
 /<!--[^]*?-->/
 /<\\?[^]+?\\?>/

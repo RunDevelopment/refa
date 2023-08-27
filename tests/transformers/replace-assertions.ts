@@ -3,7 +3,7 @@ import { replaceAssertions } from "../../src/transformers";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
-		itTest([
+		itTest(null, [
 			{
 				literal: /\bfoo\b|abc(?=abc$)|bar(?:\w(?<!b))*/,
 				transformer: replaceAssertions(),

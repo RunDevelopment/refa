@@ -7,10 +7,9 @@ describe("Transformers", function () {
 		const transformer = mergeWithQuantifier();
 		const transformerIgnoreAmbiguity = mergeWithQuantifier({ ignoreAmbiguity: true });
 
-		itTest([
+		itTest(transformer, [
 			{
 				literal: /a*a/,
-				transformer,
 				expected: /a+/,
 			},
 			{
@@ -21,7 +20,6 @@ describe("Transformers", function () {
 
 			{
 				literal: /a*a+/,
-				transformer,
 				expected: /a*a+/,
 			},
 			{
@@ -32,7 +30,6 @@ describe("Transformers", function () {
 
 			{
 				literal: /a*(?:a?|a+|a{1,2})/,
-				transformer,
 				expected: /a*(?:a?|a+|a{1,2})/,
 			},
 			{

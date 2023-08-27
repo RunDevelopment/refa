@@ -3,7 +3,7 @@ import { patternEdgeAssertions } from "../../src/transformers";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
-		itTest([
+		itTest(null, [
 			{
 				literal: /(?<!\w)(?=\w)a(?=\w)|^f(?=\w)oo(?=sb)(?!\s*\w)(?<!\d)/,
 				transformer: patternEdgeAssertions({ inline: true, remove: true }),
@@ -79,7 +79,6 @@ describe("Transformers", function () {
 			{
 				literal: /(?=a{5})\w{4}(?!\s)/,
 				transformer: patternEdgeAssertions({ inline: true, remove: true }),
-				debug: true,
 				expected: /(?=a{5})\w{4}(?!\s)/,
 			},
 		]);

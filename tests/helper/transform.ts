@@ -7,22 +7,42 @@ import { literalToString } from "./fa";
 import { PrismRegexes } from "./prism-regex-data";
 import { assertEqualSnapshot } from "./snapshot";
 
-export type TransformTestCase = LiteralTestCase;
-
-interface LiteralTestCase {
-	literal: Literal;
-	transformer: Transformer;
+export interface TransformTestCase {
+	literal: Literal | string;
+	transformer?: Transformer;
 	options?: TransformOptions;
-	expected: Literal | string;
+	expected?: Literal | string;
 	debug?: boolean;
 }
 
-export function itTest(cases: Iterable<TransformTestCase>): void {
-	for (const { literal, transformer, options, expected, debug } of cases) {
+function toTestCase(literal: TransformTestCase | Literal | string): TransformTestCase {
+	if (typeof literal === "string") {
+		return { literal };
+	} else if ("literal" in literal) {
+		return literal;
+	} else {
+		return { literal };
+	}
+}
+
+export function itTest(defaultTransformer: Transformer, cases: Iterable<TransformTestCase | Literal | string>): void;
+export function itTest(
+	defaultTransformer: null,
+	cases: Iterable<TransformTestCase & { transformer: Transformer }>
+): void;
+export function itTest(
+	defaultTransformer: Transformer | null,
+	cases: Iterable<TransformTestCase | Literal | string>
+): void {
+	for (const { literal, transformer = defaultTransformer, options, expected, debug } of [...cases].map(toTestCase)) {
 		it(literalToString(literal), function () {
 			if (debug) {
 				// eslint-disable-next-line no-debugger
 				debugger;
+			}
+
+			if (!transformer) {
+				throw new Error("No transformer");
 			}
 
 			const { expression } = Parser.fromLiteral(literal).parse({
@@ -34,9 +54,13 @@ export function itTest(cases: Iterable<TransformTestCase>): void {
 			const actual = toLiteral(transformedExpression);
 
 			const actualStr = literalToString(actual);
-			const expectedStr = typeof expected === "string" ? expected : literalToString(expected);
 
-			assert.strictEqual(actualStr, expectedStr);
+			if (expected === undefined) {
+				assertEqualSnapshot(this, actualStr);
+			} else {
+				const expectedStr = literalToString(expected);
+				assert.strictEqual(actualStr, expectedStr);
+			}
 		});
 	}
 }

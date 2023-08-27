@@ -4,7 +4,7 @@ import { combineTransformers } from "../../src/ast";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
-		itTest([
+		itTest(null, [
 			{
 				literal: /(a|b|c) (a|b|dd|\w) (a||b) ([a-d]|do|[c-f])/,
 				transformer: unionCharacters({}),

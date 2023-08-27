@@ -5,15 +5,13 @@ describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
 		const transformer = removeDeadBranches();
 
-		itTest([
+		itTest(transformer, [
 			{
 				literal: /(?:[])*foo|[]bar|ab?c[]/,
-				transformer,
 				expected: /foo/,
 			},
 			{
 				literal: /(?:[])+foo|[]?bar|abc(?:[]|(?:[]|[]+){3,5}|def)/,
-				transformer,
 				expected: /bar|abc(?:def)/,
 			},
 		]);

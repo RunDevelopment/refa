@@ -239,14 +239,22 @@ export class Parser {
 	 * This function will throw a `SyntaxError` if the given literal is not a valid RegExp literal according to the
 	 * given RegExp parser options.
 	 *
+	 * If a string is given as the literal, it must be of the form `/pattern/flags`. If possible, use the
+	 * object form with {@link Literal} instead.
+	 *
 	 * @param literal
 	 * @param parserOptions
 	 */
-	static fromLiteral(literal: Literal, parserOptions?: RegExpParser.Options): Parser {
+	static fromLiteral(literal: Literal | string, parserOptions?: RegExpParser.Options): Parser {
 		const parser = new RegExpParser(parserOptions);
-		const flags = parser.parseFlags(literal.flags);
-		const pattern = parser.parsePattern(literal.source, undefined, undefined, flags);
-		const ast = { pattern, flags };
+		let ast;
+		if (typeof literal === "string") {
+			ast = parser.parseLiteral(literal);
+		} else {
+			const flags = parser.parseFlags(literal.flags);
+			const pattern = parser.parsePattern(literal.source, undefined, undefined, flags);
+			ast = { pattern, flags };
+		}
 		return new Parser(ast);
 	}
 	/**

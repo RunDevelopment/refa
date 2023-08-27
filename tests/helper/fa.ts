@@ -5,7 +5,10 @@ import { Literal, Parser } from "../../src/js";
 import * as Iter from "../../src/iter";
 import { TransitionIterable } from "../../src/fa-types";
 
-export function literalToString(literal: Literal): string {
+export function literalToString(literal: Literal | string): string {
+	if (typeof literal === "string") {
+		return literal;
+	}
 	return `/${literal.source}/${literal.flags}`;
 }
 
