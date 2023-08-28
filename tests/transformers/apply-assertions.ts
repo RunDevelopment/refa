@@ -22,6 +22,18 @@ describe("Transformers", function () {
 			/a$a/,
 			/a^a/,
 
+			/(?!a|""")./s,
+			/(?!a)(?!""")./s,
+
+			/(?=foo)foo/i,
+			/(?!foo)bar/i,
+			/(?!food)foo/i,
+			/(?!food)foot/i,
+			/(?!food)foo\w/i,
+
+			/\(\s*(?!\s)(?:[^()]|\([^()]*\))*?(?=\s*\))/,
+			/\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,
+
 			/(?!\d)(?<!\w)\w/,
 
 			/(?!\d)\w+/,
@@ -39,6 +51,8 @@ describe("Transformers", function () {
 
 			/(?!\s)[^]*\S/,
 			/(?=a)[^]*/,
+			/(?=a)[^]*?/,
+			/(?!a)[^]*?/,
 			/(?=a)[^]*b/,
 			/(?=a)[^]*a/,
 			/(?=\d)[^]*\w/,
@@ -50,6 +64,16 @@ describe("Transformers", function () {
 			/(?:\[)(?!\d)\w+(?=\])/i,
 
 			/(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
+
+			/"""((?!""").)*"""/s,
+			/"""((?!""").)+"""/s,
+
+			/(?:^|[^.]|\.\.\.\s*)(?<!\w)(?:as|async(?=\s*(?:function(?!\w)|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|[gs]et(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?!\w)/,
+			{
+				literal: /(?:\b[a-z][a-z_\d]*\s*::\s*)*\b[a-z][a-z_\d]*\s*::(?!\s*<)/,
+				transformer: combineTransformers([applyAssertions(), inline(), removeDeadBranches()]),
+				stepByStep: true,
+			},
 		]);
 
 		it("Prism regex snapshot", function () {

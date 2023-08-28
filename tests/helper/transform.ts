@@ -12,6 +12,7 @@ export interface TransformTestCase {
 	transformer?: Transformer;
 	options?: TransformOptions;
 	expected?: Literal | string;
+	stepByStep?: boolean;
 	debug?: boolean;
 }
 
@@ -34,7 +35,9 @@ export function itTest(
 	defaultTransformer: Transformer | null,
 	cases: Iterable<TransformTestCase | Literal | string>
 ): void {
-	for (const { literal, transformer = defaultTransformer, options, expected, debug } of [...cases].map(toTestCase)) {
+	for (const { literal, transformer = defaultTransformer, options, expected, debug = false, stepByStep = false } of [
+		...cases,
+	].map(toTestCase)) {
 		it(literalToString(literal), function () {
 			if (debug) {
 				// eslint-disable-next-line no-debugger
@@ -75,7 +78,7 @@ export function regexSnapshot(context: Mocha.Context, transformer: Transformer):
 	const actual = PrismRegexes.map(re => {
 		try {
 			const { expression } = Parser.fromLiteral(re).parse({ backreferences: "unknown" });
-			return literalToString(toLiteral(transform(transformer, expression)));
+			return literalToString(toLiteral(transform(transformer, expression, { maxPasses: 20 })));
 		} catch (e) {
 			if (e instanceof TooManyNodesError) {
 				return "TooManyNodesError";

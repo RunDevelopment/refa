@@ -11,6 +11,7 @@ import {
 } from "../ast";
 import {
 	MatchingDirection,
+	alwaysConsumesCharacters,
 	getFirstCharConsumedBy,
 	isTriviallyAccepting,
 	isZeroLength,
@@ -54,6 +55,21 @@ function pushFront<T>(direction: MatchingDirection, arr: T[], value: T): void {
 	}
 }
 
+enum AssertCharacterResult {
+	/** Nothing changed. */
+	FAILED,
+	/**
+	 * The character has been successfully asserted and the assertion and character have been adjusted
+	 * accordingly. The assertions should now be moved behind the character.
+	 */
+	MOVE_ASSERTION,
+	/**
+	 * The character has been successfully asserted and the assertion and character have been adjusted
+	 * accordingly. The assertions should stay in place.
+	 */
+	KEEP_ASSERTION,
+}
+
 /**
  * This function is the meat of this transformer.
  *
@@ -69,7 +85,7 @@ function assertCharacter(
 	assertion: NoParent<Assertion>,
 	char: NoParent<CharacterClass>,
 	context: TransformContext
-): boolean {
+): AssertCharacterResult {
 	const direction = toMatchingDirection(assertion.kind);
 
 	// remove rejecting branches
@@ -80,28 +96,57 @@ function assertCharacter(
 	if (assertion.negate) {
 		// In general, it's not possible to apply negated assertions without negating the language of the assertion.
 
-		if (assertion.alternatives.length === 1 && assertion.alternatives[0].elements.length === 1) {
-			const single = assertion.alternatives[0].elements[0];
-			if (single.type === "CharacterClass") {
-				// e.g. (?!a)\w => [0-9A-Zb-z_]
-				char.characters = char.characters.without(single.characters);
-				assertion.alternatives = [];
-				context.signalMutation();
-				return true;
+		// The key insight here is that (?!foo|bar) == (?!foo)(?!bar) == (?!bar)(?!foo). So we can apply the
+		// alternatives one by one.
+		const toRemove = new Set<NoParent<Concatenation>>();
+		for (const alternative of assertion.alternatives) {
+			if (alternative.elements.length === 1) {
+				const single = alternative.elements[0];
+				if (single.type === "CharacterClass") {
+					// e.g. (?!a)\w => [0-9A-Zb-z_]
+					char.characters = char.characters.without(single.characters);
+					context.signalMutation();
+					toRemove.add(alternative);
+				}
 			}
 		}
 
-		return false;
+		if (toRemove.size > 0) {
+			assertion.alternatives = assertion.alternatives.filter(alt => !toRemove.has(alt));
+			context.signalMutation();
+			return AssertCharacterResult.KEEP_ASSERTION;
+		}
+
+		if (assertion.alternatives.length === 1) {
+			const { elements } = assertion.alternatives[0];
+			if (elements.length === 0) {
+				return AssertCharacterResult.FAILED;
+			}
+
+			const firstIndex = firstIndexFor(direction);
+			const first = at(elements, firstIndex);
+
+			if (first.type === "CharacterClass") {
+				if (first.characters.isSupersetOf(char.characters)) {
+					// e.g. (?!\wbc)a => a(?!bc)
+					context.signalMutation();
+					elements.splice(firstIndex, 1);
+					return AssertCharacterResult.MOVE_ASSERTION;
+				}
+			}
+		}
+
+		return AssertCharacterResult.FAILED;
 	} else {
 		if (assertion.alternatives.length !== 1) {
 			// It's not possible to do the intersection with more than 1 branches without increasing the number of nodes in
 			// the regex.
 			// Example: /(?=\wa|\db)\w\w/
-			return false;
+			return AssertCharacterResult.FAILED;
 		} else {
 			const { elements } = assertion.alternatives[0];
 			if (elements.length === 0) {
-				return false;
+				return AssertCharacterResult.FAILED;
 			}
 
 			const firstIndex = firstIndexFor(direction);
@@ -115,11 +160,11 @@ function assertCharacter(
 					context.signalMutation();
 					char.characters = intersection;
 					elements.splice(firstIndex, 1);
-					return true;
+					return AssertCharacterResult.MOVE_ASSERTION;
 				}
 			}
 
-			return false;
+			return AssertCharacterResult.FAILED;
 		}
 	}
 }
@@ -195,15 +240,27 @@ function applyOneCharacter(elements: NoParent<Element>[], kind: Assertion["kind"
 		}
 
 		const char = toCharElement(charConvertible);
-		if (assertCharacter(assertion, char, context)) {
+		const result = assertCharacter(assertion, char, context);
+		const triviallyAccepting = isTriviallyAccepting(assertion);
+
+		if (result === AssertCharacterResult.FAILED) {
+			if (triviallyAccepting) {
+				// remove the assertion
+				context.signalMutation();
+				elements.splice(i, 1);
+				i -= inc;
+			}
+		} else {
 			context.signalMutation();
 
-			// remove the assertion
-			elements.splice(i, 1);
-			i -= inc;
+			if (result === AssertCharacterResult.MOVE_ASSERTION || triviallyAccepting) {
+				// remove the assertion
+				elements.splice(i, 1);
+				i -= inc;
+			}
 
 			const replacement: NoParent<Element>[] = [char];
-			if (!isTriviallyAccepting(assertion)) {
+			if (!triviallyAccepting && result === AssertCharacterResult.MOVE_ASSERTION) {
 				pushBack(direction, replacement, assertion);
 			}
 			if (charConvertible.type === "Quantifier") {
@@ -300,13 +357,13 @@ function removeRejectedBranches(
 }
 
 /**
- * This will transform `(?!\s)[^]*` => `(?:\S[^]*|(?!\s))`.
+ * This will transform `(?=a).*` => `(?:(?=a).+|(?=a))`.
  *
  * @param elements
  * @param kind
  * @param context
  */
-function applySingleCharacterQuantifier(
+function applySingleCharacterAssertion(
 	elements: NoParent<Element>[],
 	kind: Assertion["kind"],
 	context: TransformContext
@@ -326,38 +383,35 @@ function applySingleCharacterQuantifier(
 		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isSingleCharacterParent(assertion)) {
 			continue;
 		}
-		const assertionRawChar = assertion.alternatives[0].elements[0].characters;
-		const assertionChar = assertion.negate ? assertionRawChar.negate() : assertionRawChar;
 
 		const quantifierIndex = i;
 		const quantifier = at(elements, quantifierIndex);
 		if (
 			quantifier.type !== "Quantifier" ||
 			!(quantifier.min === 0 && quantifier.max > 0) ||
-			!isSingleCharacterParent(quantifier)
+			!alwaysConsumesCharacters(quantifier.alternatives)
 		) {
 			continue;
 		}
-		const quantifierChar = quantifier.alternatives[0].elements[0].characters;
 
 		// adjust quantifier
 		context.signalMutation();
-		quantifier.max -= 1;
+		quantifier.min++;
 
-		// `(?=a)[^]*` => `(?:a[^]*|(?=a))`
-		setAt(elements, assertionIndex, {
+		// `(?=a).*` => `(?:(?=a).+|(?=a))`
+		// `(?=a).*?` => `(?:(?=a)|(?=a).+?)`
+		const group: NoParent<Alternation> = {
 			type: "Alternation",
 			alternatives: [
-				{
-					type: "Concatenation",
-					elements: withDirection<NoParent<Element>>(direction, [
-						{ type: "CharacterClass", characters: quantifierChar.intersect(assertionChar) },
-						quantifier,
-					]),
-				},
+				{ type: "Concatenation", elements: withDirection(direction, [copyNode(assertion), quantifier]) },
 				{ type: "Concatenation", elements: [assertion] },
 			],
-		});
+		};
+		if (quantifier.lazy) {
+			group.alternatives.reverse();
+		}
+
+		setAt(elements, assertionIndex, group);
 		elements.splice(quantifierIndex, 1);
 	}
 }
@@ -458,7 +512,8 @@ function moveCharacterIntoAlternation(
 }
 
 /**
- * This will transform `(?!\d)(?:\w+|:|123)` => `(?:(?!\d)\w+|:|[])`.
+ * This will transform `(?!\d)(?:\w+|:|123)` => `(?:(?!\d)\w+|:|[])` and
+ * `(?!\d)(?:\w+|:|123)+` => `(?:(?!\d)\w+|:|[])(?:\w+|:|123)*`.
  *
  * @param elements
  * @param kind
@@ -485,23 +540,54 @@ function moveAssertionIntoAlternation(
 			continue;
 		}
 
-		const alternationIndex = i;
-		const alternation = at(elements, alternationIndex);
-		if (alternation.type !== "Alternation") {
-			continue;
-		}
-
 		const assertionRawChar = assertion.alternatives[0].elements[0].characters;
 		const assertionChar = assertion.negate ? assertionRawChar.negate() : assertionRawChar;
 
-		const toAdd: NoParent<Concatenation>[] = [];
-		let canApply = false;
+		const alternationIndex = i;
+		const element = at(elements, alternationIndex);
+		let alternation: NoParent<Alternation>;
+		if (element.type === "Alternation" && !isZeroLength(element)) {
+			alternation = element;
+
+			// remove assertion
+			context.signalMutation();
+			elements.splice(assertionIndex, 1);
+		} else if (
+			element.type === "Quantifier" &&
+			element.min >= 1 &&
+			alwaysConsumesCharacters(element) &&
+			// we already handle this simple case elsewhere
+			!isSingleCharacterParent(element)
+		) {
+			// convert `(?:a|b)+` => `(?:(?:a|b)(?:a|b)*)` and then use the new alternation
+			const quant = element;
+			quant.min--;
+			quant.max--;
+			alternation = {
+				type: "Alternation",
+				alternatives: copyNode(quant).alternatives,
+				source: copySource(quant.source),
+			};
+			const replacement = [alternation, quant];
+			if (direction === "rtl") {
+				replacement.reverse();
+			}
+			context.signalMutation();
+			elements.splice(alternationIndex, 1, ...replacement);
+
+			// remove assertion
+			context.signalMutation();
+			elements.splice(elements.indexOf(assertion), 1);
+		} else {
+			continue;
+		}
+
+		// move it into alternatives
 		filterMut(alternation.alternatives, alt => {
 			const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
 			if (!firstChar.empty) {
 				if (firstChar.char.isDisjointWith(assertionChar)) {
 					// trivial reject
-					context.signalMutation();
 					return false;
 				} else if (firstChar.char.isSubsetOf(assertionChar)) {
 					// trivial accept
@@ -509,24 +595,9 @@ function moveAssertionIntoAlternation(
 				}
 			}
 
-			if (alt.elements.length > 0 && isCharConvertible(at(alt.elements, firstIndex))) {
-				canApply = true;
-			}
-
-			toAdd.push(alt);
+			pushFront(direction, alt.elements, copyNode(assertion));
 			return true;
 		});
-
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (toAdd.length > 0 && (toAdd.length < alternation.alternatives.length || canApply)) {
-			context.signalMutation();
-			elements.splice(assertionIndex, 1);
-
-			pushFront(direction, toAdd[0].elements, assertion);
-			for (let i = 1; i < toAdd.length; i++) {
-				pushFront(direction, toAdd[i].elements, copyNode(assertion));
-			}
-		}
 	}
 }
 
@@ -542,6 +613,9 @@ export function applyAssertions(_options?: Readonly<CreationOptions>): Transform
 		onConcatenation(node: NoParent<Concatenation>, context: TransformContext) {
 			const elements = node.elements;
 
+			applySingleCharacterAssertion(elements, "ahead", context);
+			applySingleCharacterAssertion(elements, "behind", context);
+
 			moveAssertionIntoAlternation(elements, "ahead", context);
 			moveAssertionIntoAlternation(elements, "behind", context);
 
@@ -550,9 +624,6 @@ export function applyAssertions(_options?: Readonly<CreationOptions>): Transform
 
 			removeRejectedBranches(elements, "ahead", context);
 			removeRejectedBranches(elements, "behind", context);
-
-			applySingleCharacterQuantifier(elements, "ahead", context);
-			applySingleCharacterQuantifier(elements, "behind", context);
 
 			moveCharacterIntoAlternation(elements, "ahead", context);
 			moveCharacterIntoAlternation(elements, "behind", context);

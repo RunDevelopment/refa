@@ -112,8 +112,23 @@ function optimizeChildQuantifier(
  */
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreAmbiguity) {
-		// (almost) all changes will decrease the ambiguity of the regular expression and may change matching order
-		return {}; // noop
+		return {
+			onQuantifier(node: NoParent<Quantifier>, { signalMutation }: TransformContext): void {
+				if (node.alternatives.length === 1 && node.alternatives[0].elements.length === 1) {
+					const nested = node.alternatives[0].elements[0];
+					if (nested.type === "Quantifier") {
+						// (Almost) all changes will decrease the ambiguity of the regular expression
+						// and may change matching order. Pretty much the only safe transformation is
+						// `(?:a+)?` => `a*` and `(?:a+?)??` => `a*?`.
+						if (node.lazy === nested.lazy && node.min === 0 && node.max === 1 && nested.min === 1) {
+							signalMutation();
+							node.max = nested.max;
+							node.alternatives = nested.alternatives;
+						}
+					}
+				}
+			},
+		};
 	}
 
 	const { ignoreOrder } = options;

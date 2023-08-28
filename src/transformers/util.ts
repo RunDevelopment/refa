@@ -36,8 +36,8 @@ export function copySource(source: Readonly<SourceLocation> | undefined): Source
 		return undefined;
 	}
 }
-export function copyNode<N extends Node, T extends NoParent<N>>(node: T): NoParent<N> {
-	return copyNodeImpl(node) as NoParent<N>;
+export function copyNode<T extends NoParent<Node>>(node: T): T {
+	return copyNodeImpl(node) as T;
 }
 function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
 	const n = node as NoParent<Node>;

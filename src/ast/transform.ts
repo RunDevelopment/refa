@@ -54,6 +54,7 @@ const TRANSFORMER_KEYS: readonly (keyof Transformer)[] = [
 	"onConcatenation",
 	"onExpression",
 	"onQuantifier",
+	"onUnknown",
 ];
 /**
  * Creates a new transformer that performs all given transformers in sequentially order.
@@ -186,9 +187,9 @@ function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
 	};
 
 	function leaveNode(node: NoParent<Node>): void {
-		const fnName = "on" + node.type;
+		const fnName = `on${node.type}` as const;
 
-		const fn = transformer[fnName as keyof Transformer];
+		const fn = transformer[fnName];
 		if (fn) {
 			fn(node as never, transformerContext);
 		}

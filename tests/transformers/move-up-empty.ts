@@ -23,6 +23,15 @@ describe("Transformers", function () {
 				literal: /a(?:|||)/,
 				expected: /a(?:)/,
 			},
+
+			{
+				literal: /a*|b*|/,
+				transformer: moveUpEmpty(),
+			},
+			{
+				literal: /|a*|b*|/,
+				transformer: moveUpEmpty(),
+			},
 		]);
 
 		it("Prism regex snapshot", function () {

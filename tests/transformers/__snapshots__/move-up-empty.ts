@@ -1,5 +1,13 @@
 /* eslint-disable */
 
+module.exports["Transformers >> move-up-empty >> /a*|b*|/"] = `
+/(?:a*|b*)?/
+`.slice(1, -1);
+
+module.exports["Transformers >> move-up-empty >> /|a*|b*|/"] = `
+/(?:(?:a*|b*)?)??/
+`.slice(1, -1);
+
 module.exports["Transformers >> move-up-empty >> Prism regex snapshot"] = `
 /<!--[^]*?-->/
 /<\\?[^]+?\\?>/

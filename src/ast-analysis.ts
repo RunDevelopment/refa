@@ -167,6 +167,43 @@ export function isPotentiallyEmpty(node: NoParent<Node> | NoParent<Concatenation
 }
 
 /**
+ * Returns whether there all of the given nodes are guaranteed to consume at least one character.
+ *
+ * If no unknown nodes are present, then this function will return `!isPotentiallyZeroLength(node)`.
+ *
+ * @param node
+ */
+export function alwaysConsumesCharacters(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
+	if (Array.isArray(node)) {
+		return node.every(alwaysConsumesCharacters);
+	}
+
+	switch (node.type) {
+		case "Alternation":
+		case "Expression":
+			return alwaysConsumesCharacters(node.alternatives);
+
+		case "Assertion":
+			return false;
+
+		case "CharacterClass":
+			return true;
+
+		case "Concatenation":
+			return node.elements.some(alwaysConsumesCharacters);
+
+		case "Quantifier":
+			return node.min > 0 && alwaysConsumesCharacters(node.alternatives);
+
+		case "Unknown":
+			return false;
+
+		default:
+			assertNever(node);
+	}
+}
+
+/**
  * Returns whether the given assertion will always trivially accept regardless of the input string and other RE AST
  * nodes in the regular expression.
  *
