@@ -1,6 +1,18 @@
 /* eslint-disable */
 
-module.exports["toMermaid >> from regexes >> DFA (default): /a/"] = `
+var unescapeBackslashes = (str: string): string => {
+	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
+	});
+};
+var lit = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(1, -1));
+};
+var n = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(0, -1));
+};
+
+module.exports[n`toMermaid >> from regexes >> DFA (default): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -10,9 +22,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /a/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -22,9 +34,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /a/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -34,9 +46,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /a/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -46,9 +58,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /a/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -58,9 +70,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /a/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /a/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -70,9 +82,9 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|a| n1
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -86,9 +98,9 @@ flowchart LR
 	n0 -->|"A a"| n1
 	n1 -->|"B b"| n2
 	n2 -->|"C c"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -102,9 +114,9 @@ flowchart LR
 	n0 -->|"A a"| n1
 	n1 -->|"B b"| n2
 	n2 -->|"C c"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -118,9 +130,9 @@ flowchart LR
 	n0 -->|"A a"| n1
 	n1 -->|"B b"| n2
 	n2 -->|"C c"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -134,9 +146,9 @@ flowchart LR
 	n0 -->|"[Aa]"| n1
 	n1 -->|"[Bb]"| n2
 	n2 -->|"[Cc]"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -150,9 +162,9 @@ flowchart LR
 	n0 -->|"[Aa]"| n1
 	n1 -->|"[Bb]"| n2
 	n2 -->|"[Cc]"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /abc/i"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /abc/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -166,9 +178,9 @@ flowchart LR
 	n0 -->|"[Aa]"| n1
 	n1 -->|"[Bb]"| n2
 	n2 -->|"[Cc]"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -183,9 +195,9 @@ flowchart LR
 	n1 -->|b| n1
 	n1 -->|c| n2
 	n2 -->|c| n2
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -216,9 +228,9 @@ flowchart LR
 	n7 -->|c| n9
 	n9 -->|"(1) "| n7
 	n9 --->|"(2) "| n8
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -236,9 +248,9 @@ flowchart LR
 	n2 -->|b| n2
 	n2 -->|c| n3
 	n3 -->|c| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -253,9 +265,9 @@ flowchart LR
 	n1 -->|b| n1
 	n1 -->|c| n2
 	n2 -->|c| n2
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -286,9 +298,9 @@ flowchart LR
 	n7 -->|c| n9
 	n9 -->|"(1) "| n7
 	n9 --->|"(2) "| n8
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /a*b+c*/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /a*b+c*/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -306,9 +318,9 @@ flowchart LR
 	n2 -->|b| n2
 	n2 -->|c| n3
 	n3 -->|c| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -333,9 +345,9 @@ flowchart LR
 	n4 -->|"E e"| n3
 	n5 -->|"0-9"| n6
 	n6 -->|"0-9"| n6
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -376,9 +388,9 @@ flowchart LR
 	n12 -->|"0-9"| n13
 	n13 -->|"(1) "| n12
 	n13 --->|"(2) "| n14
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -403,9 +415,9 @@ flowchart LR
 	n4 -->|"E e"| n3
 	n5 -->|"0-9"| n6
 	n6 -->|"0-9"| n6
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -419,20 +431,20 @@ flowchart LR
 
 %% edges
 	null -.-> n0
-	n0 -->|"\\d"| n1
-	n1 -->|"\\."| n2
-	n1 -->|"\\d"| n1
+	n0 -->|"\d"| n1
+	n1 -->|"\."| n2
+	n1 -->|"\d"| n1
 	n1 -->|"[Ee]"| n3
-	n2 -->|"\\d"| n4
+	n2 -->|"\d"| n4
 	n3 -->|"[-+]"| n5
-	n3 -->|"\\d"| n6
-	n4 -->|"\\d"| n4
+	n3 -->|"\d"| n6
+	n4 -->|"\d"| n4
 	n4 -->|"[Ee]"| n3
-	n5 -->|"\\d"| n6
-	n6 -->|"\\d"| n6
-`.slice(1, -1);
+	n5 -->|"\d"| n6
+	n6 -->|"\d"| n6
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -455,14 +467,14 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->| | n1
-	n1 -->|"\\d"| n2
+	n1 -->|"\d"| n2
 	n2 -->|"(1) "| n1
 	n2 --->|"(2) "| n3
-	n3 -->|"(1) \\."| n4
+	n3 -->|"(1) \."| n4
 	n3 --->|"(2) "| n5
 	n4 -->| | n6
 	n5 -->|"[Ee]"| n7
-	n6 -->|"\\d"| n8
+	n6 -->|"\d"| n8
 	n7 -->|"(1) [-+]"| n9
 	n7 --->|"(2) "| n10
 	n8 -->|"(1) "| n6
@@ -470,12 +482,12 @@ flowchart LR
 	n9 -->| | n10
 	n10 -->| | n12
 	n11 -->| | n5
-	n12 -->|"\\d"| n13
+	n12 -->|"\d"| n13
 	n13 -->|"(1) "| n12
 	n13 --->|"(2) "| n14
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)/i"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /\d+(?:\.\d+)?(?:e[+-]?\d+)/i `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -489,20 +501,20 @@ flowchart LR
 
 %% edges
 	null -.-> n0
-	n0 -->|"\\d"| n1
-	n1 -->|"\\d"| n1
-	n1 -->|"\\."| n2
+	n0 -->|"\d"| n1
+	n1 -->|"\d"| n1
+	n1 -->|"\."| n2
 	n1 -->|"[Ee]"| n3
-	n2 -->|"\\d"| n4
+	n2 -->|"\d"| n4
 	n3 -->|"[-+]"| n5
-	n3 -->|"\\d"| n6
-	n4 -->|"\\d"| n4
+	n3 -->|"\d"| n6
+	n4 -->|"\d"| n4
 	n4 -->|"[Ee]"| n3
-	n5 -->|"\\d"| n6
-	n6 -->|"\\d"| n6
-`.slice(1, -1);
+	n5 -->|"\d"| n6
+	n6 -->|"\d"| n6
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -523,9 +535,9 @@ flowchart LR
 	n3 -->|"'/'"| n4
 	n4 -->|"not '*'"| n2
 	n4 -->|"'*'"| n3
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -549,9 +561,9 @@ flowchart LR
 	n5 -->|"'/'"| n7
 	n6 -->|"(1) "| n3
 	n6 --->|"(2) "| n4
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -571,9 +583,9 @@ flowchart LR
 	n3 -->|all| n3
 	n3 -->|"'*'"| n4
 	n4 -->|"'/'"| n5
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -585,18 +597,18 @@ flowchart LR
 
 %% edges
 	null -.-> n0
-	n0 -->|"\\/"| n1
-	n1 -->|"\\*"| n2
+	n0 -->|"\/"| n1
+	n1 -->|"\*"| n2
 	n2 -->|"[^*]"| n2
-	n2 -->|"\\*"| n3
+	n2 -->|"\*"| n3
 	n3 -->|"[^*/]"| n2
-	n3 -->|"\\*"| n3
-	n3 -->|"\\/"| n4
+	n3 -->|"\*"| n3
+	n3 -->|"\/"| n4
 	n4 -->|"[^*]"| n2
-	n4 -->|"\\*"| n3
-`.slice(1, -1);
+	n4 -->|"\*"| n3
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -611,18 +623,18 @@ flowchart LR
 
 %% edges
 	null -.-> n0
-	n0 -->|"\\/"| n1
-	n1 -->|"\\*"| n2
+	n0 -->|"\/"| n1
+	n1 -->|"\*"| n2
 	n2 -->|"(1) "| n3
 	n2 --->|"(2) "| n4
-	n3 -->|"\\*"| n5
+	n3 -->|"\*"| n5
 	n4 -->|"[^]"| n6
-	n5 -->|"\\/"| n7
+	n5 -->|"\/"| n7
 	n6 -->|"(1) "| n3
 	n6 --->|"(2) "| n4
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /\\/\\*[\\s\\S]*?\\*\\//"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /\/\*[\s\S]*?\*\// `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -635,16 +647,16 @@ flowchart LR
 
 %% edges
 	null -.-> n0
-	n0 -->|"\\/"| n1
-	n1 -->|"\\*"| n2
+	n0 -->|"\/"| n1
+	n1 -->|"\*"| n2
 	n2 -->|"[^]"| n3
-	n2 -->|"\\*"| n4
+	n2 -->|"\*"| n4
 	n3 -->|"[^]"| n3
-	n3 -->|"\\*"| n4
-	n4 -->|"\\/"| n5
-`.slice(1, -1);
+	n3 -->|"\*"| n4
+	n4 -->|"\/"| n5
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -665,9 +677,9 @@ flowchart LR
 	n4 -->|a| n5
 	n5 -->|b| n6
 	n6 -->|a| n5
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -707,9 +719,9 @@ flowchart LR
 	n12 --->|"(2) "| n13
 	n13 -->|"(1) "| n9
 	n13 --->|"(2) "| n14
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -730,9 +742,9 @@ flowchart LR
 	n4 -->|a| n5
 	n5 -->|b| n6
 	n6 -->|a| n5
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -753,9 +765,9 @@ flowchart LR
 	n4 -->|a| n5
 	n5 -->|b| n6
 	n6 -->|a| n5
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -795,9 +807,9 @@ flowchart LR
 	n12 --->|"(2) "| n13
 	n13 -->|"(1) "| n9
 	n13 --->|"(2) "| n14
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /((ab)+){3,}/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /((ab)+){3,}/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -818,9 +830,9 @@ flowchart LR
 	n4 -->|a| n5
 	n5 -->|b| n6
 	n6 -->|a| n5
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (default): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -1005,17 +1017,17 @@ flowchart LR
 	n9 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n9
 	n9 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n4
 	n9 -->|"'>'"| n6
-	n10 -->|"not '&quot' '\\' '{'"| n10
+	n10 -->|"not '&quot' '\' '{'"| n10
 	n10 -->|"'&quot'"| n11
-	n10 -->|"'\\'"| n12
+	n10 -->|"'\'"| n12
 	n10 -->|"'{'"| n13
 	n11 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n4
 	n11 -->|"'/'"| n5
 	n11 -->|"'>'"| n6
 	n12 -->|all| n10
-	n13 -->|"not '&quot' '\\' '{' '}'"| n13
+	n13 -->|"not '&quot' '\' '{' '}'"| n13
 	n13 -->|"'&quot'"| n14
-	n13 -->|"'\\'"| n15
+	n13 -->|"'\'"| n15
 	n13 -->|"'{'"| n16
 	n13 -->|"'}'"| n10
 	n14 -->|"not U+9-U+D U+20 '/' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n17
@@ -1027,9 +1039,9 @@ flowchart LR
 	n15 -->|"not '{' '}'"| n13
 	n15 -->|"'{'"| n22
 	n15 -->|"'}'"| n10
-	n16 -->|"not '&quot' '\\' '{' '}'"| n16
+	n16 -->|"not '&quot' '\' '{' '}'"| n16
 	n16 -->|"'&quot'"| n23
-	n16 -->|"'\\'"| n24
+	n16 -->|"'\'"| n24
 	n16 -->|"'{'"| n25
 	n16 -->|"'}'"| n13
 	n17 -->|"not '{' '}'"| n17
@@ -1052,9 +1064,9 @@ flowchart LR
 	n21 -->|"not '{' '}'"| n21
 	n21 -->|"'{'"| n29
 	n21 -->|"'}'"| n17
-	n22 -->|"not '&quot' '\\' '{' '}'"| n22
+	n22 -->|"not '&quot' '\' '{' '}'"| n22
 	n22 -->|"'&quot'"| n30
-	n22 -->|"'\\'"| n31
+	n22 -->|"'\'"| n31
 	n22 -->|"'{'"| n32
 	n22 -->|"'}'"| n13
 	n23 -->|"not U+9-U+D U+20 '/' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n33
@@ -1066,9 +1078,9 @@ flowchart LR
 	n24 -->|"not '{' '}'"| n16
 	n24 -->|"'{'"| n38
 	n24 -->|"'}'"| n13
-	n25 -->|"not '&quot' '\\' '}'"| n25
+	n25 -->|"not '&quot' '\' '}'"| n25
 	n25 -->|"'&quot'"| n39
-	n25 -->|"'\\'"| n40
+	n25 -->|"'\'"| n40
 	n25 -->|"'}'"| n16
 	n26 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n26
 	n26 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n18
@@ -1084,13 +1096,13 @@ flowchart LR
 	n27 -->|"'>'"| n45
 	n27 -->|"'{'"| n46
 	n27 -->|"'}'"| n26
-	n28 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
+	n28 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
 	n28 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n28 -->|"'&quot'"| n7
 	n28 -->|"'/'"| n48
 	n28 -->|"'='"| n49
 	n28 -->|"'>'"| n50
-	n28 -->|"'\\'"| n51
+	n28 -->|"'\'"| n51
 	n28 -->|"'{'"| n52
 	n29 -->|"not '{' '}'"| n29
 	n29 -->|"'}'"| n21
@@ -1103,9 +1115,9 @@ flowchart LR
 	n31 -->|"not '{' '}'"| n22
 	n31 -->|"'{'"| n53
 	n31 -->|"'}'"| n13
-	n32 -->|"not '&quot' '\\' '{' '}'"| n32
+	n32 -->|"not '&quot' '\' '{' '}'"| n32
 	n32 -->|"'&quot'"| n54
-	n32 -->|"'\\'"| n55
+	n32 -->|"'\'"| n55
 	n32 -->|"'{'"| n16
 	n32 -->|"'}'"| n22
 	n33 -->|"not '{' '}'"| n33
@@ -1128,9 +1140,9 @@ flowchart LR
 	n37 -->|"not '{' '}'"| n37
 	n37 -->|"'{'"| n29
 	n37 -->|"'}'"| n33
-	n38 -->|"not '&quot' '\\' '{' '}'"| n38
+	n38 -->|"not '&quot' '\' '{' '}'"| n38
 	n38 -->|"'&quot'"| n58
-	n38 -->|"'\\'"| n59
+	n38 -->|"'\'"| n59
 	n38 -->|"'{'"| n32
 	n38 -->|"'}'"| n16
 	n39 -->|"not U+9-U+D U+20 '/' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n60
@@ -1173,45 +1185,45 @@ flowchart LR
 	n46 -->|"'>'"| n71
 	n46 -->|"'{'"| n7
 	n46 -->|"'}'"| n27
-	n47 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
+	n47 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
 	n47 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n47 -->|"'&quot'"| n7
 	n47 -->|"'/'"| n48
 	n47 -->|"'='"| n10
 	n47 -->|"'>'"| n50
-	n47 -->|"'\\'"| n51
+	n47 -->|"'\'"| n51
 	n47 -->|"'{'"| n52
-	n48 -->|"not '&quot' '>' '\\' '{'"| n10
+	n48 -->|"not '&quot' '>' '\' '{'"| n10
 	n48 -->|"'&quot'"| n11
 	n48 -->|"'>'"| n50
-	n48 -->|"'\\'"| n12
+	n48 -->|"'\'"| n12
 	n48 -->|"'{'"| n13
-	n49 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n66
+	n49 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n66
 	n49 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n10
 	n49 -->|"'&quot'"| n72
-	n49 -->|"'\\'"| n73
+	n49 -->|"'\'"| n73
 	n49 -->|"'{'"| n74
-	n50 -->|"not '&quot' '\\' '{'"| n10
+	n50 -->|"not '&quot' '\' '{'"| n10
 	n50 -->|"'&quot'"| n11
-	n50 -->|"'\\'"| n12
+	n50 -->|"'\'"| n12
 	n50 -->|"'{'"| n13
 	n51 -->|"not U+9-U+D U+20 '/' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
 	n51 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n51 -->|"'/'"| n48
 	n51 -->|"'='"| n49
 	n51 -->|"'>'"| n50
-	n52 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n52
+	n52 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n52
 	n52 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n75
 	n52 -->|"'&quot'"| n26
 	n52 -->|"'/'"| n76
 	n52 -->|"'='"| n77
 	n52 -->|"'>'"| n78
-	n52 -->|"'\\'"| n79
+	n52 -->|"'\'"| n79
 	n52 -->|"'{'"| n80
 	n52 -->|"'}'"| n28
-	n53 -->|"not '&quot' '\\' '{' '}'"| n53
+	n53 -->|"not '&quot' '\' '{' '}'"| n53
 	n53 -->|"'&quot'"| n81
-	n53 -->|"'\\'"| n82
+	n53 -->|"'\'"| n82
 	n53 -->|"'{'"| n13
 	n53 -->|"'}'"| n22
 	n54 -->|"not U+9-U+D U+20 '/' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n83
@@ -1274,12 +1286,12 @@ flowchart LR
 	n65 -->|"'>'"| n45
 	n65 -->|"'{'"| n67
 	n65 -->|"'}'"| n64
-	n66 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n66
+	n66 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n66
 	n66 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n66 -->|"'&quot'"| n11
 	n66 -->|"''' '='"| n10
 	n66 -->|"'>'"| n50
-	n66 -->|"'\\'"| n73
+	n66 -->|"'\'"| n73
 	n66 -->|"'{'"| n74
 	n67 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n67
 	n67 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n68
@@ -1304,49 +1316,49 @@ flowchart LR
 	n70 -->|"'}'"| n65
 	n71 -->|"not '{' '}'"| n29
 	n71 -->|"'}'"| n21
-	n72 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n10
+	n72 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n10
 	n72 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n72 -->|"'&quot'"| n11
 	n72 -->|"'/'"| n48
 	n72 -->|"'>'"| n50
-	n72 -->|"'\\'"| n12
+	n72 -->|"'\'"| n12
 	n72 -->|"'{'"| n13
 	n73 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n66
 	n73 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n47
 	n73 -->|"'&quot' ''' '='"| n10
 	n73 -->|"'>'"| n50
-	n74 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n74
+	n74 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n74
 	n74 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n75
 	n74 -->|"'&quot'"| n14
 	n74 -->|"''' '='"| n13
 	n74 -->|"'>'"| n78
-	n74 -->|"'\\'"| n93
+	n74 -->|"'\'"| n93
 	n74 -->|"'{'"| n94
 	n74 -->|"'}'"| n66
-	n75 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n52
+	n75 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n52
 	n75 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n75
 	n75 -->|"'&quot'"| n26
 	n75 -->|"'/'"| n76
 	n75 -->|"'='"| n13
 	n75 -->|"'>'"| n78
-	n75 -->|"'\\'"| n79
+	n75 -->|"'\'"| n79
 	n75 -->|"'{'"| n80
 	n75 -->|"'}'"| n28
-	n76 -->|"not '&quot' '>' '\\' '{' '}'"| n13
+	n76 -->|"not '&quot' '>' '\' '{' '}'"| n13
 	n76 -->|"'&quot'"| n14
 	n76 -->|"'>'"| n78
-	n76 -->|"'\\'"| n15
+	n76 -->|"'\'"| n15
 	n76 -->|"'{'"| n16
 	n76 -->|"'}'"| n10
-	n77 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n74
+	n77 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n74
 	n77 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n13
 	n77 -->|"'&quot'"| n95
-	n77 -->|"'\\'"| n93
+	n77 -->|"'\'"| n93
 	n77 -->|"'{'"| n94
 	n77 -->|"'}'"| n66
-	n78 -->|"not '&quot' '\\' '{' '}'"| n13
+	n78 -->|"not '&quot' '\' '{' '}'"| n13
 	n78 -->|"'&quot'"| n14
-	n78 -->|"'\\'"| n15
+	n78 -->|"'\'"| n15
 	n78 -->|"'{'"| n16
 	n78 -->|"'}'"| n10
 	n79 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n52
@@ -1356,13 +1368,13 @@ flowchart LR
 	n79 -->|"'>'"| n78
 	n79 -->|"'{'"| n96
 	n79 -->|"'}'"| n28
-	n80 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n80
+	n80 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n80
 	n80 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n97
 	n80 -->|"'&quot'"| n56
 	n80 -->|"'/'"| n98
 	n80 -->|"'='"| n99
 	n80 -->|"'>'"| n100
-	n80 -->|"'\\'"| n101
+	n80 -->|"'\'"| n101
 	n80 -->|"'{'"| n102
 	n80 -->|"'}'"| n52
 	n81 -->|"not U+9-U+D U+20 '/' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n29
@@ -1427,55 +1439,55 @@ flowchart LR
 	n93 -->|"'>'"| n78
 	n93 -->|"'{'"| n107
 	n93 -->|"'}'"| n66
-	n94 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n94
+	n94 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n94
 	n94 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n97
 	n94 -->|"'&quot'"| n23
 	n94 -->|"''' '='"| n16
 	n94 -->|"'>'"| n100
-	n94 -->|"'\\'"| n108
+	n94 -->|"'\'"| n108
 	n94 -->|"'{'"| n109
 	n94 -->|"'}'"| n74
-	n95 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n13
+	n95 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n13
 	n95 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n75
 	n95 -->|"'&quot'"| n14
 	n95 -->|"'/'"| n76
 	n95 -->|"'>'"| n78
-	n95 -->|"'\\'"| n15
+	n95 -->|"'\'"| n15
 	n95 -->|"'{'"| n16
 	n95 -->|"'}'"| n10
-	n96 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n96
+	n96 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n96
 	n96 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n110
 	n96 -->|"'&quot'"| n27
 	n96 -->|"'/'"| n111
 	n96 -->|"'='"| n112
 	n96 -->|"'>'"| n113
-	n96 -->|"'\\'"| n114
+	n96 -->|"'\'"| n114
 	n96 -->|"'{'"| n115
 	n96 -->|"'}'"| n52
-	n97 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n80
+	n97 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n80
 	n97 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n97
 	n97 -->|"'&quot'"| n56
 	n97 -->|"'/'"| n98
 	n97 -->|"'='"| n16
 	n97 -->|"'>'"| n100
-	n97 -->|"'\\'"| n101
+	n97 -->|"'\'"| n101
 	n97 -->|"'{'"| n102
 	n97 -->|"'}'"| n52
-	n98 -->|"not '&quot' '>' '\\' '{' '}'"| n16
+	n98 -->|"not '&quot' '>' '\' '{' '}'"| n16
 	n98 -->|"'&quot'"| n23
 	n98 -->|"'>'"| n100
-	n98 -->|"'\\'"| n24
+	n98 -->|"'\'"| n24
 	n98 -->|"'{'"| n25
 	n98 -->|"'}'"| n13
-	n99 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n94
+	n99 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n94
 	n99 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n16
 	n99 -->|"'&quot'"| n116
-	n99 -->|"'\\'"| n108
+	n99 -->|"'\'"| n108
 	n99 -->|"'{'"| n109
 	n99 -->|"'}'"| n74
-	n100 -->|"not '&quot' '\\' '{' '}'"| n16
+	n100 -->|"not '&quot' '\' '{' '}'"| n16
 	n100 -->|"'&quot'"| n23
-	n100 -->|"'\\'"| n24
+	n100 -->|"'\'"| n24
 	n100 -->|"'{'"| n25
 	n100 -->|"'}'"| n13
 	n101 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n80
@@ -1485,13 +1497,13 @@ flowchart LR
 	n101 -->|"'>'"| n100
 	n101 -->|"'{'"| n117
 	n101 -->|"'}'"| n52
-	n102 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n102
+	n102 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n102
 	n102 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n118
 	n102 -->|"'&quot'"| n92
 	n102 -->|"'/'"| n119
 	n102 -->|"'='"| n120
 	n102 -->|"'>'"| n121
-	n102 -->|"'\\'"| n122
+	n102 -->|"'\'"| n122
 	n102 -->|"'}'"| n80
 	n103 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n103
 	n103 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n84
@@ -1517,12 +1529,12 @@ flowchart LR
 	n106 -->|"'&quot'"| n25
 	n106 -->|"'{'"| n105
 	n106 -->|"'}'"| n94
-	n107 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n107
+	n107 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n107
 	n107 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n110
 	n107 -->|"'&quot'"| n30
 	n107 -->|"''' '='"| n22
 	n107 -->|"'>'"| n113
-	n107 -->|"'\\'"| n125
+	n107 -->|"'\'"| n125
 	n107 -->|"'{'"| n126
 	n107 -->|"'}'"| n74
 	n108 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n94
@@ -1531,37 +1543,37 @@ flowchart LR
 	n108 -->|"'>'"| n100
 	n108 -->|"'{'"| n127
 	n108 -->|"'}'"| n74
-	n109 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n109
+	n109 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n109
 	n109 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n118
 	n109 -->|"'&quot'"| n39
 	n109 -->|"''' '='"| n25
 	n109 -->|"'>'"| n121
-	n109 -->|"'\\'"| n128
+	n109 -->|"'\'"| n128
 	n109 -->|"'}'"| n94
-	n110 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n96
+	n110 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n96
 	n110 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n110
 	n110 -->|"'&quot'"| n27
 	n110 -->|"'/'"| n111
 	n110 -->|"'='"| n22
 	n110 -->|"'>'"| n113
-	n110 -->|"'\\'"| n114
+	n110 -->|"'\'"| n114
 	n110 -->|"'{'"| n115
 	n110 -->|"'}'"| n52
-	n111 -->|"not '&quot' '>' '\\' '{' '}'"| n22
+	n111 -->|"not '&quot' '>' '\' '{' '}'"| n22
 	n111 -->|"'&quot'"| n30
 	n111 -->|"'>'"| n113
-	n111 -->|"'\\'"| n31
+	n111 -->|"'\'"| n31
 	n111 -->|"'{'"| n32
 	n111 -->|"'}'"| n13
-	n112 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n107
+	n112 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n107
 	n112 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n22
 	n112 -->|"'&quot'"| n129
-	n112 -->|"'\\'"| n125
+	n112 -->|"'\'"| n125
 	n112 -->|"'{'"| n126
 	n112 -->|"'}'"| n74
-	n113 -->|"not '&quot' '\\' '{' '}'"| n22
+	n113 -->|"not '&quot' '\' '{' '}'"| n22
 	n113 -->|"'&quot'"| n30
-	n113 -->|"'\\'"| n31
+	n113 -->|"'\'"| n31
 	n113 -->|"'{'"| n32
 	n113 -->|"'}'"| n13
 	n114 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n96
@@ -1571,53 +1583,53 @@ flowchart LR
 	n114 -->|"'>'"| n113
 	n114 -->|"'{'"| n130
 	n114 -->|"'}'"| n52
-	n115 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n115
+	n115 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n115
 	n115 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n131
 	n115 -->|"'&quot'"| n103
 	n115 -->|"'/'"| n132
 	n115 -->|"'='"| n133
 	n115 -->|"'>'"| n134
-	n115 -->|"'\\'"| n135
+	n115 -->|"'\'"| n135
 	n115 -->|"'{'"| n80
 	n115 -->|"'}'"| n96
-	n116 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n16
+	n116 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n16
 	n116 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n97
 	n116 -->|"'&quot'"| n23
 	n116 -->|"'/'"| n98
 	n116 -->|"'>'"| n100
-	n116 -->|"'\\'"| n24
+	n116 -->|"'\'"| n24
 	n116 -->|"'{'"| n25
 	n116 -->|"'}'"| n13
-	n117 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n117
+	n117 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n117
 	n117 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n136
 	n117 -->|"'&quot'"| n57
 	n117 -->|"'/'"| n137
 	n117 -->|"'='"| n138
 	n117 -->|"'>'"| n139
-	n117 -->|"'\\'"| n140
+	n117 -->|"'\'"| n140
 	n117 -->|"'{'"| n115
 	n117 -->|"'}'"| n80
-	n118 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n102
+	n118 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n102
 	n118 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n118
 	n118 -->|"'&quot'"| n92
 	n118 -->|"'/'"| n119
 	n118 -->|"'='"| n25
 	n118 -->|"'>'"| n121
-	n118 -->|"'\\'"| n122
+	n118 -->|"'\'"| n122
 	n118 -->|"'}'"| n80
-	n119 -->|"not '&quot' '>' '\\' '}'"| n25
+	n119 -->|"not '&quot' '>' '\' '}'"| n25
 	n119 -->|"'&quot'"| n39
 	n119 -->|"'>'"| n121
-	n119 -->|"'\\'"| n40
+	n119 -->|"'\'"| n40
 	n119 -->|"'}'"| n16
-	n120 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n109
+	n120 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n109
 	n120 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n25
 	n120 -->|"'&quot'"| n141
-	n120 -->|"'\\'"| n128
+	n120 -->|"'\'"| n128
 	n120 -->|"'}'"| n94
-	n121 -->|"not '&quot' '\\' '}'"| n25
+	n121 -->|"not '&quot' '\' '}'"| n25
 	n121 -->|"'&quot'"| n39
-	n121 -->|"'\\'"| n40
+	n121 -->|"'\'"| n40
 	n121 -->|"'}'"| n16
 	n122 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n102
 	n122 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n118
@@ -1643,20 +1655,20 @@ flowchart LR
 	n125 -->|"'>'"| n113
 	n125 -->|"'{'"| n143
 	n125 -->|"'}'"| n74
-	n126 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n126
+	n126 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n126
 	n126 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n131
 	n126 -->|"'&quot'"| n54
 	n126 -->|"''' '='"| n32
 	n126 -->|"'>'"| n134
-	n126 -->|"'\\'"| n144
+	n126 -->|"'\'"| n144
 	n126 -->|"'{'"| n94
 	n126 -->|"'}'"| n107
-	n127 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n127
+	n127 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n127
 	n127 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n136
 	n127 -->|"'&quot'"| n58
 	n127 -->|"''' '='"| n38
 	n127 -->|"'>'"| n139
-	n127 -->|"'\\'"| n145
+	n127 -->|"'\'"| n145
 	n127 -->|"'{'"| n126
 	n127 -->|"'}'"| n94
 	n128 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n109
@@ -1665,47 +1677,47 @@ flowchart LR
 	n128 -->|"'>'"| n121
 	n128 -->|"'{'"| n127
 	n128 -->|"'}'"| n94
-	n129 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n22
+	n129 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n22
 	n129 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n110
 	n129 -->|"'&quot'"| n30
 	n129 -->|"'/'"| n111
 	n129 -->|"'>'"| n113
-	n129 -->|"'\\'"| n31
+	n129 -->|"'\'"| n31
 	n129 -->|"'{'"| n32
 	n129 -->|"'}'"| n13
-	n130 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n130
+	n130 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n130
 	n130 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n146
 	n130 -->|"'&quot'"| n46
 	n130 -->|"'/'"| n147
 	n130 -->|"'='"| n148
 	n130 -->|"'>'"| n149
-	n130 -->|"'\\'"| n150
+	n130 -->|"'\'"| n150
 	n130 -->|"'{'"| n52
 	n130 -->|"'}'"| n96
-	n131 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n115
+	n131 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n115
 	n131 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n131
 	n131 -->|"'&quot'"| n103
 	n131 -->|"'/'"| n132
 	n131 -->|"'='"| n32
 	n131 -->|"'>'"| n134
-	n131 -->|"'\\'"| n135
+	n131 -->|"'\'"| n135
 	n131 -->|"'{'"| n80
 	n131 -->|"'}'"| n96
-	n132 -->|"not '&quot' '>' '\\' '{' '}'"| n32
+	n132 -->|"not '&quot' '>' '\' '{' '}'"| n32
 	n132 -->|"'&quot'"| n54
 	n132 -->|"'>'"| n134
-	n132 -->|"'\\'"| n55
+	n132 -->|"'\'"| n55
 	n132 -->|"'{'"| n16
 	n132 -->|"'}'"| n22
-	n133 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n126
+	n133 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n126
 	n133 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n32
 	n133 -->|"'&quot'"| n151
-	n133 -->|"'\\'"| n144
+	n133 -->|"'\'"| n144
 	n133 -->|"'{'"| n94
 	n133 -->|"'}'"| n107
-	n134 -->|"not '&quot' '\\' '{' '}'"| n32
+	n134 -->|"not '&quot' '\' '{' '}'"| n32
 	n134 -->|"'&quot'"| n54
-	n134 -->|"'\\'"| n55
+	n134 -->|"'\'"| n55
 	n134 -->|"'{'"| n16
 	n134 -->|"'}'"| n22
 	n135 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n115
@@ -1714,30 +1726,30 @@ flowchart LR
 	n135 -->|"'='"| n133
 	n135 -->|"'>'"| n134
 	n135 -->|"'{' '}'"| n96
-	n136 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n117
+	n136 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n117
 	n136 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n136
 	n136 -->|"'&quot'"| n57
 	n136 -->|"'/'"| n137
 	n136 -->|"'='"| n38
 	n136 -->|"'>'"| n139
-	n136 -->|"'\\'"| n140
+	n136 -->|"'\'"| n140
 	n136 -->|"'{'"| n115
 	n136 -->|"'}'"| n80
-	n137 -->|"not '&quot' '>' '\\' '{' '}'"| n38
+	n137 -->|"not '&quot' '>' '\' '{' '}'"| n38
 	n137 -->|"'&quot'"| n58
 	n137 -->|"'>'"| n139
-	n137 -->|"'\\'"| n59
+	n137 -->|"'\'"| n59
 	n137 -->|"'{'"| n32
 	n137 -->|"'}'"| n16
-	n138 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n127
+	n138 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n127
 	n138 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n38
 	n138 -->|"'&quot'"| n152
-	n138 -->|"'\\'"| n145
+	n138 -->|"'\'"| n145
 	n138 -->|"'{'"| n126
 	n138 -->|"'}'"| n94
-	n139 -->|"not '&quot' '\\' '{' '}'"| n38
+	n139 -->|"not '&quot' '\' '{' '}'"| n38
 	n139 -->|"'&quot'"| n58
-	n139 -->|"'\\'"| n59
+	n139 -->|"'\'"| n59
 	n139 -->|"'{'"| n32
 	n139 -->|"'}'"| n16
 	n140 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n117
@@ -1747,12 +1759,12 @@ flowchart LR
 	n140 -->|"'>'"| n139
 	n140 -->|"'{'"| n130
 	n140 -->|"'}'"| n80
-	n141 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n25
+	n141 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n25
 	n141 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n118
 	n141 -->|"'&quot'"| n39
 	n141 -->|"'/'"| n119
 	n141 -->|"'>'"| n121
-	n141 -->|"'\\'"| n40
+	n141 -->|"'\'"| n40
 	n141 -->|"'}'"| n16
 	n142 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n142
 	n142 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n84
@@ -1760,12 +1772,12 @@ flowchart LR
 	n142 -->|"'>'"| n86
 	n142 -->|"'{'"| n65
 	n142 -->|"'}'"| n107
-	n143 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n143
+	n143 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n143
 	n143 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n146
 	n143 -->|"'&quot'"| n81
 	n143 -->|"''' '='"| n53
 	n143 -->|"'>'"| n149
-	n143 -->|"'\\'"| n153
+	n143 -->|"'\'"| n153
 	n143 -->|"'{'"| n74
 	n143 -->|"'}'"| n107
 	n144 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n126
@@ -1779,30 +1791,30 @@ flowchart LR
 	n145 -->|"'>'"| n139
 	n145 -->|"'{'"| n143
 	n145 -->|"'}'"| n94
-	n146 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n130
+	n146 -->|"not U+9-U+D U+20 '&quot' '/' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n130
 	n146 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n146
 	n146 -->|"'&quot'"| n46
 	n146 -->|"'/'"| n147
 	n146 -->|"'='"| n53
 	n146 -->|"'>'"| n149
-	n146 -->|"'\\'"| n150
+	n146 -->|"'\'"| n150
 	n146 -->|"'{'"| n52
 	n146 -->|"'}'"| n96
-	n147 -->|"not '&quot' '>' '\\' '{' '}'"| n53
+	n147 -->|"not '&quot' '>' '\' '{' '}'"| n53
 	n147 -->|"'&quot'"| n81
 	n147 -->|"'>'"| n149
-	n147 -->|"'\\'"| n82
+	n147 -->|"'\'"| n82
 	n147 -->|"'{'"| n13
 	n147 -->|"'}'"| n22
-	n148 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n143
+	n148 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n143
 	n148 -->|"U+9-U+D U+20 ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n53
 	n148 -->|"'&quot'"| n154
-	n148 -->|"'\\'"| n153
+	n148 -->|"'\'"| n153
 	n148 -->|"'{'"| n74
 	n148 -->|"'}'"| n107
-	n149 -->|"not '&quot' '\\' '{' '}'"| n53
+	n149 -->|"not '&quot' '\' '{' '}'"| n53
 	n149 -->|"'&quot'"| n81
-	n149 -->|"'\\'"| n82
+	n149 -->|"'\'"| n82
 	n149 -->|"'{'"| n13
 	n149 -->|"'}'"| n22
 	n150 -->|"not U+9-U+D U+20 '/' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n130
@@ -1812,20 +1824,20 @@ flowchart LR
 	n150 -->|"'>'"| n149
 	n150 -->|"'{'"| n28
 	n150 -->|"'}'"| n96
-	n151 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n32
+	n151 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n32
 	n151 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n131
 	n151 -->|"'&quot'"| n54
 	n151 -->|"'/'"| n132
 	n151 -->|"'>'"| n134
-	n151 -->|"'\\'"| n55
+	n151 -->|"'\'"| n55
 	n151 -->|"'{'"| n16
 	n151 -->|"'}'"| n22
-	n152 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n38
+	n152 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n38
 	n152 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n136
 	n152 -->|"'&quot'"| n58
 	n152 -->|"'/'"| n137
 	n152 -->|"'>'"| n139
-	n152 -->|"'\\'"| n59
+	n152 -->|"'\'"| n59
 	n152 -->|"'{'"| n32
 	n152 -->|"'}'"| n16
 	n153 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n143
@@ -1834,17 +1846,17 @@ flowchart LR
 	n153 -->|"'>'"| n149
 	n153 -->|"'{'"| n66
 	n153 -->|"'}'"| n107
-	n154 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n53
+	n154 -->|"not U+9-U+D U+20 '&quot' '/' '>' '\' '{' '}' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n53
 	n154 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n146
 	n154 -->|"'&quot'"| n81
 	n154 -->|"'/'"| n147
 	n154 -->|"'>'"| n149
-	n154 -->|"'\\'"| n82
+	n154 -->|"'\'"| n82
 	n154 -->|"'{'"| n13
 	n154 -->|"'}'"| n22
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (default): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -1942,9 +1954,9 @@ flowchart LR
 	n24 -->|"(1) "| n26
 	n24 --->|"(2) "| n27
 	n25 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n28
-	n26 -->|"(1) '\\'"| n29
+	n26 -->|"(1) '\'"| n29
 	n26 --->|"(2) '{'"| n30
-	n26 ---->|"(3) not '&quot' '\\'"| n31
+	n26 ---->|"(3) not '&quot' '\'"| n31
 	n27 -->|"'&quot'"| n32
 	n28 -->|"(1) "| n25
 	n28 --->|"(2) "| n33
@@ -1980,9 +1992,9 @@ flowchart LR
 	n51 -->|"(1) "| n47
 	n51 --->|"(2) "| n48
 	n52 -->| | n49
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (default): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (default): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -2039,9 +2051,9 @@ flowchart LR
 	n9 -->|"'>'"| n8
 	n10 -->|"'&quot'"| n11
 	n10 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n12
-	n11 -->|"'\\'"| n13
+	n11 -->|"'\'"| n13
 	n11 -->|"'{'"| n14
-	n11 -->|"not '&quot' '\\'"| n15
+	n11 -->|"not '&quot' '\'"| n15
 	n11 -->|"'&quot'"| n16
 	n12 -->|"not U+9-U+D U+20 '&quot' ''' '=' '>' U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n12
 	n12 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n5
@@ -2051,9 +2063,9 @@ flowchart LR
 	n13 -->|all| n15
 	n14 -->|"'{'"| n17
 	n14 -->|"not '{' '}'"| n18
-	n15 -->|"'\\'"| n13
+	n15 -->|"'\'"| n13
 	n15 -->|"'{'"| n14
-	n15 -->|"not '&quot' '\\'"| n15
+	n15 -->|"not '&quot' '\'"| n15
 	n15 -->|"'&quot'"| n16
 	n16 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n5
 	n16 -->|"U+9-U+D U+20 U+A0 U+1680 U+2000-U+200A U+2028 U+2029 U+202F U+205F U+3000 U+FEFF"| n6
@@ -2072,9 +2084,9 @@ flowchart LR
 	n20 -->|"'}'"| n18
 	n21 -->|"not '{' '}'"| n21
 	n21 -->|"'}'"| n20
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> DFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> DFA (JS): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -2237,868 +2249,868 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|"<"| n1
-	n1 -->|"[^\\s\\d\$%/<=>]"| n2
-	n1 -->|"\\/"| n3
-	n2 -->|"[^\\s\$%/<=>]"| n2
-	n2 -->|"\\s"| n4
-	n2 -->|"\\/"| n5
+	n1 -->|"[^\s\d$%/<=>]"| n2
+	n1 -->|"\/"| n3
+	n2 -->|"[^\s$%/<=>]"| n2
+	n2 -->|"\s"| n4
+	n2 -->|"\/"| n5
 	n2 -->|">"| n6
-	n3 -->|"[^\\s\\d\$%/<=>]"| n2
-	n4 -->|"[^\\s/=>]"| n7
-	n4 -->|"\\s"| n4
-	n4 -->|"\\/"| n5
+	n3 -->|"[^\s\d$%/<=>]"| n2
+	n4 -->|"[^\s/=>]"| n7
+	n4 -->|"\s"| n4
+	n4 -->|"\/"| n5
 	n4 -->|">"| n6
 	n5 -->|">"| n6
-	n7 -->|"[^\\s/=>]"| n7
-	n7 -->|"\\s"| n4
-	n7 -->|"\\/"| n5
+	n7 -->|"[^\s/=>]"| n7
+	n7 -->|"\s"| n4
+	n7 -->|"\/"| n5
 	n7 -->|"="| n8
 	n7 -->|">"| n6
-	n8 -->|"[^\\s&quot'=>]"| n9
+	n8 -->|"[^\s&quot'=>]"| n9
 	n8 -->|"&quot"| n10
-	n9 -->|"[^\\s&quot'=>]"| n9
-	n9 -->|"\\s"| n4
+	n9 -->|"[^\s&quot'=>]"| n9
+	n9 -->|"\s"| n4
 	n9 -->|">"| n6
-	n10 -->|"[^&quot\\\\{]"| n10
+	n10 -->|"[^&quot\\{]"| n10
 	n10 -->|"&quot"| n11
-	n10 -->|"\\\\"| n12
-	n10 -->|"\\{"| n13
-	n11 -->|"\\s"| n4
-	n11 -->|"\\/"| n5
+	n10 -->|"\\"| n12
+	n10 -->|"\{"| n13
+	n11 -->|"\s"| n4
+	n11 -->|"\/"| n5
 	n11 -->|">"| n6
 	n12 -->|"[^]"| n10
-	n13 -->|"[^&quot\\\\{}]"| n13
+	n13 -->|"[^&quot\\{}]"| n13
 	n13 -->|"&quot"| n14
-	n13 -->|"\\\\"| n15
-	n13 -->|"\\{"| n16
-	n13 -->|"\\}"| n10
-	n14 -->|"[^\\s/>{}]"| n17
-	n14 -->|"\\s"| n18
-	n14 -->|"\\/"| n19
+	n13 -->|"\\"| n15
+	n13 -->|"\{"| n16
+	n13 -->|"\}"| n10
+	n14 -->|"[^\s/>{}]"| n17
+	n14 -->|"\s"| n18
+	n14 -->|"\/"| n19
 	n14 -->|">"| n20
-	n14 -->|"\\{"| n21
-	n14 -->|"\\}"| n10
+	n14 -->|"\{"| n21
+	n14 -->|"\}"| n10
 	n15 -->|"[^{}]"| n13
-	n15 -->|"\\{"| n22
-	n15 -->|"\\}"| n10
-	n16 -->|"[^&quot\\\\{}]"| n16
+	n15 -->|"\{"| n22
+	n15 -->|"\}"| n10
+	n16 -->|"[^&quot\\{}]"| n16
 	n16 -->|"&quot"| n23
-	n16 -->|"\\\\"| n24
-	n16 -->|"\\{"| n25
-	n16 -->|"\\}"| n13
+	n16 -->|"\\"| n24
+	n16 -->|"\{"| n25
+	n16 -->|"\}"| n13
 	n17 -->|"[^{}]"| n17
-	n17 -->|"\\{"| n21
-	n17 -->|"\\}"| n10
-	n18 -->|"[^\\s/=>{}]"| n26
-	n18 -->|"\\s"| n18
-	n18 -->|"\\/"| n19
+	n17 -->|"\{"| n21
+	n17 -->|"\}"| n10
+	n18 -->|"[^\s/=>{}]"| n26
+	n18 -->|"\s"| n18
+	n18 -->|"\/"| n19
 	n18 -->|"="| n17
 	n18 -->|">"| n20
-	n18 -->|"\\{"| n27
-	n18 -->|"\\}"| n28
+	n18 -->|"\{"| n27
+	n18 -->|"\}"| n28
 	n19 -->|"[^>{}]"| n17
 	n19 -->|">"| n20
-	n19 -->|"\\{"| n21
-	n19 -->|"\\}"| n10
+	n19 -->|"\{"| n21
+	n19 -->|"\}"| n10
 	n20 -->|"[^{}]"| n17
-	n20 -->|"\\{"| n21
-	n20 -->|"\\}"| n10
+	n20 -->|"\{"| n21
+	n20 -->|"\}"| n10
 	n21 -->|"[^{}]"| n21
-	n21 -->|"\\{"| n29
-	n21 -->|"\\}"| n17
-	n22 -->|"[^&quot\\\\{}]"| n22
+	n21 -->|"\{"| n29
+	n21 -->|"\}"| n17
+	n22 -->|"[^&quot\\{}]"| n22
 	n22 -->|"&quot"| n30
-	n22 -->|"\\\\"| n31
-	n22 -->|"\\{"| n32
-	n22 -->|"\\}"| n13
-	n23 -->|"[^\\s/>{}]"| n33
-	n23 -->|"\\s"| n34
-	n23 -->|"\\/"| n35
+	n22 -->|"\\"| n31
+	n22 -->|"\{"| n32
+	n22 -->|"\}"| n13
+	n23 -->|"[^\s/>{}]"| n33
+	n23 -->|"\s"| n34
+	n23 -->|"\/"| n35
 	n23 -->|">"| n36
-	n23 -->|"\\{"| n37
-	n23 -->|"\\}"| n13
+	n23 -->|"\{"| n37
+	n23 -->|"\}"| n13
 	n24 -->|"[^{}]"| n16
-	n24 -->|"\\{"| n38
-	n24 -->|"\\}"| n13
-	n25 -->|"[^&quot\\\\}]"| n25
+	n24 -->|"\{"| n38
+	n24 -->|"\}"| n13
+	n25 -->|"[^&quot\\}]"| n25
 	n25 -->|"&quot"| n39
-	n25 -->|"\\\\"| n40
-	n25 -->|"\\}"| n16
-	n26 -->|"[^\\s/=>{}]"| n26
-	n26 -->|"\\s"| n18
-	n26 -->|"\\/"| n19
+	n25 -->|"\\"| n40
+	n25 -->|"\}"| n16
+	n26 -->|"[^\s/=>{}]"| n26
+	n26 -->|"\s"| n18
+	n26 -->|"\/"| n19
 	n26 -->|"="| n41
 	n26 -->|">"| n20
-	n26 -->|"\\{"| n27
-	n26 -->|"\\}"| n28
-	n27 -->|"[^\\s/=>{}]"| n27
-	n27 -->|"\\s"| n42
-	n27 -->|"\\/"| n43
+	n26 -->|"\{"| n27
+	n26 -->|"\}"| n28
+	n27 -->|"[^\s/=>{}]"| n27
+	n27 -->|"\s"| n42
+	n27 -->|"\/"| n43
 	n27 -->|"="| n44
 	n27 -->|">"| n45
-	n27 -->|"\\{"| n46
-	n27 -->|"\\}"| n26
-	n28 -->|"[^\\s&quot/=>\\\\{]"| n28
-	n28 -->|"\\s"| n47
+	n27 -->|"\{"| n46
+	n27 -->|"\}"| n26
+	n28 -->|"[^\s&quot/=>\\{]"| n28
+	n28 -->|"\s"| n47
 	n28 -->|"&quot"| n7
-	n28 -->|"\\/"| n48
+	n28 -->|"\/"| n48
 	n28 -->|"="| n49
 	n28 -->|">"| n50
-	n28 -->|"\\\\"| n51
-	n28 -->|"\\{"| n52
+	n28 -->|"\\"| n51
+	n28 -->|"\{"| n52
 	n29 -->|"[^{}]"| n29
-	n29 -->|"\\}"| n21
-	n30 -->|"[^\\s/>{}]"| n21
-	n30 -->|"\\s"| n42
-	n30 -->|"\\/"| n43
+	n29 -->|"\}"| n21
+	n30 -->|"[^\s/>{}]"| n21
+	n30 -->|"\s"| n42
+	n30 -->|"\/"| n43
 	n30 -->|">"| n45
-	n30 -->|"\\{"| n29
-	n30 -->|"\\}"| n17
+	n30 -->|"\{"| n29
+	n30 -->|"\}"| n17
 	n31 -->|"[^{}]"| n22
-	n31 -->|"\\{"| n53
-	n31 -->|"\\}"| n13
-	n32 -->|"[^&quot\\\\{}]"| n32
+	n31 -->|"\{"| n53
+	n31 -->|"\}"| n13
+	n32 -->|"[^&quot\\{}]"| n32
 	n32 -->|"&quot"| n54
-	n32 -->|"\\\\"| n55
-	n32 -->|"\\{"| n16
-	n32 -->|"\\}"| n22
+	n32 -->|"\\"| n55
+	n32 -->|"\{"| n16
+	n32 -->|"\}"| n22
 	n33 -->|"[^{}]"| n33
-	n33 -->|"\\{"| n37
-	n33 -->|"\\}"| n13
-	n34 -->|"[^\\s/=>{}]"| n56
-	n34 -->|"\\s"| n34
-	n34 -->|"\\/"| n35
+	n33 -->|"\{"| n37
+	n33 -->|"\}"| n13
+	n34 -->|"[^\s/=>{}]"| n56
+	n34 -->|"\s"| n34
+	n34 -->|"\/"| n35
 	n34 -->|"="| n33
 	n34 -->|">"| n36
-	n34 -->|"\\{"| n57
-	n34 -->|"\\}"| n52
+	n34 -->|"\{"| n57
+	n34 -->|"\}"| n52
 	n35 -->|"[^>{}]"| n33
 	n35 -->|">"| n36
-	n35 -->|"\\{"| n37
-	n35 -->|"\\}"| n13
+	n35 -->|"\{"| n37
+	n35 -->|"\}"| n13
 	n36 -->|"[^{}]"| n33
-	n36 -->|"\\{"| n37
-	n36 -->|"\\}"| n13
+	n36 -->|"\{"| n37
+	n36 -->|"\}"| n13
 	n37 -->|"[^{}]"| n37
-	n37 -->|"\\{"| n29
-	n37 -->|"\\}"| n33
-	n38 -->|"[^&quot\\\\{}]"| n38
+	n37 -->|"\{"| n29
+	n37 -->|"\}"| n33
+	n38 -->|"[^&quot\\{}]"| n38
 	n38 -->|"&quot"| n58
-	n38 -->|"\\\\"| n59
-	n38 -->|"\\{"| n32
-	n38 -->|"\\}"| n16
-	n39 -->|"[^\\s/>{}]"| n60
-	n39 -->|"\\s"| n61
-	n39 -->|"\\/"| n62
+	n38 -->|"\\"| n59
+	n38 -->|"\{"| n32
+	n38 -->|"\}"| n16
+	n39 -->|"[^\s/>{}]"| n60
+	n39 -->|"\s"| n61
+	n39 -->|"\/"| n62
 	n39 -->|">"| n63
-	n39 -->|"\\{"| n37
-	n39 -->|"\\}"| n16
+	n39 -->|"\{"| n37
+	n39 -->|"\}"| n16
 	n40 -->|"[^{}]"| n25
-	n40 -->|"\\{"| n38
-	n40 -->|"\\}"| n16
-	n41 -->|"[^\\s&quot'=>{}]"| n64
-	n41 -->|"[\\s'=>]"| n17
+	n40 -->|"\{"| n38
+	n40 -->|"\}"| n16
+	n41 -->|"[^\s&quot'=>{}]"| n64
+	n41 -->|"[\s'=>]"| n17
 	n41 -->|"&quot"| n13
-	n41 -->|"\\{"| n65
-	n41 -->|"\\}"| n66
-	n42 -->|"[^\\s/=>{}]"| n27
-	n42 -->|"\\s"| n42
-	n42 -->|"\\/"| n43
+	n41 -->|"\{"| n65
+	n41 -->|"\}"| n66
+	n42 -->|"[^\s/=>{}]"| n27
+	n42 -->|"\s"| n42
+	n42 -->|"\/"| n43
 	n42 -->|"="| n21
 	n42 -->|">"| n45
-	n42 -->|"\\{"| n46
-	n42 -->|"\\}"| n26
+	n42 -->|"\{"| n46
+	n42 -->|"\}"| n26
 	n43 -->|"[^>{}]"| n21
 	n43 -->|">"| n45
-	n43 -->|"\\{"| n29
-	n43 -->|"\\}"| n17
-	n44 -->|"[^\\s&quot'=>{}]"| n65
-	n44 -->|"[\\s'=>]"| n21
+	n43 -->|"\{"| n29
+	n43 -->|"\}"| n17
+	n44 -->|"[^\s&quot'=>{}]"| n65
+	n44 -->|"[\s'=>]"| n21
 	n44 -->|"&quot"| n22
-	n44 -->|"\\{"| n67
-	n44 -->|"\\}"| n64
+	n44 -->|"\{"| n67
+	n44 -->|"\}"| n64
 	n45 -->|"[^{}]"| n21
-	n45 -->|"\\{"| n29
-	n45 -->|"\\}"| n17
-	n46 -->|"[^\\s/=>{}]"| n46
-	n46 -->|"\\s"| n68
-	n46 -->|"\\/"| n69
+	n45 -->|"\{"| n29
+	n45 -->|"\}"| n17
+	n46 -->|"[^\s/=>{}]"| n46
+	n46 -->|"\s"| n68
+	n46 -->|"\/"| n69
 	n46 -->|"="| n70
 	n46 -->|">"| n71
-	n46 -->|"\\{"| n7
-	n46 -->|"\\}"| n27
-	n47 -->|"[^\\s&quot/=>\\\\{]"| n28
-	n47 -->|"\\s"| n47
+	n46 -->|"\{"| n7
+	n46 -->|"\}"| n27
+	n47 -->|"[^\s&quot/=>\\{]"| n28
+	n47 -->|"\s"| n47
 	n47 -->|"&quot"| n7
-	n47 -->|"\\/"| n48
+	n47 -->|"\/"| n48
 	n47 -->|"="| n10
 	n47 -->|">"| n50
-	n47 -->|"\\\\"| n51
-	n47 -->|"\\{"| n52
-	n48 -->|"[^&quot>\\\\{]"| n10
+	n47 -->|"\\"| n51
+	n47 -->|"\{"| n52
+	n48 -->|"[^&quot>\\{]"| n10
 	n48 -->|"&quot"| n11
 	n48 -->|">"| n50
-	n48 -->|"\\\\"| n12
-	n48 -->|"\\{"| n13
-	n49 -->|"[^\\s&quot'=>\\\\{]"| n66
-	n49 -->|"[\\s'=>]"| n10
+	n48 -->|"\\"| n12
+	n48 -->|"\{"| n13
+	n49 -->|"[^\s&quot'=>\\{]"| n66
+	n49 -->|"[\s'=>]"| n10
 	n49 -->|"&quot"| n72
-	n49 -->|"\\\\"| n73
-	n49 -->|"\\{"| n74
-	n50 -->|"[^&quot\\\\{]"| n10
+	n49 -->|"\\"| n73
+	n49 -->|"\{"| n74
+	n50 -->|"[^&quot\\{]"| n10
 	n50 -->|"&quot"| n11
-	n50 -->|"\\\\"| n12
-	n50 -->|"\\{"| n13
-	n51 -->|"[^\\s/=>]"| n28
-	n51 -->|"\\s"| n47
-	n51 -->|"\\/"| n48
+	n50 -->|"\\"| n12
+	n50 -->|"\{"| n13
+	n51 -->|"[^\s/=>]"| n28
+	n51 -->|"\s"| n47
+	n51 -->|"\/"| n48
 	n51 -->|"="| n49
 	n51 -->|">"| n50
-	n52 -->|"[^\\s&quot/=>\\\\{}]"| n52
-	n52 -->|"\\s"| n75
+	n52 -->|"[^\s&quot/=>\\{}]"| n52
+	n52 -->|"\s"| n75
 	n52 -->|"&quot"| n26
-	n52 -->|"\\/"| n76
+	n52 -->|"\/"| n76
 	n52 -->|"="| n77
 	n52 -->|">"| n78
-	n52 -->|"\\\\"| n79
-	n52 -->|"\\{"| n80
-	n52 -->|"\\}"| n28
-	n53 -->|"[^&quot\\\\{}]"| n53
+	n52 -->|"\\"| n79
+	n52 -->|"\{"| n80
+	n52 -->|"\}"| n28
+	n53 -->|"[^&quot\\{}]"| n53
 	n53 -->|"&quot"| n81
-	n53 -->|"\\\\"| n82
-	n53 -->|"\\{"| n13
-	n53 -->|"\\}"| n22
-	n54 -->|"[^\\s/>{}]"| n83
-	n54 -->|"\\s"| n84
-	n54 -->|"\\/"| n85
+	n53 -->|"\\"| n82
+	n53 -->|"\{"| n13
+	n53 -->|"\}"| n22
+	n54 -->|"[^\s/>{}]"| n83
+	n54 -->|"\s"| n84
+	n54 -->|"\/"| n85
 	n54 -->|">"| n86
-	n54 -->|"\\{"| n21
-	n54 -->|"\\}"| n22
+	n54 -->|"\{"| n21
+	n54 -->|"\}"| n22
 	n55 -->|"[^{}]"| n32
 	n55 -->|"[{}]"| n22
-	n56 -->|"[^\\s/=>{}]"| n56
-	n56 -->|"\\s"| n34
-	n56 -->|"\\/"| n35
+	n56 -->|"[^\s/=>{}]"| n56
+	n56 -->|"\s"| n34
+	n56 -->|"\/"| n35
 	n56 -->|"="| n87
 	n56 -->|">"| n36
-	n56 -->|"\\{"| n57
-	n56 -->|"\\}"| n52
-	n57 -->|"[^\\s/=>{}]"| n57
-	n57 -->|"\\s"| n88
-	n57 -->|"\\/"| n89
+	n56 -->|"\{"| n57
+	n56 -->|"\}"| n52
+	n57 -->|"[^\s/=>{}]"| n57
+	n57 -->|"\s"| n88
+	n57 -->|"\/"| n89
 	n57 -->|"="| n90
 	n57 -->|">"| n91
-	n57 -->|"\\{"| n46
-	n57 -->|"\\}"| n56
-	n58 -->|"[^\\s/>{}]"| n37
-	n58 -->|"\\s"| n88
-	n58 -->|"\\/"| n89
+	n57 -->|"\{"| n46
+	n57 -->|"\}"| n56
+	n58 -->|"[^\s/>{}]"| n37
+	n58 -->|"\s"| n88
+	n58 -->|"\/"| n89
 	n58 -->|">"| n91
-	n58 -->|"\\{"| n29
-	n58 -->|"\\}"| n33
+	n58 -->|"\{"| n29
+	n58 -->|"\}"| n33
 	n59 -->|"[^{}]"| n38
-	n59 -->|"\\{"| n53
-	n59 -->|"\\}"| n16
+	n59 -->|"\{"| n53
+	n59 -->|"\}"| n16
 	n60 -->|"[^{}]"| n60
-	n60 -->|"\\{"| n37
-	n60 -->|"\\}"| n16
-	n61 -->|"[^\\s/=>{}]"| n92
-	n61 -->|"\\s"| n61
-	n61 -->|"\\/"| n62
+	n60 -->|"\{"| n37
+	n60 -->|"\}"| n16
+	n61 -->|"[^\s/=>{}]"| n92
+	n61 -->|"\s"| n61
+	n61 -->|"\/"| n62
 	n61 -->|"="| n60
 	n61 -->|">"| n63
-	n61 -->|"\\{"| n57
-	n61 -->|"\\}"| n80
+	n61 -->|"\{"| n57
+	n61 -->|"\}"| n80
 	n62 -->|"[^>{}]"| n60
 	n62 -->|">"| n63
-	n62 -->|"\\{"| n37
-	n62 -->|"\\}"| n16
+	n62 -->|"\{"| n37
+	n62 -->|"\}"| n16
 	n63 -->|"[^{}]"| n60
-	n63 -->|"\\{"| n37
-	n63 -->|"\\}"| n16
-	n64 -->|"[^\\s&quot'=>{}]"| n64
-	n64 -->|"\\s"| n18
+	n63 -->|"\{"| n37
+	n63 -->|"\}"| n16
+	n64 -->|"[^\s&quot'=>{}]"| n64
+	n64 -->|"\s"| n18
 	n64 -->|"[&quot'=]"| n17
 	n64 -->|">"| n20
-	n64 -->|"\\{"| n65
-	n64 -->|"\\}"| n66
-	n65 -->|"[^\\s&quot'=>{}]"| n65
-	n65 -->|"\\s"| n42
+	n64 -->|"\{"| n65
+	n64 -->|"\}"| n66
+	n65 -->|"[^\s&quot'=>{}]"| n65
+	n65 -->|"\s"| n42
 	n65 -->|"[&quot'=]"| n21
 	n65 -->|">"| n45
-	n65 -->|"\\{"| n67
-	n65 -->|"\\}"| n64
-	n66 -->|"[^\\s&quot'=>\\\\{]"| n66
-	n66 -->|"\\s"| n47
+	n65 -->|"\{"| n67
+	n65 -->|"\}"| n64
+	n66 -->|"[^\s&quot'=>\\{]"| n66
+	n66 -->|"\s"| n47
 	n66 -->|"&quot"| n11
 	n66 -->|"['=]"| n10
 	n66 -->|">"| n50
-	n66 -->|"\\\\"| n73
-	n66 -->|"\\{"| n74
-	n67 -->|"[^\\s&quot'=>{}]"| n67
-	n67 -->|"\\s"| n68
+	n66 -->|"\\"| n73
+	n66 -->|"\{"| n74
+	n67 -->|"[^\s&quot'=>{}]"| n67
+	n67 -->|"\s"| n68
 	n67 -->|"[&quot'=]"| n29
 	n67 -->|">"| n71
-	n67 -->|"\\{"| n9
-	n67 -->|"\\}"| n65
-	n68 -->|"[^\\s/=>{}]"| n46
-	n68 -->|"\\s"| n68
-	n68 -->|"\\/"| n69
+	n67 -->|"\{"| n9
+	n67 -->|"\}"| n65
+	n68 -->|"[^\s/=>{}]"| n46
+	n68 -->|"\s"| n68
+	n68 -->|"\/"| n69
 	n68 -->|"="| n29
 	n68 -->|">"| n71
-	n68 -->|"\\{"| n7
-	n68 -->|"\\}"| n27
+	n68 -->|"\{"| n7
+	n68 -->|"\}"| n27
 	n69 -->|"[^>{}]"| n29
 	n69 -->|">"| n71
-	n69 -->|"\\}"| n21
-	n70 -->|"[^\\s&quot'=>{}]"| n67
-	n70 -->|"[\\s'=>]"| n29
+	n69 -->|"\}"| n21
+	n70 -->|"[^\s&quot'=>{}]"| n67
+	n70 -->|"[\s'=>]"| n29
 	n70 -->|"&quot"| n53
-	n70 -->|"\\{"| n9
-	n70 -->|"\\}"| n65
+	n70 -->|"\{"| n9
+	n70 -->|"\}"| n65
 	n71 -->|"[^{}]"| n29
-	n71 -->|"\\}"| n21
-	n72 -->|"[^\\s&quot/>\\\\{]"| n10
-	n72 -->|"\\s"| n47
+	n71 -->|"\}"| n21
+	n72 -->|"[^\s&quot/>\\{]"| n10
+	n72 -->|"\s"| n47
 	n72 -->|"&quot"| n11
-	n72 -->|"\\/"| n48
+	n72 -->|"\/"| n48
 	n72 -->|">"| n50
-	n72 -->|"\\\\"| n12
-	n72 -->|"\\{"| n13
-	n73 -->|"[^\\s&quot'=>]"| n66
-	n73 -->|"\\s"| n47
+	n72 -->|"\\"| n12
+	n72 -->|"\{"| n13
+	n73 -->|"[^\s&quot'=>]"| n66
+	n73 -->|"\s"| n47
 	n73 -->|"[&quot'=]"| n10
 	n73 -->|">"| n50
-	n74 -->|"[^\\s&quot'=>\\\\{}]"| n74
-	n74 -->|"\\s"| n75
+	n74 -->|"[^\s&quot'=>\\{}]"| n74
+	n74 -->|"\s"| n75
 	n74 -->|"&quot"| n14
 	n74 -->|"['=]"| n13
 	n74 -->|">"| n78
-	n74 -->|"\\\\"| n93
-	n74 -->|"\\{"| n94
-	n74 -->|"\\}"| n66
-	n75 -->|"[^\\s&quot/=>\\\\{}]"| n52
-	n75 -->|"\\s"| n75
+	n74 -->|"\\"| n93
+	n74 -->|"\{"| n94
+	n74 -->|"\}"| n66
+	n75 -->|"[^\s&quot/=>\\{}]"| n52
+	n75 -->|"\s"| n75
 	n75 -->|"&quot"| n26
-	n75 -->|"\\/"| n76
+	n75 -->|"\/"| n76
 	n75 -->|"="| n13
 	n75 -->|">"| n78
-	n75 -->|"\\\\"| n79
-	n75 -->|"\\{"| n80
-	n75 -->|"\\}"| n28
-	n76 -->|"[^&quot>\\\\{}]"| n13
+	n75 -->|"\\"| n79
+	n75 -->|"\{"| n80
+	n75 -->|"\}"| n28
+	n76 -->|"[^&quot>\\{}]"| n13
 	n76 -->|"&quot"| n14
 	n76 -->|">"| n78
-	n76 -->|"\\\\"| n15
-	n76 -->|"\\{"| n16
-	n76 -->|"\\}"| n10
-	n77 -->|"[^\\s&quot'=>\\\\{}]"| n74
-	n77 -->|"[\\s'=>]"| n13
+	n76 -->|"\\"| n15
+	n76 -->|"\{"| n16
+	n76 -->|"\}"| n10
+	n77 -->|"[^\s&quot'=>\\{}]"| n74
+	n77 -->|"[\s'=>]"| n13
 	n77 -->|"&quot"| n95
-	n77 -->|"\\\\"| n93
-	n77 -->|"\\{"| n94
-	n77 -->|"\\}"| n66
-	n78 -->|"[^&quot\\\\{}]"| n13
+	n77 -->|"\\"| n93
+	n77 -->|"\{"| n94
+	n77 -->|"\}"| n66
+	n78 -->|"[^&quot\\{}]"| n13
 	n78 -->|"&quot"| n14
-	n78 -->|"\\\\"| n15
-	n78 -->|"\\{"| n16
-	n78 -->|"\\}"| n10
-	n79 -->|"[^\\s/=>{}]"| n52
-	n79 -->|"\\s"| n75
-	n79 -->|"\\/"| n76
+	n78 -->|"\\"| n15
+	n78 -->|"\{"| n16
+	n78 -->|"\}"| n10
+	n79 -->|"[^\s/=>{}]"| n52
+	n79 -->|"\s"| n75
+	n79 -->|"\/"| n76
 	n79 -->|"="| n77
 	n79 -->|">"| n78
-	n79 -->|"\\{"| n96
-	n79 -->|"\\}"| n28
-	n80 -->|"[^\\s&quot/=>\\\\{}]"| n80
-	n80 -->|"\\s"| n97
+	n79 -->|"\{"| n96
+	n79 -->|"\}"| n28
+	n80 -->|"[^\s&quot/=>\\{}]"| n80
+	n80 -->|"\s"| n97
 	n80 -->|"&quot"| n56
-	n80 -->|"\\/"| n98
+	n80 -->|"\/"| n98
 	n80 -->|"="| n99
 	n80 -->|">"| n100
-	n80 -->|"\\\\"| n101
-	n80 -->|"\\{"| n102
-	n80 -->|"\\}"| n52
-	n81 -->|"[^\\s/>{}]"| n29
-	n81 -->|"\\s"| n68
-	n81 -->|"\\/"| n69
+	n80 -->|"\\"| n101
+	n80 -->|"\{"| n102
+	n80 -->|"\}"| n52
+	n81 -->|"[^\s/>{}]"| n29
+	n81 -->|"\s"| n68
+	n81 -->|"\/"| n69
 	n81 -->|">"| n71
-	n81 -->|"\\}"| n21
+	n81 -->|"\}"| n21
 	n82 -->|"[^{}]"| n53
-	n82 -->|"\\{"| n10
-	n82 -->|"\\}"| n22
+	n82 -->|"\{"| n10
+	n82 -->|"\}"| n22
 	n83 -->|"[^{}]"| n83
-	n83 -->|"\\{"| n21
-	n83 -->|"\\}"| n22
-	n84 -->|"[^\\s/=>{}]"| n103
-	n84 -->|"\\s"| n84
-	n84 -->|"\\/"| n85
+	n83 -->|"\{"| n21
+	n83 -->|"\}"| n22
+	n84 -->|"[^\s/=>{}]"| n103
+	n84 -->|"\s"| n84
+	n84 -->|"\/"| n85
 	n84 -->|"="| n83
 	n84 -->|">"| n86
-	n84 -->|"\\{"| n27
-	n84 -->|"\\}"| n96
+	n84 -->|"\{"| n27
+	n84 -->|"\}"| n96
 	n85 -->|"[^>{}]"| n83
 	n85 -->|">"| n86
-	n85 -->|"\\{"| n21
-	n85 -->|"\\}"| n22
+	n85 -->|"\{"| n21
+	n85 -->|"\}"| n22
 	n86 -->|"[^{}]"| n83
-	n86 -->|"\\{"| n21
-	n86 -->|"\\}"| n22
-	n87 -->|"[^\\s&quot'=>{}]"| n104
-	n87 -->|"[\\s'=>]"| n33
+	n86 -->|"\{"| n21
+	n86 -->|"\}"| n22
+	n87 -->|"[^\s&quot'=>{}]"| n104
+	n87 -->|"[\s'=>]"| n33
 	n87 -->|"&quot"| n16
-	n87 -->|"\\{"| n105
-	n87 -->|"\\}"| n74
-	n88 -->|"[^\\s/=>{}]"| n57
-	n88 -->|"\\s"| n88
-	n88 -->|"\\/"| n89
+	n87 -->|"\{"| n105
+	n87 -->|"\}"| n74
+	n88 -->|"[^\s/=>{}]"| n57
+	n88 -->|"\s"| n88
+	n88 -->|"\/"| n89
 	n88 -->|"="| n37
 	n88 -->|">"| n91
-	n88 -->|"\\{"| n46
-	n88 -->|"\\}"| n56
+	n88 -->|"\{"| n46
+	n88 -->|"\}"| n56
 	n89 -->|"[^>{}]"| n37
 	n89 -->|">"| n91
-	n89 -->|"\\{"| n29
-	n89 -->|"\\}"| n33
-	n90 -->|"[^\\s&quot'=>{}]"| n105
-	n90 -->|"[\\s'=>]"| n37
+	n89 -->|"\{"| n29
+	n89 -->|"\}"| n33
+	n90 -->|"[^\s&quot'=>{}]"| n105
+	n90 -->|"[\s'=>]"| n37
 	n90 -->|"&quot"| n38
-	n90 -->|"\\{"| n67
-	n90 -->|"\\}"| n104
+	n90 -->|"\{"| n67
+	n90 -->|"\}"| n104
 	n91 -->|"[^{}]"| n37
-	n91 -->|"\\{"| n29
-	n91 -->|"\\}"| n33
-	n92 -->|"[^\\s/=>{}]"| n92
-	n92 -->|"\\s"| n61
-	n92 -->|"\\/"| n62
+	n91 -->|"\{"| n29
+	n91 -->|"\}"| n33
+	n92 -->|"[^\s/=>{}]"| n92
+	n92 -->|"\s"| n61
+	n92 -->|"\/"| n62
 	n92 -->|"="| n106
 	n92 -->|">"| n63
-	n92 -->|"\\{"| n57
-	n92 -->|"\\}"| n80
-	n93 -->|"[^\\s&quot'=>{}]"| n74
-	n93 -->|"\\s"| n75
+	n92 -->|"\{"| n57
+	n92 -->|"\}"| n80
+	n93 -->|"[^\s&quot'=>{}]"| n74
+	n93 -->|"\s"| n75
 	n93 -->|"[&quot'=]"| n13
 	n93 -->|">"| n78
-	n93 -->|"\\{"| n107
-	n93 -->|"\\}"| n66
-	n94 -->|"[^\\s&quot'=>\\\\{}]"| n94
-	n94 -->|"\\s"| n97
+	n93 -->|"\{"| n107
+	n93 -->|"\}"| n66
+	n94 -->|"[^\s&quot'=>\\{}]"| n94
+	n94 -->|"\s"| n97
 	n94 -->|"&quot"| n23
 	n94 -->|"['=]"| n16
 	n94 -->|">"| n100
-	n94 -->|"\\\\"| n108
-	n94 -->|"\\{"| n109
-	n94 -->|"\\}"| n74
-	n95 -->|"[^\\s&quot/>\\\\{}]"| n13
-	n95 -->|"\\s"| n75
+	n94 -->|"\\"| n108
+	n94 -->|"\{"| n109
+	n94 -->|"\}"| n74
+	n95 -->|"[^\s&quot/>\\{}]"| n13
+	n95 -->|"\s"| n75
 	n95 -->|"&quot"| n14
-	n95 -->|"\\/"| n76
+	n95 -->|"\/"| n76
 	n95 -->|">"| n78
-	n95 -->|"\\\\"| n15
-	n95 -->|"\\{"| n16
-	n95 -->|"\\}"| n10
-	n96 -->|"[^\\s&quot/=>\\\\{}]"| n96
-	n96 -->|"\\s"| n110
+	n95 -->|"\\"| n15
+	n95 -->|"\{"| n16
+	n95 -->|"\}"| n10
+	n96 -->|"[^\s&quot/=>\\{}]"| n96
+	n96 -->|"\s"| n110
 	n96 -->|"&quot"| n27
-	n96 -->|"\\/"| n111
+	n96 -->|"\/"| n111
 	n96 -->|"="| n112
 	n96 -->|">"| n113
-	n96 -->|"\\\\"| n114
-	n96 -->|"\\{"| n115
-	n96 -->|"\\}"| n52
-	n97 -->|"[^\\s&quot/=>\\\\{}]"| n80
-	n97 -->|"\\s"| n97
+	n96 -->|"\\"| n114
+	n96 -->|"\{"| n115
+	n96 -->|"\}"| n52
+	n97 -->|"[^\s&quot/=>\\{}]"| n80
+	n97 -->|"\s"| n97
 	n97 -->|"&quot"| n56
-	n97 -->|"\\/"| n98
+	n97 -->|"\/"| n98
 	n97 -->|"="| n16
 	n97 -->|">"| n100
-	n97 -->|"\\\\"| n101
-	n97 -->|"\\{"| n102
-	n97 -->|"\\}"| n52
-	n98 -->|"[^&quot>\\\\{}]"| n16
+	n97 -->|"\\"| n101
+	n97 -->|"\{"| n102
+	n97 -->|"\}"| n52
+	n98 -->|"[^&quot>\\{}]"| n16
 	n98 -->|"&quot"| n23
 	n98 -->|">"| n100
-	n98 -->|"\\\\"| n24
-	n98 -->|"\\{"| n25
-	n98 -->|"\\}"| n13
-	n99 -->|"[^\\s&quot'=>\\\\{}]"| n94
-	n99 -->|"[\\s'=>]"| n16
+	n98 -->|"\\"| n24
+	n98 -->|"\{"| n25
+	n98 -->|"\}"| n13
+	n99 -->|"[^\s&quot'=>\\{}]"| n94
+	n99 -->|"[\s'=>]"| n16
 	n99 -->|"&quot"| n116
-	n99 -->|"\\\\"| n108
-	n99 -->|"\\{"| n109
-	n99 -->|"\\}"| n74
-	n100 -->|"[^&quot\\\\{}]"| n16
+	n99 -->|"\\"| n108
+	n99 -->|"\{"| n109
+	n99 -->|"\}"| n74
+	n100 -->|"[^&quot\\{}]"| n16
 	n100 -->|"&quot"| n23
-	n100 -->|"\\\\"| n24
-	n100 -->|"\\{"| n25
-	n100 -->|"\\}"| n13
-	n101 -->|"[^\\s/=>{}]"| n80
-	n101 -->|"\\s"| n97
-	n101 -->|"\\/"| n98
+	n100 -->|"\\"| n24
+	n100 -->|"\{"| n25
+	n100 -->|"\}"| n13
+	n101 -->|"[^\s/=>{}]"| n80
+	n101 -->|"\s"| n97
+	n101 -->|"\/"| n98
 	n101 -->|"="| n99
 	n101 -->|">"| n100
-	n101 -->|"\\{"| n117
-	n101 -->|"\\}"| n52
-	n102 -->|"[^\\s&quot/=>\\\\}]"| n102
-	n102 -->|"\\s"| n118
+	n101 -->|"\{"| n117
+	n101 -->|"\}"| n52
+	n102 -->|"[^\s&quot/=>\\}]"| n102
+	n102 -->|"\s"| n118
 	n102 -->|"&quot"| n92
-	n102 -->|"\\/"| n119
+	n102 -->|"\/"| n119
 	n102 -->|"="| n120
 	n102 -->|">"| n121
-	n102 -->|"\\\\"| n122
-	n102 -->|"\\}"| n80
-	n103 -->|"[^\\s/=>{}]"| n103
-	n103 -->|"\\s"| n84
-	n103 -->|"\\/"| n85
+	n102 -->|"\\"| n122
+	n102 -->|"\}"| n80
+	n103 -->|"[^\s/=>{}]"| n103
+	n103 -->|"\s"| n84
+	n103 -->|"\/"| n85
 	n103 -->|"="| n123
 	n103 -->|">"| n86
-	n103 -->|"\\{"| n27
-	n103 -->|"\\}"| n96
-	n104 -->|"[^\\s&quot'=>{}]"| n104
-	n104 -->|"\\s"| n34
+	n103 -->|"\{"| n27
+	n103 -->|"\}"| n96
+	n104 -->|"[^\s&quot'=>{}]"| n104
+	n104 -->|"\s"| n34
 	n104 -->|"[&quot'=]"| n33
 	n104 -->|">"| n36
-	n104 -->|"\\{"| n105
-	n104 -->|"\\}"| n74
-	n105 -->|"[^\\s&quot'=>{}]"| n105
-	n105 -->|"\\s"| n88
+	n104 -->|"\{"| n105
+	n104 -->|"\}"| n74
+	n105 -->|"[^\s&quot'=>{}]"| n105
+	n105 -->|"\s"| n88
 	n105 -->|"[&quot'=]"| n37
 	n105 -->|">"| n91
-	n105 -->|"\\{"| n67
-	n105 -->|"\\}"| n104
-	n106 -->|"[^\\s&quot'=>{}]"| n124
-	n106 -->|"[\\s'=>]"| n60
+	n105 -->|"\{"| n67
+	n105 -->|"\}"| n104
+	n106 -->|"[^\s&quot'=>{}]"| n124
+	n106 -->|"[\s'=>]"| n60
 	n106 -->|"&quot"| n25
-	n106 -->|"\\{"| n105
-	n106 -->|"\\}"| n94
-	n107 -->|"[^\\s&quot'=>\\\\{}]"| n107
-	n107 -->|"\\s"| n110
+	n106 -->|"\{"| n105
+	n106 -->|"\}"| n94
+	n107 -->|"[^\s&quot'=>\\{}]"| n107
+	n107 -->|"\s"| n110
 	n107 -->|"&quot"| n30
 	n107 -->|"['=]"| n22
 	n107 -->|">"| n113
-	n107 -->|"\\\\"| n125
-	n107 -->|"\\{"| n126
-	n107 -->|"\\}"| n74
-	n108 -->|"[^\\s&quot'=>{}]"| n94
-	n108 -->|"\\s"| n97
+	n107 -->|"\\"| n125
+	n107 -->|"\{"| n126
+	n107 -->|"\}"| n74
+	n108 -->|"[^\s&quot'=>{}]"| n94
+	n108 -->|"\s"| n97
 	n108 -->|"[&quot'=]"| n16
 	n108 -->|">"| n100
-	n108 -->|"\\{"| n127
-	n108 -->|"\\}"| n74
-	n109 -->|"[^\\s&quot'=>\\\\}]"| n109
-	n109 -->|"\\s"| n118
+	n108 -->|"\{"| n127
+	n108 -->|"\}"| n74
+	n109 -->|"[^\s&quot'=>\\}]"| n109
+	n109 -->|"\s"| n118
 	n109 -->|"&quot"| n39
 	n109 -->|"['=]"| n25
 	n109 -->|">"| n121
-	n109 -->|"\\\\"| n128
-	n109 -->|"\\}"| n94
-	n110 -->|"[^\\s&quot/=>\\\\{}]"| n96
-	n110 -->|"\\s"| n110
+	n109 -->|"\\"| n128
+	n109 -->|"\}"| n94
+	n110 -->|"[^\s&quot/=>\\{}]"| n96
+	n110 -->|"\s"| n110
 	n110 -->|"&quot"| n27
-	n110 -->|"\\/"| n111
+	n110 -->|"\/"| n111
 	n110 -->|"="| n22
 	n110 -->|">"| n113
-	n110 -->|"\\\\"| n114
-	n110 -->|"\\{"| n115
-	n110 -->|"\\}"| n52
-	n111 -->|"[^&quot>\\\\{}]"| n22
+	n110 -->|"\\"| n114
+	n110 -->|"\{"| n115
+	n110 -->|"\}"| n52
+	n111 -->|"[^&quot>\\{}]"| n22
 	n111 -->|"&quot"| n30
 	n111 -->|">"| n113
-	n111 -->|"\\\\"| n31
-	n111 -->|"\\{"| n32
-	n111 -->|"\\}"| n13
-	n112 -->|"[^\\s&quot'=>\\\\{}]"| n107
-	n112 -->|"[\\s'=>]"| n22
+	n111 -->|"\\"| n31
+	n111 -->|"\{"| n32
+	n111 -->|"\}"| n13
+	n112 -->|"[^\s&quot'=>\\{}]"| n107
+	n112 -->|"[\s'=>]"| n22
 	n112 -->|"&quot"| n129
-	n112 -->|"\\\\"| n125
-	n112 -->|"\\{"| n126
-	n112 -->|"\\}"| n74
-	n113 -->|"[^&quot\\\\{}]"| n22
+	n112 -->|"\\"| n125
+	n112 -->|"\{"| n126
+	n112 -->|"\}"| n74
+	n113 -->|"[^&quot\\{}]"| n22
 	n113 -->|"&quot"| n30
-	n113 -->|"\\\\"| n31
-	n113 -->|"\\{"| n32
-	n113 -->|"\\}"| n13
-	n114 -->|"[^\\s/=>{}]"| n96
-	n114 -->|"\\s"| n110
-	n114 -->|"\\/"| n111
+	n113 -->|"\\"| n31
+	n113 -->|"\{"| n32
+	n113 -->|"\}"| n13
+	n114 -->|"[^\s/=>{}]"| n96
+	n114 -->|"\s"| n110
+	n114 -->|"\/"| n111
 	n114 -->|"="| n112
 	n114 -->|">"| n113
-	n114 -->|"\\{"| n130
-	n114 -->|"\\}"| n52
-	n115 -->|"[^\\s&quot/=>\\\\{}]"| n115
-	n115 -->|"\\s"| n131
+	n114 -->|"\{"| n130
+	n114 -->|"\}"| n52
+	n115 -->|"[^\s&quot/=>\\{}]"| n115
+	n115 -->|"\s"| n131
 	n115 -->|"&quot"| n103
-	n115 -->|"\\/"| n132
+	n115 -->|"\/"| n132
 	n115 -->|"="| n133
 	n115 -->|">"| n134
-	n115 -->|"\\\\"| n135
-	n115 -->|"\\{"| n80
-	n115 -->|"\\}"| n96
-	n116 -->|"[^\\s&quot/>\\\\{}]"| n16
-	n116 -->|"\\s"| n97
+	n115 -->|"\\"| n135
+	n115 -->|"\{"| n80
+	n115 -->|"\}"| n96
+	n116 -->|"[^\s&quot/>\\{}]"| n16
+	n116 -->|"\s"| n97
 	n116 -->|"&quot"| n23
-	n116 -->|"\\/"| n98
+	n116 -->|"\/"| n98
 	n116 -->|">"| n100
-	n116 -->|"\\\\"| n24
-	n116 -->|"\\{"| n25
-	n116 -->|"\\}"| n13
-	n117 -->|"[^\\s&quot/=>\\\\{}]"| n117
-	n117 -->|"\\s"| n136
+	n116 -->|"\\"| n24
+	n116 -->|"\{"| n25
+	n116 -->|"\}"| n13
+	n117 -->|"[^\s&quot/=>\\{}]"| n117
+	n117 -->|"\s"| n136
 	n117 -->|"&quot"| n57
-	n117 -->|"\\/"| n137
+	n117 -->|"\/"| n137
 	n117 -->|"="| n138
 	n117 -->|">"| n139
-	n117 -->|"\\\\"| n140
-	n117 -->|"\\{"| n115
-	n117 -->|"\\}"| n80
-	n118 -->|"[^\\s&quot/=>\\\\}]"| n102
-	n118 -->|"\\s"| n118
+	n117 -->|"\\"| n140
+	n117 -->|"\{"| n115
+	n117 -->|"\}"| n80
+	n118 -->|"[^\s&quot/=>\\}]"| n102
+	n118 -->|"\s"| n118
 	n118 -->|"&quot"| n92
-	n118 -->|"\\/"| n119
+	n118 -->|"\/"| n119
 	n118 -->|"="| n25
 	n118 -->|">"| n121
-	n118 -->|"\\\\"| n122
-	n118 -->|"\\}"| n80
-	n119 -->|"[^&quot>\\\\}]"| n25
+	n118 -->|"\\"| n122
+	n118 -->|"\}"| n80
+	n119 -->|"[^&quot>\\}]"| n25
 	n119 -->|"&quot"| n39
 	n119 -->|">"| n121
-	n119 -->|"\\\\"| n40
-	n119 -->|"\\}"| n16
-	n120 -->|"[^\\s&quot'=>\\\\}]"| n109
-	n120 -->|"[\\s'=>]"| n25
+	n119 -->|"\\"| n40
+	n119 -->|"\}"| n16
+	n120 -->|"[^\s&quot'=>\\}]"| n109
+	n120 -->|"[\s'=>]"| n25
 	n120 -->|"&quot"| n141
-	n120 -->|"\\\\"| n128
-	n120 -->|"\\}"| n94
-	n121 -->|"[^&quot\\\\}]"| n25
+	n120 -->|"\\"| n128
+	n120 -->|"\}"| n94
+	n121 -->|"[^&quot\\}]"| n25
 	n121 -->|"&quot"| n39
-	n121 -->|"\\\\"| n40
-	n121 -->|"\\}"| n16
-	n122 -->|"[^\\s/=>{}]"| n102
-	n122 -->|"\\s"| n118
-	n122 -->|"\\/"| n119
+	n121 -->|"\\"| n40
+	n121 -->|"\}"| n16
+	n122 -->|"[^\s/=>{}]"| n102
+	n122 -->|"\s"| n118
+	n122 -->|"\/"| n119
 	n122 -->|"="| n120
 	n122 -->|">"| n121
-	n122 -->|"\\{"| n117
-	n122 -->|"\\}"| n80
-	n123 -->|"[^\\s&quot'=>{}]"| n142
-	n123 -->|"[\\s'=>]"| n83
+	n122 -->|"\{"| n117
+	n122 -->|"\}"| n80
+	n123 -->|"[^\s&quot'=>{}]"| n142
+	n123 -->|"[\s'=>]"| n83
 	n123 -->|"&quot"| n32
-	n123 -->|"\\{"| n65
-	n123 -->|"\\}"| n107
-	n124 -->|"[^\\s&quot'=>{}]"| n124
-	n124 -->|"\\s"| n61
+	n123 -->|"\{"| n65
+	n123 -->|"\}"| n107
+	n124 -->|"[^\s&quot'=>{}]"| n124
+	n124 -->|"\s"| n61
 	n124 -->|"[&quot'=]"| n60
 	n124 -->|">"| n63
-	n124 -->|"\\{"| n105
-	n124 -->|"\\}"| n94
-	n125 -->|"[^\\s&quot'=>{}]"| n107
-	n125 -->|"\\s"| n110
+	n124 -->|"\{"| n105
+	n124 -->|"\}"| n94
+	n125 -->|"[^\s&quot'=>{}]"| n107
+	n125 -->|"\s"| n110
 	n125 -->|"[&quot'=]"| n22
 	n125 -->|">"| n113
-	n125 -->|"\\{"| n143
-	n125 -->|"\\}"| n74
-	n126 -->|"[^\\s&quot'=>\\\\{}]"| n126
-	n126 -->|"\\s"| n131
+	n125 -->|"\{"| n143
+	n125 -->|"\}"| n74
+	n126 -->|"[^\s&quot'=>\\{}]"| n126
+	n126 -->|"\s"| n131
 	n126 -->|"&quot"| n54
 	n126 -->|"['=]"| n32
 	n126 -->|">"| n134
-	n126 -->|"\\\\"| n144
-	n126 -->|"\\{"| n94
-	n126 -->|"\\}"| n107
-	n127 -->|"[^\\s&quot'=>\\\\{}]"| n127
-	n127 -->|"\\s"| n136
+	n126 -->|"\\"| n144
+	n126 -->|"\{"| n94
+	n126 -->|"\}"| n107
+	n127 -->|"[^\s&quot'=>\\{}]"| n127
+	n127 -->|"\s"| n136
 	n127 -->|"&quot"| n58
 	n127 -->|"['=]"| n38
 	n127 -->|">"| n139
-	n127 -->|"\\\\"| n145
-	n127 -->|"\\{"| n126
-	n127 -->|"\\}"| n94
-	n128 -->|"[^\\s&quot'=>{}]"| n109
-	n128 -->|"\\s"| n118
+	n127 -->|"\\"| n145
+	n127 -->|"\{"| n126
+	n127 -->|"\}"| n94
+	n128 -->|"[^\s&quot'=>{}]"| n109
+	n128 -->|"\s"| n118
 	n128 -->|"[&quot'=]"| n25
 	n128 -->|">"| n121
-	n128 -->|"\\{"| n127
-	n128 -->|"\\}"| n94
-	n129 -->|"[^\\s&quot/>\\\\{}]"| n22
-	n129 -->|"\\s"| n110
+	n128 -->|"\{"| n127
+	n128 -->|"\}"| n94
+	n129 -->|"[^\s&quot/>\\{}]"| n22
+	n129 -->|"\s"| n110
 	n129 -->|"&quot"| n30
-	n129 -->|"\\/"| n111
+	n129 -->|"\/"| n111
 	n129 -->|">"| n113
-	n129 -->|"\\\\"| n31
-	n129 -->|"\\{"| n32
-	n129 -->|"\\}"| n13
-	n130 -->|"[^\\s&quot/=>\\\\{}]"| n130
-	n130 -->|"\\s"| n146
+	n129 -->|"\\"| n31
+	n129 -->|"\{"| n32
+	n129 -->|"\}"| n13
+	n130 -->|"[^\s&quot/=>\\{}]"| n130
+	n130 -->|"\s"| n146
 	n130 -->|"&quot"| n46
-	n130 -->|"\\/"| n147
+	n130 -->|"\/"| n147
 	n130 -->|"="| n148
 	n130 -->|">"| n149
-	n130 -->|"\\\\"| n150
-	n130 -->|"\\{"| n52
-	n130 -->|"\\}"| n96
-	n131 -->|"[^\\s&quot/=>\\\\{}]"| n115
-	n131 -->|"\\s"| n131
+	n130 -->|"\\"| n150
+	n130 -->|"\{"| n52
+	n130 -->|"\}"| n96
+	n131 -->|"[^\s&quot/=>\\{}]"| n115
+	n131 -->|"\s"| n131
 	n131 -->|"&quot"| n103
-	n131 -->|"\\/"| n132
+	n131 -->|"\/"| n132
 	n131 -->|"="| n32
 	n131 -->|">"| n134
-	n131 -->|"\\\\"| n135
-	n131 -->|"\\{"| n80
-	n131 -->|"\\}"| n96
-	n132 -->|"[^&quot>\\\\{}]"| n32
+	n131 -->|"\\"| n135
+	n131 -->|"\{"| n80
+	n131 -->|"\}"| n96
+	n132 -->|"[^&quot>\\{}]"| n32
 	n132 -->|"&quot"| n54
 	n132 -->|">"| n134
-	n132 -->|"\\\\"| n55
-	n132 -->|"\\{"| n16
-	n132 -->|"\\}"| n22
-	n133 -->|"[^\\s&quot'=>\\\\{}]"| n126
-	n133 -->|"[\\s'=>]"| n32
+	n132 -->|"\\"| n55
+	n132 -->|"\{"| n16
+	n132 -->|"\}"| n22
+	n133 -->|"[^\s&quot'=>\\{}]"| n126
+	n133 -->|"[\s'=>]"| n32
 	n133 -->|"&quot"| n151
-	n133 -->|"\\\\"| n144
-	n133 -->|"\\{"| n94
-	n133 -->|"\\}"| n107
-	n134 -->|"[^&quot\\\\{}]"| n32
+	n133 -->|"\\"| n144
+	n133 -->|"\{"| n94
+	n133 -->|"\}"| n107
+	n134 -->|"[^&quot\\{}]"| n32
 	n134 -->|"&quot"| n54
-	n134 -->|"\\\\"| n55
-	n134 -->|"\\{"| n16
-	n134 -->|"\\}"| n22
-	n135 -->|"[^\\s/=>{}]"| n115
-	n135 -->|"\\s"| n131
-	n135 -->|"\\/"| n132
+	n134 -->|"\\"| n55
+	n134 -->|"\{"| n16
+	n134 -->|"\}"| n22
+	n135 -->|"[^\s/=>{}]"| n115
+	n135 -->|"\s"| n131
+	n135 -->|"\/"| n132
 	n135 -->|"="| n133
 	n135 -->|">"| n134
 	n135 -->|"[{}]"| n96
-	n136 -->|"[^\\s&quot/=>\\\\{}]"| n117
-	n136 -->|"\\s"| n136
+	n136 -->|"[^\s&quot/=>\\{}]"| n117
+	n136 -->|"\s"| n136
 	n136 -->|"&quot"| n57
-	n136 -->|"\\/"| n137
+	n136 -->|"\/"| n137
 	n136 -->|"="| n38
 	n136 -->|">"| n139
-	n136 -->|"\\\\"| n140
-	n136 -->|"\\{"| n115
-	n136 -->|"\\}"| n80
-	n137 -->|"[^&quot>\\\\{}]"| n38
+	n136 -->|"\\"| n140
+	n136 -->|"\{"| n115
+	n136 -->|"\}"| n80
+	n137 -->|"[^&quot>\\{}]"| n38
 	n137 -->|"&quot"| n58
 	n137 -->|">"| n139
-	n137 -->|"\\\\"| n59
-	n137 -->|"\\{"| n32
-	n137 -->|"\\}"| n16
-	n138 -->|"[^\\s&quot'=>\\\\{}]"| n127
-	n138 -->|"[\\s'=>]"| n38
+	n137 -->|"\\"| n59
+	n137 -->|"\{"| n32
+	n137 -->|"\}"| n16
+	n138 -->|"[^\s&quot'=>\\{}]"| n127
+	n138 -->|"[\s'=>]"| n38
 	n138 -->|"&quot"| n152
-	n138 -->|"\\\\"| n145
-	n138 -->|"\\{"| n126
-	n138 -->|"\\}"| n94
-	n139 -->|"[^&quot\\\\{}]"| n38
+	n138 -->|"\\"| n145
+	n138 -->|"\{"| n126
+	n138 -->|"\}"| n94
+	n139 -->|"[^&quot\\{}]"| n38
 	n139 -->|"&quot"| n58
-	n139 -->|"\\\\"| n59
-	n139 -->|"\\{"| n32
-	n139 -->|"\\}"| n16
-	n140 -->|"[^\\s/=>{}]"| n117
-	n140 -->|"\\s"| n136
-	n140 -->|"\\/"| n137
+	n139 -->|"\\"| n59
+	n139 -->|"\{"| n32
+	n139 -->|"\}"| n16
+	n140 -->|"[^\s/=>{}]"| n117
+	n140 -->|"\s"| n136
+	n140 -->|"\/"| n137
 	n140 -->|"="| n138
 	n140 -->|">"| n139
-	n140 -->|"\\{"| n130
-	n140 -->|"\\}"| n80
-	n141 -->|"[^\\s&quot/>\\\\}]"| n25
-	n141 -->|"\\s"| n118
+	n140 -->|"\{"| n130
+	n140 -->|"\}"| n80
+	n141 -->|"[^\s&quot/>\\}]"| n25
+	n141 -->|"\s"| n118
 	n141 -->|"&quot"| n39
-	n141 -->|"\\/"| n119
+	n141 -->|"\/"| n119
 	n141 -->|">"| n121
-	n141 -->|"\\\\"| n40
-	n141 -->|"\\}"| n16
-	n142 -->|"[^\\s&quot'=>{}]"| n142
-	n142 -->|"\\s"| n84
+	n141 -->|"\\"| n40
+	n141 -->|"\}"| n16
+	n142 -->|"[^\s&quot'=>{}]"| n142
+	n142 -->|"\s"| n84
 	n142 -->|"[&quot'=]"| n83
 	n142 -->|">"| n86
-	n142 -->|"\\{"| n65
-	n142 -->|"\\}"| n107
-	n143 -->|"[^\\s&quot'=>\\\\{}]"| n143
-	n143 -->|"\\s"| n146
+	n142 -->|"\{"| n65
+	n142 -->|"\}"| n107
+	n143 -->|"[^\s&quot'=>\\{}]"| n143
+	n143 -->|"\s"| n146
 	n143 -->|"&quot"| n81
 	n143 -->|"['=]"| n53
 	n143 -->|">"| n149
-	n143 -->|"\\\\"| n153
-	n143 -->|"\\{"| n74
-	n143 -->|"\\}"| n107
-	n144 -->|"[^\\s&quot'=>{}]"| n126
-	n144 -->|"\\s"| n131
+	n143 -->|"\\"| n153
+	n143 -->|"\{"| n74
+	n143 -->|"\}"| n107
+	n144 -->|"[^\s&quot'=>{}]"| n126
+	n144 -->|"\s"| n131
 	n144 -->|"[&quot'=]"| n32
 	n144 -->|">"| n134
 	n144 -->|"[{}]"| n107
-	n145 -->|"[^\\s&quot'=>{}]"| n127
-	n145 -->|"\\s"| n136
+	n145 -->|"[^\s&quot'=>{}]"| n127
+	n145 -->|"\s"| n136
 	n145 -->|"[&quot'=]"| n38
 	n145 -->|">"| n139
-	n145 -->|"\\{"| n143
-	n145 -->|"\\}"| n94
-	n146 -->|"[^\\s&quot/=>\\\\{}]"| n130
-	n146 -->|"\\s"| n146
+	n145 -->|"\{"| n143
+	n145 -->|"\}"| n94
+	n146 -->|"[^\s&quot/=>\\{}]"| n130
+	n146 -->|"\s"| n146
 	n146 -->|"&quot"| n46
-	n146 -->|"\\/"| n147
+	n146 -->|"\/"| n147
 	n146 -->|"="| n53
 	n146 -->|">"| n149
-	n146 -->|"\\\\"| n150
-	n146 -->|"\\{"| n52
-	n146 -->|"\\}"| n96
-	n147 -->|"[^&quot>\\\\{}]"| n53
+	n146 -->|"\\"| n150
+	n146 -->|"\{"| n52
+	n146 -->|"\}"| n96
+	n147 -->|"[^&quot>\\{}]"| n53
 	n147 -->|"&quot"| n81
 	n147 -->|">"| n149
-	n147 -->|"\\\\"| n82
-	n147 -->|"\\{"| n13
-	n147 -->|"\\}"| n22
-	n148 -->|"[^\\s&quot'=>\\\\{}]"| n143
-	n148 -->|"[\\s'=>]"| n53
+	n147 -->|"\\"| n82
+	n147 -->|"\{"| n13
+	n147 -->|"\}"| n22
+	n148 -->|"[^\s&quot'=>\\{}]"| n143
+	n148 -->|"[\s'=>]"| n53
 	n148 -->|"&quot"| n154
-	n148 -->|"\\\\"| n153
-	n148 -->|"\\{"| n74
-	n148 -->|"\\}"| n107
-	n149 -->|"[^&quot\\\\{}]"| n53
+	n148 -->|"\\"| n153
+	n148 -->|"\{"| n74
+	n148 -->|"\}"| n107
+	n149 -->|"[^&quot\\{}]"| n53
 	n149 -->|"&quot"| n81
-	n149 -->|"\\\\"| n82
-	n149 -->|"\\{"| n13
-	n149 -->|"\\}"| n22
-	n150 -->|"[^\\s/=>{}]"| n130
-	n150 -->|"\\s"| n146
-	n150 -->|"\\/"| n147
+	n149 -->|"\\"| n82
+	n149 -->|"\{"| n13
+	n149 -->|"\}"| n22
+	n150 -->|"[^\s/=>{}]"| n130
+	n150 -->|"\s"| n146
+	n150 -->|"\/"| n147
 	n150 -->|"="| n148
 	n150 -->|">"| n149
-	n150 -->|"\\{"| n28
-	n150 -->|"\\}"| n96
-	n151 -->|"[^\\s&quot/>\\\\{}]"| n32
-	n151 -->|"\\s"| n131
+	n150 -->|"\{"| n28
+	n150 -->|"\}"| n96
+	n151 -->|"[^\s&quot/>\\{}]"| n32
+	n151 -->|"\s"| n131
 	n151 -->|"&quot"| n54
-	n151 -->|"\\/"| n132
+	n151 -->|"\/"| n132
 	n151 -->|">"| n134
-	n151 -->|"\\\\"| n55
-	n151 -->|"\\{"| n16
-	n151 -->|"\\}"| n22
-	n152 -->|"[^\\s&quot/>\\\\{}]"| n38
-	n152 -->|"\\s"| n136
+	n151 -->|"\\"| n55
+	n151 -->|"\{"| n16
+	n151 -->|"\}"| n22
+	n152 -->|"[^\s&quot/>\\{}]"| n38
+	n152 -->|"\s"| n136
 	n152 -->|"&quot"| n58
-	n152 -->|"\\/"| n137
+	n152 -->|"\/"| n137
 	n152 -->|">"| n139
-	n152 -->|"\\\\"| n59
-	n152 -->|"\\{"| n32
-	n152 -->|"\\}"| n16
-	n153 -->|"[^\\s&quot'=>{}]"| n143
-	n153 -->|"\\s"| n146
+	n152 -->|"\\"| n59
+	n152 -->|"\{"| n32
+	n152 -->|"\}"| n16
+	n153 -->|"[^\s&quot'=>{}]"| n143
+	n153 -->|"\s"| n146
 	n153 -->|"[&quot'=]"| n53
 	n153 -->|">"| n149
-	n153 -->|"\\{"| n66
-	n153 -->|"\\}"| n107
-	n154 -->|"[^\\s&quot/>\\\\{}]"| n53
-	n154 -->|"\\s"| n146
+	n153 -->|"\{"| n66
+	n153 -->|"\}"| n107
+	n154 -->|"[^\s&quot/>\\{}]"| n53
+	n154 -->|"\s"| n146
 	n154 -->|"&quot"| n81
-	n154 -->|"\\/"| n147
+	n154 -->|"\/"| n147
 	n154 -->|">"| n149
-	n154 -->|"\\\\"| n82
-	n154 -->|"\\{"| n13
-	n154 -->|"\\}"| n22
-`.slice(1, -1);
+	n154 -->|"\\"| n82
+	n154 -->|"\{"| n13
+	n154 -->|"\}"| n22
+`;
 
-module.exports["toMermaid >> from regexes >> ENFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> ENFA (JS): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -3159,13 +3171,13 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|"<"| n1
-	n1 -->|"(1) \\/"| n2
+	n1 -->|"(1) \/"| n2
 	n1 --->|"(2) "| n3
 	n2 -->| | n3
-	n3 -->|"[^\\s\\d\$%/<=>]"| n4
+	n3 -->|"[^\s\d$%/<=>]"| n4
 	n4 -->|"(1) "| n5
 	n4 --->|"(2) "| n6
-	n5 -->|"[^\\s\$%/<=>]"| n7
+	n5 -->|"[^\s$%/<=>]"| n7
 	n6 -->|"(1) "| n8
 	n6 --->|"(2) "| n9
 	n7 -->|"(1) "| n5
@@ -3173,9 +3185,9 @@ flowchart LR
 	n8 -->| | n10
 	n9 -->|"(1) "| n11
 	n9 --->|"(2) "| n12
-	n10 -->|"\\s"| n13
-	n11 -->|"\\s"| n14
-	n12 -->|"(1) \\/"| n15
+	n10 -->|"\s"| n13
+	n11 -->|"\s"| n14
+	n12 -->|"(1) \/"| n15
 	n12 --->|"(2) "| n16
 	n13 -->|"(1) "| n10
 	n13 --->|"(2) "| n17
@@ -3184,7 +3196,7 @@ flowchart LR
 	n15 -->| | n16
 	n16 -->|">"| n18
 	n17 -->| | n19
-	n19 -->|"[^\\s/=>]"| n20
+	n19 -->|"[^\s/=>]"| n20
 	n20 -->|"(1) "| n19
 	n20 --->|"(2) "| n21
 	n21 -->|"(1) ="| n22
@@ -3195,10 +3207,10 @@ flowchart LR
 	n23 --->|"(2) "| n9
 	n24 -->|"(1) "| n26
 	n24 --->|"(2) "| n27
-	n25 -->|"[^\\s&quot'=>]"| n28
-	n26 -->|"(1) \\\\"| n29
-	n26 --->|"(2) \\{"| n30
-	n26 ---->|"(3) [^&quot\\\\]"| n31
+	n25 -->|"[^\s&quot'=>]"| n28
+	n26 -->|"(1) \\"| n29
+	n26 --->|"(2) \{"| n30
+	n26 ---->|"(3) [^&quot\\]"| n31
 	n27 -->|"&quot"| n32
 	n28 -->|"(1) "| n25
 	n28 --->|"(2) "| n33
@@ -3208,7 +3220,7 @@ flowchart LR
 	n32 -->| | n37
 	n33 -->| | n37
 	n34 -->| | n36
-	n35 -->|"(1) \\{"| n38
+	n35 -->|"(1) \{"| n38
 	n35 --->|"(2) [^{}]"| n39
 	n36 -->|"(1) "| n26
 	n36 --->|"(2) "| n27
@@ -3216,27 +3228,27 @@ flowchart LR
 	n38 -->|"(1) "| n40
 	n38 --->|"(2) "| n41
 	n39 -->| | n42
-	n40 -->|"(1) \\{"| n43
+	n40 -->|"(1) \{"| n43
 	n40 --->|"(2) [^{}]"| n44
-	n41 -->|"\\}"| n45
+	n41 -->|"\}"| n45
 	n42 -->|"(1) "| n35
 	n42 --->|"(2) "| n46
 	n43 -->|"(1) "| n47
 	n43 --->|"(2) "| n48
 	n44 -->| | n49
 	n45 -->| | n42
-	n46 -->|"\\}"| n50
+	n46 -->|"\}"| n50
 	n47 -->|"[^{}]"| n51
-	n48 -->|"\\}"| n52
+	n48 -->|"\}"| n52
 	n49 -->|"(1) "| n40
 	n49 --->|"(2) "| n41
 	n50 -->| | n36
 	n51 -->|"(1) "| n47
 	n51 --->|"(2) "| n48
 	n52 -->| | n49
-`.slice(1, -1);
+`;
 
-module.exports["toMermaid >> from regexes >> NFA (JS): /<\\/?[^\\s\\d>\\/=$<%][^\\s>\\/=$<%]*(?:\\s+[^\\s>\\/=]+(?:=(?:\"(?:\\\\[\\s\\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\\\\"])*\"|[^\\s'\">=]+))?)*\\s*\\/?>/"] = `
+module.exports[n`toMermaid >> from regexes >> NFA (JS): /<\/?[^\s\d>\/=$<%][^\s>\/=$<%]*(?:\s+[^\s>\/=]+(?:=(?:"(?:\\[\s\S]|{(?:{(?:{[^{}]*}|[^{}])*}|[^{}])+}|[^\\"])*"|[^\s'">=]+))?)*\s*\/?>/ `] = lit`
 flowchart LR
 %% nodes
 	null(( ))
@@ -3266,64 +3278,64 @@ flowchart LR
 %% edges
 	null -.-> n0
 	n0 -->|"<"| n1
-	n1 -->|"\\/"| n2
-	n1 -->|"[^\\s\\d\$%/<=>]"| n3
-	n2 -->|"[^\\s\\d\$%/<=>]"| n3
-	n3 -->|"[^\\s\$%/<=>]"| n4
-	n3 -->|"\\s"| n5
-	n3 -->|"\\s"| n6
-	n3 -->|"\\/"| n7
+	n1 -->|"\/"| n2
+	n1 -->|"[^\s\d$%/<=>]"| n3
+	n2 -->|"[^\s\d$%/<=>]"| n3
+	n3 -->|"[^\s$%/<=>]"| n4
+	n3 -->|"\s"| n5
+	n3 -->|"\s"| n6
+	n3 -->|"\/"| n7
 	n3 -->|">"| n8
-	n4 -->|"[^\\s\$%/<=>]"| n4
-	n4 -->|"\\s"| n5
-	n4 -->|"\\s"| n6
-	n4 -->|"\\/"| n7
+	n4 -->|"[^\s$%/<=>]"| n4
+	n4 -->|"\s"| n5
+	n4 -->|"\s"| n6
+	n4 -->|"\/"| n7
 	n4 -->|">"| n8
-	n5 -->|"\\s"| n5
-	n5 -->|"[^\\s/=>]"| n9
-	n6 -->|"\\s"| n6
-	n6 -->|"\\/"| n7
+	n5 -->|"\s"| n5
+	n5 -->|"[^\s/=>]"| n9
+	n6 -->|"\s"| n6
+	n6 -->|"\/"| n7
 	n6 -->|">"| n8
 	n7 -->|">"| n8
-	n9 -->|"[^\\s/=>]"| n9
+	n9 -->|"[^\s/=>]"| n9
 	n9 -->|"="| n10
-	n9 -->|"\\s"| n5
-	n9 -->|"\\s"| n6
-	n9 -->|"\\/"| n7
+	n9 -->|"\s"| n5
+	n9 -->|"\s"| n6
+	n9 -->|"\/"| n7
 	n9 -->|">"| n8
 	n10 -->|"&quot"| n11
-	n10 -->|"[^\\s&quot'=>]"| n12
-	n11 -->|"\\\\"| n13
-	n11 -->|"\\{"| n14
-	n11 -->|"[^&quot\\\\]"| n15
+	n10 -->|"[^\s&quot'=>]"| n12
+	n11 -->|"\\"| n13
+	n11 -->|"\{"| n14
+	n11 -->|"[^&quot\\]"| n15
 	n11 -->|"&quot"| n16
-	n12 -->|"[^\\s&quot'=>]"| n12
-	n12 -->|"\\s"| n5
-	n12 -->|"\\s"| n6
-	n12 -->|"\\/"| n7
+	n12 -->|"[^\s&quot'=>]"| n12
+	n12 -->|"\s"| n5
+	n12 -->|"\s"| n6
+	n12 -->|"\/"| n7
 	n12 -->|">"| n8
 	n13 -->|"[^]"| n15
-	n14 -->|"\\{"| n17
+	n14 -->|"\{"| n17
 	n14 -->|"[^{}]"| n18
-	n15 -->|"\\\\"| n13
-	n15 -->|"\\{"| n14
-	n15 -->|"[^&quot\\\\]"| n15
+	n15 -->|"\\"| n13
+	n15 -->|"\{"| n14
+	n15 -->|"[^&quot\\]"| n15
 	n15 -->|"&quot"| n16
-	n16 -->|"\\s"| n5
-	n16 -->|"\\s"| n6
-	n16 -->|"\\/"| n7
+	n16 -->|"\s"| n5
+	n16 -->|"\s"| n6
+	n16 -->|"\/"| n7
 	n16 -->|">"| n8
-	n17 -->|"\\{"| n19
+	n17 -->|"\{"| n19
 	n17 -->|"[^{}]"| n20
-	n17 -->|"\\}"| n18
-	n18 -->|"\\{"| n17
+	n17 -->|"\}"| n18
+	n18 -->|"\{"| n17
 	n18 -->|"[^{}]"| n18
-	n18 -->|"\\}"| n15
+	n18 -->|"\}"| n15
 	n19 -->|"[^{}]"| n21
-	n19 -->|"\\}"| n20
-	n20 -->|"\\{"| n19
+	n19 -->|"\}"| n20
+	n20 -->|"\{"| n19
 	n20 -->|"[^{}]"| n20
-	n20 -->|"\\}"| n18
+	n20 -->|"\}"| n18
 	n21 -->|"[^{}]"| n21
-	n21 -->|"\\}"| n20
-`.slice(1, -1);
+	n21 -->|"\}"| n20
+`;

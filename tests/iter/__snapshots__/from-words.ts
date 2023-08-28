@@ -1,28 +1,40 @@
 /* eslint-disable */
 
-module.exports["fromWords >> DFA >> []"] = `
+var unescapeBackslashes = (str: string): string => {
+	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
+	});
+};
+var lit = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(1, -1));
+};
+var n = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(0, -1));
+};
+
+module.exports[n`fromWords >> DFA >> [] `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"\"]"] = `
+module.exports[n`fromWords >> DFA >> [""] `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"\",\"a\"]"] = `
+module.exports[n`fromWords >> DFA >> ["","a"] `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"\",\"a\",\"aa\",\"\",\"a\",\"aa\"]"] = `
+module.exports[n`fromWords >> DFA >> ["","a","aa","","a","aa"] `] = lit`
 [0] -> [1] : a
 
 [1] -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"food\"]"] = `
+module.exports[n`fromWords >> DFA >> ["foo","bar","foo","bar","baz","food"] `] = lit`
 (0) -> (1) : b
     -> (2) : f
 
@@ -42,9 +54,9 @@ module.exports["fromWords >> DFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"f
 [7] -> [8] : d
 
 [8] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"\",\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\"]"] = `
+module.exports[n`fromWords >> DFA >> ["","a","b","c","d","e","f","g"] `] = lit`
 [0] -> [1] : a
     -> [2] : b
     -> [3] : c
@@ -66,9 +78,9 @@ module.exports["fromWords >> DFA >> [\"\",\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"
 [6] -> none
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> DFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"aaa\",\"aab\",\"aba\",\"abb\",\"baa\",\"bab\",\"bba\",\"bbb\"]"] = `
+module.exports[n`fromWords >> DFA >> ["a","b","ab","ba","aa","bb","aaa","aab","aba","abb","baa","bab","bba","bbb"] `] = lit`
 (0) -> [1] : a
     -> [2] : b
 
@@ -105,28 +117,28 @@ module.exports["fromWords >> DFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"a
 [13] -> none
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> []"] = `
+module.exports[n`fromWords >> ENFA >> [] `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"\"]"] = `
+module.exports[n`fromWords >> ENFA >> [""] `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"\",\"a\"]"] = `
+module.exports[n`fromWords >> ENFA >> ["","a"] `] = lit`
 (0) -> [1] : ε
     -> (2) : a
 
 [1] -> none
 
 (2) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"\",\"a\",\"aa\",\"\",\"a\",\"aa\"]"] = `
+module.exports[n`fromWords >> ENFA >> ["","a","aa","","a","aa"] `] = lit`
 (0) -> [1] : ε
     -> (2) : a
 
@@ -136,9 +148,9 @@ module.exports["fromWords >> ENFA >> [\"\",\"a\",\"aa\",\"\",\"a\",\"aa\"]"] = `
     -> (3) : a
 
 (3) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"food\"]"] = `
+module.exports[n`fromWords >> ENFA >> ["foo","bar","foo","bar","baz","food"] `] = lit`
 (0) -> (1) : f
     -> (2) : b
 
@@ -161,9 +173,9 @@ module.exports["fromWords >> ENFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"
 [8] -> none
 
 (9) -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"\",\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\"]"] = `
+module.exports[n`fromWords >> ENFA >> ["","a","b","c","d","e","f","g"] `] = lit`
 (0) -> [1] : ε
     -> (2) : a
     -> (3) : b
@@ -188,9 +200,9 @@ module.exports["fromWords >> ENFA >> [\"\",\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\
 (7) -> [1] : ε
 
 (8) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> ENFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"aaa\",\"aab\",\"aba\",\"abb\",\"baa\",\"bab\",\"bba\",\"bbb\"]"] = `
+module.exports[n`fromWords >> ENFA >> ["a","b","ab","ba","aa","bb","aaa","aab","aba","abb","baa","bab","bba","bbb"] `] = lit`
 (0) -> (1) : a
     -> (2) : b
 
@@ -235,31 +247,31 @@ module.exports["fromWords >> ENFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"
 (14) -> [3] : ε
 
 (15) -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> []"] = `
+module.exports[n`fromWords >> NFA >> [] `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"\"]"] = `
+module.exports[n`fromWords >> NFA >> [""] `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"\",\"a\"]"] = `
+module.exports[n`fromWords >> NFA >> ["","a"] `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"\",\"a\",\"aa\",\"\",\"a\",\"aa\"]"] = `
+module.exports[n`fromWords >> NFA >> ["","a","aa","","a","aa"] `] = lit`
 [0] -> [1] : a
 
 [1] -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"food\"]"] = `
+module.exports[n`fromWords >> NFA >> ["foo","bar","foo","bar","baz","food"] `] = lit`
 (0) -> (1) : b
     -> (2) : f
 
@@ -274,15 +286,15 @@ module.exports["fromWords >> NFA >> [\"foo\",\"bar\",\"foo\",\"bar\",\"baz\",\"f
 [5] -> none
 
 [6] -> [5] : d
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"\",\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\"]"] = `
+module.exports[n`fromWords >> NFA >> ["","a","b","c","d","e","f","g"] `] = lit`
 [0] -> [1] : a-g
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWords >> NFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"aaa\",\"aab\",\"aba\",\"abb\",\"baa\",\"bab\",\"bba\",\"bbb\"]"] = `
+module.exports[n`fromWords >> NFA >> ["a","b","ab","ba","aa","bb","aaa","aab","aba","abb","baa","bab","bba","bbb"] `] = lit`
 (0) -> [1] : a
     -> [2] : b
 
@@ -295,17 +307,17 @@ module.exports["fromWords >> NFA >> [\"a\",\"b\",\"ab\",\"ba\",\"aa\",\"bb\",\"a
 [4] -> [5] : a b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> DFA >> /[]/u"] = `
+module.exports[n`fromWordSets >> DFA >> /[]/u `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> DFA >> /||||/u"] = `
+module.exports[n`fromWordSets >> DFA >> /||||/u `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> DFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> DFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 (0) -> [1] : A a
     -> [2] : B b
     -> [3] : C c
@@ -338,9 +350,9 @@ module.exports["fromWordSets >> DFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 [12] -> none
 
 [13] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> DFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> DFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 [0] -> [1] : A a
     -> [2] : B b
     -> [3] : C c
@@ -373,9 +385,9 @@ module.exports["fromWordSets >> DFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 [12] -> none
 
 [13] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> DFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
+module.exports[n`fromWordSets >> DFA >> /foo|food|bar|bar|\wd|\d\w/ `] = lit`
 (0) -> (1) : 0-9
     -> (2) : A-Z '_' a c-e g-z
     -> (3) : b
@@ -411,19 +423,19 @@ module.exports["fromWordSets >> DFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
 [13] -> [14] : d
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> ENFA >> /[]/u"] = `
+module.exports[n`fromWordSets >> ENFA >> /[]/u `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> ENFA >> /||||/u"] = `
+module.exports[n`fromWordSets >> ENFA >> /||||/u `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> ENFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> ENFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 (0) -> (1) : A a
     -> (2) : B b
     -> (3) : C c
@@ -461,9 +473,9 @@ module.exports["fromWordSets >> ENFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 (13) -> [4] : ε
 
 (14) -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> ENFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> ENFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 (0) -> [1] : ε
     -> (2) : A a
     -> (3) : B b
@@ -502,9 +514,9 @@ module.exports["fromWordSets >> ENFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 (13) -> [1] : ε
 
 (14) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> ENFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
+module.exports[n`fromWordSets >> ENFA >> /foo|food|bar|bar|\wd|\d\w/ `] = lit`
 (0) -> (1) : f
     -> (2) : b
     -> (3) : A-Z '_' a c-e g-z
@@ -543,17 +555,17 @@ module.exports["fromWordSets >> ENFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
 (14) -> [13] : ε
 
 (15) -> [13] : ε
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> NFA >> /[]/u"] = `
+module.exports[n`fromWordSets >> NFA >> /[]/u `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> NFA >> /||||/u"] = `
+module.exports[n`fromWordSets >> NFA >> /||||/u `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> NFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> NFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 (0) -> [1] : A a
     -> [2] : B b
     -> [3] : C c
@@ -573,9 +585,9 @@ module.exports["fromWordSets >> NFA >> /a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 (6) -> [4] : A a
 
 (7) -> [4] : A B a b
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> NFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
+module.exports[n`fromWordSets >> NFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i `] = lit`
 [0] -> [1] : A a
     -> [2] : B b
     -> [3] : C c
@@ -595,9 +607,9 @@ module.exports["fromWordSets >> NFA >> /|a|b|c|abc|bca|cba|cab|aa|caa/i"] = `
 (6) -> [4] : A a
 
 (7) -> [4] : A B a b
-`.slice(1, -1);
+`;
 
-module.exports["fromWordSets >> NFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
+module.exports[n`fromWordSets >> NFA >> /foo|food|bar|bar|\wd|\d\w/ `] = lit`
 (0) -> (1) : 0-9
     -> (2) : A-Z '_' a c-e g-z
     -> (3) : b
@@ -620,4 +632,4 @@ module.exports["fromWordSets >> NFA >> /foo|food|bar|bar|\\wd|\\d\\w/"] = `
 (7) -> [8] : o
 
 [8] -> [5] : d
-`.slice(1, -1);
+`;

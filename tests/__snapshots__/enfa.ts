@@ -1,24 +1,36 @@
 /* eslint-disable */
 
-module.exports["ENFA >> fromRegex >> /a?/"] = `
+var unescapeBackslashes = (str: string): string => {
+	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
+	});
+};
+var lit = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(1, -1));
+};
+var n = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(0, -1));
+};
+
+module.exports[n`ENFA >> fromRegex >> /a?/ `] = lit`
 (0) -> (1) : a
     -> [2] : ε
 
 (1) -> [2] : ε
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a??/"] = `
+module.exports[n`ENFA >> fromRegex >> /a??/ `] = lit`
 (0) -> [1] : ε
     -> (2) : a
 
 [1] -> none
 
 (2) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -27,9 +39,9 @@ module.exports["ENFA >> fromRegex >> /a+/"] = `
     -> [3] : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+?/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+?/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -38,9 +50,9 @@ module.exports["ENFA >> fromRegex >> /a+?/"] = `
     -> (1) : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a|b)+c/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a|b)+c/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -56,9 +68,9 @@ module.exports["ENFA >> fromRegex >> /(a|b)+c/"] = `
 (5) -> [6] : c
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*b*c*/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*b*c*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -84,9 +96,9 @@ module.exports["ENFA >> fromRegex >> /a*b*c*/"] = `
 
 (9) -> (7) : ε
     -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*b*?c*/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*b*?c*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -112,9 +124,9 @@ module.exports["ENFA >> fromRegex >> /a*b*?c*/"] = `
 
 (9) -> (6) : ε
     -> [7] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*?b*c*?/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*?b*c*?/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -140,9 +152,9 @@ module.exports["ENFA >> fromRegex >> /a*?b*c*?/"] = `
 
 (9) -> [7] : ε
     -> (8) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+b+?c+/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+b+?c+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -165,9 +177,9 @@ module.exports["ENFA >> fromRegex >> /a+b+?c+/"] = `
     -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a{4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /a{4}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -177,9 +189,9 @@ module.exports["ENFA >> fromRegex >> /a{4}/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a{4}?/"] = `
+module.exports[n`ENFA >> fromRegex >> /a{4}?/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -189,9 +201,9 @@ module.exports["ENFA >> fromRegex >> /a{4}?/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a|){3}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a|){3}/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -214,9 +226,9 @@ module.exports["ENFA >> fromRegex >> /(a|){3}/"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(|a){3}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(|a){3}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : a
 
@@ -239,9 +251,9 @@ module.exports["ENFA >> fromRegex >> /(|a){3}/"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(|a|){3}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(|a|){3}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : a
     -> (3) : ε
@@ -273,9 +285,9 @@ module.exports["ENFA >> fromRegex >> /(|a|){3}/"] = `
 (11) -> [12] : ε
 
 [12] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a{2,4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /a{2,4}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -289,9 +301,9 @@ module.exports["ENFA >> fromRegex >> /a{2,4}/"] = `
 [4] -> none
 
 (5) -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a{2,4}?/"] = `
+module.exports[n`ENFA >> fromRegex >> /a{2,4}?/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -305,9 +317,9 @@ module.exports["ENFA >> fromRegex >> /a{2,4}?/"] = `
     -> (5) : a
 
 (5) -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a{2,6}/"] = `
+module.exports[n`ENFA >> fromRegex >> /a{2,6}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -327,9 +339,9 @@ module.exports["ENFA >> fromRegex >> /a{2,6}/"] = `
     -> [4] : ε
 
 (7) -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(ab){0,3}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(ab){0,3}/ `] = lit`
 (0) -> (1) : a
     -> [2] : ε
 
@@ -348,15 +360,15 @@ module.exports["ENFA >> fromRegex >> /(ab){0,3}/"] = `
 (6) -> (7) : b
 
 (7) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(){100,1000}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(){100,1000}/ `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+|/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+|/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -370,9 +382,9 @@ module.exports["ENFA >> fromRegex >> /a+|/"] = `
 [4] -> none
 
 (5) -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /|a+/"] = `
+module.exports[n`ENFA >> fromRegex >> /|a+/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -386,9 +398,9 @@ module.exports["ENFA >> fromRegex >> /|a+/"] = `
     -> (5) : ε
 
 (5) -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*/ `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -398,9 +410,9 @@ module.exports["ENFA >> fromRegex >> /a*/"] = `
 
 (3) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*?/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*?/ `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -410,9 +422,9 @@ module.exports["ENFA >> fromRegex >> /a*?/"] = `
 
 (3) -> [1] : ε
     -> (2) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a|)+/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a|)+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -426,9 +438,9 @@ module.exports["ENFA >> fromRegex >> /(a|)+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a*)+/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a*)+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -443,9 +455,9 @@ module.exports["ENFA >> fromRegex >> /(a*)+/"] = `
     -> (3) : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a*){4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a*){4}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -479,9 +491,9 @@ module.exports["ENFA >> fromRegex >> /(a*){4}/"] = `
 
 (12) -> (10) : ε
      -> [11] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a+|){4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a+|){4}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -531,9 +543,9 @@ module.exports["ENFA >> fromRegex >> /(a+|){4}/"] = `
 [19] -> none
 
 (20) -> [19] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a+)+/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a+)+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -547,9 +559,9 @@ module.exports["ENFA >> fromRegex >> /(a+)+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a+|){0,4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a+|){0,4}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
     -> [3] : ε
@@ -605,9 +617,9 @@ module.exports["ENFA >> fromRegex >> /(a+|){0,4}/"] = `
 (20) -> [3] : ε
 
 (21) -> (20) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a+){4}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a+){4}/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -637,9 +649,9 @@ module.exports["ENFA >> fromRegex >> /(a+){4}/"] = `
      -> [12] : ε
 
 [12] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a*){4,}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a*){4,}/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -678,9 +690,9 @@ module.exports["ENFA >> fromRegex >> /(a*){4,}/"] = `
      -> (12) : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /((a*)+)?/"] = `
+module.exports[n`ENFA >> fromRegex >> /((a*)+)?/ `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -698,9 +710,9 @@ module.exports["ENFA >> fromRegex >> /((a*)+)?/"] = `
     -> (4) : ε
 
 (6) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a|b)?c/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a|b)?c/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : ε
@@ -714,9 +726,9 @@ module.exports["ENFA >> fromRegex >> /(a|b)?c/"] = `
 (4) -> (3) : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a+|b+)*/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a+|b+)*/ `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -741,21 +753,21 @@ module.exports["ENFA >> fromRegex >> /(a+|b+)*/"] = `
 
 (9) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /()*/"] = `
+module.exports[n`ENFA >> fromRegex >> /()*/ `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /([^\\s\\S])*/"] = `
+module.exports[n`ENFA >> fromRegex >> /([^\s\S])*/ `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a*|b*/"] = `
+module.exports[n`ENFA >> fromRegex >> /a*|b*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
     -> (3) : ε
@@ -776,9 +788,9 @@ module.exports["ENFA >> fromRegex >> /a*|b*/"] = `
 
 (7) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+|b+|c+/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+|b+|c+/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
     -> (3) : ε
@@ -805,9 +817,9 @@ module.exports["ENFA >> fromRegex >> /a+|b+|c+/"] = `
 (9) -> [10] : ε
 
 [10] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(a*|b*)+/"] = `
+module.exports[n`ENFA >> fromRegex >> /(a*|b*)+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -833,41 +845,41 @@ module.exports["ENFA >> fromRegex >> /(a*|b*)+/"] = `
     -> (5) : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /[^\\s\\S]/"] = `
+module.exports[n`ENFA >> fromRegex >> /[^\s\S]/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /ab[^\\s\\S]ba/"] = `
+module.exports[n`ENFA >> fromRegex >> /ab[^\s\S]ba/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /([^\\s\\S]|a|[^\\s\\S]|b[^\\s\\S]b|[^\\s\\S])a/"] = `
+module.exports[n`ENFA >> fromRegex >> /([^\s\S]|a|[^\s\S]|b[^\s\S]b|[^\s\S])a/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /[^\\s\\S]+/"] = `
+module.exports[n`ENFA >> fromRegex >> /[^\s\S]+/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /[^\\s\\S]*/"] = `
+module.exports[n`ENFA >> fromRegex >> /[^\s\S]*/ `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /[^\\s\\S]?/"] = `
+module.exports[n`ENFA >> fromRegex >> /[^\s\S]?/ `] = lit`
 (0) -> [1] : ε
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+|aaab/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+|aaab/ `] = lit`
 (0) -> (1) : ε
     -> (2) : a
 
@@ -887,9 +899,9 @@ module.exports["ENFA >> fromRegex >> /a+|aaab/"] = `
 [7] -> none
 
 (8) -> [7] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a+|a*aa*/"] = `
+module.exports[n`ENFA >> fromRegex >> /a+|a*aa*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
     -> (3) : ε
@@ -919,9 +931,9 @@ module.exports["ENFA >> fromRegex >> /a+|a*aa*/"] = `
 
 (11) -> (8) : ε
      -> (9) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /(?:a+){2,}/"] = `
+module.exports[n`ENFA >> fromRegex >> /(?:a+){2,}/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -942,9 +954,9 @@ module.exports["ENFA >> fromRegex >> /(?:a+){2,}/"] = `
     -> [8] : ε
 
 [8] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /abc|ab|abd|abcd/"] = `
+module.exports[n`ENFA >> fromRegex >> /abc|ab|abd|abcd/ `] = lit`
 (0) -> (1) : a
     -> (2) : a
     -> (3) : a
@@ -975,9 +987,9 @@ module.exports["ENFA >> fromRegex >> /abc|ab|abd|abcd/"] = `
 (12) -> (13) : d
 
 (13) -> [10] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /abc?|abd|abcd/"] = `
+module.exports[n`ENFA >> fromRegex >> /abc?|abd|abcd/ `] = lit`
 (0) -> (1) : a
     -> (2) : a
     -> (3) : a
@@ -1006,9 +1018,9 @@ module.exports["ENFA >> fromRegex >> /abc?|abd|abcd/"] = `
 [11] -> none
 
 (12) -> [11] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /food|fool|foot/"] = `
+module.exports[n`ENFA >> fromRegex >> /food|fool|foot/ `] = lit`
 (0) -> (1) : f
     -> (2) : f
     -> (3) : f
@@ -1038,9 +1050,9 @@ module.exports["ENFA >> fromRegex >> /food|fool|foot/"] = `
 (12) -> [13] : ε
 
 [13] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /fo(od|ol|ot)/"] = `
+module.exports[n`ENFA >> fromRegex >> /fo(od|ol|ot)/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -1062,9 +1074,9 @@ module.exports["ENFA >> fromRegex >> /fo(od|ol|ot)/"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /bet|get|pet|set/"] = `
+module.exports[n`ENFA >> fromRegex >> /bet|get|pet|set/ `] = lit`
 (0) -> (1) : b
     -> (2) : g
     -> (3) : p
@@ -1095,9 +1107,9 @@ module.exports["ENFA >> fromRegex >> /bet|get|pet|set/"] = `
 (12) -> [13] : ε
 
 [13] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /bet|bat|bit/"] = `
+module.exports[n`ENFA >> fromRegex >> /bet|bat|bit/ `] = lit`
 (0) -> (1) : b
     -> (2) : b
     -> (3) : b
@@ -1121,9 +1133,9 @@ module.exports["ENFA >> fromRegex >> /bet|bat|bit/"] = `
 (9) -> [10] : ε
 
 [10] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /a(?:bc)?|dbc/"] = `
+module.exports[n`ENFA >> fromRegex >> /a(?:bc)?|dbc/ `] = lit`
 (0) -> (1) : a
     -> (2) : d
 
@@ -1143,9 +1155,9 @@ module.exports["ENFA >> fromRegex >> /a(?:bc)?|dbc/"] = `
 [7] -> none
 
 (8) -> [7] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?/i"] = `
+module.exports[n`ENFA >> fromRegex >> /\d+(?:\.\d+)?(?:e[+-]?\d+)?/i `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : 0-9
@@ -1183,9 +1195,9 @@ module.exports["ENFA >> fromRegex >> /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?/i"] = `
      -> (15) : ε
 
 (15) -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\\/=?/"] = `
+module.exports[n`ENFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\/=?/ `] = lit`
 (0) -> (1) : '<'
     -> (2) : '>'
     -> (3) : '='
@@ -1225,9 +1237,9 @@ module.exports["ENFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\\/=?/"] = `
 (14) -> [15] : ε
 
 [15] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /\\{[^\\r\\n}:]+\\}/"] = `
+module.exports[n`ENFA >> fromRegex >> /\{[^\r\n}:]+\}/ `] = lit`
 (0) -> (1) : '{'
 
 (1) -> (2) : ε
@@ -1240,9 +1252,9 @@ module.exports["ENFA >> fromRegex >> /\\{[^\\r\\n}:]+\\}/"] = `
 (4) -> [5] : '}'
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /'(?:%.|[^%'\\r\\n])+'/"] = `
+module.exports[n`ENFA >> fromRegex >> /'(?:%.|[^%'\r\n])+'/ `] = lit`
 (0) -> (1) : '''
 
 (1) -> (2) : ε
@@ -1262,9 +1274,9 @@ module.exports["ENFA >> fromRegex >> /'(?:%.|[^%'\\r\\n])+'/"] = `
 (7) -> [8] : '''
 
 [8] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /&[bchou][a-z\\d]+/i"] = `
+module.exports[n`ENFA >> fromRegex >> /&[bchou][a-z\d]+/i `] = lit`
 (0) -> (1) : '&'
 
 (1) -> (2) : B C H O U b c h o u
@@ -1277,9 +1289,9 @@ module.exports["ENFA >> fromRegex >> /&[bchou][a-z\\d]+/i"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
+module.exports[n`ENFA >> fromRegex >> /"(?:[^\\"]|\\.)*"|'[^']*'/ `] = lit`
 (0) -> (1) : '"'
     -> (2) : '''
 
@@ -1289,8 +1301,8 @@ module.exports["ENFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
 (2) -> (5) : ε
     -> (6) : ε
 
-(3) -> (7) : not '"' '\\'
-    -> (8) : '\\'
+(3) -> (7) : not '"' '\'
+    -> (8) : '\'
 
 (4) -> (9) : '"'
 
@@ -1315,9 +1327,9 @@ module.exports["ENFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
 (13) -> (12) : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo$|bar/"] = `
+module.exports[n`ENFA >> fromRegex options >> {"assertions":"disable"}: /^foo$|bar/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -1327,9 +1339,9 @@ module.exports["ENFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$|bar/"] = `
+module.exports[n`ENFA >> fromRegex options >> {"assertions":"ignore"}: /^foo$|bar/ `] = lit`
 (0) -> (1) : ε
     -> (2) : b
 
@@ -1350,9 +1362,9 @@ module.exports["ENFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$
 [8] -> none
 
 (9) -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /()/ (left)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /()/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1365,9 +1377,9 @@ module.exports["ENFA >> union >> /()/ ∪ /()/ (left)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /()/ (right)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /()/ (right) `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -1376,9 +1388,9 @@ module.exports["ENFA >> union >> /()/ ∪ /()/ (right)"] = `
 (2) -> (3) : ε
 
 (3) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b/ (left)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1391,9 +1403,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b/ (left)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b/ (right)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b/ (right) `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -1402,9 +1414,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b/ (right)"] = `
 (2) -> (3) : b
 
 (3) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b?/ (left)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b?/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1420,9 +1432,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b?/ (left)"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b?/ (right)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b?/ (right) `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -1434,9 +1446,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b?/ (right)"] = `
 (3) -> (4) : ε
 
 (4) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b*/ (left)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1455,9 +1467,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b*/ (left)"] = `
     -> (4) : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b*/ (right)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b*/ (right) `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -1472,9 +1484,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b*/ (right)"] = `
 
 (5) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b+/ (left)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b+/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1492,9 +1504,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b+/ (left)"] = `
 [6] -> none
 
 (7) -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /()/ ∪ /b+/ (right)"] = `
+module.exports[n`ENFA >> union >> /()/ ∪ /b+/ (right) `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -1508,9 +1520,9 @@ module.exports["ENFA >> union >> /()/ ∪ /b+/ (right)"] = `
     -> (5) : ε
 
 (5) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /()/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /()/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1523,9 +1535,9 @@ module.exports["ENFA >> union >> /a/ ∪ /()/ (left)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /()/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /()/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -1534,9 +1546,9 @@ module.exports["ENFA >> union >> /a/ ∪ /()/ (right)"] = `
 (2) -> (3) : ε
 
 (3) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1549,9 +1561,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b/ (left)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -1560,9 +1572,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b/ (right)"] = `
 (2) -> (3) : b
 
 (3) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b?/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b?/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1578,9 +1590,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b?/ (left)"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b?/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b?/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -1592,9 +1604,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b?/ (right)"] = `
 (3) -> (4) : ε
 
 (4) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1613,9 +1625,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b*/ (left)"] = `
     -> (4) : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b*/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -1630,9 +1642,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b*/ (right)"] = `
 
 (5) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b+/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b+/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1650,9 +1662,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b+/ (left)"] = `
 [6] -> none
 
 (7) -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /b+/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /b+/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -1666,9 +1678,9 @@ module.exports["ENFA >> union >> /a/ ∪ /b+/ (right)"] = `
     -> (5) : ε
 
 (5) -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /()/ (left)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /()/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1684,9 +1696,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /()/ (left)"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /()/ (right)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /()/ (right) `] = lit`
 (0) -> (1) : a
     -> [2] : ε
     -> (3) : ε
@@ -1698,9 +1710,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /()/ (right)"] = `
 (3) -> (4) : ε
 
 (4) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b/ (left)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1716,9 +1728,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b/ (left)"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b/ (right)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b/ (right) `] = lit`
 (0) -> (1) : a
     -> [2] : ε
     -> (3) : ε
@@ -1730,9 +1742,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b/ (right)"] = `
 (3) -> (4) : b
 
 (4) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b?/ (left)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b?/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1751,9 +1763,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b?/ (left)"] = `
 (6) -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b?/ (right)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b?/ (right) `] = lit`
 (0) -> (1) : a
     -> [2] : ε
     -> (3) : ε
@@ -1768,9 +1780,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b?/ (right)"] = `
 (4) -> (5) : ε
 
 (5) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1792,9 +1804,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b*/ (left)"] = `
     -> (4) : ε
 
 [8] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b*/ (right) `] = lit`
 (0) -> (1) : a
     -> [2] : ε
     -> (3) : ε
@@ -1812,9 +1824,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b*/ (right)"] = `
 
 (6) -> (4) : ε
     -> (5) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b+/ (left)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b+/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1835,9 +1847,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b+/ (left)"] = `
 [7] -> none
 
 (8) -> [7] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a?/ ∪ /b+/ (right)"] = `
+module.exports[n`ENFA >> union >> /a?/ ∪ /b+/ (right) `] = lit`
 (0) -> (1) : a
     -> [2] : ε
     -> (3) : ε
@@ -1854,9 +1866,9 @@ module.exports["ENFA >> union >> /a?/ ∪ /b+/ (right)"] = `
     -> (6) : ε
 
 (6) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /()/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /()/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1875,9 +1887,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /()/ (left)"] = `
 
 (7) -> (4) : ε
     -> (5) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /()/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /()/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -1892,9 +1904,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /()/ (right)"] = `
     -> [2] : ε
 
 (5) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1913,9 +1925,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b/ (left)"] = `
 
 (7) -> (4) : ε
     -> (5) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -1930,9 +1942,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b/ (right)"] = `
     -> [2] : ε
 
 (5) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b?/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b?/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -1954,9 +1966,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b?/ (left)"] = `
 
 (8) -> (5) : ε
     -> (6) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b?/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b?/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -1974,9 +1986,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b?/ (right)"] = `
 (5) -> (6) : ε
 
 (6) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2001,9 +2013,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b*/ (left)"] = `
 
 (9) -> (5) : ε
     -> (6) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b*/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -2024,9 +2036,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b*/ (right)"] = `
 
 (7) -> (5) : ε
     -> (6) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b+/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b+/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2050,9 +2062,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b+/ (left)"] = `
 [8] -> none
 
 (9) -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /b+/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /b+/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -2072,9 +2084,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /b+/ (right)"] = `
     -> (7) : ε
 
 (7) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /()/ (left)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /()/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2092,9 +2104,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /()/ (left)"] = `
     -> (7) : ε
 
 (7) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /()/ (right)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /()/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2108,9 +2120,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /()/ (right)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b/ (left)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2128,9 +2140,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b/ (left)"] = `
     -> (7) : ε
 
 (7) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b/ (right)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2144,9 +2156,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b/ (right)"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b?/ (left)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b?/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2167,9 +2179,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b?/ (left)"] = `
     -> (8) : ε
 
 (8) -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b?/ (right)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b?/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2186,9 +2198,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b?/ (right)"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2212,9 +2224,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b*/ (left)"] = `
     -> (9) : ε
 
 (9) -> [7] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b*/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2234,9 +2246,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b*/ (right)"] = `
 
 (7) -> (4) : ε
     -> (5) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b+/ (left)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b+/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2259,9 +2271,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b+/ (left)"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a+/ ∪ /b+/ (right)"] = `
+module.exports[n`ENFA >> union >> /a+/ ∪ /b+/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2280,9 +2292,9 @@ module.exports["ENFA >> union >> /a+/ ∪ /b+/ (right)"] = `
     -> (7) : ε
 
 (7) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /ab/ ∪ /ba/ (left)"] = `
+module.exports[n`ENFA >> union >> /ab/ ∪ /ba/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2299,9 +2311,9 @@ module.exports["ENFA >> union >> /ab/ ∪ /ba/ (left)"] = `
 (6) -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /ab/ ∪ /ba/ (right)"] = `
+module.exports[n`ENFA >> union >> /ab/ ∪ /ba/ (right) `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -2314,9 +2326,9 @@ module.exports["ENFA >> union >> /ab/ ∪ /ba/ (right)"] = `
 (4) -> (5) : a
 
 (5) -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /foo/ ∪ /bar/ (left)"] = `
+module.exports[n`ENFA >> union >> /foo/ ∪ /bar/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2337,9 +2349,9 @@ module.exports["ENFA >> union >> /foo/ ∪ /bar/ (left)"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /foo/ ∪ /bar/ (right)"] = `
+module.exports[n`ENFA >> union >> /foo/ ∪ /bar/ (right) `] = lit`
 (0) -> (1) : f
     -> (2) : ε
 
@@ -2356,9 +2368,9 @@ module.exports["ENFA >> union >> /foo/ ∪ /bar/ (right)"] = `
 (6) -> (7) : r
 
 (7) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /a*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /a*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2377,9 +2389,9 @@ module.exports["ENFA >> union >> /a/ ∪ /a*/ (left)"] = `
     -> (4) : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a/ ∪ /a*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a/ ∪ /a*/ (right) `] = lit`
 (0) -> [1] : a
     -> (2) : ε
 
@@ -2394,9 +2406,9 @@ module.exports["ENFA >> union >> /a/ ∪ /a*/ (right)"] = `
 
 (5) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /a*b*c*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /a*b*c*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2437,9 +2449,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /a*b*c*/ (left)"] = `
 
 (15) -> (13) : ε
      -> (14) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /a*b*c*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /a*b*c*/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -2476,9 +2488,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /a*b*c*/ (right)"] = `
 
 (13) -> (11) : ε
      -> (12) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (left)"] = `
+module.exports[n`ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2513,9 +2525,9 @@ module.exports["ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (left)"] = `
 (13) -> (12) : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (right)"] = `
+module.exports[n`ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (right) `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -2546,9 +2558,9 @@ module.exports["ENFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ (right)"] = `
 (11) -> (12) : ε
 
 (12) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /ba/ ∪ /ab/ (left)"] = `
+module.exports[n`ENFA >> union >> /ba/ ∪ /ab/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2565,9 +2577,9 @@ module.exports["ENFA >> union >> /ba/ ∪ /ab/ (left)"] = `
 (6) -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /ba/ ∪ /ab/ (right)"] = `
+module.exports[n`ENFA >> union >> /ba/ ∪ /ab/ (right) `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -2580,9 +2592,9 @@ module.exports["ENFA >> union >> /ba/ ∪ /ab/ (right)"] = `
 (4) -> (5) : b
 
 (5) -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /bar/ ∪ /foo/ (left)"] = `
+module.exports[n`ENFA >> union >> /bar/ ∪ /foo/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2603,9 +2615,9 @@ module.exports["ENFA >> union >> /bar/ ∪ /foo/ (left)"] = `
 (8) -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /bar/ ∪ /foo/ (right)"] = `
+module.exports[n`ENFA >> union >> /bar/ ∪ /foo/ (right) `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -2622,9 +2634,9 @@ module.exports["ENFA >> union >> /bar/ ∪ /foo/ (right)"] = `
 (6) -> (7) : o
 
 (7) -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /a/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /a/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2643,9 +2655,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /a/ (left)"] = `
 
 (7) -> (4) : ε
     -> (5) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*/ ∪ /a/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*/ ∪ /a/ (right) `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
     -> (3) : ε
@@ -2660,9 +2672,9 @@ module.exports["ENFA >> union >> /a*/ ∪ /a/ (right)"] = `
     -> [2] : ε
 
 (5) -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*b*c*/ ∪ /a*/ (left)"] = `
+module.exports[n`ENFA >> union >> /a*b*c*/ ∪ /a*/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2703,9 +2715,9 @@ module.exports["ENFA >> union >> /a*b*c*/ ∪ /a*/ (left)"] = `
 
 (15) -> (13) : ε
      -> (14) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a*b*c*/ ∪ /a*/ (right)"] = `
+module.exports[n`ENFA >> union >> /a*b*c*/ ∪ /a*/ (right) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
     -> (3) : ε
@@ -2742,9 +2754,9 @@ module.exports["ENFA >> union >> /a*b*c*/ ∪ /a*/ (right)"] = `
 
 (13) -> (10) : ε
      -> [11] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (left)"] = `
+module.exports[n`ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (left) `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -2779,9 +2791,9 @@ module.exports["ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (left)"] = `
 (13) -> [14] : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (right)"] = `
+module.exports[n`ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (right) `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -2812,9 +2824,9 @@ module.exports["ENFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ (right)"] = `
 (11) -> [7] : ε
 
 (12) -> (11) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /()/ * /()/"] = `
+module.exports[n`ENFA >> append >> /()/ * /()/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -2822,9 +2834,9 @@ module.exports["ENFA >> append >> /()/ * /()/"] = `
 (2) -> [3] : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /()/ * /b/"] = `
+module.exports[n`ENFA >> append >> /()/ * /b/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -2832,9 +2844,9 @@ module.exports["ENFA >> append >> /()/ * /b/"] = `
 (2) -> [3] : b
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /()/ * /b?/"] = `
+module.exports[n`ENFA >> append >> /()/ * /b?/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -2845,9 +2857,9 @@ module.exports["ENFA >> append >> /()/ * /b?/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /()/ * /b*/"] = `
+module.exports[n`ENFA >> append >> /()/ * /b*/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -2861,9 +2873,9 @@ module.exports["ENFA >> append >> /()/ * /b*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /()/ * /b+/"] = `
+module.exports[n`ENFA >> append >> /()/ * /b+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -2876,9 +2888,9 @@ module.exports["ENFA >> append >> /()/ * /b+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /()/"] = `
+module.exports[n`ENFA >> append >> /a/ * /()/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -2886,9 +2898,9 @@ module.exports["ENFA >> append >> /a/ * /()/"] = `
 (2) -> [3] : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /b/"] = `
+module.exports[n`ENFA >> append >> /a/ * /b/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -2896,9 +2908,9 @@ module.exports["ENFA >> append >> /a/ * /b/"] = `
 (2) -> [3] : b
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /b?/"] = `
+module.exports[n`ENFA >> append >> /a/ * /b?/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -2909,9 +2921,9 @@ module.exports["ENFA >> append >> /a/ * /b?/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /b*/"] = `
+module.exports[n`ENFA >> append >> /a/ * /b*/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -2925,9 +2937,9 @@ module.exports["ENFA >> append >> /a/ * /b*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /b+/"] = `
+module.exports[n`ENFA >> append >> /a/ * /b+/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -2940,9 +2952,9 @@ module.exports["ENFA >> append >> /a/ * /b+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a?/ * /()/"] = `
+module.exports[n`ENFA >> append >> /a?/ * /()/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -2953,9 +2965,9 @@ module.exports["ENFA >> append >> /a?/ * /()/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a?/ * /b/"] = `
+module.exports[n`ENFA >> append >> /a?/ * /b/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -2966,9 +2978,9 @@ module.exports["ENFA >> append >> /a?/ * /b/"] = `
 (3) -> [4] : b
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a?/ * /b?/"] = `
+module.exports[n`ENFA >> append >> /a?/ * /b?/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -2982,9 +2994,9 @@ module.exports["ENFA >> append >> /a?/ * /b?/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a?/ * /b*/"] = `
+module.exports[n`ENFA >> append >> /a?/ * /b*/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -3001,9 +3013,9 @@ module.exports["ENFA >> append >> /a?/ * /b*/"] = `
 
 (6) -> (4) : ε
     -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a?/ * /b+/"] = `
+module.exports[n`ENFA >> append >> /a?/ * /b+/ `] = lit`
 (0) -> (1) : a
     -> (2) : ε
 
@@ -3019,9 +3031,9 @@ module.exports["ENFA >> append >> /a?/ * /b+/"] = `
     -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /()/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /()/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3035,9 +3047,9 @@ module.exports["ENFA >> append >> /a*/ * /()/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /b/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /b/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3051,9 +3063,9 @@ module.exports["ENFA >> append >> /a*/ * /b/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /b?/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /b?/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3070,9 +3082,9 @@ module.exports["ENFA >> append >> /a*/ * /b?/"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /b*/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /b*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3092,9 +3104,9 @@ module.exports["ENFA >> append >> /a*/ * /b*/"] = `
 
 (7) -> (5) : ε
     -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /b+/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /b+/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3113,9 +3125,9 @@ module.exports["ENFA >> append >> /a*/ * /b+/"] = `
     -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a+/ * /()/"] = `
+module.exports[n`ENFA >> append >> /a+/ * /()/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -3128,9 +3140,9 @@ module.exports["ENFA >> append >> /a+/ * /()/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a+/ * /b/"] = `
+module.exports[n`ENFA >> append >> /a+/ * /b/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -3143,9 +3155,9 @@ module.exports["ENFA >> append >> /a+/ * /b/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a+/ * /b?/"] = `
+module.exports[n`ENFA >> append >> /a+/ * /b?/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -3161,9 +3173,9 @@ module.exports["ENFA >> append >> /a+/ * /b?/"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a+/ * /b*/"] = `
+module.exports[n`ENFA >> append >> /a+/ * /b*/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -3182,9 +3194,9 @@ module.exports["ENFA >> append >> /a+/ * /b*/"] = `
 
 (7) -> (5) : ε
     -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a+/ * /b+/"] = `
+module.exports[n`ENFA >> append >> /a+/ * /b+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -3202,9 +3214,9 @@ module.exports["ENFA >> append >> /a+/ * /b+/"] = `
     -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /ab/ * /ba/"] = `
+module.exports[n`ENFA >> append >> /ab/ * /ba/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -3216,9 +3228,9 @@ module.exports["ENFA >> append >> /ab/ * /ba/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /foo/ * /bar/"] = `
+module.exports[n`ENFA >> append >> /foo/ * /bar/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -3234,9 +3246,9 @@ module.exports["ENFA >> append >> /foo/ * /bar/"] = `
 (6) -> [7] : r
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a/ * /a*/"] = `
+module.exports[n`ENFA >> append >> /a/ * /a*/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -3250,9 +3262,9 @@ module.exports["ENFA >> append >> /a/ * /a*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /a*b*c*/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /a*b*c*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3288,9 +3300,9 @@ module.exports["ENFA >> append >> /a*/ * /a*b*c*/"] = `
 
 (13) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
+module.exports[n`ENFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -3320,9 +3332,9 @@ module.exports["ENFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
 (11) -> [12] : ε
 
 [12] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /ba/ * /ab/"] = `
+module.exports[n`ENFA >> append >> /ba/ * /ab/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -3334,9 +3346,9 @@ module.exports["ENFA >> append >> /ba/ * /ab/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /bar/ * /foo/"] = `
+module.exports[n`ENFA >> append >> /bar/ * /foo/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -3352,9 +3364,9 @@ module.exports["ENFA >> append >> /bar/ * /foo/"] = `
 (6) -> [7] : o
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*/ * /a/"] = `
+module.exports[n`ENFA >> append >> /a*/ * /a/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3368,9 +3380,9 @@ module.exports["ENFA >> append >> /a*/ * /a/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a*b*c*/ * /a*/"] = `
+module.exports[n`ENFA >> append >> /a*b*c*/ * /a*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3406,9 +3418,9 @@ module.exports["ENFA >> append >> /a*b*c*/ * /a*/"] = `
 
 (13) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
+module.exports[n`ENFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -3438,9 +3450,9 @@ module.exports["ENFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
 [11] -> none
 
 (12) -> [11] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /()/ * /()/"] = `
+module.exports[n`ENFA >> prepend >> /()/ * /()/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -3448,9 +3460,9 @@ module.exports["ENFA >> prepend >> /()/ * /()/"] = `
 (2) -> [3] : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b/ * /()/"] = `
+module.exports[n`ENFA >> prepend >> /b/ * /()/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : ε
@@ -3458,9 +3470,9 @@ module.exports["ENFA >> prepend >> /b/ * /()/"] = `
 (2) -> [3] : ε
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b?/ * /()/"] = `
+module.exports[n`ENFA >> prepend >> /b?/ * /()/ `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -3471,9 +3483,9 @@ module.exports["ENFA >> prepend >> /b?/ * /()/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b*/ * /()/"] = `
+module.exports[n`ENFA >> prepend >> /b*/ * /()/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3487,9 +3499,9 @@ module.exports["ENFA >> prepend >> /b*/ * /()/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b+/ * /()/"] = `
+module.exports[n`ENFA >> prepend >> /b+/ * /()/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : b
@@ -3502,9 +3514,9 @@ module.exports["ENFA >> prepend >> /b+/ * /()/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /()/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /()/ * /a/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -3512,9 +3524,9 @@ module.exports["ENFA >> prepend >> /()/ * /a/"] = `
 (2) -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /b/ * /a/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : ε
@@ -3522,9 +3534,9 @@ module.exports["ENFA >> prepend >> /b/ * /a/"] = `
 (2) -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b?/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /b?/ * /a/ `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -3535,9 +3547,9 @@ module.exports["ENFA >> prepend >> /b?/ * /a/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b*/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /b*/ * /a/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3551,9 +3563,9 @@ module.exports["ENFA >> prepend >> /b*/ * /a/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b+/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /b+/ * /a/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : b
@@ -3566,9 +3578,9 @@ module.exports["ENFA >> prepend >> /b+/ * /a/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /()/ * /a?/"] = `
+module.exports[n`ENFA >> prepend >> /()/ * /a?/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -3579,9 +3591,9 @@ module.exports["ENFA >> prepend >> /()/ * /a?/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b/ * /a?/"] = `
+module.exports[n`ENFA >> prepend >> /b/ * /a?/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : ε
@@ -3592,9 +3604,9 @@ module.exports["ENFA >> prepend >> /b/ * /a?/"] = `
 (3) -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b?/ * /a?/"] = `
+module.exports[n`ENFA >> prepend >> /b?/ * /a?/ `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -3608,9 +3620,9 @@ module.exports["ENFA >> prepend >> /b?/ * /a?/"] = `
 (4) -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b*/ * /a?/"] = `
+module.exports[n`ENFA >> prepend >> /b*/ * /a?/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3627,9 +3639,9 @@ module.exports["ENFA >> prepend >> /b*/ * /a?/"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b+/ * /a?/"] = `
+module.exports[n`ENFA >> prepend >> /b+/ * /a?/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : b
@@ -3645,9 +3657,9 @@ module.exports["ENFA >> prepend >> /b+/ * /a?/"] = `
 (5) -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /()/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /()/ * /a*/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -3661,9 +3673,9 @@ module.exports["ENFA >> prepend >> /()/ * /a*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /b/ * /a*/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : ε
@@ -3677,9 +3689,9 @@ module.exports["ENFA >> prepend >> /b/ * /a*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b?/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /b?/ * /a*/ `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -3696,9 +3708,9 @@ module.exports["ENFA >> prepend >> /b?/ * /a*/"] = `
 
 (6) -> (4) : ε
     -> [5] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b*/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /b*/ * /a*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3718,9 +3730,9 @@ module.exports["ENFA >> prepend >> /b*/ * /a*/"] = `
 
 (7) -> (5) : ε
     -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b+/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /b+/ * /a*/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : b
@@ -3739,9 +3751,9 @@ module.exports["ENFA >> prepend >> /b+/ * /a*/"] = `
 
 (7) -> (5) : ε
     -> [6] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /()/ * /a+/"] = `
+module.exports[n`ENFA >> prepend >> /()/ * /a+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : ε
@@ -3754,9 +3766,9 @@ module.exports["ENFA >> prepend >> /()/ * /a+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b/ * /a+/"] = `
+module.exports[n`ENFA >> prepend >> /b/ * /a+/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : ε
@@ -3769,9 +3781,9 @@ module.exports["ENFA >> prepend >> /b/ * /a+/"] = `
     -> [5] : ε
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b?/ * /a+/"] = `
+module.exports[n`ENFA >> prepend >> /b?/ * /a+/ `] = lit`
 (0) -> (1) : b
     -> (2) : ε
 
@@ -3787,9 +3799,9 @@ module.exports["ENFA >> prepend >> /b?/ * /a+/"] = `
     -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b*/ * /a+/"] = `
+module.exports[n`ENFA >> prepend >> /b*/ * /a+/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3808,9 +3820,9 @@ module.exports["ENFA >> prepend >> /b*/ * /a+/"] = `
     -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /b+/ * /a+/"] = `
+module.exports[n`ENFA >> prepend >> /b+/ * /a+/ `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : b
@@ -3828,9 +3840,9 @@ module.exports["ENFA >> prepend >> /b+/ * /a+/"] = `
     -> [7] : ε
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /ba/ * /ab/"] = `
+module.exports[n`ENFA >> prepend >> /ba/ * /ab/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -3842,9 +3854,9 @@ module.exports["ENFA >> prepend >> /ba/ * /ab/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /bar/ * /foo/"] = `
+module.exports[n`ENFA >> prepend >> /bar/ * /foo/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -3860,9 +3872,9 @@ module.exports["ENFA >> prepend >> /bar/ * /foo/"] = `
 (6) -> [7] : o
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a*/ * /a/"] = `
+module.exports[n`ENFA >> prepend >> /a*/ * /a/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3876,9 +3888,9 @@ module.exports["ENFA >> prepend >> /a*/ * /a/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a*b*c*/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /a*b*c*/ * /a*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -3914,9 +3926,9 @@ module.exports["ENFA >> prepend >> /a*b*c*/ * /a*/"] = `
 
 (13) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
+module.exports[n`ENFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -3946,9 +3958,9 @@ module.exports["ENFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
 [11] -> none
 
 (12) -> [11] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /ab/ * /ba/"] = `
+module.exports[n`ENFA >> prepend >> /ab/ * /ba/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -3960,9 +3972,9 @@ module.exports["ENFA >> prepend >> /ab/ * /ba/"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /foo/ * /bar/"] = `
+module.exports[n`ENFA >> prepend >> /foo/ * /bar/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -3978,9 +3990,9 @@ module.exports["ENFA >> prepend >> /foo/ * /bar/"] = `
 (6) -> [7] : r
 
 [7] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a/ * /a*/"] = `
+module.exports[n`ENFA >> prepend >> /a/ * /a*/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -3994,9 +4006,9 @@ module.exports["ENFA >> prepend >> /a/ * /a*/"] = `
 
 (5) -> (3) : ε
     -> [4] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a*/ * /a*b*c*/"] = `
+module.exports[n`ENFA >> prepend >> /a*/ * /a*b*c*/ `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -4032,9 +4044,9 @@ module.exports["ENFA >> prepend >> /a*/ * /a*b*c*/"] = `
 
 (13) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
+module.exports[n`ENFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -4064,15 +4076,15 @@ module.exports["ENFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
 (11) -> [12] : ε
 
 [12] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{1,1}"] = `
+module.exports[n`ENFA >> quantify >> /a/{1,1} `] = lit`
 (0) -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a*/{1,1}"] = `
+module.exports[n`ENFA >> quantify >> /a*/{1,1} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4082,15 +4094,15 @@ module.exports["ENFA >> quantify >> /a*/{1,1}"] = `
 
 (3) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{1,1}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{1,1}? `] = lit`
 (0) -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a*/{1,1}?"] = `
+module.exports[n`ENFA >> quantify >> /a*/{1,1}? `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4100,18 +4112,18 @@ module.exports["ENFA >> quantify >> /a*/{1,1}?"] = `
 
 (3) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,1}"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,1} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
 (1) -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,1}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,1} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4126,9 +4138,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,1}"] = `
 
 (5) -> (3) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,1}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,1} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4142,18 +4154,18 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,1}"] = `
 
 (5) -> (3) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,1}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,1}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
 [1] -> none
 
 (2) -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,1}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,1}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4168,9 +4180,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,1}?"] = `
 
 (5) -> (3) : ε
     -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,1}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,1}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4184,9 +4196,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,1}?"] = `
 
 (5) -> (3) : ε
     -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{3,3}"] = `
+module.exports[n`ENFA >> quantify >> /a/{3,3} `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -4198,9 +4210,9 @@ module.exports["ENFA >> quantify >> /a/{3,3}"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{3,3}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{3,3} `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -4236,9 +4248,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{3,3}"] = `
 
 (14) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{3,3}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{3,3} `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -4271,9 +4283,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{3,3}"] = `
      -> [14] : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{3,3}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{3,3}? `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -4285,9 +4297,9 @@ module.exports["ENFA >> quantify >> /a/{3,3}?"] = `
 (4) -> [5] : a
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{3,3}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{3,3}? `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -4323,9 +4335,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{3,3}?"] = `
 
 (14) -> (11) : ε
      -> [12] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{3,3}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{3,3}? `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -4358,9 +4370,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{3,3}?"] = `
      -> [14] : ε
 
 [14] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,3}"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,3} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4377,9 +4389,9 @@ module.exports["ENFA >> quantify >> /a/{0,3}"] = `
     -> [2] : ε
 
 (6) -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,3}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,3} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4420,9 +4432,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,3}"] = `
 
 (15) -> (13) : ε
      -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,3}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,3} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4460,9 +4472,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,3}"] = `
 
 (15) -> (13) : ε
      -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,3}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,3}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4479,9 +4491,9 @@ module.exports["ENFA >> quantify >> /a/{0,3}?"] = `
     -> (6) : ε
 
 (6) -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,3}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,3}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4522,9 +4534,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,3}?"] = `
 
 (15) -> (13) : ε
      -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,3}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,3}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4562,9 +4574,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,3}?"] = `
 
 (15) -> (13) : ε
      -> [1] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,}"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4574,9 +4586,9 @@ module.exports["ENFA >> quantify >> /a/{0,}"] = `
 
 (3) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4594,9 +4606,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,}"] = `
 
 (6) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,} `] = lit`
 (0) -> (1) : ε
     -> [2] : ε
 
@@ -4613,9 +4625,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,}"] = `
 
 (6) -> (1) : ε
     -> [2] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{0,}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{0,}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4625,9 +4637,9 @@ module.exports["ENFA >> quantify >> /a/{0,}?"] = `
 
 (3) -> [1] : ε
     -> (2) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{0,}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{0,}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4645,9 +4657,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{0,}?"] = `
 
 (6) -> (3) : ε
     -> (4) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{0,}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{0,}? `] = lit`
 (0) -> [1] : ε
     -> (2) : ε
 
@@ -4664,9 +4676,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{0,}?"] = `
 
 (6) -> [1] : ε
     -> (2) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{3,}"] = `
+module.exports[n`ENFA >> quantify >> /a/{3,} `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -4681,9 +4693,9 @@ module.exports["ENFA >> quantify >> /a/{3,}"] = `
     -> [6] : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{3,}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{3,} `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -4722,9 +4734,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{3,}"] = `
 
 (15) -> (11) : ε
      -> (12) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{3,}"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{3,} `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -4760,9 +4772,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{3,}"] = `
      -> [15] : ε
 
 [15] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /a/{3,}?"] = `
+module.exports[n`ENFA >> quantify >> /a/{3,}? `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : ε
@@ -4777,9 +4789,9 @@ module.exports["ENFA >> quantify >> /a/{3,}?"] = `
     -> (4) : ε
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)*/{3,}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)*/{3,}? `] = lit`
 (0) -> (1) : ε
     -> (2) : ε
 
@@ -4818,9 +4830,9 @@ module.exports["ENFA >> quantify >> /(ab)*/{3,}?"] = `
 
 (15) -> (11) : ε
      -> (12) : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> quantify >> /(ab)+/{3,}?"] = `
+module.exports[n`ENFA >> quantify >> /(ab)+/{3,}? `] = lit`
 (0) -> (1) : ε
 
 (1) -> (2) : a
@@ -4856,9 +4868,9 @@ module.exports["ENFA >> quantify >> /(ab)+/{3,}?"] = `
      -> (10) : ε
 
 [15] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a*b*c+/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a*b*c+/ `] = lit`
 Before: /a*b*c+/
 (0) -> (1) : ε
     -> (2) : ε
@@ -4911,9 +4923,9 @@ After: /a*b*c+/
     -> [9] : ε
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a?b?/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a?b?/ `] = lit`
 Before: /a?b?/
 (0) -> (1) : a
     -> (2) : ε
@@ -4940,9 +4952,9 @@ After: /a|a?b/
     -> [4] : ε
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a??b?/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a??b?/ `] = lit`
 Before: /a??b?/
 (0) -> (1) : ε
     -> (2) : a
@@ -4969,9 +4981,9 @@ After: /a|a?b/
 
 (4) -> (1) : b
     -> [3] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a??b??/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a??b??/ `] = lit`
 Before: /a??b??/
 (0) -> (1) : ε
     -> (2) : a
@@ -4998,9 +5010,9 @@ After: /a|a?b/
 
 (4) -> [3] : ε
     -> (1) : b
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a?b??/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a?b??/ `] = lit`
 Before: /a?b??/
 (0) -> (1) : a
     -> (2) : ε
@@ -5027,9 +5039,9 @@ After: /a|a?b/
     -> (2) : b
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /a*b*c*/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /a*b*c*/ `] = lit`
 Before: /a*b*c*/
 (0) -> (1) : ε
     -> (2) : ε
@@ -5085,9 +5097,9 @@ After: /a+|a*b+|(?:a*(?:a|b+))?c+/
 (8) -> (3) : c
 
 [9] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /(a*b*c*)*/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /(a*b*c*)*/ `] = lit`
 Before: /(a*b*c*)*/
 (0) -> (1) : ε
     -> [2] : ε
@@ -5155,9 +5167,9 @@ After: /(?:c|(?:b|a+)b*)c*(?:a*b*c*)*/
      -> (5) : ε
 
 [11] -> none
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /(a||b)(|c|d)(||f|g)/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /(a||b)(|c|d)(||f|g)/ `] = lit`
 Before: /(a||b)(|c|d)(||f|g)/
 (0) -> (1) : a
     -> (2) : ε
@@ -5231,9 +5243,9 @@ After: /[fg]|(?:c|[ab]c?|[ab]?d)[fg]?/
 (11) -> [8] : ε
 
 (12) -> [8] : ε
-`.slice(1, -1);
+`;
 
-module.exports["ENFA >> withoutEmptyWord >> /((a||b)(|c|d)(||f|g))*/"] = `
+module.exports[n`ENFA >> withoutEmptyWord >> /((a||b)(|c|d)(||f|g))*/ `] = lit`
 Before: /((a||b)(|c|d)(||f|g))*/
 (0) -> (1) : ε
     -> [2] : ε
@@ -5322,4 +5334,4 @@ After: /(?:[fg]|(?:[cd]|[ab][cd]?)[fg]?)(?:[ab]?[cd]?[fg]?)*/
 (14) -> (8) : ε
 
 (15) -> (7) : ε
-`.slice(1, -1);
+`;
