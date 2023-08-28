@@ -16,9 +16,12 @@ describe("Transformers", function () {
 				options: { maxPasses: 1 },
 			},
 
+			/(?=a)\wa/,
 			/(?=aa)\wa/,
-			/(?!aa)\wa/,
+			/(?=aaa)\wa/,
 			/(?!a)aa/,
+			/(?!aa)\wa/,
+			/(?!aaa)\wa/,
 			/a$a/,
 			/a^a/,
 
@@ -29,7 +32,9 @@ describe("Transformers", function () {
 			/(?!foo)bar/i,
 			/(?!food)foo/i,
 			/(?!food)foot/i,
+			/(?!food|foobar)foot/i,
 			/(?!food)foo\w/i,
+			/(?!food|foot)foo\w/i,
 
 			/\(\s*(?!\s)(?:[^()]|\([^()]*\))*?(?=\s*\))/,
 			/\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,
