@@ -13,6 +13,7 @@ import {
 	MatchingDirection,
 	alwaysConsumesCharacters,
 	getFirstCharConsumedBy,
+	invertMatchingDirection,
 	isTriviallyAccepting,
 	isZeroLength,
 	toMatchingDirection,
@@ -602,6 +603,108 @@ function moveAssertionIntoAlternation(
 }
 
 /**
+ * This will transform `(a(?!b))+` => `a((?!b)a)*(?!b)` and
+ * `(a(?!b))*` => `(?:(a(?!b))+)?` => `(?:a((?!b)a)*(?!b))?`.
+ *
+ * Note that if `(?!b)` in `(?!b)a` trivially accepts, then an optimization kicks in and we get
+ * `(a(?!b))+` => `a+(?!b)` and `(a(?!b))*` => `(?:a+(?!b))?` instead.
+ *
+ * @param elements
+ * @param kind
+ * @param context
+ */
+function moveAssertionOutsideLoop(
+	elements: NoParent<Element>[],
+	kind: Assertion["kind"],
+	context: TransformContext
+): void {
+	const direction = toMatchingDirection(kind);
+
+	for (let i = 0; i < elements.length; i++) {
+		const quant = elements[i];
+		if (
+			quant.type !== "Quantifier" ||
+			quant.alternatives.length !== 1 ||
+			quant.max < 2 ||
+			!alwaysConsumesCharacters(quant.alternatives)
+		) {
+			continue;
+		}
+
+		let assertion: SingleCharacterParent<Assertion> | undefined = undefined;
+
+		// find a fitting assertion
+		const alt = quant.alternatives[0];
+		const inc = incrementFor(invertMatchingDirection(direction));
+		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
+			const element = at(alt.elements, i);
+			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
+				assertion = element;
+				break;
+			}
+			if (!isZeroLength(element)) {
+				break;
+			}
+		}
+
+		if (!assertion) {
+			// we couldn't find a fitting assertion
+			continue;
+		}
+
+		// trivially accepting?
+		let assertionChar = assertion.alternatives[0].elements[0].characters;
+		assertionChar = assertion.negate ? assertionChar.negate() : assertionChar;
+		const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
+		const triviallyAccepting = !firstChar.empty && firstChar.char.isSubsetOf(assertionChar);
+
+		// remove the assertion
+		context.signalMutation();
+		alt.elements.splice(alt.elements.indexOf(assertion), 1);
+
+		let replacement: NoParent<Element>[];
+		if (triviallyAccepting) {
+			// `(a(?!b))+` => `a+(?!b)`
+			// the assertion has already been removed
+			replacement = withDirection(direction, [quant, assertion]);
+		} else {
+			// `(a(?!b))+` => `a((?!b)a)*(?!b)`
+			const prefix = copyNode(alt).elements;
+			const innerAssertion = copyNode(assertion);
+			pushFront(direction, alt.elements, innerAssertion);
+			if (direction === "ltr") {
+				replacement = [...prefix, quant, assertion];
+			} else {
+				replacement = [assertion, quant, ...prefix];
+			}
+		}
+
+		if (quant.min === 0) {
+			// we need to wrap it in an optional group
+			quant.min = 1;
+			replacement = [
+				{
+					type: "Quantifier",
+					min: 0,
+					max: 1,
+					lazy: quant.lazy,
+					alternatives: [
+						{
+							type: "Concatenation",
+							elements: replacement,
+							source: copySource(quant.source),
+						},
+					],
+					source: copySource(quant.source),
+				},
+			];
+		}
+
+		elements.splice(i, 1, ...replacement);
+	}
+}
+
+/**
  * This transformer will apply all trivial assertion (e.g. `/(?!0)\d/` => `/[1-9]/`) and remove all branches in
  * assertions that are guaranteed to reject (e.g. `(?=\d+=|-)\w` => `(?=\d+=)\w`).
  *
@@ -616,6 +719,9 @@ export function applyAssertions(_options?: Readonly<CreationOptions>): Transform
 
 			applySingleCharacterAssertion(elements, "ahead", context);
 			applySingleCharacterAssertion(elements, "behind", context);
+
+			moveAssertionOutsideLoop(elements, "ahead", context);
+			moveAssertionOutsideLoop(elements, "behind", context);
 
 			moveAssertionIntoAlternation(elements, "ahead", context);
 			moveAssertionIntoAlternation(elements, "behind", context);

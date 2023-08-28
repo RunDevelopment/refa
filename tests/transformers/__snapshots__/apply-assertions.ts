@@ -124,6 +124,30 @@ module.exports["Transformers >> apply-assertions >> /a$(?:a|b|)/"] = `
 /a(?:\$)/
 `.slice(1, -1);
 
+module.exports["Transformers >> apply-assertions >> /(a(?!b))+/"] = `
+/a+(?!b)/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(a(?!b))*/"] = `
+/(?:a+(?!b))?/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(a(?!b))*?/"] = `
+/(?:a+?(?!b))??/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(a(?!b)){0,4}/"] = `
+/(?:a{1,4}(?!b))?/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(a(?!b)){1,2}/"] = `
+/a{1,2}(?!b)/
+`.slice(1, -1);
+
+module.exports["Transformers >> apply-assertions >> /(\\w(?=\\d))*/"] = `
+/(?:\\w\\d+(?=\\d))?/
+`.slice(1, -1);
+
 module.exports["Transformers >> apply-assertions >> /(?!\\s)[^]*\\S/"] = `
 /(?:\\S[^]*|)\\S/
 `.slice(1, -1);
@@ -196,22 +220,12 @@ module.exports["Transformers >> apply-assertions >> /(?:\\b[a-z][a-z_\\d]*\\s*::
 Start:               /(?:\\b[a-z][\\d_a-z]*\\s*::\\s*)*\\b[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
 Con applyAssertions: /(?:(?:(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*)*\\b[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
 Con inline:          /(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*\\b[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?:(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con inline:          /(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?<!\\w)[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con inline:          /(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con inline:          /(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con inline:          /(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con inline:          /(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)*(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Con applyAssertions: /(?:(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
-Final:               /(?:(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Con applyAssertions: /(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+)?(?:(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Con inline:          /(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+)?(?<!\\w)[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Con applyAssertions: /(?:(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+){1}(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Con applyAssertions: /(?:(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+){0}(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+)|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Con inline:          /(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+Final:               /(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
 `.slice(1, -1);
 
 module.exports["Transformers >> apply-assertions >> Prism regex snapshot"] = `
@@ -2327,7 +2341,7 @@ TooManyNodesError
 /\\b(?:abstract|as|async|await|become|box|break|const|continue|crate|do|dyn|else|enum|extern|final|fn|for|if|impl|in|let|loop|macro|match|mod|move|mut|override|priv|pub|ref|return|self|Self|static|struct|super|trait|try|type|typeof|union|unsafe|unsized|use|virtual|where|while|yield)\\b/
 /\\b(?:[iu](?:8|16|32|64|128|size)|f(?:32|64)|bool|char|str)\\b/
 /\\w+!/
-/(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?<!\\w)[a-z][\\d_a-z]*\\s*::\\s*)+(?<!\\w)|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::\\s*|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
+/(?:(?<!\\w)(?:[a-z][\\d_a-z]*\\s*::\\s*)+|(?<!\\w))[a-z][\\d_a-z]*\\s*::(?!\\s*<)/
 /(?:^|[^\\\\])\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*)|\\/\\*(?:[^*/]|\\*(?!\\/)|\\/(?!\\*))*\\*\\/)*\\*\\/)*\\*\\/)*\\*\\//
 /\\b(?:crate|mod)\\s+[a-z][\\d_a-z]*/
 /\\b(?:crate|self|super)\\s*::\\s*[a-z][\\d_a-z]*\\b(?:\\s*::(?:\\s*[a-z][\\d_a-z]*\\s*::)*)?/
