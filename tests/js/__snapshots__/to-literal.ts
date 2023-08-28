@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 var unescapeBackslashes = (str: string): string => {
-	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+	return str.replace(/(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g, (m, backslashes: string, c: string) => {
 		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
 	});
 };
@@ -44,11 +44,11 @@ module.exports[n`JS.toLiteral >> Unicode to UTF16 >> /./isu 	({"flags":{"unicode
 /(?:[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\uda00-\udbff])[\udc00-\udfff])/
 `;
 
-module.exports[n`JS.toLiteral >> Unicode to UTF16 >> /\u{1F4A9}/u 	({"flags":{"unicode":false}}) `] = lit`
+module.exports[n`JS.toLiteral >> Unicode to UTF16 >> /\\u{1F4A9}/u 	({"flags":{"unicode":false}}) `] = lit`
 /(?:\ud83d\udca9)/
 `;
 
-module.exports[n`JS.toLiteral >> Unicode to UTF16 >> /[^\u{1F4A9}]/u 	({"flags":{"unicode":false}}) `] = lit`
+module.exports[n`JS.toLiteral >> Unicode to UTF16 >> /[^\\u{1F4A9}]/u 	({"flags":{"unicode":false}}) `] = lit`
 /(?:[^\ud800-\udfff]|[\ud800-\ud83c\ud83e-\udbff][\udc00-\udfff]|\ud83d[\udc00-\udca8\udcaa-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\uda00-\udbff])[\udc00-\udfff])/
 `;
 
@@ -1450,7 +1450,7 @@ module.exports[n`JS.toLiteral >> Prism regexes >> snapshot `] = lit`
 /[&[\]{}]/
 /[]/
 /\\(?:begin|end|ref|cite|label|usepackage|documentclass)(?:\[[^\]]+\])?\{[^}]+(?=\})/
-/\\url\{[^}]+(?=\})/
+/\\\\url\{[^}]+(?=\})/
 /\\(?:part|chapter|section|subsection|frametitle|subsubsection|paragraph|subparagraph|subsubparagraph|subsubsubparagraph)\*?(?:\[[^\]]+\])?\{[^}]+(?=\}(?:\[[^\]]+\])?)/
 /\\(?:[^()\x41-\x5b\]]|[*A-Z]+)/i
 /\$\$(?:\\[^]|[^$\\])+\$\$|\$(?:\\[^]|[^$\\])+\$|\\\([^]*?\\\)|\\\[[^]*?\\\]/

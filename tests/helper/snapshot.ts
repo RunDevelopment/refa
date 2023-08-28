@@ -46,8 +46,9 @@ function getRoot(test: Mocha.Runnable): Mocha.Suite {
 
 const toUpdate = new Map<string, Map<string, string>>();
 
+const escapeRegex = /(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g;
 function escapeBackslashes(value: string): string {
-	return value.replace(/(\\*)(`|\$\{)/g, (m, backslashes: string, c: string) => {
+	return value.replace(escapeRegex, (m, backslashes: string, c: string) => {
 		return backslashes + backslashes + "\\" + c;
 	});
 }
@@ -56,7 +57,7 @@ function createSnapshot(values: Map<string, string>): string {
 	let s = `/* eslint-disable */
 
 var unescapeBackslashes = (str: string): string => {
-	return str.replace(${/(\\*)(`|\$\{|\\$)/g}, (m, backslashes: string, c: string) => {
+	return str.replace(${escapeRegex}, (m, backslashes: string, c: string) => {
 		return "\\\\".repeat(Math.floor(backslashes.length / 2)) + c;
 	});
 };

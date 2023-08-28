@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 var unescapeBackslashes = (str: string): string => {
-	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+	return str.replace(/(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g, (m, backslashes: string, c: string) => {
 		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
 	});
 };
@@ -1362,7 +1362,7 @@ module.exports[n`Transformers >> remove-unnecessary-assertions >> Prism regex sn
 /[&[\]{}]/
 /\\begin\{(?:verbatim|lstlisting)\*?\}[^]*?(?=\\end\{[]Unknown:\\2[]\})/
 /\\(?:begin|end|ref|cite|label|usepackage|documentclass)(?:\[[^\]]+\])?\{[^}]+(?=\})/
-/\\url\{[^}]+(?=\})/
+/\\\\url\{[^}]+(?=\})/
 /\\(?:part|chapter|section|subsection|frametitle|subsubsection|paragraph|subparagraph|subsubparagraph|subsubsubparagraph)\*?(?:\[[^\]]+\])?\{[^}]+(?=\}(?:\[[^\]]+\])?)/
 /\\(?:[^()\x41-\x5b\]]|[*A-Z]+)/i
 /\$\$(?:\\[^]|[^$\\])+\$\$|\$(?:\\[^]|[^$\\])+\$|\\\([^]*?\\\)|\\\[[^]*?\\\]/

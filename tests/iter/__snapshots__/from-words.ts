@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 var unescapeBackslashes = (str: string): string => {
-	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+	return str.replace(/(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g, (m, backslashes: string, c: string) => {
 		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
 	});
 };

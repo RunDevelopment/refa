@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 var unescapeBackslashes = (str: string): string => {
-	return str.replace(/(\\*)(`|\$\{|\\$)/g, (m, backslashes: string, c: string) => {
+	return str.replace(/(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g, (m, backslashes: string, c: string) => {
 		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
 	});
 };
@@ -2364,7 +2364,7 @@ module.exports[n`DFA minimization >> 615: /--.*|\{-(?:[^-{]|-(?!\})|\{(?!-)|\{-(
 MxexZDi9i8VUbNqHHIv7a+N5SjvIx23Svld04+1SQ8g=
 `;
 
-module.exports[n`DFA minimization >> 616: /\b(?:as|assert|else|forall|if|in|let|merge|missing|then|toMap|using|with)\b|\u2... `] = lit`
+module.exports[n`DFA minimization >> 616: /\b(?:as|assert|else|forall|if|in|let|merge|missing|then|toMap|using|with)\b|\\u2... `] = lit`
 bfSvM9ZkBA3VdN4gsYi8MW6gzQdglpGN3bKYOuII478=
 `;
 
@@ -5260,7 +5260,7 @@ module.exports[n`DFA minimization >> 1348: /(\\(?:begin|end|ref|cite|label|usepa
 2Q4Asbot6nGOUNGsrVFNnGUZ+iixVHWEvi78onBixz8=
 `;
 
-module.exports[n`DFA minimization >> 1349: /(\\url\{)[^}]+(?=\})/ `] = lit`
+module.exports[n`DFA minimization >> 1349: /(\\\\url\{)[^}]+(?=\})/ `] = lit`
 oXVoB+AmMSpUmgk6omEVyjDOeCCrZ/+V+FOP6B9pTE0=
 `;
 
