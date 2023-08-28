@@ -85,6 +85,7 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeDeadBranches(_options?: Readonly<CreationOptions>): Transformer {
 	return {
+		name: "removeDeadBranches",
 		onConcatenation,
 
 		onAlternation: onParent,

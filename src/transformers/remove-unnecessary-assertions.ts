@@ -262,6 +262,8 @@ function removeAdjacentAssertions(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
+		name: "removeUnnecessaryAssertions",
+
 		onConcatenation(node, context) {
 			removeTrivialAssertions(node, getTrivialResult, context);
 

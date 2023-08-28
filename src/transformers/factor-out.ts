@@ -235,6 +235,7 @@ export function factorOut(options?: Readonly<CreationOptions>): Transformer {
 	}
 
 	return {
+		name: "factorOut",
 		onAlternation: onParent,
 		onAssertion: onParent,
 		onExpression: onParent,

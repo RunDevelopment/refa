@@ -148,19 +148,18 @@ function onParentSafe(node: NoParent<Parent>, { signalMutation }: TransformConte
  * @param options
  */
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
+	let on: (node: NoParent<Parent>, context: TransformContext) => void;
 	if (!options?.ignoreOrder || !options.ignoreAmbiguity) {
-		return {
-			onAlternation: onParentSafe,
-			onAssertion: onParentSafe,
-			onExpression: onParentSafe,
-			onQuantifier: onParentSafe,
-		};
+		on = onParentSafe;
 	} else {
-		return {
-			onAlternation: onParent,
-			onAssertion: onParent,
-			onExpression: onParent,
-			onQuantifier: onParent,
-		};
+		on = onParent;
 	}
+
+	return {
+		name: "moveUpEmpty",
+		onAlternation: on,
+		onAssertion: on,
+		onExpression: on,
+		onQuantifier: on,
+	};
 }

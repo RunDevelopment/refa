@@ -48,6 +48,7 @@ function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): boolean {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sortAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
+		name: "sortAssertions",
 		onConcatenation(node, { signalMutation }) {
 			let runStart = 0;
 			let runLength = 0;

@@ -573,7 +573,7 @@ function moveAssertionIntoAlternation(
 				replacement.reverse();
 			}
 			context.signalMutation();
-			elements.splice(alternationIndex, 1, ...replacement);
+			elements.splice(elements.indexOf(element), 1, ...replacement);
 
 			// remove assertion
 			context.signalMutation();
@@ -610,6 +610,7 @@ function moveAssertionIntoAlternation(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function applyAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
+		name: "applyAssertions",
 		onConcatenation(node: NoParent<Concatenation>, context: TransformContext) {
 			const elements = node.elements;
 

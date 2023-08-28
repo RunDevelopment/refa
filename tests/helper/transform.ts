@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { assert } from "chai";
-import { TransformOptions, Transformer, transform } from "../../src/ast";
+import { Node, TransformOptions, Transformer, transform } from "../../src/ast";
 import { TooManyNodesError } from "../../src/errors";
 import { Literal, Parser, toLiteral } from "../../src/js";
 import { CONFIG_RUN_TRANSFORMERS } from "./config";
@@ -35,9 +36,14 @@ export function itTest(
 	defaultTransformer: Transformer | null,
 	cases: Iterable<TransformTestCase | Literal | string>
 ): void {
-	for (const { literal, transformer = defaultTransformer, options, expected, debug = false, stepByStep = false } of [
-		...cases,
-	].map(toTestCase)) {
+	for (const {
+		literal,
+		transformer = defaultTransformer,
+		options = {},
+		expected,
+		debug = false,
+		stepByStep = false,
+	} of [...cases].map(toTestCase)) {
 		it(literalToString(literal), function () {
 			if (debug) {
 				// eslint-disable-next-line no-debugger
@@ -53,10 +59,34 @@ export function itTest(
 				assertions: "parse",
 				simplify: false,
 			});
-			const transformedExpression = transform(transformer, expression, options);
-			const actual = toLiteral(transformedExpression);
 
-			const actualStr = literalToString(actual);
+			let actualStr: string;
+			if (stepByStep) {
+				const shortName: Record<Node["type"], string> = {
+					Alternation: "Alt",
+					Assertion: "Asr",
+					CharacterClass: "Chr",
+					Concatenation: "Con",
+					Expression: "Exp",
+					Quantifier: "Qnt",
+					Unknown: "Unk",
+				};
+
+				const steps: [string, string][] = [["Start", literalToString(toLiteral(expression))]];
+				const transformedExpression = transform(transformer, expression, {
+					...options,
+					onChange(ast, node, transformer) {
+						const patternStr = literalToString(toLiteral(ast));
+						steps.push([`${shortName[node.type]} ${transformer.name ?? "<unnamed>"}`, patternStr]);
+					},
+				});
+				steps.push(["Final", literalToString(toLiteral(transformedExpression))]);
+				const maxLength = Math.max(...steps.map(([name]) => name.length));
+				actualStr = steps.map(([name, value]) => (name + ": ").padEnd(maxLength + 2) + value).join("\n");
+			} else {
+				const transformedExpression = transform(transformer, expression, options);
+				actualStr = literalToString(toLiteral(transformedExpression));
+			}
 
 			if (expected === undefined) {
 				assertEqualSnapshot(this, actualStr);

@@ -94,6 +94,7 @@ function onAssertion(node: NoParent<Assertion>, context: TransformContext): void
 export function inline(_options?: Readonly<CreationOptions>): Transformer {
 	// we can safely ignore the options as order and ambiguity are guaranteed to be preserved
 	return {
+		name: "inline",
 		onConcatenation,
 		onAssertion,
 

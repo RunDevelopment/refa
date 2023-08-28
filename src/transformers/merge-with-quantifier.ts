@@ -98,6 +98,7 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 	}
 
 	return {
+		name: "mergeWithQuantifier",
 		onConcatenation(node, context) {
 			const elements = node.elements;
 			const { signalMutation } = context;

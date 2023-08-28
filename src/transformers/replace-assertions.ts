@@ -29,6 +29,7 @@ export function replaceAssertions(options?: Readonly<RemoveAssertionsCreationOpt
 
 	if (replacement === "empty-word") {
 		return {
+			name: "replaceAssertions",
 			onConcatenation(node, { signalMutation }) {
 				filterMut(node.elements, element => {
 					if (element.type === "Assertion") {
@@ -41,6 +42,7 @@ export function replaceAssertions(options?: Readonly<RemoveAssertionsCreationOpt
 		};
 	} else {
 		return {
+			name: "replaceAssertions",
 			onAlternation: onParent,
 			onExpression: onParent,
 			onQuantifier: onParent,

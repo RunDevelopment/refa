@@ -182,9 +182,10 @@ export function patternEdgeAssertions(options?: Readonly<PatternEdgeAssertionsCr
 	const remove = options?.remove ?? false;
 
 	if (!inline && !remove) {
-		return {}; // noop
+		return { name: "patternEdgeAssertions" }; // noop
 	} else {
 		return {
+			name: "patternEdgeAssertions",
 			onExpression(node, context) {
 				if (inline) {
 					if (

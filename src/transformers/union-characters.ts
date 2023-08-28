@@ -85,6 +85,7 @@ export function unionCharacters(options?: Readonly<CreationOptions>): Transforme
 	}
 
 	return {
+		name: "unionCharacters",
 		onAlternation: onParent,
 		onAssertion: onParent,
 		onExpression: onParent,

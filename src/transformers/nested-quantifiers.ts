@@ -113,6 +113,7 @@ function optimizeChildQuantifier(
 export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transformer {
 	if (!options?.ignoreAmbiguity) {
 		return {
+			name: "nestedQuantifiers",
 			onQuantifier(node: NoParent<Quantifier>, { signalMutation }: TransformContext): void {
 				if (node.alternatives.length === 1 && node.alternatives[0].elements.length === 1) {
 					const nested = node.alternatives[0].elements[0];
@@ -134,6 +135,7 @@ export function nestedQuantifiers(options?: Readonly<CreationOptions>): Transfor
 	const { ignoreOrder } = options;
 
 	return {
+		name: "nestedQuantifiers",
 		onQuantifier(node: NoParent<Quantifier>, { signalMutation }: TransformContext): void {
 			if (node.max === 0) {
 				return;
