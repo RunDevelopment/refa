@@ -113,6 +113,9 @@ function assertCharacter(
 			const first = at(elements, firstIndex);
 
 			if (first.type === "CharacterClass") {
+				// This uses the same trick as before with (?!foo|bar) == (?!foo)(?!bar) == (?!bar)(?!foo).
+				// Since we found an alternative that we'd like to apply, we might have other alternatives that remain.
+				// This array contains an assertion for the remaining alternatives.
 				const remaining: NoParent<Element>[] =
 					assertion.alternatives.length === 1
 						? []
