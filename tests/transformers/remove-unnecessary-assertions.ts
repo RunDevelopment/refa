@@ -1,10 +1,10 @@
 import { itTest, regexSnapshot } from "../helper/transform";
-import { combineTransformers } from "../../src/ast";
+import { CombinedTransformer } from "../../src/ast";
 import { inline, removeDeadBranches, removeUnnecessaryAssertions } from "../../src/transformers";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
-		const transformer = combineTransformers([
+		const transformer = new CombinedTransformer([
 			removeUnnecessaryAssertions(),
 			removeDeadBranches(), // remove dead branches...
 			inline(), // and inline, so the output regexes are cleaner
@@ -112,7 +112,11 @@ describe("Transformers", function () {
 		]);
 
 		it("Prism regex snapshot", function () {
-			const transformer = combineTransformers([removeUnnecessaryAssertions(), inline(), removeDeadBranches()]);
+			const transformer = new CombinedTransformer([
+				removeUnnecessaryAssertions(),
+				inline(),
+				removeDeadBranches(),
+			]);
 
 			regexSnapshot(this, transformer);
 		});

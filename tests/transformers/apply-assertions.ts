@@ -1,6 +1,6 @@
 import { itTest, regexSnapshot } from "../helper/transform";
 import { applyAssertions, inline, removeDeadBranches } from "../../src/transformers";
-import { combineTransformers } from "../../src/ast";
+import { CombinedTransformer } from "../../src/ast";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
@@ -71,13 +71,13 @@ describe("Transformers", function () {
 			/(?:^|[^.]|\.\.\.\s*)(?<!\w)(?:as|async(?=\s*(?:function(?!\w)|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|[gs]et(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?!\w)/,
 			{
 				literal: /(?:\b[a-z][a-z_\d]*\s*::\s*)*\b[a-z][a-z_\d]*\s*::(?!\s*<)/,
-				transformer: combineTransformers([applyAssertions(), inline(), removeDeadBranches()]),
+				transformer: new CombinedTransformer([applyAssertions(), inline(), removeDeadBranches()]),
 				stepByStep: true,
 			},
 		]);
 
 		it("Prism regex snapshot", function () {
-			const transformer = combineTransformers([applyAssertions(), inline(), removeDeadBranches()]);
+			const transformer = new CombinedTransformer([applyAssertions(), inline(), removeDeadBranches()]);
 
 			regexSnapshot(this, transformer);
 		});

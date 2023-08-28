@@ -11,10 +11,10 @@ import {
 	sortAssertions,
 	unionCharacters,
 } from "../../src/transformers";
-import { combineTransformers } from "../../src/ast";
+import { CombinedTransformer } from "../../src/ast";
 
 describe("Transformers", function () {
-	const transformer = combineTransformers([
+	const transformer = new CombinedTransformer([
 		applyAssertions(),
 		removeUnnecessaryAssertions(),
 		sortAssertions(),
