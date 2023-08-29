@@ -266,13 +266,17 @@ module.exports[n`Transformers >> apply-assertions >> /(?:^|[^.]|\.\.\.\s*)(?<!\w
 
 module.exports[n`Transformers >> apply-assertions >> /(?:\b[a-z][a-z_\d]*\s*::\s*)*\b[a-z][a-z_\d]*\s*::(?!\s*<)/ `] = lit`
 Start:               /(?:\b[a-z][\d_a-z]*\s*::\s*)*\b[a-z][\d_a-z]*\s*::(?!\s*<)/
+Pass 1
 Con applyAssertions: /(?:(?:(?<!\w))[a-z][\d_a-z]*\s*::\s*)*\b[a-z][\d_a-z]*\s*::(?!\s*<)/
 Con inline:          /(?:(?<!\w)[a-z][\d_a-z]*\s*::\s*)*\b[a-z][\d_a-z]*\s*::(?!\s*<)/
 Con applyAssertions: /(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+)?(?:(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
 Con inline:          /(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+)?(?<!\w)[a-z][\d_a-z]*\s*::(?!\s*<)/
+Pass 2
 Con applyAssertions: /(?:(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+){1}(?<!\w)|(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
+Pass 3
 Con applyAssertions: /(?:(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+){0}(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+)|(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
 Con inline:          /(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+|(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
+Pass 4
 Final:               /(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+|(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
 `;
 

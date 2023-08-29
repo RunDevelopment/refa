@@ -72,19 +72,25 @@ export function itTest(
 					Unknown: "Unk",
 				};
 
-				const steps: [string, string][] = [["Start", literalToString(toLiteral(expression))]];
+				const steps: [string, string][] = [["Start:", literalToString(toLiteral(expression))]];
 				const transformedExpression = transform(transformer, expression, {
 					...options,
 					events: {
+						onPassStart(ast, pass) {
+							steps.push([`Pass ${pass}`, ""]);
+						},
 						onChange(ast, node, transformer) {
 							const patternStr = literalToString(toLiteral(ast));
-							steps.push([`${shortName[node.type]} ${transformer.name ?? "<unnamed>"}`, patternStr]);
+							steps.push([`${shortName[node.type]} ${transformer.name ?? "<unnamed>"}:`, patternStr]);
 						},
 					},
 				});
-				steps.push(["Final", literalToString(toLiteral(transformedExpression))]);
+				steps.push(["Final:", literalToString(toLiteral(transformedExpression))]);
 				const maxLength = Math.max(...steps.map(([name]) => name.length));
-				actualStr = steps.map(([name, value]) => (name + ": ").padEnd(maxLength + 2) + value).join("\n");
+				actualStr = steps
+					.map(([name, value]) => (name + " ").padEnd(maxLength + 1) + value)
+					.map(s => s.trimEnd())
+					.join("\n");
 			} else {
 				const transformedExpression = transform(transformer, expression, options);
 				actualStr = literalToString(toLiteral(transformedExpression));

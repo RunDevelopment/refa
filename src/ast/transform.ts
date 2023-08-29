@@ -143,7 +143,18 @@ export function combineTransformers(transformers: Iterable<Transformer>): Combin
 
 export interface TransformEvents {
 	/**
+	 * An optional callback that will be called at the start of every pass.
+	 *
+	 * @param ast The AST that will be transformed.
+	 * @param pass The number of the pass that will be performed. Starts at `1`.
+	 */
+	onPassStart?: (ast: NoParent<Expression>, pass: number) => void;
+	/**
 	 * An optional callback that will be called every time a transformer mutates the AST.
+	 *
+	 * @param ast The AST that was transformed.
+	 * @param node The node that was mutated by the transformer. Descendants of this node may have been mutated as well.
+	 * @param transformer The transformer that mutated the AST.
 	 */
 	onChange?: (ast: NoParent<Expression>, node: NoParent<Node>, transformer: Transformer) => void;
 }
@@ -178,17 +189,18 @@ export function transform(
 	ast: NoParent<Expression>,
 	options?: Readonly<TransformOptions>
 ): NoParent<Expression> {
-	options = options ?? {};
-	let passesLeft = options.maxPasses ?? 10;
+	const { maxPasses = 10, events } = options ?? {};
 
 	const context: Context = {
 		transformer,
 		ast,
 		maxCharacter: determineMaxCharacter(ast),
-		events: options.events,
+		events: events,
 	};
 
-	for (; passesLeft >= 1; passesLeft--) {
+	for (let i = 1; i <= maxPasses; i++) {
+		events?.onPassStart?.(ast, i);
+
 		if (!transformPass(context)) {
 			break;
 		}
