@@ -141,6 +141,12 @@ export function combineTransformers(transformers: Iterable<Transformer>): Combin
 	return new CombinedTransformer(transformers);
 }
 
+export interface TransformEvents {
+	/**
+	 * An optional callback that will be called every time a transformer mutates the AST.
+	 */
+	onChange?: (ast: NoParent<Expression>, node: NoParent<Node>, transformer: Transformer) => void;
+}
 export interface TransformOptions {
 	/**
 	 * The maximum number of times the transformer will be applied to the AST.
@@ -153,9 +159,9 @@ export interface TransformOptions {
 	maxPasses?: number;
 
 	/**
-	 * An optional callback that will be called every time a transformer mutates the AST.
+	 * Optional events to observe the transformation process.
 	 */
-	onChange?: (ast: NoParent<Expression>, node: NoParent<Node>, transformer: Transformer) => void;
+	events?: TransformEvents;
 }
 
 /**
@@ -179,7 +185,7 @@ export function transform(
 		transformer,
 		ast,
 		maxCharacter: determineMaxCharacter(ast),
-		onChange: options.onChange,
+		events: options.events,
 	};
 
 	for (; passesLeft >= 1; passesLeft--) {
@@ -216,14 +222,14 @@ interface Context {
 	transformer: Transformer;
 	ast: NoParent<Expression>;
 	maxCharacter: Char;
-	onChange: ((ast: NoParent<Expression>, node: NoParent<Node>, transformer: Transformer) => void) | undefined;
+	events: TransformEvents | undefined;
 }
 
-function transformPass({ transformer, ast, maxCharacter, onChange }: Context): boolean {
+function transformPass({ transformer, ast, maxCharacter, events }: Context): boolean {
 	let changed = false;
 	let leaveNode: (node: NoParent<Node>) => void;
 
-	if (onChange) {
+	if (events?.onChange) {
 		const transformers = transformer instanceof CombinedTransformer ? transformer.transformers : [transformer];
 
 		const byKey: Record<`on${Node["type"]}`, Transformer[]> = {
@@ -252,7 +258,7 @@ function transformPass({ transformer, ast, maxCharacter, onChange }: Context): b
 				t[fnName]!(node as never, transformerContext);
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (changedPrivate) {
-					onChange(ast, node, t);
+					events.onChange!(ast, node, t);
 				}
 			}
 		};

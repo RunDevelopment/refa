@@ -75,9 +75,11 @@ export function itTest(
 				const steps: [string, string][] = [["Start", literalToString(toLiteral(expression))]];
 				const transformedExpression = transform(transformer, expression, {
 					...options,
-					onChange(ast, node, transformer) {
-						const patternStr = literalToString(toLiteral(ast));
-						steps.push([`${shortName[node.type]} ${transformer.name ?? "<unnamed>"}`, patternStr]);
+					events: {
+						onChange(ast, node, transformer) {
+							const patternStr = literalToString(toLiteral(ast));
+							steps.push([`${shortName[node.type]} ${transformer.name ?? "<unnamed>"}`, patternStr]);
+						},
 					},
 				});
 				steps.push(["Final", literalToString(toLiteral(transformedExpression))]);
