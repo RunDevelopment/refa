@@ -35,6 +35,7 @@ describe("Transformers", function () {
 			/(?!food|foobar)foot/i,
 			/(?!food)foo\w/i,
 			/(?!food|foot)foo\w/i,
+			/(?!fo{6})foo\w/i,
 
 			/\(\s*(?!\s)(?:[^()]|\([^()]*\))*?(?=\s*\))/,
 			/\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,
@@ -52,6 +53,11 @@ describe("Transformers", function () {
 			/(?=foobar)\w*(?!\w)/,
 			/(?=foobar)\w*(?![bfo])/,
 			/(?=foobar)\w*$/,
+			/(?=fo{4})\w*$/,
+			/(?!foobar)\w*\s/,
+			/(?!foobar)\w*(?!\w)/,
+			/(?!foobar)\w*(?![bfo])/,
+			/(?!foobar)\w*$/,
 
 			/(?!\d)(?:\w+|:|123)/,
 			/(?=\d)\s*\w+/,
@@ -82,6 +88,8 @@ describe("Transformers", function () {
 
 			/(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
 
+			/""((?!"")(?:[^\\]|\\"))*""/s,
+			/""((?!"")(?:[^\\]|\\"))+""/s,
 			/"""((?!""").)*"""/s,
 			/"""((?!""").)+"""/s,
 

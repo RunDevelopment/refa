@@ -12,6 +12,7 @@ import {
 import {
 	MatchingDirection,
 	alwaysConsumesCharacters,
+	firstConsumedToLook,
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
 	invertMatchingDirection,
@@ -113,8 +114,18 @@ function assertCharacter(
 
 			const firstIndex = firstIndexFor(direction);
 			const first = at(elements, firstIndex);
+			if (isCharConvertible(first)) {
+				const firstChar = toCharElement(first).characters;
 
-			if (first.type === "CharacterClass") {
+				// remove char from assertion branch
+				context.signalMutation();
+				if (first.type === "CharacterClass") {
+					elements.splice(firstIndex, 1);
+				} else {
+					first.min--;
+					first.max--;
+				}
+
 				// This uses the same trick as before with (?!foo|bar) == (?!foo)(?!bar) == (?!bar)(?!foo).
 				// Since we found an alternative that we'd like to apply, we might have other alternatives that remain.
 				// This array contains an assertion for the remaining alternatives.
@@ -131,20 +142,17 @@ function assertCharacter(
 								},
 						  ];
 
-				if (first.characters.isSupersetOf(char.characters)) {
+				if (firstChar.isSupersetOf(char.characters)) {
 					// e.g. (?!\wbc)a => a(?!bc)
-					context.signalMutation();
-					elements.splice(firstIndex, 1);
 					return withDirection(direction, [...remaining, char, assertion]);
 				} else {
 					// e.g. (?!foo)\w => (?:[a-eg-zA-Z0-9_]|f(?!oo))
-					context.signalMutation();
-					elements.splice(firstIndex, 1);
-					const intersection = first.characters.intersect(char.characters);
+					const intersection = firstChar.intersect(char.characters);
 					if (intersection.isEmpty) {
 						throw new Error("Rejecting branch wasn't removed properly.");
 					}
-					char.characters = char.characters.without(first.characters);
+					context.signalMutation();
+					char.characters = char.characters.without(firstChar);
 					return withDirection(direction, [
 						...remaining,
 						{
@@ -181,16 +189,26 @@ function assertCharacter(
 			const firstIndex = firstIndexFor(direction);
 			const first = at(elements, firstIndex);
 
-			if (first.type === "CharacterClass") {
-				const intersection = first.characters.intersect(char.characters);
+			if (isCharConvertible(first)) {
+				const firstChar = toCharElement(first).characters;
+
+				// remove char from assertion branch
+				context.signalMutation();
+				if (first.type === "CharacterClass") {
+					elements.splice(firstIndex, 1);
+				} else {
+					first.min--;
+					first.max--;
+				}
+
+				const intersection = firstChar.intersect(char.characters);
 				if (intersection.isEmpty) {
 					throw new Error("Rejecting branch wasn't removed properly.");
-				} else {
-					context.signalMutation();
-					char.characters = intersection;
-					elements.splice(firstIndex, 1);
-					return withDirection(toMatchingDirection(assertion.kind), [char, assertion]);
 				}
+
+				context.signalMutation();
+				char.characters = intersection;
+				return withDirection(toMatchingDirection(assertion.kind), [char, assertion]);
 			}
 
 			return undefined;
@@ -580,12 +598,9 @@ function moveAssertionIntoAlternation(
 	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const assertionIndex = i - inc;
 		const assertion = at(elements, assertionIndex);
-		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isSingleCharacterParent(assertion)) {
+		if (assertion.type !== "Assertion" || assertion.kind !== kind) {
 			continue;
 		}
-
-		const assertionRawChar = assertion.alternatives[0].elements[0].characters;
-		const assertionChar = assertion.negate ? assertionRawChar.negate() : assertionRawChar;
 
 		const alternationIndex = i;
 		const element = at(elements, alternationIndex);
@@ -626,16 +641,34 @@ function moveAssertionIntoAlternation(
 			continue;
 		}
 
+		let assertionChar: CharSet | undefined = undefined;
+		let assertionCharComplete = false;
+		if (isSingleCharacterParent(assertion)) {
+			const assertionRawChar = assertion.alternatives[0].elements[0].characters;
+			assertionChar = assertion.negate ? assertionRawChar.negate() : assertionRawChar;
+			assertionCharComplete = true;
+		} else if (!assertion.negate) {
+			const firstChar = firstConsumedToLook(
+				getFirstCharConsumedBy(assertion.alternatives, direction, context.maxCharacter)
+			);
+			if (!firstChar.edge) {
+				assertionChar = firstChar.char;
+				assertionCharComplete = true;
+			}
+		}
+
 		// move it into alternatives
 		filterMut(alternation.alternatives, alt => {
-			const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
-			if (!firstChar.empty) {
-				if (firstChar.char.isDisjointWith(assertionChar)) {
-					// trivial reject
-					return false;
-				} else if (firstChar.char.isSubsetOf(assertionChar)) {
-					// trivial accept
-					return true;
+			if (assertionChar) {
+				const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
+				if (!firstChar.empty) {
+					if (firstChar.char.isDisjointWith(assertionChar)) {
+						// trivial reject
+						return false;
+					} else if (assertionCharComplete && firstChar.char.isSubsetOf(assertionChar)) {
+						// trivial accept
+						return true;
+					}
 				}
 			}
 
