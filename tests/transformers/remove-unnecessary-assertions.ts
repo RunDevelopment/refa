@@ -11,104 +11,36 @@ describe("Transformers", function () {
 		]);
 
 		itTest(transformer, [
-			{
-				literal: /(?=\s*)a|(?!\s*)b|c(?<=\s*)|d(?<!\s*)/,
-				expected: /a|c/,
-			},
-			{
-				literal: /(?=[])a|(?![])b|c(?<=[])|d(?<![])/,
-				expected: /b|d/,
-			},
+			/(?=\s*)a|(?!\s*)b|c(?<=\s*)|d(?<!\s*)/,
+			/(?=[])a|(?![])b|c(?<=[])|d(?<![])/,
 
-			{
-				literal: /\bfoo\b|\Bfoo\B/,
-				expected: /(?<!\w)foo(?!\w)|(?<=\w)foo(?=\w)/,
-			},
+			/\bfoo\b|\Bfoo\B/,
 
-			{
-				literal: /(?=\s*$|\S)[\s\S]+/,
-				expected: /(?=\s*$|\S)[^]+/,
-			},
-			{
-				literal: /(?=\s*$|\S)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?=\s?$|\S)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?=\s$|\S)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?=(?:\s|bb)$|\S)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?=(?:\s|b*b|)$|\S)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?!b)a+/,
-				expected: /a+/,
-			},
-			{
-				literal: /(?!b+)a+/,
-				expected: /a+/,
-			},
+			/(?=\s*$|\S)[\s\S]+/,
+			/(?=\s*$|\S)a+/,
+			/(?=\s?$|\S)a+/,
+			/(?=\s$|\S)a+/,
+			/(?=(?:\s|bb)$|\S)a+/,
+			/(?=(?:\s|b*b|)$|\S)a+/,
+			/(?!b)a+/,
+			/(?!b+)a+/,
 
-			{
-				literal: /(?!\s*::|\d)\w+/,
-				expected: /(?!\d)\w+/,
-			},
-			{
-				literal: /(?=\s*::|\d)\w+/,
-				expected: /(?=\d)\w+/,
-			},
+			/(?!\s*::|\d)\w+/,
+			/(?=\s*::|\d)\w+/,
 
-			{
-				literal: /^^/,
-				expected: /^/,
-			},
-			{
-				literal: /$$$$$/,
-				expected: /$/,
-			},
-			{
-				literal: /(?!\w)$/,
-				expected: /$/,
-			},
-			{
-				literal: /$(?!\w)/,
-				expected: /$/,
-			},
+			/^^/,
+			/$$$$$/,
+			/(?!\w)$/,
+			/$(?!\w)/,
 
-			{
-				literal: /^(?:@|(?<!\w))[A-Z_]\w*/i,
-				expected: /^(?:@|)[A-Z_]\w*/i,
-			},
-			{
-				literal: /^(?:@|(?<!\w)(?!\w))/i,
-				expected: /^(?:@|(?!\w))/,
-			},
-			{
-				literal: /^(?:@|(?<!\w)(?!\w))$/i,
-				expected: /^(?:@|)$/,
-			},
-			{
-				literal: /(?:@|(?<!\w)(?!\w))$/i,
-				expected: /(?:@|(?<!\w))$/,
-			},
+			/^(?:@|(?<!\w))[A-Z_]\w*/i,
+			/^(?:@|(?<!\w)(?!\w))/i,
+			/^(?:@|(?<!\w)(?!\w))$/i,
+			/(?:@|(?<!\w)(?!\w))$/i,
 
-			{
-				literal: /^\bfoo\b$/,
-				expected: /^foo$/,
-			},
-			{
-				literal: /^\b(?:foo|bar)\b$/,
-				expected: /^(?:foo|bar)$/,
-			},
+			/^\bfoo\b$/,
+			/^\b(?:foo|bar)\b$/,
+			// /\w+(?=\s*%)\b/,
 		]);
 
 		it("Prism regex snapshot", function () {

@@ -12,6 +12,98 @@ var n = (array: TemplateStringsArray): string => {
 	return unescapeBackslashes(array.raw[0].slice(0, -1));
 };
 
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s*)a|(?!\s*)b|c(?<=\s*)|d(?<!\s*)/ `] = lit`
+/a|c/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=[])a|(?![])b|c(?<=[])|d(?<![])/ `] = lit`
+/b|d/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /\bfoo\b|\Bfoo\B/ `] = lit`
+/(?<!\w)foo(?!\w)|(?<=\w)foo(?=\w)/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s*$|\S)[\s\S]+/ `] = lit`
+/(?=\s*$|\S)[^]+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s*$|\S)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s?$|\S)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s$|\S)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=(?:\s|bb)$|\S)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=(?:\s|b*b|)$|\S)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?!b)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?!b+)a+/ `] = lit`
+/a+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?!\s*::|\d)\w+/ `] = lit`
+/(?!\d)\w+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?=\s*::|\d)\w+/ `] = lit`
+/(?=\d)\w+/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^^/ `] = lit`
+/^/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /$$$$$/ `] = lit`
+/$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?!\w)$/ `] = lit`
+/$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /$(?!\w)/ `] = lit`
+/$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^(?:@|(?<!\w))[A-Z_]\w*/i `] = lit`
+/^(?:@|)[A-Z_]\w*/i
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^(?:@|(?<!\w)(?!\w))/i `] = lit`
+/^(?:@|(?!\w))/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^(?:@|(?<!\w)(?!\w))$/i `] = lit`
+/^(?:@|)$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /(?:@|(?<!\w)(?!\w))$/i `] = lit`
+/(?:@|(?<!\w))$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^\bfoo\b$/ `] = lit`
+/^foo$/
+`;
+
+module.exports[n`Transformers >> remove-unnecessary-assertions >> /^\b(?:foo|bar)\b$/ `] = lit`
+/^(?:foo|bar)$/
+`;
+
 module.exports[n`Transformers >> remove-unnecessary-assertions >> Prism regex snapshot `] = lit`
 /<!--[^]*?-->/
 /<\?[^]+?\?>/
