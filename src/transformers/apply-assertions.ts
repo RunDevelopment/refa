@@ -12,10 +12,12 @@ import {
 import {
 	MatchingDirection,
 	alwaysConsumesCharacters,
+	getFirstCharAfter,
 	getFirstCharConsumedBy,
 	invertMatchingDirection,
 	isTriviallyAccepting,
 	isZeroLength,
+	stackPath,
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
@@ -300,15 +302,16 @@ function applyOneCharacter(elements: NoParent<Element>[], kind: Assertion["kind"
 /**
  * This will remove optional branches that are know to reject because of assertions. E.g. `(?=\d)\s*\w+` => `(?=\d)\w+`.
  *
- * @param elements
+ * @param parentConcatenation
  * @param kind
  * @param context
  */
 function removeRejectedBranches(
-	elements: NoParent<Element>[],
+	parentConcatenation: NoParent<Concatenation>,
 	kind: Assertion["kind"],
 	context: TransformContext
 ): void {
+	const { elements } = parentConcatenation;
 	if (elements.length < 2) {
 		return;
 	}
@@ -354,18 +357,37 @@ function removeRejectedBranches(
 		const char = assertion.negate ? firstChar.char.negate() : firstChar.char;
 		const edge = assertion.negate;
 
-		if (parentElement.type === "Quantifier" && parentElement.min === 0) {
+		if (parentElement.type === "Quantifier" && parentElement.min === 0 && parentElement.max >= 1) {
 			const parentElementFirst = getFirstCharConsumedBy(
 				parentElement.alternatives,
 				direction,
 				context.maxCharacter
 			);
 
-			if (!parentElementFirst.empty && parentElementFirst.char.isDisjointWith(char)) {
-				// remove element
-				context.signalMutation();
-				elements.splice(elements.indexOf(parentElement), 1);
-				continue;
+			if (!parentElementFirst.empty) {
+				if (parentElementFirst.char.isDisjointWith(char)) {
+					// e.g. (?=\d)\s*\w+ => (?=\d)\w+
+					// remove element
+					context.signalMutation();
+					elements.splice(elements.indexOf(parentElement), 1);
+					continue;
+				}
+
+				// e.g. (?=\d)\w*\s+ => (?=\d)\w+\s+
+				const after = getFirstCharAfter(
+					stackPath(
+						[{ type: "Expression", alternatives: [parentConcatenation] }, parentConcatenation],
+						parentElement
+					),
+					direction,
+					context.maxCharacter
+				);
+				const disjointWithAfter = after.char.isDisjointWith(char) && !(after.edge && edge);
+				if (disjointWithAfter) {
+					context.signalMutation();
+					parentElement.min = 1;
+					continue;
+				}
 			}
 		}
 
@@ -750,8 +772,8 @@ export function applyAssertions(_options?: Readonly<CreationOptions>): Transform
 			applyOneCharacter(elements, "ahead", context);
 			applyOneCharacter(elements, "behind", context);
 
-			removeRejectedBranches(elements, "ahead", context);
-			removeRejectedBranches(elements, "behind", context);
+			removeRejectedBranches(node, "ahead", context);
+			removeRejectedBranches(node, "behind", context);
 
 			moveCharacterIntoAlternation(elements, "ahead", context);
 			moveCharacterIntoAlternation(elements, "behind", context);

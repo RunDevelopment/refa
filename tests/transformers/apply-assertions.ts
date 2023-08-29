@@ -48,6 +48,11 @@ describe("Transformers", function () {
 			/(?!\d)\w{1,2}/,
 			/(?!\d)\w*/,
 
+			/(?=foobar)\w*\s/,
+			/(?=foobar)\w*(?!\w)/,
+			/(?=foobar)\w*(?![bfo])/,
+			/(?=foobar)\w*$/,
+
 			/(?!\d)(?:\w+|:|123)/,
 			/(?=\d)\s*\w+/,
 			/a$(?:a|b)/,

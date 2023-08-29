@@ -136,6 +136,22 @@ module.exports[n`Transformers >> apply-assertions >> /(?!\d)\w*/ `] = lit`
 /(?:[A-Z_]\w*|(?!\d))/i
 `;
 
+module.exports[n`Transformers >> apply-assertions >> /(?=foobar)\w*\s/ `] = lit`
+/foobar\w*\s/
+`;
+
+module.exports[n`Transformers >> apply-assertions >> /(?=foobar)\w*(?!\w)/ `] = lit`
+/foobar\w*(?!\w)/
+`;
+
+module.exports[n`Transformers >> apply-assertions >> /(?=foobar)\w*(?![bfo])/ `] = lit`
+/foob(?=ar)\w*(?![bfo])/
+`;
+
+module.exports[n`Transformers >> apply-assertions >> /(?=foobar)\w*$/ `] = lit`
+/foobar\w*$/
+`;
+
 module.exports[n`Transformers >> apply-assertions >> /(?!\d)(?:\w+|:|123)/ `] = lit`
 /(?:[A-Z_]\w*|:)/i
 `;
