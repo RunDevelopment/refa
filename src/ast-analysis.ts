@@ -912,7 +912,7 @@ function firstConsumedCharConcat(iter: Iterable<Readonly<FirstConsumedChar>>, ma
  *
  * @param first
  */
-function firstConsumedToLook(first: Readonly<FirstConsumedChar>): FirstLookChar {
+export function firstConsumedToLook(first: Readonly<FirstConsumedChar>): FirstLookChar {
 	if (first.empty) {
 		// We have 2 cases:
 		//   (1) (?=a|(?=b))

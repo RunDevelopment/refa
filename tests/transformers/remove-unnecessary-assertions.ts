@@ -40,7 +40,9 @@ describe("Transformers", function () {
 
 			/^\bfoo\b$/,
 			/^\b(?:foo|bar)\b$/,
-			// /\w+(?=\s*%)\b/,
+
+			/\w+\b(?=\s*%)/,
+			/\w+(?=\s*%)\b/,
 		]);
 
 		it("Prism regex snapshot", function () {
