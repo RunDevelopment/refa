@@ -382,10 +382,10 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?:^|[\s&;|]|[<>]\()\w+(?=\+?=)/
 /(?:\$|(?<!\w))(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)(?!\w)/
 /\$(?:\w+|[!#$*?@])/
-/(?:^|[\s&;|]|[<>]\()(?:add|apropos|apt|aptitude|apt-cache|apt-get|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|composer|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?=$|[\s&);|])/
-/(?:^|[\s&;|]|[<>]\()(?:if|then|else|elif|fi|for|while|in|case|esac|function|select|do|done|until)(?=$|[\s&);|])/
-/(?:^|[\s&;|]|[<>]\()(?:[.:]|break|cd|continue|eval|exec|exit|export|getopts|hash|pwd|readonly|return|shift|test|times|trap|umask|unset|alias|bind|builtin|caller|command|declare|echo|enable|help|let|local|logout|mapfile|printf|read|readarray|source|type|typeset|ulimit|unalias|set|shopt)(?=$|[\s&);|])/
-/(?:^|[\s&;|]|[<>]\()(?:tru|fals)e(?=$|[\s&);|])/
+/(?:^|[\s&;|]|[<>]\()(?:add|apropos|apt|aptitude|apt-cache|apt-get|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|composer|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?![^\s&);|])/
+/(?:^|[\s&;|]|[<>]\()(?:if|then|else|elif|fi|for|while|in|case|esac|function|select|do|done|until)(?![^\s&);|])/
+/(?:^|[\s&;|]|[<>]\()(?:[.:]|break|cd|continue|eval|exec|exit|export|getopts|hash|pwd|readonly|return|shift|test|times|trap|umask|unset|alias|bind|builtin|caller|command|declare|echo|enable|help|let|local|logout|mapfile|printf|read|readarray|source|type|typeset|ulimit|unalias|set|shopt)(?![^\s&);|])/
+/(?:^|[\s&;|]|[<>]\()(?:tru|fals)e(?![^\s&);|])/
 /(?<!\w)&\d(?!\w)/
 /\d?<>|>\||\+=|={1,2}|!=?|=~|<<[-<]?|[\d&]?>>|\d?[<>]&?|&[&>]?|\|[&|]?|<=?|>=?/
 /(?:^|\s)(?:[1-9]\d*|0)(?:[,.]\d+)?(?!\w)/
@@ -672,10 +672,10 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)is\s+(?:not\s+)?(?:[\dA-Z_a-mo-z]|n(?!ot(?!\w)))\w*/
 /^\$(?:ORIGIN|INCLUDE|TTL)(?=\s|$)/m
 /[()]/
-/(?:^|\s)(?:IN|CH|CS|HS)(?=\s|$)/
-/(?:^|\s)(?:A|A6|AAAA|AFSDB|APL|ATMA|CAA|CDNSKEY|CDS|CERT|CNAME|DHCID|DLV|DNAME|DNSKEY|DS|EID|GID|GPOS|HINFO|HIP|IPSECKEY|ISDN|KEY|KX|LOC|MAILA|MAILB|MB|MD|MF|MG|MINFO|MR|MX|NAPTR|NB|NBSTAT|NIMLOC|NINFO|NS|NSAP|NSAP-PTR|NSEC|NSEC3|NSEC3PARAM|NULL|NXT|OPENPGPKEY|PTR|PX|RKEY|RP|RRSIG|RT|SIG|SINK|SMIMEA|SOA|SPF|SRV|SSHFP|TA|TKEY|TLSA|TSIG|TXT|UID|UINFO|UNSPEC|URI|WKS|X25)(?=\s|$)/
+/(?:^|\s)(?:IN|CH|CS|HS)(?!\S)/
+/(?:^|\s)(?:A|A6|AAAA|AFSDB|APL|ATMA|CAA|CDNSKEY|CDS|CERT|CNAME|DHCID|DLV|DNAME|DNSKEY|DS|EID|GID|GPOS|HINFO|HIP|IPSECKEY|ISDN|KEY|KX|LOC|MAILA|MAILB|MB|MD|MF|MG|MINFO|MR|MX|NAPTR|NB|NBSTAT|NIMLOC|NINFO|NS|NSAP|NSAP-PTR|NSEC|NSEC3|NSEC3PARAM|NULL|NXT|OPENPGPKEY|PTR|PX|RKEY|RP|RRSIG|RT|SIG|SINK|SMIMEA|SOA|SPF|SRV|SSHFP|TA|TKEY|TLSA|TSIG|TXT|UID|UINFO|UNSPEC|URI|WKS|X25)(?!\S)/
 /^\$ORIGIN[\t ]+\S+/m
-/(?:^|\s)@(?=\s|$)/
+/(?:^|\s)@(?!\S)/
 /"(?:[^\n\r"\\]|\\(?:\r\n|[^]))*"|'(?:[^\n\r'\\]|\\(?:\r\n|[^]))*'/
 /---|\.\.\.|[-,:>?[\]{|}]/
 /^\s*(?:ADD|ARG|CMD|COPY|ENTRYPOINT|ENV|EXPOSE|FROM|HEALTHCHECK|LABEL|MAINTAINER|ONBUILD|RUN|SHELL|STOPSIGNAL|USER|VOLUME|WORKDIR)(?=\s)/im
@@ -789,50 +789,50 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /->|\*/
 /^\w+$|(?:^|;\s*)[A-Z]\w*(?=\()/
 /\s*#(?:else|endif|if|light|line|nowarn)(?!\w)/
-/(?:^|\s)R\/\s+(?:\\\S|[^/\\])*\/[dimrs]*(?:[dimrs]-[dimrs]+)??(?=\s|$)/
-/(?:^|\s)[ft](?=\s|$)/
+/(?:^|\s)R\/\s+(?:\\\S|[^/\\])*\/[dimrs]*(?:[dimrs]-[dimrs]+)??(?!\S)/
+/(?:^|\s)[ft](?!\S)/
 /(?:^|\s)[-\dA-Z]+"\s(?:\\\S|[^"\\])*"/
 /(?:^|\s)USING:(?:\s\S+)*(?=\s+;(?:\s|$))/
-/(?:^|\s)(?:2bi|while|2tri|bi\*|4dip|both\?|same\?|tri@|curry|prepose|3bi|\?if|tri\*|2keep|3keep|curried|2keepd|when|2bi\*|2tri\*|4keep|bi@|keepdd|do|unless\*|tri-curry|if\*|loop|bi-curry\*|when\*|2bi@|2tri@|with|2with|either\?|bi|until|3dip|3curry|tri-curry\*|tri-curry@|bi-curry|keepd|compose|2dip|if|3tri|unless|tuple|keep|2curry|tri|most|while\*|dip|composed|bi-curry@|find-last-from|trim-head-slice|map-as|each-from|none\?|trim-tail|partition|if-empty|accumulate\*|reject!|find-from|accumulate-as|collector-for-as|reject|map|map-sum|accumulate!|2each-from|follow|supremum-by|map!|unless-empty|collector|padding|reduce-index|replicate-as|infimum-by|trim-tail-slice|count|find-index|filter|accumulate\*!|reject-as|map-integers|map-find|reduce|selector|interleave|2map|filter-as|binary-reduce|map-index-as|find|produce|filter!|replicate|cartesian-map|cartesian-each|find-index-from|map-find-last|3map-as|3map|find-last|selector-as|2map-as|2map-reduce|accumulate|each|each-index|accumulate\*-as|when-empty|all\?|collector-as|push-either|new-like|collector-for|2selector|push-if|2all\?|map-reduce|3each|any\?|trim-slice|2reduce|change-nth|produce-as|2each|trim|trim-head|cartesian-find|map-index|if-zero|each-integer|unless-zero|\(find-integer\)|when-zero|find-last-integer|\(all-integers\?\)|times|\(each-integer\)|find-integer|all-integers\?|unless-negative|if-positive|when-positive|when-negative|unless-positive|if-negative|case|2cleave|cond>quot|case>quot|3cleave|wrong-values|to-fixed-point|alist>quot|cond|cleave|call-effect|recursive-hashcode|spread|deep-spread>quot|2\|\||0\|\||n\|\||0&&|2&&|3\|\||1\|\||1&&|n&&|3&&|smart-unless\*|keep-inputs|reduce-outputs|smart-when\*|cleave>array|smart-with|smart-apply|smart-if|inputs\/outputs|output>sequence-n|map-outputs|map-reduce-outputs|dropping|output>array|smart-map-reduce|smart-2map-reduce|output>array-n|nullary|input<sequence|append-outputs|drop-inputs|inputs|smart-2reduce|drop-outputs|smart-reduce|preserving|smart-when|outputs|append-outputs-as|smart-unless|smart-if\*|sum-outputs|input<sequence-unsafe|output>sequence)(?=\s|$)/
-/(?:^|\s)(?:or|2nipd|4drop|tuck|wrapper|nip|wrapper\?|callstack>array|die|dupd|callstack|callstack\?|3dup|hashcode|pick|4nip|build|>boolean|nipd|clone|5nip|eq\?|\?|=|swapd|2over|clear|2dup|get-retainstack|not|tuple\?|dup|3nipd|call|-rotd|object|drop|assert=|assert\?|-rot|execute|boa|get-callstack|curried\?|3drop|pickd|overd|over|roll|3nip|swap|and|2nip|rotd|throw|\(clone\)|hashcode\*|spin|reach|4dup|equal\?|get-datastack|assert|2drop|<wrapper>|boolean\?|identity-hashcode|identity-tuple\?|null|composed\?|new|5drop|rot|-roll|xor|identity-tuple|boolean)(?=\s|$)/
-/(?:^|\s)(?:member-eq\?|mismatch|append|assert-sequence=|longer|repetition|clone-like|3sequence|assert-sequence\?|last-index-from|reversed|index-from|cut\*|pad-tail|join-as|remove-eq!|concat-as|but-last|snip|nths|nth|sequence|longest|slice\?|<slice>|remove-nth|tail-slice|empty\?|tail\*|member\?|virtual-sequence\?|set-length|drop-prefix|iota|unclip|bounds-error\?|unclip-last-slice|non-negative-integer-expected|non-negative-integer-expected\?|midpoint@|longer\?|\?set-nth|\?first|rest-slice|prepend-as|prepend|fourth|sift|subseq-start|new-sequence|\?last|like|first4|1sequence|reverse|slice|virtual@|repetition\?|set-last|index|4sequence|max-length|set-second|immutable-sequence|first2|first3|supremum|unclip-slice|suffix!|insert-nth|tail|3append|short|suffix|concat|flip|immutable\?|reverse!|2sequence|sum|delete-all|indices|snip-slice|<iota>|check-slice|sequence\?|head|append-as|halves|sequence=|collapse-slice|\?second|slice-error\?|product|bounds-check\?|bounds-check|immutable|virtual-exemplar|harvest|remove|pad-head|last|set-fourth|cartesian-product|remove-eq|shorten|shorter|reversed\?|shorter\?|shortest|head-slice|pop\*|tail-slice\*|but-last-slice|iota\?|append!|cut-slice|new-resizable|head-slice\*|sequence-hashcode|pop|set-nth|\?nth|second|join|immutable-sequence\?|<reversed>|3append-as|virtual-sequence|subseq\?|remove-nth!|length|last-index|lengthen|assert-sequence|copy|move|third|first|tail\?|set-first|prefix|bounds-error|<repetition>|exchange|surround|cut|min-length|set-third|push-all|head\?|subseq-start-from|delete-slice|rest|sum-lengths|head\*|infimum|remove!|glue|slice-error|subseq|push|replace-slice|subseq-as|unclip-last)(?=\s|$)/
-/(?:^|\s)(?:number=|next-power-of-2|\?1\+|fp-special\?|imaginary-part|float>bits|number\?|fp-infinity\?|bignum\?|fp-snan\?|denominator|gcd|\*|\+|fp-bitwise=|-|u>=|\/|>=|bitand|power-of-2\?|log2-expects-positive|neg\?|<|log2|>|integer\?|number|bits>double|2\/|zero\?|bits>float|float\?|shift|ratio\?|rect>|even\?|ratio|fp-sign|bitnot|>fixnum|complex\?|\/i|integer>fixnum|\/f|sgn|>bignum|next-float|u<|u>|mod|recip|rational|>float|2\^|integer|fixnum\?|neg|fixnum|sq|bignum|>rect|bit\?|fp-qnan\?|simple-gcd|complex|<fp-nan>|real|>fraction|double>bits|bitor|rem|fp-nan-payload|real-part|log2-expects-positive\?|prev-float|align|unordered\?|float|fp-nan\?|abs|bitxor|integer>fixnum-strict|u<=|odd\?|<=|\/mod|>integer|real\?|rational\?|numerator)(?=\s|$)/
-/(?:^|\s)<(?!(?:=+|-+)>)\S+>(?=\s|$)/
-/(?:^|\s)(?:=======|recursive|flushable|>>|<<<<<<|M\\|B|PRIVATE>|\\|======|final|inline|delimiter|deprecated|<PRIVATE|>>>>>>|<<<<<<<|parse-complex|malformed-complex|read-only|>>>>>>>|call-next-method|<<|foldable|\$|\$\[|\$\{)(?=\s|$)/
-/(?:^|\s)(?:(?:set|change|with|new)-\S+|\$\S+|>[^\s>]+|[^\s":>][^\s:>]*>|[^\s">][^\s>]*>[^\s>]+|\+[^\s+]+\+|[^\s"?][^\s?]*\?|\?[^\s?]+|[^\s">][^\s>]*>>|>>[^\s>]+|[^\s"<][^\s<]*<<|\([^\s()]+\)|[^\s!"][^\s!]*!|[^\s"*]\S*\*|[^\s".]\S*\.)(?=\s|$)/
-/(?:^|\s)(?:[-\dA-Z]+#?)?:{1,2}\s+(?:;\S|[^\s;])\S*(?=\s|$)/
-/\s(?:;|:>)(?=\s|$)/
-/(?:^|\s)[^\s"]\S*(?=\s|$)/
+/(?:^|\s)(?:2bi|while|2tri|bi\*|4dip|both\?|same\?|tri@|curry|prepose|3bi|\?if|tri\*|2keep|3keep|curried|2keepd|when|2bi\*|2tri\*|4keep|bi@|keepdd|do|unless\*|tri-curry|if\*|loop|bi-curry\*|when\*|2bi@|2tri@|with|2with|either\?|bi|until|3dip|3curry|tri-curry\*|tri-curry@|bi-curry|keepd|compose|2dip|if|3tri|unless|tuple|keep|2curry|tri|most|while\*|dip|composed|bi-curry@|find-last-from|trim-head-slice|map-as|each-from|none\?|trim-tail|partition|if-empty|accumulate\*|reject!|find-from|accumulate-as|collector-for-as|reject|map|map-sum|accumulate!|2each-from|follow|supremum-by|map!|unless-empty|collector|padding|reduce-index|replicate-as|infimum-by|trim-tail-slice|count|find-index|filter|accumulate\*!|reject-as|map-integers|map-find|reduce|selector|interleave|2map|filter-as|binary-reduce|map-index-as|find|produce|filter!|replicate|cartesian-map|cartesian-each|find-index-from|map-find-last|3map-as|3map|find-last|selector-as|2map-as|2map-reduce|accumulate|each|each-index|accumulate\*-as|when-empty|all\?|collector-as|push-either|new-like|collector-for|2selector|push-if|2all\?|map-reduce|3each|any\?|trim-slice|2reduce|change-nth|produce-as|2each|trim|trim-head|cartesian-find|map-index|if-zero|each-integer|unless-zero|\(find-integer\)|when-zero|find-last-integer|\(all-integers\?\)|times|\(each-integer\)|find-integer|all-integers\?|unless-negative|if-positive|when-positive|when-negative|unless-positive|if-negative|case|2cleave|cond>quot|case>quot|3cleave|wrong-values|to-fixed-point|alist>quot|cond|cleave|call-effect|recursive-hashcode|spread|deep-spread>quot|2\|\||0\|\||n\|\||0&&|2&&|3\|\||1\|\||1&&|n&&|3&&|smart-unless\*|keep-inputs|reduce-outputs|smart-when\*|cleave>array|smart-with|smart-apply|smart-if|inputs\/outputs|output>sequence-n|map-outputs|map-reduce-outputs|dropping|output>array|smart-map-reduce|smart-2map-reduce|output>array-n|nullary|input<sequence|append-outputs|drop-inputs|inputs|smart-2reduce|drop-outputs|smart-reduce|preserving|smart-when|outputs|append-outputs-as|smart-unless|smart-if\*|sum-outputs|input<sequence-unsafe|output>sequence)(?!\S)/
+/(?:^|\s)(?:or|2nipd|4drop|tuck|wrapper|nip|wrapper\?|callstack>array|die|dupd|callstack|callstack\?|3dup|hashcode|pick|4nip|build|>boolean|nipd|clone|5nip|eq\?|\?|=|swapd|2over|clear|2dup|get-retainstack|not|tuple\?|dup|3nipd|call|-rotd|object|drop|assert=|assert\?|-rot|execute|boa|get-callstack|curried\?|3drop|pickd|overd|over|roll|3nip|swap|and|2nip|rotd|throw|\(clone\)|hashcode\*|spin|reach|4dup|equal\?|get-datastack|assert|2drop|<wrapper>|boolean\?|identity-hashcode|identity-tuple\?|null|composed\?|new|5drop|rot|-roll|xor|identity-tuple|boolean)(?!\S)/
+/(?:^|\s)(?:member-eq\?|mismatch|append|assert-sequence=|longer|repetition|clone-like|3sequence|assert-sequence\?|last-index-from|reversed|index-from|cut\*|pad-tail|join-as|remove-eq!|concat-as|but-last|snip|nths|nth|sequence|longest|slice\?|<slice>|remove-nth|tail-slice|empty\?|tail\*|member\?|virtual-sequence\?|set-length|drop-prefix|iota|unclip|bounds-error\?|unclip-last-slice|non-negative-integer-expected|non-negative-integer-expected\?|midpoint@|longer\?|\?set-nth|\?first|rest-slice|prepend-as|prepend|fourth|sift|subseq-start|new-sequence|\?last|like|first4|1sequence|reverse|slice|virtual@|repetition\?|set-last|index|4sequence|max-length|set-second|immutable-sequence|first2|first3|supremum|unclip-slice|suffix!|insert-nth|tail|3append|short|suffix|concat|flip|immutable\?|reverse!|2sequence|sum|delete-all|indices|snip-slice|<iota>|check-slice|sequence\?|head|append-as|halves|sequence=|collapse-slice|\?second|slice-error\?|product|bounds-check\?|bounds-check|immutable|virtual-exemplar|harvest|remove|pad-head|last|set-fourth|cartesian-product|remove-eq|shorten|shorter|reversed\?|shorter\?|shortest|head-slice|pop\*|tail-slice\*|but-last-slice|iota\?|append!|cut-slice|new-resizable|head-slice\*|sequence-hashcode|pop|set-nth|\?nth|second|join|immutable-sequence\?|<reversed>|3append-as|virtual-sequence|subseq\?|remove-nth!|length|last-index|lengthen|assert-sequence|copy|move|third|first|tail\?|set-first|prefix|bounds-error|<repetition>|exchange|surround|cut|min-length|set-third|push-all|head\?|subseq-start-from|delete-slice|rest|sum-lengths|head\*|infimum|remove!|glue|slice-error|subseq|push|replace-slice|subseq-as|unclip-last)(?!\S)/
+/(?:^|\s)(?:number=|next-power-of-2|\?1\+|fp-special\?|imaginary-part|float>bits|number\?|fp-infinity\?|bignum\?|fp-snan\?|denominator|gcd|\*|\+|fp-bitwise=|-|u>=|\/|>=|bitand|power-of-2\?|log2-expects-positive|neg\?|<|log2|>|integer\?|number|bits>double|2\/|zero\?|bits>float|float\?|shift|ratio\?|rect>|even\?|ratio|fp-sign|bitnot|>fixnum|complex\?|\/i|integer>fixnum|\/f|sgn|>bignum|next-float|u<|u>|mod|recip|rational|>float|2\^|integer|fixnum\?|neg|fixnum|sq|bignum|>rect|bit\?|fp-qnan\?|simple-gcd|complex|<fp-nan>|real|>fraction|double>bits|bitor|rem|fp-nan-payload|real-part|log2-expects-positive\?|prev-float|align|unordered\?|float|fp-nan\?|abs|bitxor|integer>fixnum-strict|u<=|odd\?|<=|\/mod|>integer|real\?|rational\?|numerator)(?!\S)/
+/(?:^|\s)<(?!(?:=+|-+)>)\S+>(?!\S)/
+/(?:^|\s)(?:=======|recursive|flushable|>>|<<<<<<|M\\|B|PRIVATE>|\\|======|final|inline|delimiter|deprecated|<PRIVATE|>>>>>>|<<<<<<<|parse-complex|malformed-complex|read-only|>>>>>>>|call-next-method|<<|foldable|\$|\$\[|\$\{)(?!\S)/
+/(?:^|\s)(?:(?:set|change|with|new)-\S+|\$\S+|>[^\s>]+|[^\s":>][^\s:>]*>|[^\s">][^\s>]*>[^\s>]+|\+[^\s+]+\+|[^\s"?][^\s?]*\?|\?[^\s?]+|[^\s">][^\s>]*>>|>>[^\s>]+|[^\s"<][^\s<]*<<|\([^\s()]+\)|[^\s!"][^\s!]*!|[^\s"*]\S*\*|[^\s".]\S*\.)(?!\S)/
+/(?:^|\s)(?:[-\dA-Z]+#?)?:{1,2}\s+(?:;\S|[^\s;])\S*(?!\S)/
+/\s(?:;|:>)(?!\S)/
+/(?:^|\s)[^\s"]\S*(?!\S)/
 /"(?:\\\S|[^"\\])*"/
 /(?:^|\s)!(?: .*|$)/
-/(?:^|\s)\/\*\s[^]*?\*\/(?=\s|$)/
-/(?:^|\s)!\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?=\s|$)/
-/(?:^|\s)[-+]?\d+(?=\s|$)/
-/(?:^|\s)[-+]?0(?:B[01]+|O[0-7]+|D\d+|X[\dA-F]+)(?=\s|$)/i
-/(?:^|\s)[-+]?\d+\/\d+\.?(?=\s|$)/
-/(?:^|\s)\+?\d+\+\d+\/\d+(?=\s|$)/
-/(?:^|\s)-\d+-\d+\/\d+(?=\s|$)/
-/(?:^|\s)[-+]?\d*(?:\.\d+|\d\.\d*|\d)(?:E[-+]?\d+)?(?=\s|$)/i
-/(?:^|\s)NAN:\s+[\dA-Fa-f]+(?=\s|$)/
-/(?:^|\s)[-+]?0(?:B1\.[01]*|O1\.[0-7]*|D1\.\d*|X1\.[\dA-F]*)P\d+(?=\s|$)/i
+/(?:^|\s)\/\*\s[^]*?\*\/(?!\S)/
+/(?:^|\s)!\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?!\S)/
+/(?:^|\s)[-+]?\d+(?!\S)/
+/(?:^|\s)[-+]?0(?:B[01]+|O[0-7]+|D\d+|X[\dA-F]+)(?!\S)/i
+/(?:^|\s)[-+]?\d+\/\d+\.?(?!\S)/
+/(?:^|\s)\+?\d+\+\d+\/\d+(?!\S)/
+/(?:^|\s)-\d+-\d+\/\d+(?!\S)/
+/(?:^|\s)[-+]?\d*(?:\.\d+|\d\.\d*|\d)(?:E[-+]?\d+)?(?!\S)/i
+/(?:^|\s)NAN:\s+[\dA-Fa-f]+(?!\S)/
+/(?:^|\s)[-+]?0(?:B1\.[01]*|O1\.[0-7]*|D1\.\d*|X1\.[\dA-F]*)P\d+(?!\S)/i
 /\\\S/
 /[$()*+.?[\]\^{|}]/
 /\\\S|%\w|\//
-/(?:^|\s)STRING:\s+\S+\r??\n.*\r??\n\s*;(?=\s|$)/
-/(?:^|\s)HEREDOC:\s+\S+\r??\n.*\r??\n\s*\S+(?=\s|$)/
-/(?:^|\s)\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?=\s|$)/
+/(?:^|\s)STRING:\s+\S+\r??\n.*\r??\n\s*;(?!\S)/
+/(?:^|\s)HEREDOC:\s+\S+\r??\n.*\r??\n\s*\S+(?!\S)/
+/(?:^|\s)\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?!\S)/
 /(?:^|\s)(?:call|execute|eval)?\((?=\s)/
 /\s--(?=\s)/
-/\s\)(?=\s|$)/
+/\s\)(?!\S)/
 /(?:^|\s)[A-Z]*\{(?=\s)/i
-/\s\}(?=\s|$)/
+/\s\}(?!\S)/
 /(?:^|\s)\[(?=\s)/
-/\s\](?=\s|$)/
+/\s\](?!\S)/
 /\\[^\s']|%\w/
 /\b(?:TODOS?|FIX(?:MES?)?|NOTES?|BUGS?|X{2,}|HACKS?|WARN(?:ING)?|\?{2,}|!{2,})\b/
 /\/[dimrs]+(?:-[dimrs]+)?/
 /\s[^\s:]+/
-/\r??\n\s*;(?=\s|$)/
+/\r??\n\s*;(?!\S)/
 /(?<!\w)(?:allow|function|if|match|null|return|rules_version|service)(?!\w)/
 /&&|\|\||[!<=>]=?|[-%*+/=]|(?<!\w)i[ns](?!\w)/
 /(?:^|[\s(),])(?:\/(?:[\w\xa0-\uffff]+|\{[\w\xa0-\uffff]+(?:=\*\*)?\}|\$\([\w.\xa0-\uffff]+\)))+/
@@ -1250,10 +1250,10 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)[a-z]+(?: [a-z]+)*(?!\w)/
 /^\s*(?:(?:Caused by|Suppressed)(?=:)|Exception in thread)/m
 /^\s*"[^"]*"/
-/^:?\s*[\w$.]+(?=:|$)/
+/^:?\s*[\w$.]+(?![^:])/
 /:\s*\S.*/
 /^\s*at/
-/[\w$]+(?=$|:)/
+/[\w$]+(?![^:])/
 /[.:]/
 /\(\w+.\w+:\d+(?=\))/
 /\([^()]*(?=\))/
@@ -1289,8 +1289,8 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)(?:string|Function|any|number|boolean|Array|symbol|console|Promise|unknown|never)(?!\w)/
 /(?<!\w)(?:class|extends|implements|instanceof|interface|new|type)\s+(?:[$A-Z_a-jl-z\xa0-\uffff]|k(?!eyof(?!\w)))[\w$\xa0-\uffff]*(?:\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)?/
 /#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>(?=\s*\()/
-/@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?[\w$.\xa0-\uffff]+(?=\s|$)/
-/@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?\[[\w$.\xa0-\uffff]+(?:=[^[\]]+)?\](?=\s|$)/
+/@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?[\w$.\xa0-\uffff]+(?!\S)/
+/@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?\[[\w$.\xa0-\uffff]+(?:=[^[\]]+)?\](?!\S)/
 /@example\s+[^@]+?(?=\s*(?:\*\s*)?(?:@\w|\*\/))/
 /^#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*/
 /[=[\]]/
@@ -1377,12 +1377,12 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)\d+(?:\/\d+)?(?!\w)/
 /'[^\s#'()]+/
 /#\\(?:[ux][\dA-Fa-f]+|[-A-Za-z]+|\S)/
-/\((?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()]|$)/
-/\((?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?=[\s()]|$)/
-/(?:^|[\s()])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?=[\s()]|$)/
-/(?:^|[\s()])#[ft](?=[\s()]|$)/
-/\((?:[-%*+/]|[<>]=?|=>?)(?=[\s()]|$)/
-/\([^\s'()]+(?=[\s()]|$)/
+/\((?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?![^\s()])/
+/\((?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?![^\s()])/
+/(?:^|[\s()])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?![^\s()])/
+/(?:^|[\s()])#[ft](?![^\s()])/
+/\((?:[-%*+/]|[<>]=?|=>?)(?![^\s()])/
+/\([^\s'()]+(?![^\s()])/
 /(?:^|[\s=])#(?:"(?:[^"\\]|\\.)*"|[^\s"()]*(?:[^\s()]|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{])|\((?:[^"#();\\]|\\[^]|;.*$|"(?:[^"\\]|\\.)*"|#(?:\{(?:[^#]|#(?!\}))*#\}|[^{]))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\))*\)))/m
 /\\new\s+[-\w]+/
 /\\[A-Z][-\w]*/i
@@ -1397,7 +1397,7 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)(?:comment|endcomment|if|elsif|else|endif|unless|endunless|for|endfor|case|endcase|when|in|break|assign|continue|limit|offset|range|reversed|raw|endraw|capture|endcapture|tablerow|endtablerow)(?!\w)/
 /(?<!\w)(?:0B[01]+(?!\w)|0X[\dA-F]*\.?[-\dA-FP]*(?:-(?=\w)|[\dA-FP](?!\w))|(?:\d+\.?|\.\d)\d*(?:E[-+]?\d+)?[DF]?)/i
 /(?:^|[^.])(?:\+[+=]?|-[-=]?|!=?|<{1,2}=?|>{1,2}>?=?|={1,2}|&[&=]?|\|[=|]?|\*=?|\/=?|%=?|\^=?|[:?~])/m
-/(?:^|[\s&;|])(?:append|prepend|capitalize|cycle|cols|increment|decrement|abs|at_least|at_most|ceil|compact|concat|date|default|divided_by|downcase|escape|escape_once|first|floor|join|last|lstrip|map|minus|modulo|newline_to_br|plus|remove|remove_first|replace|replace_first|reverse|round|rstrip|size|slice|sort|sort_natural|split|strip|strip_html|strip_newlines|times|truncate|truncatewords|uniq|upcase|url_decode|url_encode|include|paginate)(?=$|[\s&;|])/
+/(?:^|[\s&;|])(?:append|prepend|capitalize|cycle|cols|increment|decrement|abs|at_least|at_most|ceil|compact|concat|date|default|divided_by|downcase|escape|escape_once|first|floor|join|last|lstrip|map|minus|modulo|newline_to_br|plus|remove|remove_first|replace|replace_first|reverse|round|rstrip|size|slice|sort|sort_natural|split|strip|strip_html|strip_newlines|times|truncate|truncatewords|uniq|upcase|url_decode|url_encode|include|paginate)(?![^\s&;|])/
 /;;;.*/
 /#?'[-\w!$%*+/<=>@{}~^]+/
 /:[-\w!$%*+/<=>@{}~^]+/
@@ -1456,16 +1456,16 @@ module.exports[n`Transformers >> all transformers together >> Prism regex snapsh
 /(?<!\w)OBTW\s+[^]*?\s+TLDR(?!\w)/
 /(?<!\w)BTW.+/
 /"(?::.|[^":])*"/
-/(?:^|\s)(?:A )?(?:YARN|NUMBR|NUMBAR|TROOF|BUKKIT|NOOB)(?=[\s,]|$)/
+/(?:^|\s)(?:A )?(?:YARN|NUMBR|NUMBAR|TROOF|BUKKIT|NOOB)(?![^\s,])/
 /(?:^|\s)IM (?:IN|OUTTA) YR [A-Za-z]\w*/
 /(?:^|\s)(?:I IZ|HOW IZ I|IZ) [A-Za-z]\w*/
-/'Z(?=[\s,]|$)/
-/(?:^|\s)(?:WIN|FAIL)(?=[\s,]|$)/
-/(?:^|\s)IT(?=[\s,]|$)/
-/(?:^|\s)(?:NOT|BOTH SAEM|DIFFRINT|(?:SUM|DIFF|PRODUKT|QUOSHUNT|MOD|BIGGR|SMALLR|BOTH|EITHER|WON|ALL|ANY) OF)(?=[\s,]|$)/
+/'Z(?![^\s,])/
+/(?:^|\s)(?:WIN|FAIL)(?![^\s,])/
+/(?:^|\s)IT(?![^\s,])/
+/(?:^|\s)(?:NOT|BOTH SAEM|DIFFRINT|(?:SUM|DIFF|PRODUKT|QUOSHUNT|MOD|BIGGR|SMALLR|BOTH|EITHER|WON|ALL|ANY) OF)(?![^\s,])/
 /:\{[^}]+\}/
 /A(?=\s)/
-/(?:^|\s)(?:O HAI IM|KTHX|HAI|KTHXBYE|I HAS A|ITZ(?: A)?|R|AN|MKAY|SMOOSH|MAEK|IS NOW(?: A)?|VISIBLE|GIMMEH|O RLY\?|YA RLY|NO WAI|OIC|MEBBE|WTF\?|OMG|OMGWTF|GTFO|IM IN YR|IM OUTTA YR|FOUND YR|YR|TIL|WILE|UPPIN|NERFIN|I IZ|HOW IZ I|IF U SAY SO|SRS|HAS A|LIEK(?: A)?|IZ)(?=[\s,]|$)/
+/(?:^|\s)(?:O HAI IM|KTHX|HAI|KTHXBYE|I HAS A|ITZ(?: A)?|R|AN|MKAY|SMOOSH|MAEK|IS NOW(?: A)?|VISIBLE|GIMMEH|O RLY\?|YA RLY|NO WAI|OIC|MEBBE|WTF\?|OMG|OMGWTF|GTFO|IM IN YR|IM OUTTA YR|FOUND YR|YR|TIL|WILE|UPPIN|NERFIN|I IZ|HOW IZ I|IF U SAY SO|SRS|HAS A|LIEK(?: A)?|IZ)(?![^\s,])/
 /:\([\dA-F]+\)/i
 /:\[[^\]]+\]/
 /:["):>o]/
@@ -1557,13 +1557,13 @@ TooManyNodesError
 /(?<!\w)(?:ST\d|[XYZ]MM\d{1,2}|[CDT]R\d|R\d{1,2}[BDW]?|[ER]?[A-D]X|[A-D][HL]|[ER]?(?:BP|SP|SI|DI)|[C-GS]S)(?!\w)/i
 /^\s*SECTION\s*[.A-Z]+:?/im
 /[-(),:=[\]{}]/
-/(?:^|[\s(,:=[{])\d\d\d\d-\d{1,2}-\d{1,2}(?:(?:[Tt]| +)\d{1,2}:\d\d:\d\d(?:\.\d*)? *(?:Z|[-+]\d{1,2}(?::?\d\d)?)?)?(?=$|[\s),\]}])/
+/(?:^|[\s(,:=[{])\d\d\d\d-\d{1,2}-\d{1,2}(?:(?:[Tt]| +)\d{1,2}:\d\d:\d\d(?:\.\d*)? *(?:Z|[-+]\d{1,2}(?::?\d\d)?)?)?(?![^\s),\]}])/
 /(?:^|[\s(,[{])[^\s"'(),:=[\]{}]+(?=\s*(?::(?:$|[\s),\]}])|=))/
-/(?:^|[\s(,:=[{])[-+]?(?:0x[\dA-Fa-f]+|0o[0-7]+|0b[01]+|(?:\d+\.?|\.?\d)\d*(?:[Ee][-+]?\d+)?)(?=$|[\s),:=\]}])/
-/(?:^|[\s(,:=[{])(?:TRUE|FALSE|YES|NO)(?=$|[\s),:=\]}])/i
-/(?:^|[\s(,:=[{])NULL(?=$|[\s),:=\]}])/i
+/(?:^|[\s(,:=[{])[-+]?(?:0x[\dA-Fa-f]+|0o[0-7]+|0b[01]+|(?:\d+\.?|\.?\d)\d*(?:[Ee][-+]?\d+)?)(?![^\s),:=\]}])/
+/(?:^|[\s(,:=[{])(?:TRUE|FALSE|YES|NO)(?![^\s),:=\]}])/i
+/(?:^|[\s(,:=[{])NULL(?![^\s),:=\]}])/i
 /(?:^|[\s(,:=[{])(?:'''\r?\n(?:(?:[^\n\r]|\r?\n(?![\t ]*'''))*\r?\n)?[\t ]*'''|"""\r?\n(?:(?:[^\n\r]|\r?\n(?![\t ]*"""))*\r?\n)?[\t ]*"""|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*")/
-/(?:^|[\s(,:=[{])(?:[^-\s"#'(),:=[\]\`{}]|[-:][^\s"'(),=[\]{}])(?:[^\s(),:=\]}]+|:(?![\s),\]}]|$)|[\t ]+[^\s#(),:=\]}])*/
+/(?:^|[\s(,:=[{])(?:[^-\s"#'(),:=[\]\`{}]|[-:][^\s"'(),=[\]{}])(?:[^\s(),:=\]}]+|:(?=[^\s),\]}])|[\t ]+[^\s#(),:=\]}])*/
 /\$[A-Z_]+/i
 /(?<!\w)(?:CONTENT_|DOCUMENT_|GATEWAY_|HTTP_|HTTPS|IF_NOT_EMPTY|PATH_|QUERY_|REDIRECT_|REMOTE_|REQUEST_|SCGI|SCRIPT_|SERVER_|HTTP|EVENTS|ACCEPT_MUTEX|ACCEPT_MUTEX_DELAY|ACCESS_LOG|ADD_AFTER_BODY|ADD_BEFORE_BODY|ADD_HEADER|ADDITION_TYPES|AIO|ALIAS|ALLOW|ANCIENT_BROWSER|ANCIENT_BROWSER_VALUE|AUTH|AUTH_BASIC|AUTH_BASIC_USER_FILE|AUTH_HTTP|AUTH_HTTP_HEADER|AUTH_HTTP_TIMEOUT|AUTOINDEX|AUTOINDEX_EXACT_SIZE|AUTOINDEX_LOCALTIME|BREAK|CHARSET|CHARSET_MAP|CHARSET_TYPES|CHUNKED_TRANSFER_ENCODING|CLIENT_BODY_BUFFER_SIZE|CLIENT_BODY_IN_FILE_ONLY|CLIENT_BODY_IN_SINGLE_BUFFER|CLIENT_BODY_TEMP_PATH|CLIENT_BODY_TIMEOUT|CLIENT_HEADER_BUFFER_SIZE|CLIENT_HEADER_TIMEOUT|CLIENT_MAX_BODY_SIZE|CONNECTION_POOL_SIZE|CREATE_FULL_PUT_PATH|DAEMON|DAV_ACCESS|DAV_METHODS|DEBUG_CONNECTION|DEBUG_POINTS|DEFAULT_TYPE|DENY|DEVPOLL_CHANGES|DEVPOLL_EVENTS|DIRECTIO|DIRECTIO_ALIGNMENT|DISABLE_SYMLINKS|EMPTY_GIF|ENV|EPOLL_EVENTS|ERROR_LOG|ERROR_PAGE|EXPIRES|FASTCGI_BUFFER_SIZE|FASTCGI_BUFFERS|FASTCGI_BUSY_BUFFERS_SIZE|FASTCGI_CACHE|FASTCGI_CACHE_BYPASS|FASTCGI_CACHE_KEY|FASTCGI_CACHE_LOCK|FASTCGI_CACHE_LOCK_TIMEOUT|FASTCGI_CACHE_METHODS|FASTCGI_CACHE_MIN_USES|FASTCGI_CACHE_PATH|FASTCGI_CACHE_PURGE|FASTCGI_CACHE_USE_STALE|FASTCGI_CACHE_VALID|FASTCGI_CONNECT_TIMEOUT|FASTCGI_HIDE_HEADER|FASTCGI_IGNORE_CLIENT_ABORT|FASTCGI_IGNORE_HEADERS|FASTCGI_INDEX|FASTCGI_INTERCEPT_ERRORS|FASTCGI_KEEP_CONN|FASTCGI_MAX_TEMP_FILE_SIZE|FASTCGI_NEXT_UPSTREAM|FASTCGI_NO_CACHE|FASTCGI_PARAM|FASTCGI_PASS|FASTCGI_PASS_HEADER|FASTCGI_READ_TIMEOUT|FASTCGI_REDIRECT_ERRORS|FASTCGI_SEND_TIMEOUT|FASTCGI_SPLIT_PATH_INFO|FASTCGI_STORE|FASTCGI_STORE_ACCESS|FASTCGI_TEMP_FILE_WRITE_SIZE|FASTCGI_TEMP_PATH|FLV|GEO|GEOIP_CITY|GEOIP_COUNTRY|GOOGLE_PERFTOOLS_PROFILES|GZIP|GZIP_BUFFERS|GZIP_COMP_LEVEL|GZIP_DISABLE|GZIP_HTTP_VERSION|GZIP_MIN_LENGTH|GZIP_PROXIED|GZIP_STATIC|GZIP_TYPES|GZIP_VARY|IF|IF_MODIFIED_SINCE|IGNORE_INVALID_HEADERS|IMAGE_FILTER|IMAGE_FILTER_BUFFER|IMAGE_FILTER_JPEG_QUALITY|IMAGE_FILTER_SHARPEN|IMAGE_FILTER_TRANSPARENCY|IMAP_CAPABILITIES|IMAP_CLIENT_BUFFER|INCLUDE|INDEX|INTERNAL|IP_HASH|KEEPALIVE|KEEPALIVE_DISABLE|KEEPALIVE_REQUESTS|KEEPALIVE_TIMEOUT|KQUEUE_CHANGES|KQUEUE_EVENTS|LARGE_CLIENT_HEADER_BUFFERS|LIMIT_CONN|LIMIT_CONN_LOG_LEVEL|LIMIT_CONN_ZONE|LIMIT_EXCEPT|LIMIT_RATE|LIMIT_RATE_AFTER|LIMIT_REQ|LIMIT_REQ_LOG_LEVEL|LIMIT_REQ_ZONE|LIMIT_ZONE|LINGERING_CLOSE|LINGERING_TIME|LINGERING_TIMEOUT|LISTEN|LOCATION|LOCK_FILE|LOG_FORMAT|LOG_FORMAT_COMBINED|LOG_NOT_FOUND|LOG_SUBREQUEST|MAP|MAP_HASH_BUCKET_SIZE|MAP_HASH_MAX_SIZE|MASTER_PROCESS|MAX_RANGES|MEMCACHED_BUFFER_SIZE|MEMCACHED_CONNECT_TIMEOUT|MEMCACHED_NEXT_UPSTREAM|MEMCACHED_PASS|MEMCACHED_READ_TIMEOUT|MEMCACHED_SEND_TIMEOUT|MERGE_SLASHES|MIN_DELETE_DEPTH|MODERN_BROWSER|MODERN_BROWSER_VALUE|MP4|MP4_BUFFER_SIZE|MP4_MAX_BUFFER_SIZE|MSIE_PADDING|MSIE_REFRESH|MULTI_ACCEPT|OPEN_FILE_CACHE|OPEN_FILE_CACHE_ERRORS|OPEN_FILE_CACHE_MIN_USES|OPEN_FILE_CACHE_VALID|OPEN_LOG_FILE_CACHE|OPTIMIZE_SERVER_NAMES|OVERRIDE_CHARSET|PCRE_JIT|PERL|PERL_MODULES|PERL_REQUIRE|PERL_SET|PID|POP3_AUTH|POP3_CAPABILITIES|PORT_IN_REDIRECT|POST_ACTION|POSTPONE_OUTPUT|PROTOCOL|PROXY|PROXY_BUFFER|PROXY_BUFFER_SIZE|PROXY_BUFFERING|PROXY_BUFFERS|PROXY_BUSY_BUFFERS_SIZE|PROXY_CACHE|PROXY_CACHE_BYPASS|PROXY_CACHE_KEY|PROXY_CACHE_LOCK|PROXY_CACHE_LOCK_TIMEOUT|PROXY_CACHE_METHODS|PROXY_CACHE_MIN_USES|PROXY_CACHE_PATH|PROXY_CACHE_USE_STALE|PROXY_CACHE_VALID|PROXY_CONNECT_TIMEOUT|PROXY_COOKIE_DOMAIN|PROXY_COOKIE_PATH|PROXY_HEADERS_HASH_BUCKET_SIZE|PROXY_HEADERS_HASH_MAX_SIZE|PROXY_HIDE_HEADER|PROXY_HTTP_VERSION|PROXY_IGNORE_CLIENT_ABORT|PROXY_IGNORE_HEADERS|PROXY_INTERCEPT_ERRORS|PROXY_MAX_TEMP_FILE_SIZE|PROXY_METHOD|PROXY_NEXT_UPSTREAM|PROXY_NO_CACHE|PROXY_PASS|PROXY_PASS_ERROR_MESSAGE|PROXY_PASS_HEADER|PROXY_PASS_REQUEST_BODY|PROXY_PASS_REQUEST_HEADERS|PROXY_READ_TIMEOUT|PROXY_REDIRECT|PROXY_REDIRECT_ERRORS|PROXY_SEND_LOWAT|PROXY_SEND_TIMEOUT|PROXY_SET_BODY|PROXY_SET_HEADER|PROXY_SSL_SESSION_REUSE|PROXY_STORE|PROXY_STORE_ACCESS|PROXY_TEMP_FILE_WRITE_SIZE|PROXY_TEMP_PATH|PROXY_TIMEOUT|PROXY_UPSTREAM_FAIL_TIMEOUT|PROXY_UPSTREAM_MAX_FAILS|RANDOM_INDEX|READ_AHEAD|REAL_IP_HEADER|RECURSIVE_ERROR_PAGES|REQUEST_POOL_SIZE|RESET_TIMEDOUT_CONNECTION|RESOLVER|RESOLVER_TIMEOUT|RETURN|REWRITE|ROOT|RTSIG_OVERFLOW_EVENTS|RTSIG_OVERFLOW_TEST|RTSIG_OVERFLOW_THRESHOLD|RTSIG_SIGNO|SATISFY|SATISFY_ANY|SECURE_LINK_SECRET|SEND_LOWAT|SEND_TIMEOUT|SENDFILE|SENDFILE_MAX_CHUNK|SERVER|SERVER_NAME|SERVER_NAME_IN_REDIRECT|SERVER_NAMES_HASH_BUCKET_SIZE|SERVER_NAMES_HASH_MAX_SIZE|SERVER_TOKENS|SET|SET_REAL_IP_FROM|SMTP_AUTH|SMTP_CAPABILITIES|SO_KEEPALIVE|SOURCE_CHARSET|SPLIT_CLIENTS|SSI|SSI_SILENT_ERRORS|SSI_TYPES|SSI_VALUE_LENGTH|SSL|SSL_CERTIFICATE|SSL_CERTIFICATE_KEY|SSL_CIPHERS|SSL_CLIENT_CERTIFICATE|SSL_CRL|SSL_DHPARAM|SSL_ENGINE|SSL_PREFER_SERVER_CIPHERS|SSL_PROTOCOLS|SSL_SESSION_CACHE|SSL_SESSION_TIMEOUT|SSL_VERIFY_CLIENT|SSL_VERIFY_DEPTH|STARTTLS|STUB_STATUS|SUB_FILTER|SUB_FILTER_ONCE|SUB_FILTER_TYPES|TCP_NODELAY|TCP_NOPUSH|TIMEOUT|TIMER_RESOLUTION|TRY_FILES|TYPES|TYPES_HASH_BUCKET_SIZE|TYPES_HASH_MAX_SIZE|UNDERSCORES_IN_HEADERS|UNINITIALIZED_VARIABLE_WARN|UPSTREAM|USE|USER|USERID|USERID_DOMAIN|USERID_EXPIRES|USERID_NAME|USERID_P3P|USERID_PATH|USERID_SERVICE|VALID_REFERERS|VARIABLES_HASH_BUCKET_SIZE|VARIABLES_HASH_MAX_SIZE|WORKER_CONNECTIONS|WORKER_CPU_AFFINITY|WORKER_PRIORITY|WORKER_PROCESSES|WORKER_RLIMIT_CORE|WORKER_RLIMIT_NOFILE|WORKER_RLIMIT_SIGPENDING|WORKING_DIRECTORY|XCLIENT|XML_ENTITIES|XSLT_ENTITIES|XSLT_STYLESHEET|XSLT_TYPES|SSL_SESSION_TICKETS|SSL_STAPLING|SSL_STAPLING_VERIFY|SSL_ECDH_CURVE|SSL_TRUSTED_CERTIFICATE|MORE_SET_HEADERS|SSL_EARLY_DATA)(?!\w)/i
 /(?:^|[^"\\{])#.*/
@@ -1867,7 +1867,7 @@ TooManyNodesError
 /-?[%}]\}$/
 /[<=>]=?|!=|\*{1,2}|\/{1,2}|\?:?|[-%+|~]/
 /URL\((?:".*?"|'.*?'|.*?)\)/i
-/(?:^|\s+)(?:(?:if|else|for|return|unless)(?=\s|$)|@[-\w]+)/
+/(?:^|\s+)(?:(?:if|else|for|return|unless)(?!\S)|@[-\w]+)/
 /(?<!\w)\d+(?:%|[a-z]+)/
 /~|[!%+/<=>?]=?|[-:]=|\*[*=]?|\.{2,3}|&&|\|\||(?<!\w)-(?!\w)|(?<!\w)(?:and|in|is(?: a| defined| not|nt)?|not|or)(?!\w)/
 /^\{[%{]-?/
@@ -1977,12 +1977,12 @@ TooManyNodesError
 /^#lang.+/m
 /'[^\s#'()[\]]+/
 /[([]lambda\s+[([][^\s'()[\]]+/
-/[([](?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()[\]]|$)/
-/[([](?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?=[\s()[\]]|$)/
-/(?:^|[\s()[\]])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?=[\s()[\]]|$)/
-/(?:^|[\s()[\]])#[ft](?=[\s()[\]]|$)/
-/[([](?:[-%*+/]|[<>]=?|=>?)(?=[\s()[\]]|$)/
-/[([][^\s'()[\]]+(?=[\s()[\]]|$)/
+/[([](?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?![^\s()[\]])/
+/[([](?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?![^\s()[\]])/
+/(?:^|[\s()[\]])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?![^\s()[\]])/
+/(?:^|[\s()[\]])#[ft](?![^\s()[\]])/
+/[([](?:[-%*+/]|[<>]=?|=>?)(?![^\s()[\]])/
+/[([][^\s'()[\]]+(?![^\s()[\]])/
 /<\/?(?:[\w\-.:]+\s*(?:\s+(?:[\w$\-.:]+(?:=(?:"(?:\\[^]|[^"\\])*"|'(?:\\[^]|[^'\\])*'|[^\s"'=>{]+|\{(?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])+\}))?|\{\s*\.{3}\s*[$A-Z_][\w$]*(?:\.[$A-Z_][\w$]*)*\s*\}))*\s*\/?)?>/i
 /^<\/?[^\s/>]*/
 /=\{(?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])+\}/
@@ -2054,8 +2054,8 @@ TooManyNodesError
 /(?:^|(?:\r?\n|\r){2}).+(?:\r?\n|\r)(?:!{2,}|"{2,}|#{2,}|\\\${2,}|%{2,}|&{2,}|'{2,}|\({2,}|\){2,}|\*{2,}|\+{2,}|,{2,}|-{2,}|\.{2,}|\/{2,}|:{2,}|;{2,}|<{2,}|={2,}|>{2,}|\?{2,}|@{2,}|\[{2,}|\\{2,}|\]{2,}|\^{2,}|_{2,}|\`{2,}|\{{2,}|\|{2,}|\}{2,}|~{2,})(?=\r?\n|\r|$)/
 /^>>>/
 /(?:^|[-\s"'(/:<[{])(?::[^:]+:\`.*?\`|\`.*?\`:[^:]+:|(?:\*\*(?:\S.*?)??\S\*\*|\*(?:\S.*?)??\S\*|\`\`(?:\S.*?)??\S\`\`|\`(?:\S.*?)??\S\`|\|(?:\S.*?)??\S\|)(?=[\s!"'),\-./:;?\\\]}]|$))/m
-/\[[^\]]+\]_(?=[\s!"'),\-./:;?\\\]}]|$)/
-/(?:(?<!\w)[\dA-Z]+(?:[+.:_][\dA-Z]+)*_{1,2}|\`[^\`]+\`_{1,2}|_\`[^\`]+\`)(?=[\s!"'),\-./:;?\\\]}]|$)/i
+/\[[^\]]+\]_(?![^\s!"'),\-./:;?\\\]}])/
+/(?:(?<!\w)[\dA-Z]+(?:[+.:_][\dA-Z]+)*_{1,2}|\`[^\`]+\`_{1,2}|_\`[^\`]+\`)(?![^\s!"'),\-./:;?\\\]}])/i
 /\||(?:\+[-=]+)+\+/
 /[-=]+/
 /^\|[^\s|](?:[^|]*[^\s|])??\|/
@@ -2194,7 +2194,7 @@ TooManyNodesError
 /.(?:.*(?:[\n\r]|.$))*/
 /^[^\n\r!#$*]+(?=[#$])/m
 /[#$](?:[^\n\r"'<\\]|\\.|"(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|[^"\\])*"|'(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|[^'\\])*'|<<-?\s*\w+?[\t ]*(?:[\n\r\u2028\u2029][^]*?)??[\n\r][]Unknown:\\2[]|<<-?\s*(?:"\w+"|'\w+')[\t ]*(?:[\n\r\u2028\u2029][^]*?)??[\n\r][]Unknown:\\4[])+/
-/^[^\s!#$*/:@\\]+@[^\s!#$*/:@\\]+(?=:|$)/
+/^[^\s!#$*/:@\\]+@[^\s!#$*/:@\\]+(?![^:])/
 /:[^]+/
 /^[#$]\s*[^]+/
 /^[#$]/
@@ -2498,11 +2498,11 @@ TooManyNodesError
 /"(?:""|[^"])*"|'(?:''|[^'])*'/
 /\(#.+?#\)/
 /(?:^|[^-])(?:ancestor(?:-or-self)?|attribute|child|descendant(?:-or-self)?|following(?:-sibling)?|parent|preceding(?:-sibling)?|self)(?=::)/
-/(?:^|[^-\w:])(?:and|castable as|div|eq|except|ge|gt|idiv|instance of|intersect|is|le|lt|mod|ne|or|union)(?!\w)(?=$|[^-:])/
-/(?:^|[^-\w:])(?:as|ascending|at|base-uri|boundary-space|case|cast as|collation|construction|copy-namespaces|declare|default|descending|else|empty (?:greate|lea)st|encoding|every|external|for|function|if|import|in|inherit|lax|let|map|module|namespace|no-inherit|no-preserve|option|order(?: by|ed|ing)?|preserve|return|satisfies|schema|some|stable|strict|strip|then|to|treat as|typeswitch|unordered|validate|variable|version|where|xquery)(?!\w)(?=$|[^-:])/
+/(?:^|[^-\w:])(?:and|castable as|div|eq|except|ge|gt|idiv|instance of|intersect|is|le|lt|mod|ne|or|union)(?!\w)(?![-:])/
+/(?:^|[^-\w:])(?:as|ascending|at|base-uri|boundary-space|case|cast as|collation|construction|copy-namespaces|declare|default|descending|else|empty (?:greate|lea)st|encoding|every|external|for|function|if|import|in|inherit|lax|let|map|module|namespace|no-inherit|no-preserve|option|order(?: by|ed|ing)?|preserve|return|satisfies|schema|some|stable|strict|strip|then|to|treat as|typeswitch|unordered|validate|variable|version|where|xquery)(?!\w)(?![-:])/
 /element\s+[-\w]+(?::[-\w]+)*/
 /attribute\s+[-\w]+(?::[-\w]+)*/
-/(?:^|[^-\w:])(?:attribute|comment|document|element|processing-instruction|text|xs:(?:anyAtomicType|anyType|anyURI|base64Binary|boolean|byte|date|dateTime|dayTimeDuration|decimal|double|duration|ENTITIES|ENTITY|float|gDay|gMonth|gMonthDay|gYear|gYearMonth|hexBinary|ID|IDREFS?|int|integer|language|long|Name|NCName|negativeInteger|NMTOKENS?|nonNegativeInteger|nonPositiveInteger|normalizedString|NOTATION|positiveInteger|QName|short|string|time|token|unsigned(?:Byte|Int|Long|Short)|untyped(?:Atomic)?|yearMonthDuration))(?!\w)(?=$|[^-:])/
+/(?:^|[^-\w:])(?:attribute|comment|document|element|processing-instruction|text|xs:(?:anyAtomicType|anyType|anyURI|base64Binary|boolean|byte|date|dateTime|dayTimeDuration|decimal|double|duration|ENTITIES|ENTITY|float|gDay|gMonth|gMonthDay|gYear|gYearMonth|hexBinary|ID|IDREFS?|int|integer|language|long|Name|NCName|negativeInteger|NMTOKENS?|nonNegativeInteger|nonPositiveInteger|normalizedString|NOTATION|positiveInteger|QName|short|string|time|token|unsigned(?:Byte|Int|Long|Short)|untyped(?:Atomic)?|yearMonthDuration))(?!\w)(?![-:])/
 /[*+=?@|]|\.{1,2}|:=|!=|<[<=]?|>[=>]?/
 /\s-(?=\s)/
 /=(?:"(?:\\[^]|\{[^{}](?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])*\}|[^"\\])*"|'(?:\\[^]|\{[^{}](?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])*\}|[^'\\])*'|[^\s"'=>]+)/

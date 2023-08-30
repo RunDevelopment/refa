@@ -35,6 +35,7 @@ import {
 } from "./util";
 import { CharSet } from "../char-set";
 import { CreationOptions } from "./creation-options";
+import { debugAssert } from "../util";
 
 const enum Result {
 	ACCEPT,
@@ -373,6 +374,46 @@ function removeDeadBranches(assertion: NoParent<Assertion>, context: TransformCo
 }
 
 /**
+ * E.g. `(?!a|$)` => `(?=[^a])` and `(?=a|$)` => `(?![^a])`.
+ *
+ * @param assertion
+ * @param context
+ */
+function removeEdgeAssertion(assertion: NoParent<Assertion>, context: TransformContext): void {
+	if (assertion.alternatives.length !== 2) {
+		return;
+	}
+
+	const hasCharacter = assertion.alternatives.findIndex(a => {
+		return a.elements.length === 1 && a.elements[0].type === "CharacterClass";
+	});
+	const hasEdgeAssertion = assertion.alternatives.findIndex(a => {
+		if (a.elements.length !== 1) {
+			return false;
+		}
+		const single = a.elements[0];
+		return (
+			single.type === "Assertion" &&
+			single.kind === assertion.kind &&
+			single.negate &&
+			isSingleCharacterParent(single) &&
+			single.alternatives[0].elements[0].characters.isAll
+		);
+	});
+
+	if (hasCharacter === -1 || hasEdgeAssertion === -1) {
+		return;
+	}
+
+	context.signalMutation();
+	assertion.alternatives.splice(hasEdgeAssertion, 1);
+	debugAssert(isSingleCharacterParent(assertion));
+	const char = assertion.alternatives[0].elements[0];
+	char.characters = char.characters.negate();
+	assertion.negate = !assertion.negate;
+}
+
+/**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
  *
  * @param _options
@@ -382,7 +423,10 @@ export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>
 	return {
 		name: "removeUnnecessaryAssertions",
 
-		onAssertion: removeDeadBranches,
+		onAssertion(node, context) {
+			removeDeadBranches(node, context);
+			removeEdgeAssertion(node, context);
+		},
 
 		onConcatenation(node, context) {
 			removeTrivialAssertions(node, getTrivialResult, context);
