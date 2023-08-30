@@ -328,6 +328,51 @@ function removeAdjacentAssertions(
 }
 
 /**
+ * This removes optional breaches at the end of the expression tree of assertions.
+ * E.g. `(?!a+)` => `(?!a)`.
+ *
+ * @param assertion
+ * @param context
+ */
+function removeDeadBranches(assertion: NoParent<Assertion>, context: TransformContext): void {
+	const direction = invertMatchingDirection(assertion.kind);
+
+	const firstIndex = firstIndexFor(direction);
+	const inc = incrementFor(direction);
+
+	const remove = (concat: NoParent<Concatenation>): void => {
+		const { elements } = concat;
+
+		for (let i = firstIndex; inRange(elements, i); i += inc) {
+			const element = at(elements, i);
+
+			if (isPotentiallyEmpty(element)) {
+				// remove
+				context.signalMutation();
+				elements.splice(i, 1);
+				i -= inc;
+				continue;
+			}
+
+			if (element.type === "Quantifier" && element.min !== element.max) {
+				// e.g. `(?=a{2,})` => `(?=a{2})`
+				context.signalMutation();
+				element.max = element.min;
+				element.lazy = false;
+			}
+
+			if (element.type === "Alternation") {
+				element.alternatives.forEach(remove);
+			}
+
+			break;
+		}
+	};
+
+	assertion.alternatives.forEach(remove);
+}
+
+/**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
  *
  * @param _options
@@ -336,6 +381,8 @@ function removeAdjacentAssertions(
 export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
 		name: "removeUnnecessaryAssertions",
+
+		onAssertion: removeDeadBranches,
 
 		onConcatenation(node, context) {
 			removeTrivialAssertions(node, getTrivialResult, context);
