@@ -31,6 +31,8 @@ describe("Transformers", function () {
 				literal: /\w{2,4}|\w{2,3}/,
 				expected: /\w{2}(?:\w{0,2}|\w?)/,
 			},
+
+			/a$|b$|c/,
 		]);
 
 		it("Prism regex snapshot", function () {

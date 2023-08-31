@@ -12,6 +12,10 @@ var n = (array: TemplateStringsArray): string => {
 	return unescapeBackslashes(array.raw[0].slice(0, -1));
 };
 
+module.exports[n`Transformers >> factor-out >> /a$|b$|c/ `] = lit`
+/(?:a|b)$|c/
+`;
+
 module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /<!--[^]*?-->/
 /<\?[^]+?\?>/
@@ -401,7 +405,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\\(?:["E\\abcefnrtv]|O?[0-7]{1,3}|x[\dA-Fa-f]{1,2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/
 /--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/
 /\(\(?|\)\)?|,|;/
-/^\$\(|^\`|\)$|\`$/
+/^(?:\$\(|\`)|(?:\)|\`)$/
 /:[-+=?]?|[!/]|##?|%%?|\^\^?|,,?/
 /^\d/
 /\$\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/
@@ -892,7 +896,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /->|:=|&&|\|\||<<|>>|[-!%&*+/<=>|]=?|[~^]/
 /[(),.:;[\]{}]/
 /@?(?:(?:"(?:(?!")[^\n\\]|\\[^])*"|'(?:(?!')[^\n\\]|\\[^])*')(?!"|')|"""(?:[^\\]|\\[^])*?""")/
-/(?:^(?:class_name|class|extends)[\t ]|^export\(|\bas[\t ]|(?:\b(?:const|var)[\t ]|[(,])[\t ]*\w+[\t ]*:|->)[\t ]*[A-Z_a-z]\w*/m
+/(?:^(?:(?:class_name|class|extends)[\t ]|export\()|\bas[\t ]|(?:\b(?:const|var)[\t ]|[(,])[\t ]*\w+[\t ]*:|->)[\t ]*[A-Z_a-z]\w*/m
 /(?:\b0b[01_]+|\b0x[\dA-F_a-f]+|(?:\b\d[\d_]*(?:\.[\d_]*)?|\B\.[\d_]+)(?:e[-+]?[\d_]+)?)\b/
 /\b(?:INF|NAN|PI|TAU)\b/
 /^\s*\d+ +(?:@\w[^\0-\x1f@\x7f\xff-\uffff]*@ +)?\w+ +.+/m
@@ -2067,7 +2071,7 @@ TooManyNodesError
 /^(?:::|!!*|""*|##*|\$\$*|%%*|&&*|''*|\(\(*|\)\)*|\*\**|\+\+*|,,*|--*|\.\.*|\/\/*|::*|;;*|<<*|==*|>>*|\?\?*|@@*|\[\[*|\\\\*|\]\]*|\^\^*|__*|\`\`*|\{\{*|\|\|*|\}\}*|~~*)/m
 /\*\*?|\`\`?|\|/
 /^\[|\]_$/
-/^_?\`|\`$|\`?_?_$/
+/^_?\`|(?:\`|\`?_?_)$/
 /^\||\|$/
 /^\*\*.+(?=\*\*$)/
 /^\*.+(?=\*$)/
@@ -2325,7 +2329,7 @@ TooManyNodesError
 /^<#|#>$/
 /\w+(?=\s)/
 /=(?:"(?:\\[^]|(?!")[^\\])*"|'(?:\\[^]|(?!')[^\\])*'|[^\s"'=>]+)/
-/^=|^["']|["']$/
+/^(?:=|["'])|["']$/
 /(?:\b(?:ADDHANDLER|ADDRESSOF|ALIAS|AND|ANDALSO|AS|BEEP|BLOAD|BOOLEAN|BSAVE|BYREF|BYTE|BYVAL|CALL(?: ABSOLUTE)?|CASE|CATCH|CBOOL|CBYTE|CCHAR|CDATE|CDEC|CDBL|CHAIN|CHAR|CHDIR|CINT|CLASS|CLEAR|CLNG|CLOSE|CLS|COBJ|COM|COMMON|CONST|CONTINUE|CSBYTE|CSHORT|CSNG|CSTR|CTYPE|CUINT|CULNG|CUSHORT|DATA|DATE|DECIMAL|DECLARE|DEFAULT|DEF(?: FN| SEG|DBL|INT|LNG|SNG|STR)|DELEGATE|DIM|DIRECTCAST|DO|DOUBLE|ELSE|ELSEIF|END|ENUM|ENVIRON|ERASE|ERROR|EVENT|EXIT|FALSE|FIELD|FILES|FINALLY|FOR(?: EACH)?|FRIEND|FUNCTION|GET|GETTYPE|GETXMLNAMESPACE|GLOBAL|GOSUB|GOTO|HANDLES|IF|IMPLEMENTS|IMPORTS|IN|INHERITS|INPUT|INTEGER|INTERFACE|IOCTL|IS|ISNOT|KEY|KILL|LINE INPUT|LET|LIB|LIKE|LOCATE|LOCK|LONG|LOOP|LSET|ME|MKDIR|MOD|MODULE|MUSTINHERIT|MUSTOVERRIDE|MYBASE|MYCLASS|NAME|NAMESPACE|NARROWING|NEW|NEXT|NOT|NOTHING|NOTINHERITABLE|NOTOVERRIDABLE|OBJECT|OF|OFF|ON(?: (?:COM|ERROR|KEY|TIMER))?|OPERATOR|OPEN|OPTION(?: BASE)?|OPTIONAL|OR|ORELSE|OUT|OVERLOADS|OVERRIDABLE|OVERRIDES|PARAMARRAY|PARTIAL|POKE|PRIVATE|PROPERTY|PROTECTED|PUBLIC|PUT|RAISEEVENT|READ|READONLY|REDIM|REM|REMOVEHANDLER|RESTORE|RESUME|RETURN|RMDIR|RSET|RUN|SBYTE|SELECT(?: CASE)?|SET|SHADOWS|SHARED|SHORT|SINGLE|SHELL|SLEEP|STATIC|STEP|STOP|STRING|STRUCTURE|SUB|SYNCLOCK|SWAP|SYSTEM|THEN|THROW|TIMER|TO|TROFF|TRON|TRUE|TRY|TRYCAST|TYPE|TYPEOF|UINTEGER|ULONG|UNLOCK|UNTIL|USHORT|USING|VIEW PRINT|WAIT|WEND|WHEN|WHILE|WIDENING|WITH|WITHEVENTS|WRITE|WRITEONLY|XOR)|\B#(?:CONST|ELSE|ELSEIF|END|IF))(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /(?:^|[^:\\])'.*/
 /!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?/i
