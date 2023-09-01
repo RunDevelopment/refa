@@ -637,6 +637,34 @@ function moveAssertionIntoAlternation(
 			// remove assertion
 			context.signalMutation();
 			elements.splice(elements.indexOf(assertion), 1);
+		} else if (
+			element.type === "Quantifier" &&
+			element.min === 0 &&
+			element.max === 1 &&
+			// we already handle this simple case elsewhere
+			!isSingleCharacterParent(element)
+		) {
+			alternation = {
+				type: "Alternation",
+				alternatives: element.alternatives,
+				source: copySource(element.source),
+			};
+
+			const empty: NoParent<Concatenation> = {
+				type: "Concatenation",
+				elements: [],
+				source: copySource(element.source),
+			};
+			if (element.lazy) {
+				alternation.alternatives.unshift(empty);
+			} else {
+				alternation.alternatives.push(empty);
+			}
+
+			// replace quantifier and remove assertion
+			setAt(elements, alternationIndex, alternation);
+			context.signalMutation();
+			elements.splice(assertionIndex, 1);
 		} else {
 			continue;
 		}
