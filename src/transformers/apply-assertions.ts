@@ -644,6 +644,7 @@ function moveAssertionIntoAlternation(
 			// we already handle this simple case elsewhere
 			!isSingleCharacterParent(element)
 		) {
+			// convert `(?:a|b)?` => `(?:a|b|)` and then use the new alternation
 			alternation = {
 				type: "Alternation",
 				alternatives: element.alternatives,
