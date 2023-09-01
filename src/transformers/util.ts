@@ -94,6 +94,40 @@ function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
 	}
 }
 
+export function countNodes(node: NoParent<Node>): number {
+	switch (node.type) {
+		case "CharacterClass":
+		case "Unknown":
+			return 1;
+		case "Alternation":
+		case "Assertion":
+		case "Expression":
+		case "Quantifier":
+			return node.alternatives.reduce((sum, alt) => sum + countNodes(alt), 1);
+		case "Concatenation":
+			return node.elements.reduce((sum, el) => sum + countNodes(el), 1);
+		default:
+			return assertNever(node);
+	}
+}
+
+export function getMaxDepth(node: NoParent<Node>): number {
+	switch (node.type) {
+		case "CharacterClass":
+		case "Unknown":
+			return 1;
+		case "Alternation":
+		case "Assertion":
+		case "Expression":
+		case "Quantifier":
+			return node.alternatives.reduce((sum, alt) => Math.max(sum, getMaxDepth(alt)), 0) + 1;
+		case "Concatenation":
+			return node.elements.reduce((sum, el) => Math.max(sum, getMaxDepth(el)), 0) + 1;
+		default:
+			return assertNever(node);
+	}
+}
+
 export function at<T>(arr: readonly T[], signedIndex: number): T | undefined {
 	if (signedIndex < 0) {
 		signedIndex += arr.length;

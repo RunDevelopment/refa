@@ -10,11 +10,13 @@ import {
 	Transformer,
 } from "../ast";
 import {
+	FirstLookChar,
 	MatchingDirection,
 	alwaysConsumesCharacters,
 	firstConsumedToLook,
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
+	getLengthRange,
 	invertMatchingDirection,
 	isTriviallyAccepting,
 	isZeroLength,
@@ -22,7 +24,7 @@ import {
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
-import { debugAssert, filterMut } from "../util";
+import { cachedFunc, debugAssert, filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
 import {
 	SingleCharacterParent,
@@ -30,7 +32,9 @@ import {
 	atInRange,
 	copyNode,
 	copySource,
+	countNodes,
 	firstIndexFor,
+	getMaxDepth,
 	inRange,
 	incrementFor,
 	isSingleCharacterParent,
@@ -881,6 +885,99 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 		}
 	};
 
+	interface Prefix {
+		readonly chars: readonly CharSet[];
+		readonly after: FirstLookChar;
+	}
+	const getLtrPrefix = cachedFunc((alt: NoParent<Concatenation>): Prefix => {
+		const chars: CharSet[] = [];
+		for (const e of alt.elements) {
+			if (e.type === "CharacterClass") {
+				chars.push(e.characters);
+			} else {
+				break;
+			}
+		}
+		if (chars.length > 0) {
+			alt = {
+				type: "Concatenation",
+				elements: alt.elements.slice(chars.length),
+			};
+		}
+		const after = firstConsumedToLook(getFirstCharConsumedBy(alt, "ltr", context.maxCharacter));
+		return { chars, after };
+	});
+	const getRtlPrefix = cachedFunc((alt: NoParent<Concatenation>): Prefix => {
+		const chars: CharSet[] = [];
+		for (let i = 0; i < alt.elements.length; i++) {
+			const e = alt.elements[alt.elements.length - i - 1];
+			if (e.type === "CharacterClass") {
+				chars.push(e.characters);
+			} else {
+				break;
+			}
+		}
+		if (chars.length > 0) {
+			alt = {
+				type: "Concatenation",
+				elements: alt.elements.slice(0, alt.elements.length - chars.length),
+			};
+		}
+		const after = firstConsumedToLook(getFirstCharConsumedBy(alt, "rtl", context.maxCharacter));
+		return { chars, after };
+	});
+	const areDisjoint = (a: Prefix, b: Prefix): boolean => {
+		const l = Math.min(a.chars.length, b.chars.length);
+		for (let i = 0; i < l; i++) {
+			if (a.chars[i].isDisjointWith(b.chars[i])) {
+				return true;
+			}
+		}
+
+		let aLook: FirstLookChar;
+		if (l < a.chars.length) {
+			aLook = {
+				char: a.chars[l],
+				edge: false,
+				exact: true,
+			};
+		} else {
+			aLook = a.after;
+		}
+
+		let bLook: FirstLookChar;
+		if (l < b.chars.length) {
+			bLook = {
+				char: b.chars[l],
+				edge: false,
+				exact: true,
+			};
+		} else {
+			bLook = b.after;
+		}
+
+		return lookAreDisjoint(aLook, bLook);
+	};
+	const lookAreDisjoint = (a: FirstLookChar, b: FirstLookChar): boolean => {
+		return !(a.edge && b.edge) && a.char.isDisjointWith(b.char);
+	};
+	const canReorder = (alt: NoParent<Concatenation>, others: readonly NoParent<Concatenation>[]): boolean => {
+		const lengthRange = getLengthRange(alt);
+		return others.every(o => {
+			// we can reorder alternatives with the same constant length. E.g. `abc|foo|bar` == `bar|foo|abc`
+			if (lengthRange && lengthRange.min === lengthRange.max) {
+				const otherRange = getLengthRange(o);
+				if (otherRange && otherRange.min === otherRange.max && lengthRange.min === otherRange.min) {
+					return true;
+				}
+			}
+
+			// check whether the first characters are disjoint
+			// since we don't want to assume a matching direction, we need to check both directions
+			return areDisjoint(getLtrPrefix(alt), getLtrPrefix(o)) && areDisjoint(getRtlPrefix(alt), getRtlPrefix(o));
+		});
+	};
+
 	for (let i = 0; i < elements.length; i++) {
 		const quant = elements[i];
 		if (
@@ -892,18 +989,45 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 			continue;
 		}
 
+		// Since this operation copies a lot of nodes, we want to make sure that we don't blow up the AST.
+		if (getMaxDepth(quant) > 20 || countNodes(quant) > 100) {
+			continue;
+		}
+
 		// in order to preserve order, we can only use the first or last alternative
 		let alternative = quant.alternatives[0];
+		let isFirst = true;
 		let assertion = getAssertion(alternative);
 		if (!assertion) {
 			alternative = quant.alternatives[quant.alternatives.length - 1];
+			isFirst = false;
 			assertion = getAssertion(alternative);
+		}
+		if (!assertion) {
+			// see if we can reorder an inner alternative to make the first/last alternative
+			for (let j = 1; j < quant.alternatives.length - 1; j++) {
+				const alt = quant.alternatives[j];
+				const asr = getAssertion(alt);
+				if (asr) {
+					if (canReorder(alt, quant.alternatives.slice(0, j))) {
+						alternative = alt;
+						isFirst = true;
+						assertion = asr;
+						break;
+					}
+					if (canReorder(alt, quant.alternatives.slice(j + 1))) {
+						alternative = alt;
+						isFirst = false;
+						assertion = asr;
+						break;
+					}
+				}
+			}
 		}
 		if (!assertion) {
 			// we couldn't find a fitting assertion
 			continue;
 		}
-		const isFirst = alternative === quant.alternatives[0];
 
 		// From this point onwards, we know that we are going to apply the transformation. There is no backing out now.
 		context.signalMutation();
