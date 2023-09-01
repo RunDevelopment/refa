@@ -755,6 +755,20 @@ function moveAssertionOutsideLoop(
 ): void {
 	const direction = toMatchingDirection(kind);
 
+	const getAssertion = (alt: NoParent<Concatenation>): SingleCharacterParent<Assertion> | undefined => {
+		const inc = incrementFor(invertMatchingDirection(direction));
+		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
+			const element = atInRange(alt.elements, i);
+			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
+				return element;
+			}
+			if (!isZeroLength(element)) {
+				break;
+			}
+		}
+		return undefined;
+	};
+
 	for (let i = 0; i < elements.length; i++) {
 		const quant = elements[i];
 		if (
@@ -766,22 +780,9 @@ function moveAssertionOutsideLoop(
 			continue;
 		}
 
-		let assertion: SingleCharacterParent<Assertion> | undefined = undefined;
-
 		// find a fitting assertion
 		const alt = quant.alternatives[0];
-		const inc = incrementFor(invertMatchingDirection(direction));
-		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
-			const element = atInRange(alt.elements, i);
-			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
-				assertion = element;
-				break;
-			}
-			if (!isZeroLength(element)) {
-				break;
-			}
-		}
-
+		const assertion = getAssertion(alt);
 		if (!assertion) {
 			// we couldn't find a fitting assertion
 			continue;
@@ -840,6 +841,137 @@ function moveAssertionOutsideLoop(
 }
 
 /**
+ * This will apply an assertion at the end of a loop. This is a generalization of `moveAssertionOutsideLoop` for `*`
+ * quantifiers.
+ *
+ * The general transformations is this: `(?:a|b(?=c))*` => `/(?:a|bB*A)*(?:bB*(?=c))?/` where `A=(?=c)a` and `B=(?=c)b`.
+ *
+ * Note that this transformation does not actually apply the assertion. It only rewrites the loop to make it easier to
+ * apply the assertion.
+ *
+ * @param elements
+ * @param kind
+ * @param context
+ */
+function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["kind"], context: TransformContext): void {
+	const direction = toMatchingDirection(kind);
+
+	const getAssertion = (alt: NoParent<Concatenation>): SingleCharacterParent<Assertion> | undefined => {
+		const inc = incrementFor(invertMatchingDirection(direction));
+		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
+			const element = atInRange(alt.elements, i);
+			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
+				return element;
+			}
+			if (!isZeroLength(element)) {
+				break;
+			}
+		}
+		return undefined;
+	};
+	const concatToElement = (concat: NoParent<Concatenation>): NoParent<Element> => {
+		if (concat.elements.length === 1) {
+			return concat.elements[0];
+		} else {
+			return {
+				type: "Alternation",
+				alternatives: [concat],
+				source: copySource(concat.source),
+			};
+		}
+	};
+
+	for (let i = 0; i < elements.length; i++) {
+		const quant = elements[i];
+		if (
+			quant.type !== "Quantifier" ||
+			quant.alternatives.length < 2 ||
+			quant.min !== 0 ||
+			quant.max !== Infinity ||
+			!alwaysConsumesCharacters(quant.alternatives)
+		) {
+			continue;
+		}
+
+		// in order to preserve order, we can only use the first or last alternative
+		let alternative = quant.alternatives[0];
+		let assertion = getAssertion(alternative);
+		if (!assertion) {
+			alternative = quant.alternatives[quant.alternatives.length - 1];
+			assertion = getAssertion(alternative);
+		}
+		if (!assertion) {
+			// we couldn't find a fitting assertion
+			continue;
+		}
+		const isFirst = alternative === quant.alternatives[0];
+
+		// From this point onwards, we know that we are going to apply the transformation. There is no backing out now.
+		context.signalMutation();
+
+		// we already have our assertion, so let's assemble the other pieces as well.
+		const a = quant.alternatives.filter(alt => alt !== alternative);
+		const b = alternative;
+		b.elements.splice(b.elements.indexOf(assertion), 1);
+
+		// `(?=c)a`
+		const A: NoParent<Concatenation> = {
+			type: "Concatenation",
+			elements: withDirection(direction, [
+				copyNode(assertion),
+				{ type: "Alternation", alternatives: a.map(copyNode), source: copySource(quant.source) },
+			]),
+			source: copySource(quant.source),
+		};
+		const B = copyNode(b);
+		pushFront(direction, B.elements, copyNode(assertion));
+
+		// `B*`
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		const BStar: NoParent<Quantifier> = {
+			type: "Quantifier",
+			min: 0,
+			max: Infinity,
+			lazy: quant.lazy,
+			alternatives: [copyNode(B)],
+			source: copySource(quant.source),
+		};
+		// `bB*A`
+		const prefixInner: NoParent<Concatenation> = {
+			type: "Concatenation",
+			elements: withDirection(direction, [copyNode(concatToElement(b)), copyNode(BStar), concatToElement(A)]),
+			source: copySource(quant.source),
+		};
+		// `(?:a|bB*A)*`
+		const prefix: NoParent<Quantifier> = {
+			type: "Quantifier",
+			min: 0,
+			max: Infinity,
+			lazy: quant.lazy,
+			alternatives: isFirst ? [prefixInner, ...a] : [...a, prefixInner],
+			source: copySource(quant.source),
+		};
+		// `(?:bB*(?=c))?`
+		const suffix: NoParent<Quantifier> = {
+			type: "Quantifier",
+			min: 0,
+			max: 1,
+			lazy: quant.lazy,
+			alternatives: [
+				{
+					type: "Concatenation",
+					elements: withDirection(direction, [concatToElement(b), BStar, assertion]),
+					source: copySource(quant.source),
+				},
+			],
+			source: copySource(quant.source),
+		};
+
+		elements.splice(i, 1, ...withDirection(direction, [prefix, suffix]));
+	}
+}
+
+/**
  * This transformer will apply all trivial assertion (e.g. `/(?!0)\d/` => `/[1-9]/`) and remove all branches in
  * assertions that are guaranteed to reject (e.g. `(?=\d+=|-)\w` => `(?=\d+=)\w`).
  *
@@ -857,6 +989,9 @@ export function applyAssertions(_options?: Readonly<CreationOptions>): Transform
 
 			moveAssertionOutsideLoop(elements, "ahead", context);
 			moveAssertionOutsideLoop(elements, "behind", context);
+
+			rewriteLoopAssertion(elements, "ahead", context);
+			rewriteLoopAssertion(elements, "behind", context);
 
 			moveAssertionIntoAlternation(elements, "ahead", context);
 			moveAssertionIntoAlternation(elements, "behind", context);

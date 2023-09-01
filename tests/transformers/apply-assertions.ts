@@ -5,6 +5,7 @@ import { CombinedTransformer } from "../../src/ast";
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
 		const transformer = applyAssertions();
+		const optimizedTransformer = new CombinedTransformer([applyAssertions(), inline(), removeDeadBranches()]);
 
 		itTest(transformer, [
 			/(?=\d)\wa/,
@@ -94,6 +95,8 @@ describe("Transformers", function () {
 
 			/(?:^|[^&])(?<!\w)(?:TRUE|FALSE)/i,
 
+			{ literal: /""((?!"").)*""/s, stepByStep: true, transformer: optimizedTransformer },
+			{ literal: /""(.(?<!""))*""/s, stepByStep: true, transformer: optimizedTransformer },
 			/""((?!"")(?:[^\\]|\\"))*""/s,
 			/""((?!"")(?:[^\\]|\\"))+""/s,
 			/"""((?!""").)*"""/s,
@@ -102,7 +105,7 @@ describe("Transformers", function () {
 			/(?:^|[^.]|\.\.\.\s*)(?<!\w)(?:as|async(?=\s*(?:function(?!\w)|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|[gs]et(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?!\w)/,
 			{
 				literal: /(?:\b[a-z][a-z_\d]*\s*::\s*)*\b[a-z][a-z_\d]*\s*::(?!\s*<)/,
-				transformer: new CombinedTransformer([applyAssertions(), inline(), removeDeadBranches()]),
+				transformer: optimizedTransformer,
 				stepByStep: true,
 			},
 		]);
