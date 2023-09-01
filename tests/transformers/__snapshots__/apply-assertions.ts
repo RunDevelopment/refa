@@ -368,6 +368,58 @@ Pass 4
 Final:               /(?:(?<!\w)(?:[a-z][\d_a-z]*\s*::\s*)+|(?<!\w))[a-z][\d_a-z]*\s*::(?!\s*<)/
 `;
 
+module.exports[n`Transformers >> apply-assertions >> /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))+/ `] = lit`
+Start:               /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))+/
+Pass 1
+Con applyAssertions: /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}])){1}(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?:(?![)\]}])\.)*(?:(?![)\]}])(?:[-!$%&*+/:<=>?@\\|~^]|\.\.)))*(?:\.(?:(?![)\]}])\.)*(?![)\]}]))?/
+Con inline:          /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?:(?![)\]}])\.)*(?:(?![)\]}])(?:[-!$%&*+/:<=>?@\\|~^]|\.\.)))*(?:\.(?:(?![)\]}])\.)*(?![)\]}]))?/
+Pass 2
+Con applyAssertions: /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:(?![)\]}])(?:[-!$%&*+/:<=>?@\\|~^]|\.\.)))*(?:\.(?:(?![)\]}])\.)*(?![)\]}]))?/
+Con applyAssertions: /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:(?:[-!$%&*+/:<=>?@\\|~^]|\.\.)))*(?:\.(?:(?![)\]}])\.)*(?![)\]}]))?/
+Alt inline:          /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:[-!$%&*+/:<=>?@\\|~^]|\.\.))*(?:\.(?:(?![)\]}])\.)*(?![)\]}]))?/
+Con applyAssertions: /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:[-!$%&*+/:<=>?@\\|~^]|\.\.))*(?:\.\.*(?![)\]}]))?/
+Pass 3
+Final:               /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:[-!$%&*+/:<=>?@\\|~^]|\.\.))*(?:\.\.*(?![)\]}]))?/
+`;
+
+module.exports[n`Transformers >> apply-assertions >> /(?:[a-z%]|(?<!\w)_+(?!\w))+/ `] = lit`
+Start:                  /(?:[%a-z]|(?<!\w)_+(?!\w))+/
+Pass 1
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w)){1}(?:[%a-z]|(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?:(?!\w)(?:[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?:(?!\w)(?:[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Pass 2
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)(?:(?<!\w)[]_*)*(?:(?!\w)(?:[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)[]*(?:(?!\w)(?:[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Qnt removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)(?:[])*(?:(?!\w)(?:[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)(?:[])*(?:(?:(?!\w)[%a-z])))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?:(?<!\w)_+)(?:[])*(?:(?!\w)[%a-z]))*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?:[])*(?!\w)[%a-z])*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?:(?<!\w)_+)(?:(?!\w)(?<!\w)_+)*(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?:(?<!\w)_+)(?:(?<!\w)[]_*)*(?!\w))?/
+Con removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?:(?<!\w)_+)[]*(?!\w))?/
+Qnt removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?:(?<!\w)_+)(?:[])*(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?<!\w)_+(?:[])*(?!\w))?/
+Con removeDeadBranches: /(?:[%a-z]|(?<!\w)_+(?!\w))(?:[%a-z]|(?<!\w)_+(?!\w)[%a-z])*(?:(?<!\w)_+(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))?(?:[%a-z]|(?:(?:[%a-z])(?<!\w))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Pass 3
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*(?:_+(?!\w)[%a-z]))?(?:[%a-z]|(?:(?:[%a-z])(?<!\w))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*(?:_+%))?(?:[%a-z]|(?:(?:[%a-z])(?<!\w))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|(?:(?:[%a-z])(?<!\w))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|(?:(?:[%a-z](?<!\w)))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|(?:[%a-z](?<!\w))(?:_+(?!\w)[%a-z](?<!\w))*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|(?:[%a-z](?<!\w))(?:_+%)*(?:_+(?!\w)[%a-z]))*(?:(?<!\w)_+(?!\w))?/
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|(?:[%a-z](?<!\w))(?:_+%)*(?:_+%))*(?:(?<!\w)_+(?!\w))?/
+Con inline:             /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|[%a-z](?<!\w)(?:_+%)*_+%)*(?:(?<!\w)_+(?!\w))?/
+Pass 4
+Con applyAssertions:    /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|%(?:_+%)*_+%)*(?:(?<!\w)_+(?!\w))?/
+Pass 5
+Final:                  /(?:[%a-z]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+%)*_+%)?(?:[%a-z]|%(?:_+%)*_+%)*(?:(?<!\w)_+(?!\w))?/
+`;
+
+module.exports[n`Transformers >> apply-assertions >> /(?:[a-z]|(?<!\w)_+(?!\w))+/ `] = lit`
+/(?:[a-z]|(?<!\w)_+(?!\w))[a-z]*(?:(?<!\w)_+(?!\w))?/
+`;
+
 module.exports[n`Transformers >> apply-assertions >> Prism regex snapshot `] = lit`
 /<!--[^]*?-->/
 /<\?[^]+?\?>/
@@ -1299,7 +1351,7 @@ module.exports[n`Transformers >> apply-assertions >> Prism regex snapshot `] = l
 /(?:(?<!\w)fragment\s+|\.{3}\s*(?!on(?!\w)))[A-Z_a-z]\w*/
 /^"(?:"")?(?![]Unknown:\\1[])[^]+(?=[]Unknown:\\1[]$)/
 /^>(?:[\t ]*>)*/m
-/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)(?:\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$))*/m
+/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)(?:\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$))*/m
 /^\s*(?:\*(?:[\t ]*\*){2,}|-(?:[\t ]*-){2,})(?=\s*$)/m
 /^\s*(?:[-*+]|\d+\.)(?=[\t ].)/m
 /!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/
@@ -1317,9 +1369,9 @@ module.exports[n`Transformers >> apply-assertions >> Prism regex snapshot `] = l
 /\*\*|__/
 /[*_]/
 /~~?/
-/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)(?:\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$))*$/
-/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)$/
-/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)$/
+/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)(?:\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$))*$/
+/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)$/
+/^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)$/
 /\`\`\`/
 /==+$|--+$/
 /^#+|#+$/
@@ -1333,7 +1385,7 @@ module.exports[n`Transformers >> apply-assertions >> Prism regex snapshot `] = l
 /\||:?-{3,}:?/
 /^\`\`\`.*(?:\n|\r\n?)[^]+?(?=(?:\n|\r\n?)\`\`\`$)/m
 /^\`\`\`.+/
-/(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+/
+/(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))(?:[^\n\r\`]|\`[^\n\r\`])*\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+/
 /\b(?:as|def|in|abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|trait|transient|try|void|volatile|while)\b/
 /\b(?:0B[01_]+|0X[\dA-F_]+(?:\.[-\dA-FP_]+)?|[\d_]+(?:\.[\d_]+)?(?:E[-+]?\d+)?)[DFGIL]?\b/i
 /\b(?:setup|given|when|then|and|cleanup|expect|where):/
@@ -1796,7 +1848,7 @@ module.exports[n`Transformers >> apply-assertions >> Prism regex snapshot `] = l
 /(?:^|[^\\])\/\*[^]*?\*\//
 /'''(?:\\[^]|[^'\\]|'(?!''))*'''|'(?:\\[^]|[^'\\])*'/
 /<\[[^]*?\]>/
-/\/\/(?:\[[^\n\r\]]*\]|\\.|[^/[\\]|\/(?!\/))+\/\/[gimuy]{0,5}/
+/\/\/(?:\[[^\n\r\]]*\]|\\.|[^/[\\]|\/(?!\/))(?:\[[^\n\r\]]*\]|\\.|[^/[\\]|\/(?:\[[^\n\r\]]*\]|\\.|[^/[\\]))*\/\/[gimuy]{0,5}/
 /\/(?:\[[^\n\r\]]*\]|\\.|[^\n\r/[\\])+\/[gimuy]{0,5}/
 / \.(?= )/
 /(?:^|[^\\])#[_a-z](?:-?[a-z]|[\d_])*/m
@@ -1929,7 +1981,7 @@ TooManyNodesError
 /(?:\b(?:[A-Z_a-z]|\\x[89A-Fa-f][\dA-Fa-f])(?:\w|\\x[89A-Fa-f][\dA-Fa-f])*)?(?:"""[^]*?"""(?!")|"(?:\\[^]|""|[^"\\])*")|'(?:\\(?:\d+|x[\dA-Fa-f]{2}|.)|[^'])'/
 /(?:(?:[A-Z_a-z]|\\x[89A-Fa-f][\dA-Fa-f])(?:\w|\\x[89A-Fa-f][\dA-Fa-f])*|\`[^\n\r\`]+\`)\*?(?:\[[^\]]+\])?(?=\s*\()/
 /\`[^\n\r\`]+\`/
-/(?:^|[([{](?=\.\.)|[^\n\r([{\u2028\u2029]|[([{](?!\.))(?:(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))+|\b(?:and|div|of|or|in|is|isnot|mod|not|notin|shl|shr|xor)\b)/m
+/(?:^|[([{](?=\.\.)|[^\n\r([{\u2028\u2029]|[([{](?!\.))(?:(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.\.*(?:[-!$%&*+/:<=>?@\\|~^]|\.\.))*(?:\.\.*(?![)\]}]))?|\b(?:and|div|of|or|in|is|isnot|mod|not|notin|shl|shr|xor)\b)/m
 /\*$/
 /\`/
 /\/\*[^]*?\*\/|#.*/
@@ -2003,7 +2055,7 @@ TooManyNodesError
 /\(\.|\.\)|[(),.:;[\]]/
 /\(\*[^]+?\*\)/
 /\{[^]+?\}/
-/(?:'(?:''|[^\n\r'])*'(?!')|#[$%&]?[\dA-F]+)+|\^[A-Z]/i
+/(?:'(?:''|[^\n\r'])*'(?!')|#[$%&]?[\dA-F]+)(?:'(?:''|[^\n\r'])*'#[$%&]?[\dA-F]+|#[$%&]?[\dA-F]+)*(?:'(?:''|[^\n\r'])*'(?!'))?|\^[A-Z]/i
 /[%&]\d+|\$[\dA-F]+/i
 /(?<!\w)\d+(?:\.\d+)?(?:E[-+]?\d+)?/i
 /\.\.|\*\*|:=|<[<=>]?|>[=>]?|[-*+/]=?|[=@^]/
@@ -2080,8 +2132,8 @@ TooManyNodesError
 /(?:^|[^-\w](?=\w)|\w(?!\w))(?:s|tr|y)\s*<(?:[^<>\\]|\\[^])*>\s*<(?:[^<>\\]|\\[^])*>[acdegil-prsux]*/
 /\/(?:[^\n\r/\\]|\\.)*\/[acdgil-psux]*(?=\s*(?:$|[\n\r!&)*+,\-.;<>?|}~^]|(?:lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|x)(?:(?<!\w)\w|(?<=\w)(?!\w))))/
 /sub/
-/@(?:global|param|property(?:-read|-write)?|var)\s+(?:(?:(?<!\w)[A-Za-z]\w*|[[\\\]|])+\s+)?\$\w+/
-/@(?:global|package|param|property(?:-read|-write)?|return|subpackage|throws|var)\s+(?:(?<!\w)[A-Za-z]\w*|[[\\\]|])+/
+/@(?:global|param|property(?:-read|-write)?|var)\s+(?:(?:(?<!\w)[A-Za-z]\w*)?(?:[[\\\]|][A-Za-z]\w*|[[\\\]|])*(?:(?<!\w)[A-Za-z]\w*|[[\\\]|])\s+)?\$\w+/
+/@(?:global|package|param|property(?:-read|-write)?|return|subpackage|throws|var)\s+(?:[A-Za-z]\w*|)(?:[[\\\]|][A-Za-z]\w*|[[\\\]|])*(?:(?<!\w)[A-Za-z]\w*|[[\\\]|])/
 /\b(?:callback|resource|boolean|integer|double|object|string|array|false|float|mixed|bool|null|self|true|void|int)\b/
 /[()[\\\]|]/
 /\$this(?!\w)/
@@ -2254,7 +2306,7 @@ TooManyNodesError
 /^\$/
 /\b(?:ans|break|bt|case|catch|cd|clear|const|def|del|dump|else|end|exit|extern|false|force|help|if|infix[lr]?|interface|let|ls|mem|namespace|nonfix|NULL|of|otherwise|outfix|override|postfix|prefix|private|public|pwd|quit|run|save|show|stats|then|throw|trace|true|type|underride|using|when|with)\b/
 /\b(?:abs|add_(?:(?:fundef|interface|macdef|typedef)(?:_at)?|addr|constdef|vardef)|all|any|applp?|arity|bigintp?|blob(?:_crc|_size|p)?|boolp?|byte_(?:matrix|pointer)|byte_c?string(?:_pointer)?|calloc|cat|catmap|ceil|char[ps]?|check_ptrtag|chr|clear_sentry|clearsym|closurep?|cmatrixp?|cols?|colcat(?:map)?|colmap|colrev|colvector(?:p|seq)?|complex(?:_float_(?:matrix|pointer)|_matrix(?:_view)?|_pointer|p)?|conj|cookedp?|cst|cstring(?:_(?:dup|list|vector))?|curry3?|cyclen?|del_(?:constdef|fundef|interface|macdef|typedef|vardef)|delete|diag(?:mat)?|dim|dmatrixp?|do|double(?:_matrix(?:_view)?|_pointer|p)?|dowith3?|drop|dropwhile|eval(?:cmd)?|exactp|filter|fix|fixity|flip|float(?:_matrix|_pointer)|floor|fold[lr]1?|frac|free|funp?|functionp?|gcd|get(?:_(?:byte|constdef|double|float|fundef|int(?:64)?|interface(?:_typedef)?|long|macdef|pointer|ptrtag|short|sentry|string|typedef|vardef))?|globsym|hash|head|id|im|imatrixp?|index|inexactp|infp|init|insert|int(?:_matrix(?:_view)?|_pointer|p)?|int64_(?:matrix|pointer)|integerp?|iteraten?|iterwhile|join|keys?|lambdap?|last(?:err(?:pos)?)?|lcd|list[2p]?|listmap|make_ptrtag|malloc|map|matcat|matrixp?|max|member|min|nanp|nargs|nmatrixp?|null|numberp?|ord|pack(?:ed)?|pointer(?:_cast|_tag|_type|p)?|pow|pred|ptrtag|put(?:_(?:byte|double|float|int(?:64)?|long|pointer|short|string))?|rationalp?|re|realp?|realloc|recordp?|redim|reduce(?:_with)?|refp?|repeatn?|reverse|rlistp?|round|rows?|rowcat(?:map)?|rowmap|rowrev|rowvector(?:p|seq)?|same|scan[lr]1?|sentry|sgn|short_(?:matrix|pointer)|slice|smatrixp?|sort|split|str|strcat|stream|stride|string(?:_(?:dup|list|vector)|p)?|subdiag(?:mat)?|submat|subseq2?|substr|succ|supdiag(?:mat)?|symbolp?|tail|take|takewhile|thunkp?|transpose|trunc|tuplep?|typep|ubyte|uint(?:64)?|ulong|uncurry3?|unref|unzip3?|update|ushort|vals?|varp?|vector(?:p|seq)?|void|zip3?|zipwith3?)\b/
-/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))+|\b(?:and|div|mod|not|or)\b/
+/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))(?:(?<!\w)(?:_+[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])*_+[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])?(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^](?:_+[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])*_+[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])*(?:(?<!\w)_+(?!\w))?|\b(?:and|div|mod|not|or)\b/
 /[(),;[\]{|}]/
 /%<[^]+?%>/
 /(?:\.\.)?(?:\b(?:INF|NAN)\b|(?<!\w)0X[\dA-F]+|(?:\b(?:0B)?\d+(?:\.\d)?|(?<!\w)\.\d)\d*(?:E[-+]?\d+)?L?)/i
@@ -2520,10 +2572,10 @@ TooManyNodesError
 /^(?:FORMAT|PUT)(?==)/i
 /^(?:FORMAT|PUT)/i
 /^(?:(?:DATA)?LINES|CARDS)/i
-/^[\t ]*(?:SELECT|ALTER\s+TABLE|(?:CREATE|DESCRIBE|DROP)\s+(?:INDEX|TABLE(?:\s+CONSTRAINTS)?|VIEW)|CREATE\s+UNIQUE\s+INDEX|INSERT\s+INTO|UPDATE)(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')|[^"';])+;/im
+/^[\t ]*(?:SELECT|ALTER\s+TABLE|(?:CREATE|DESCRIBE|DROP)\s+(?:INDEX|TABLE(?:\s+CONSTRAINTS)?|VIEW)|CREATE\s+UNIQUE\s+INDEX|INSERT\s+INTO|UPDATE)(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')|[^"';])(?:"(?:""|[^"])*"(?:'(?:''|[^'])*'(?!')|[^"';])|'(?:''|[^'])*'(?!')|[^"';])*(?:"(?:""|[^"])*"|);/im
 /(?:^|\s)=?(?:CATNAME|CHECKPOINT EXECUTE_ALWAYS|DM|ENDSAS|FILENAME|FOOTNOTE|%INCLUDE|LIBNAME|%LIST|LOCK|MISSING|OPTIONS|PAGE|RESETLINE|%RUN|SASFILE|SKIP|SYSECHO|TITLE\d?)\b/i
 /(?:^|\s)(?:DISCONNECT\s+FROM|EXEC(?:UTE)?|BEGIN|COMMIT|ROLLBACK|RESET|VALIDATE)\b/i
-/^[\t ]*SUBMIT(?:\s+(?:LOAD|PARSEONLY|NORUN))?(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')|[^"'])+?(?=ENDSUBMIT;)/im
+/^[\t ]*SUBMIT(?:\s+(?:LOAD|PARSEONLY|NORUN))?(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')|[^"'])(?:"(?:""|[^"])*"(?:'(?:''|[^'])*'(?!')|[^"'])|'(?:''|[^'])*'(?!')|[^"'])*?(?:"(?:""|[^"])*"(?!"))??(?=ENDSUBMIT;)/im
 /(?:^|\s)(?:SUBMIT(?:\s+(?:LOAD|PARSEONLY|NORUN))?|ENDSUBMIT)\b/i
 /(?:^|\s)=?SAVERESULT\s+[^;]+/im
 /(?:^|\s)=?(?:DEFAULT|(?:UN)?SET|ON|OUTPUT|UPLOAD)[^;]+/im

@@ -108,6 +108,20 @@ describe("Transformers", function () {
 				transformer: optimizedTransformer,
 				stepByStep: true,
 			},
+			{
+				literal: /(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))+/,
+				transformer: optimizedTransformer,
+				stepByStep: true,
+			},
+			{
+				literal: /(?:[a-z%]|(?<!\w)_+(?!\w))+/,
+				transformer: optimizedTransformer,
+				stepByStep: true,
+			},
+			{
+				literal: /(?:[a-z]|(?<!\w)_+(?!\w))+/,
+				transformer: optimizedTransformer,
+			},
 		]);
 
 		it("Prism regex snapshot", function () {

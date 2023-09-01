@@ -886,7 +886,6 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 		if (
 			quant.type !== "Quantifier" ||
 			quant.alternatives.length < 2 ||
-			quant.min !== 0 ||
 			quant.max !== Infinity ||
 			!alwaysConsumesCharacters(quant.alternatives)
 		) {
@@ -908,6 +907,16 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 
 		// From this point onwards, we know that we are going to apply the transformation. There is no backing out now.
 		context.signalMutation();
+
+		// make the quantifier a star by unrolling `min` iterations
+		const quantifierMinUnroll: NoParent<Quantifier>[] = [];
+		if (quant.min > 0) {
+			const unrolled = copyNode(quant);
+			unrolled.max = unrolled.min;
+			unrolled.lazy = false;
+			quantifierMinUnroll.push(unrolled);
+			quant.min = 0;
+		}
 
 		// we already have our assertion, so let's assemble the other pieces as well.
 		const a = quant.alternatives.filter(alt => alt !== alternative);
@@ -967,7 +976,7 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 			source: copySource(quant.source),
 		};
 
-		elements.splice(i, 1, ...withDirection(direction, [prefix, suffix]));
+		elements.splice(i, 1, ...withDirection(direction, [...quantifierMinUnroll, prefix, suffix]));
 	}
 }
 
