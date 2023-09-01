@@ -27,6 +27,7 @@ import { CreationOptions } from "./creation-options";
 import {
 	SingleCharacterParent,
 	at,
+	atInRange,
 	copyNode,
 	copySource,
 	firstIndexFor,
@@ -108,13 +109,11 @@ function assertCharacter(
 
 		for (const alt of assertion.alternatives) {
 			const { elements } = alt;
-			if (elements.length === 0) {
-				return undefined;
-			}
 
 			const firstIndex = firstIndexFor(direction);
 			const first = at(elements, firstIndex);
-			if (isCharConvertible(first)) {
+
+			if (first && isCharConvertible(first)) {
 				const firstChar = toCharElement(first).characters;
 
 				// remove char from assertion branch
@@ -182,14 +181,11 @@ function assertCharacter(
 			return undefined;
 		} else {
 			const { elements } = assertion.alternatives[0];
-			if (elements.length === 0) {
-				return undefined;
-			}
 
 			const firstIndex = firstIndexFor(direction);
 			const first = at(elements, firstIndex);
 
-			if (isCharConvertible(first)) {
+			if (first && isCharConvertible(first)) {
 				const firstChar = toCharElement(first).characters;
 
 				// remove char from assertion branch
@@ -229,7 +225,7 @@ function findNextCharConvertible(
 	inc: 1 | -1
 ): CharConvertible | undefined {
 	for (let j = start; inRange(elements, j); j += inc) {
-		const element = at(elements, j);
+		const element = atInRange(elements, j);
 		if (isCharConvertible(element)) {
 			return element;
 		} else if (!isZeroLength(element)) {
@@ -276,7 +272,7 @@ function applyOneCharacter(elements: NoParent<Element>[], kind: Assertion["kind"
 	const inc = incrementFor(direction);
 
 	for (let i = firstIndex; inRange(elements, i); i += inc) {
-		const assertion = at(elements, i);
+		const assertion = atInRange(elements, i);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind) {
 			continue;
 		}
@@ -341,7 +337,7 @@ function removeRejectedBranches(
 
 	function findNextParent(startIndex: number): NoParent<Alternation | Quantifier> | undefined {
 		for (let j = startIndex; inRange(elements, j); j += inc) {
-			const element = at(elements, j);
+			const element = atInRange(elements, j);
 			if (isZeroLength(element)) {
 				// continue
 			} else if (element.type === "Quantifier" || element.type === "Alternation") {
@@ -354,7 +350,7 @@ function removeRejectedBranches(
 	}
 
 	for (let i = firstIndex; inRange(elements, i); i += inc) {
-		const assertion = at(elements, i);
+		const assertion = atInRange(elements, i);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind) {
 			continue;
 		}
@@ -441,13 +437,13 @@ function applySingleCharacterAssertion(
 
 	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const assertionIndex = i - inc;
-		const assertion = at(elements, assertionIndex);
+		const assertion = atInRange(elements, assertionIndex);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isSingleCharacterParent(assertion)) {
 			continue;
 		}
 
 		const quantifierIndex = i;
-		const quantifier = at(elements, quantifierIndex);
+		const quantifier = atInRange(elements, quantifierIndex);
 		if (
 			quantifier.type !== "Quantifier" ||
 			!(quantifier.min === 0 && quantifier.max > 0) ||
@@ -501,13 +497,13 @@ function moveCharacterIntoAlternation(
 
 	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const alternationIndex = i - inc;
-		const alternation = at(elements, alternationIndex);
+		const alternation = atInRange(elements, alternationIndex);
 		if (alternation.type !== "Alternation") {
 			continue;
 		}
 
 		const charConvertibleIndex = i;
-		const nextElement = at(elements, charConvertibleIndex);
+		const nextElement = atInRange(elements, charConvertibleIndex);
 		let charConvertible: CharConvertible;
 		if (isCharConvertible(nextElement)) {
 			// TS incorrectly narrows down the type and the `as any` will get rid of that
@@ -597,13 +593,13 @@ function moveAssertionIntoAlternation(
 
 	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const assertionIndex = i - inc;
-		const assertion = at(elements, assertionIndex);
+		const assertion = atInRange(elements, assertionIndex);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind) {
 			continue;
 		}
 
 		const alternationIndex = i;
-		const element = at(elements, alternationIndex);
+		const element = atInRange(elements, alternationIndex);
 		let alternation: NoParent<Alternation>;
 		if (element.type === "Alternation" && !isZeroLength(element)) {
 			alternation = element;
@@ -742,7 +738,7 @@ function moveAssertionOutsideLoop(
 		const alt = quant.alternatives[0];
 		const inc = incrementFor(invertMatchingDirection(direction));
 		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
-			const element = at(alt.elements, i);
+			const element = atInRange(alt.elements, i);
 			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
 				assertion = element;
 				break;

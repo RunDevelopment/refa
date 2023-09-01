@@ -94,7 +94,13 @@ function copyNodeImpl(node: NoParent<Node>): NoParent<Node> {
 	}
 }
 
-export function at<T>(arr: readonly T[], signedIndex: number): T {
+export function at<T>(arr: readonly T[], signedIndex: number): T | undefined {
+	if (signedIndex < 0) {
+		signedIndex += arr.length;
+	}
+	return arr[signedIndex];
+}
+export function atInRange<T>(arr: readonly T[], signedIndex: number): T {
 	if (signedIndex < 0) {
 		signedIndex += arr.length;
 	}
@@ -150,7 +156,7 @@ function tryInlineAssertionsConcat({ elements }: NoParent<Concatenation>, kind: 
 	let assertion: NoParent<Assertion> | undefined = undefined;
 	let assertionIndex = NaN;
 	for (let i = startIndex; inRange(elements, i); i += increment) {
-		const element = at(elements, i);
+		const element = atInRange(elements, i);
 		if (element.type === "Assertion" && !element.negate && element.kind === kind) {
 			assertion = element;
 			assertionIndex = i;
@@ -183,13 +189,9 @@ function tryInlineAssertionsConcat({ elements }: NoParent<Concatenation>, kind: 
 
 		return true;
 	} else {
-		if (inRange(elements, startIndex)) {
-			const element = at(elements, startIndex);
-			if (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1)) {
-				return tryInlineAssertions(element.alternatives, kind);
-			} else {
-				return false;
-			}
+		const element = at(elements, startIndex);
+		if (element && (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1))) {
+			return tryInlineAssertions(element.alternatives, kind);
 		} else {
 			return false;
 		}
@@ -317,7 +319,7 @@ export function tryRemoveRejectingAssertionBranches(
 		const inc = direction === "ltr" ? +1 : -1;
 
 		for (let i = startIndex; inRange(alt.elements, i); i += inc) {
-			const element = at(alt.elements, i);
+			const element = atInRange(alt.elements, i);
 			const result = eliminateElement(element);
 
 			if (result === EliminationResult.REMOVE_ELEMENT) {

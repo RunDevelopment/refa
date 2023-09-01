@@ -25,7 +25,7 @@ import {
 } from "../ast-analysis";
 import {
 	SingleCharacterParent,
-	at,
+	atInRange,
 	emptyAlternation,
 	firstIndexFor,
 	inRange,
@@ -241,7 +241,7 @@ function removeAdjacentAssertions(
 
 		for (const { elements } of node.alternatives) {
 			for (let i = firstIndex; inRange(elements, i); i += inc) {
-				const element = at(elements, i);
+				const element = atInRange(elements, i);
 				if (element.type === "Assertion") {
 					if (element.kind === kind && isNegatedSingleCharAssertion(element)) {
 						const elementChar = element.alternatives[0].elements[0].characters;
@@ -268,7 +268,7 @@ function removeAdjacentAssertions(
 	const inc = incrementFor(direction);
 
 	for (let i = firstIndex; inRange(elements, i); i += inc) {
-		const assertion = at(elements, i);
+		const assertion = atInRange(elements, i);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isNegatedSingleCharAssertion(assertion)) {
 			continue;
 		}
@@ -276,7 +276,7 @@ function removeAdjacentAssertions(
 
 		let assertionRemoved = false;
 		for (let j = i + inc; inRange(elements, j); j += inc) {
-			const other = at(elements, j);
+			const other = atInRange(elements, j);
 			if (other.type === "Assertion") {
 				if (other.kind === kind && isNegatedSingleCharAssertion(other)) {
 					const otherChar = other.alternatives[0].elements[0].characters;
@@ -303,7 +303,7 @@ function removeAdjacentAssertions(
 
 		if (!assertionRemoved) {
 			for (let j = i + inc; inRange(elements, j); j += inc) {
-				const other = at(elements, j);
+				const other = atInRange(elements, j);
 				if (other.type === "Assertion") {
 					// move to the next element
 				} else if (other.type === "Alternation" || (other.type === "Quantifier" && other.max === 1)) {
@@ -314,7 +314,7 @@ function removeAdjacentAssertions(
 				}
 			}
 			for (let j = i - inc; inRange(elements, j); j -= inc) {
-				const other = at(elements, j);
+				const other = atInRange(elements, j);
 				if (other.type === "Assertion") {
 					// move to the next element
 				} else if (other.type === "Alternation" || (other.type === "Quantifier" && other.max === 1)) {
@@ -345,7 +345,7 @@ function removeDeadBranches(assertion: NoParent<Assertion>, context: TransformCo
 		const { elements } = concat;
 
 		for (let i = firstIndex; inRange(elements, i); i += inc) {
-			const element = at(elements, i);
+			const element = atInRange(elements, i);
 
 			if (isPotentiallyEmpty(element)) {
 				// remove

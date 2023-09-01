@@ -3,7 +3,7 @@ import { MatchingDirection, structurallyEqual } from "../ast-analysis";
 import { CharSet } from "../char-set";
 import { minOf } from "../util";
 import { CreationOptions } from "./creation-options";
-import { at, copySource, firstIndexFor } from "./util";
+import { at, atInRange, copySource, firstIndexFor } from "./util";
 
 function getPrefixAndSuffix(node: NoParent<Parent>): { prefix: NoParent<Element>[]; suffix: NoParent<Element>[] } {
 	let prefixLength = 0;
@@ -192,19 +192,16 @@ function tryFactorOutAssertion(
 
 	for (let i = 0; i < node.alternatives.length; i++) {
 		const alt = node.alternatives[i];
-		if (alt.elements.length === 0) {
-			continue;
-		}
 
 		const assertion = at(alt.elements, firstIndex);
-		if (assertion.type !== "Assertion") {
+		if (!assertion || assertion.type !== "Assertion") {
 			continue;
 		}
 
 		let same = 0;
 		for (let j = i + 1; j < node.alternatives.length; j++) {
 			const a = node.alternatives[j];
-			if (a.elements.length > 0 && structurallyEqual(assertion, at(a.elements, firstIndex))) {
+			if (a.elements.length > 0 && structurallyEqual(assertion, atInRange(a.elements, firstIndex))) {
 				same++;
 			} else {
 				break;

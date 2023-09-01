@@ -1,7 +1,7 @@
 import { Assertion, Concatenation, NoParent, Node, Transformer } from "../ast";
 import { Path, followPaths, getAssertRange, invertMatchingDirection, isZeroLength, stackPath } from "../ast-analysis";
 import { CreationOptions } from "./creation-options";
-import { at, inRange, tryInlineAssertions } from "./util";
+import { at, atInRange, inRange, tryInlineAssertions } from "./util";
 
 /**
  * Returns whether a previous assertion may also assert the same characters as the given assertion.
@@ -117,7 +117,7 @@ function tryRemoveAssertionsConcat(
 	const startIndex = kind === "behind" ? 0 : -1;
 
 	for (let i = startIndex; inRange(elements, i); i += increment) {
-		const element = at(elements, i);
+		const element = atInRange(elements, i);
 		if (element.type === "Assertion" && element.kind === kind) {
 			if (inline && influencedByPreviousAssertion(stackPath(stack, element))) {
 				// Some other assertion (that might be inlined later) also asserts characters beyond the patterns edge.
@@ -135,15 +135,13 @@ function tryRemoveAssertionsConcat(
 		}
 	}
 
-	if (inRange(elements, startIndex)) {
-		const element = at(elements, startIndex);
-		if (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1)) {
-			stack.push(element);
-			if (tryRemoveAssertions(element.alternatives, stack, kind, inline)) {
-				changed = true;
-			}
-			stack.pop();
+	const element = at(elements, startIndex);
+	if (element && (element.type === "Alternation" || (element.type === "Quantifier" && element.max === 1))) {
+		stack.push(element);
+		if (tryRemoveAssertions(element.alternatives, stack, kind, inline)) {
+			changed = true;
 		}
+		stack.pop();
 	}
 
 	return changed;
