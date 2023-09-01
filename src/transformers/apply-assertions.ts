@@ -22,7 +22,7 @@ import {
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
-import { filterMut } from "../util";
+import { debugAssert, filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
 import {
 	SingleCharacterParent,
@@ -475,6 +475,35 @@ function applySingleCharacterAssertion(
 }
 
 /**
+ * Converts an optional quantifier (min=0, max=1) into an alternation. The quantifier will be destroyed.
+ *
+ * @param quant
+ * @returns
+ */
+function optionalQuantifierIntoAlternation(quant: NoParent<Quantifier>): NoParent<Alternation> {
+	debugAssert(quant.min === 0 && quant.max === 1);
+
+	const alternation: NoParent<Alternation> = {
+		type: "Alternation",
+		alternatives: quant.alternatives,
+		source: copySource(quant.source),
+	};
+
+	const empty: NoParent<Concatenation> = {
+		type: "Concatenation",
+		elements: [],
+		source: copySource(quant.source),
+	};
+	if (quant.lazy) {
+		alternation.alternatives.unshift(empty);
+	} else {
+		alternation.alternatives.push(empty);
+	}
+
+	return alternation;
+}
+
+/**
  * This will transform `(?:\S[^]*|(?!\s))a` => `(?:\S[^]*a|a)`.
  *
  * @param elements
@@ -495,36 +524,56 @@ function moveCharacterIntoAlternation(
 	const firstIndex = firstIndexFor(direction);
 	const inc = incrementFor(direction);
 
-	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
-		const alternationIndex = i - inc;
-		const alternation = atInRange(elements, alternationIndex);
-		if (alternation.type !== "Alternation") {
-			continue;
+	const getAssertion = (alt: NoParent<Concatenation>): SingleCharacterParent<Assertion> | undefined => {
+		const assertionIndex = lastIndexFor(direction);
+		const assertion = at(alt.elements, assertionIndex);
+		if (
+			assertion !== undefined &&
+			assertion.type === "Assertion" &&
+			assertion.kind === kind &&
+			isSingleCharacterParent(assertion)
+		) {
+			return assertion;
+		} else {
+			return undefined;
 		}
+	};
 
+	for (let i = firstIndex + inc; inRange(elements, i); i += inc) {
 		const charConvertibleIndex = i;
 		const nextElement = atInRange(elements, charConvertibleIndex);
 		let charConvertible: CharConvertible;
 		if (isCharConvertible(nextElement)) {
-			// TS incorrectly narrows down the type and the `as any` will get rid of that
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			charConvertible = nextElement as any;
+			charConvertible = nextElement;
 		} else {
 			continue;
 		}
-		const char = getCharacters(charConvertible);
 
+		const alternationIndex = i - inc;
+		const element = atInRange(elements, alternationIndex);
+		let alternation: NoParent<Alternation>;
+		if (element.type === "Alternation") {
+			alternation = element;
+		} else if (
+			element.type === "Quantifier" &&
+			element.min === 0 &&
+			element.max === 1 &&
+			element.alternatives.some(getAssertion)
+		) {
+			// convert quantifier to alternation
+			alternation = optionalQuantifierIntoAlternation(element);
+
+			context.signalMutation();
+			setAt(elements, alternationIndex, alternation);
+		} else {
+			continue;
+		}
+
+		const char = getCharacters(charConvertible);
 		const appendChars = new Map<NoParent<Concatenation>, CharSet>();
 		filterMut(alternation.alternatives, alternative => {
-			const assertionIndex = lastIndexFor(direction);
-			const assertion = at(alternative.elements, assertionIndex);
-			if (
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				assertion !== undefined &&
-				assertion.type === "Assertion" &&
-				assertion.kind === kind &&
-				isSingleCharacterParent(assertion)
-			) {
+			const assertion = getAssertion(alternative);
+			if (assertion !== undefined) {
 				const rawChar = assertion.alternatives[0].elements[0].characters;
 				const assertionChar = assertion.negate ? rawChar.negate() : rawChar;
 
@@ -535,12 +584,12 @@ function moveCharacterIntoAlternation(
 				} else if (char.isSubsetOf(assertionChar)) {
 					// remove assertion (trivial accept)
 					context.signalMutation();
-					alternative.elements.splice(assertionIndex, 1);
+					alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
 					return true;
 				} else {
 					// append intersected character
 					context.signalMutation();
-					alternative.elements.splice(assertionIndex, 1);
+					alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
 					appendChars.set(alternative, assertionChar.intersect(char));
 					return true;
 				}
@@ -641,22 +690,7 @@ function moveAssertionIntoAlternation(
 			!isSingleCharacterParent(element)
 		) {
 			// convert `(?:a|b)?` => `(?:a|b|)` and then use the new alternation
-			alternation = {
-				type: "Alternation",
-				alternatives: element.alternatives,
-				source: copySource(element.source),
-			};
-
-			const empty: NoParent<Concatenation> = {
-				type: "Concatenation",
-				elements: [],
-				source: copySource(element.source),
-			};
-			if (element.lazy) {
-				alternation.alternatives.unshift(empty);
-			} else {
-				alternation.alternatives.push(empty);
-			}
+			alternation = optionalQuantifierIntoAlternation(element);
 
 			// replace quantifier and remove assertion
 			setAt(elements, alternationIndex, alternation);
