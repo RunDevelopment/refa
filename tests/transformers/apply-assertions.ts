@@ -55,10 +55,12 @@ describe("Transformers", function () {
 			/(?=foobar)\w*(?![bfo])/,
 			/(?=foobar)\w*$/,
 			/(?=fo{4})\w*$/,
+			/^\w*(?<=foobar)$/,
 			/(?!foobar)\w*\s/,
 			/(?!foobar)\w*(?!\w)/,
 			/(?!foobar)\w*(?![bfo])/,
 			/(?!foobar)\w*$/,
+			/^\w+(?<!foobar)$/,
 
 			/(?!\d)(?:\w+|:|123)/,
 			/(?=\d)\s*\w+/,
@@ -97,10 +99,10 @@ describe("Transformers", function () {
 
 			{ literal: /""((?!"").)*""/s, stepByStep: true, transformer: optimizedTransformer },
 			{ literal: /""(.(?<!""))*""/s, stepByStep: true, transformer: optimizedTransformer },
-			/""((?!"")(?:[^\\]|\\"))*""/s,
-			/""((?!"")(?:[^\\]|\\"))+""/s,
-			/"""((?!""").)*"""/s,
-			/"""((?!""").)+"""/s,
+			{ literal: /""((?!"")(?:[^\\]|\\"))*""/s, transformer: optimizedTransformer },
+			{ literal: /""((?!"")(?:[^\\]|\\"))+""/s, transformer: optimizedTransformer },
+			{ literal: /"""((?!""").)*"""/s, stepByStep: true, transformer: optimizedTransformer },
+			{ literal: /"""((?!""").)+"""/s, transformer: optimizedTransformer },
 
 			/(?:^|[^.]|\.\.\.\s*)(?<!\w)(?:as|async(?=\s*(?:function(?!\w)|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|[gs]et(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?!\w)/,
 			{
@@ -121,6 +123,11 @@ describe("Transformers", function () {
 			{
 				literal: /(?:[a-z]|(?<!\w)_+(?!\w))+/,
 				transformer: optimizedTransformer,
+			},
+			{
+				literal: /<title>(?:(?!<\/title>).)*<\/title>/s,
+				transformer: optimizedTransformer,
+				stepByStep: true,
 			},
 		]);
 

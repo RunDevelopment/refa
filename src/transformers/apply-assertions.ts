@@ -5,7 +5,9 @@ import {
 	Concatenation,
 	Element,
 	NoParent,
+	Parent,
 	Quantifier,
+	SourceLocation,
 	TransformContext,
 	Transformer,
 } from "../ast";
@@ -256,6 +258,30 @@ function toCharElement(convertible: CharConvertible): NoParent<CharacterClass> {
 			source: copySource(char.source),
 		};
 	}
+}
+
+type AssertionWithCharConvertible = NoParent<Assertion> & {
+	alternatives: [NoParent<Concatenation>];
+};
+function startsWithCharConvertible(assertion: NoParent<Assertion>): assertion is AssertionWithCharConvertible {
+	if (assertion.alternatives.length !== 1) {
+		return false;
+	}
+	const alt = assertion.alternatives[0];
+	const index = firstIndexFor(toMatchingDirection(assertion.kind));
+	const first = at(alt.elements, index);
+	return first !== undefined && isCharConvertible(first);
+}
+function getFirstAssertedCharacter(assertion: AssertionWithCharConvertible): CharSet | undefined {
+	if (assertion.negate && !isSingleCharacterParent(assertion)) {
+		return undefined;
+	}
+
+	const index = firstIndexFor(toMatchingDirection(assertion.kind));
+	const first = at(assertion.alternatives[0].elements, index);
+	debugAssert(first !== undefined && isCharConvertible(first));
+	const char = toCharElement(first);
+	return assertion.negate ? char.characters.negate() : char.characters;
 }
 
 /**
@@ -528,14 +554,14 @@ function moveCharacterIntoAlternation(
 	const firstIndex = firstIndexFor(direction);
 	const inc = incrementFor(direction);
 
-	const getAssertion = (alt: NoParent<Concatenation>): SingleCharacterParent<Assertion> | undefined => {
+	const getAssertion = (alt: NoParent<Concatenation>): AssertionWithCharConvertible | undefined => {
 		const assertionIndex = lastIndexFor(direction);
 		const assertion = at(alt.elements, assertionIndex);
 		if (
 			assertion !== undefined &&
 			assertion.type === "Assertion" &&
 			assertion.kind === kind &&
-			isSingleCharacterParent(assertion)
+			startsWithCharConvertible(assertion)
 		) {
 			return assertion;
 		} else {
@@ -578,25 +604,30 @@ function moveCharacterIntoAlternation(
 		filterMut(alternation.alternatives, alternative => {
 			const assertion = getAssertion(alternative);
 			if (assertion !== undefined) {
-				const rawChar = assertion.alternatives[0].elements[0].characters;
-				const assertionChar = assertion.negate ? rawChar.negate() : rawChar;
-
-				if (assertionChar.isDisjointWith(char)) {
-					// remove alternative (trivial reject)
-					context.signalMutation();
-					return false;
-				} else if (char.isSubsetOf(assertionChar)) {
-					// remove assertion (trivial accept)
-					context.signalMutation();
-					alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
-					return true;
-				} else {
-					// append intersected character
-					context.signalMutation();
-					alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
-					appendChars.set(alternative, assertionChar.intersect(char));
-					return true;
+				const assertionChar = getFirstAssertedCharacter(assertion);
+				if (assertionChar !== undefined) {
+					if (assertionChar.isDisjointWith(char)) {
+						// remove alternative (trivial reject)
+						context.signalMutation();
+						return false;
+					} else if (isSingleCharacterParent(assertion)) {
+						if (char.isSubsetOf(assertionChar)) {
+							// remove assertion (trivial accept)
+							context.signalMutation();
+							alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
+							return true;
+						} else {
+							// append intersected character
+							context.signalMutation();
+							alternative.elements.splice(alternative.elements.indexOf(assertion), 1);
+							appendChars.set(alternative, assertionChar.intersect(char));
+							return true;
+						}
+					}
 				}
+
+				appendChars.set(alternative, char);
+				return true;
 			} else {
 				return true;
 			}
@@ -798,6 +829,12 @@ function moveAssertionOutsideLoop(
 		const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
 		const triviallyAccepting = !firstChar.empty && firstChar.char.isSubsetOf(assertionChar);
 
+		// store the original quantifier min for later
+		const originalMin = quant.min;
+		if (quant.min === 0) {
+			quant.min = 1;
+		}
+
 		// remove the assertion
 		context.signalMutation();
 		alt.elements.splice(alt.elements.indexOf(assertion), 1);
@@ -812,6 +849,8 @@ function moveAssertionOutsideLoop(
 			const prefix = copyNode(alt).elements;
 			const innerAssertion = copyNode(assertion);
 			pushFront(direction, alt.elements, innerAssertion);
+			quant.min--;
+			quant.max--;
 			if (direction === "ltr") {
 				replacement = [...prefix, quant, assertion];
 			} else {
@@ -819,9 +858,8 @@ function moveAssertionOutsideLoop(
 			}
 		}
 
-		if (quant.min === 0) {
+		if (originalMin === 0) {
 			// we need to wrap it in an optional group
-			quant.min = 1;
 			replacement = [
 				{
 					type: "Quantifier",
@@ -860,11 +898,23 @@ function moveAssertionOutsideLoop(
 function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["kind"], context: TransformContext): void {
 	const direction = toMatchingDirection(kind);
 
-	const getAssertion = (alt: NoParent<Concatenation>): SingleCharacterParent<Assertion> | undefined => {
+	const isSingleWordParent = (parent: NoParent<Parent>): boolean => {
+		return (
+			parent.alternatives.length === 1 &&
+			parent.alternatives[0].elements.length >= 2 &&
+			parent.alternatives[0].elements.every(e => e.type === "CharacterClass")
+		);
+	};
+
+	const getAssertion = (alt: NoParent<Concatenation>): NoParent<Assertion> | undefined => {
 		const inc = incrementFor(invertMatchingDirection(direction));
 		for (let i = firstIndexFor(invertMatchingDirection(direction)); inRange(alt.elements, i); i += inc) {
 			const element = atInRange(alt.elements, i);
-			if (element.type === "Assertion" && element.kind === kind && isSingleCharacterParent(element)) {
+			if (
+				element.type === "Assertion" &&
+				element.kind === kind &&
+				(isSingleCharacterParent(element) || isSingleWordParent(element))
+			) {
 				return element;
 			}
 			if (!isZeroLength(element)) {
@@ -872,6 +922,21 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 			}
 		}
 		return undefined;
+	};
+
+	const alternativesToElement = (
+		alternatives: NoParent<Concatenation>[],
+		source?: SourceLocation
+	): NoParent<Element> => {
+		if (alternatives.length === 1 && alternatives[0].elements.length === 1) {
+			return alternatives[0].elements[0];
+		} else {
+			return {
+				type: "Alternation",
+				alternatives: alternatives,
+				source,
+			};
+		}
 	};
 	const concatToElement = (concat: NoParent<Concatenation>): NoParent<Element> => {
 		if (concat.elements.length === 1) {
@@ -1052,7 +1117,7 @@ function rewriteLoopAssertion(elements: NoParent<Element>[], kind: Assertion["ki
 			type: "Concatenation",
 			elements: withDirection(direction, [
 				copyNode(assertion),
-				{ type: "Alternation", alternatives: a.map(copyNode), source: copySource(quant.source) },
+				alternativesToElement(a.map(copyNode), copySource(quant.source)),
 			]),
 			source: copySource(quant.source),
 		};
