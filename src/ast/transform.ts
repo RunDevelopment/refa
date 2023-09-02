@@ -241,19 +241,18 @@ function transformPass({ transformer, ast, maxCharacter, events }: Context): boo
 	let changed = false;
 	let leaveNode: (node: NoParent<Node>) => void;
 
+	const transformers = transformer instanceof CombinedTransformer ? transformer.transformers : [transformer];
+	const byKey: Record<`on${Node["type"]}`, Transformer[]> = {
+		onAlternation: transformers.filter(t => t.onAlternation),
+		onAssertion: transformers.filter(t => t.onAssertion),
+		onCharacterClass: transformers.filter(t => t.onCharacterClass),
+		onConcatenation: transformers.filter(t => t.onConcatenation),
+		onExpression: transformers.filter(t => t.onExpression),
+		onQuantifier: transformers.filter(t => t.onQuantifier),
+		onUnknown: transformers.filter(t => t.onUnknown),
+	};
+
 	if (events?.onChange) {
-		const transformers = transformer instanceof CombinedTransformer ? transformer.transformers : [transformer];
-
-		const byKey: Record<`on${Node["type"]}`, Transformer[]> = {
-			onAlternation: transformers.filter(t => t.onAlternation),
-			onAssertion: transformers.filter(t => t.onAssertion),
-			onCharacterClass: transformers.filter(t => t.onCharacterClass),
-			onConcatenation: transformers.filter(t => t.onConcatenation),
-			onExpression: transformers.filter(t => t.onExpression),
-			onQuantifier: transformers.filter(t => t.onQuantifier),
-			onUnknown: transformers.filter(t => t.onUnknown),
-		};
-
 		let changedPrivate = false;
 		const transformerContext: TransformContext = {
 			maxCharacter,
@@ -285,9 +284,8 @@ function transformPass({ transformer, ast, maxCharacter, events }: Context): boo
 		leaveNode = node => {
 			const fnName = `on${node.type}` as const;
 
-			const fn = transformer[fnName];
-			if (fn) {
-				fn.call(transformer, node as never, transformerContext);
+			for (const t of byKey[fnName]) {
+				t[fnName]!(node as never, transformerContext);
 			}
 		};
 	}
