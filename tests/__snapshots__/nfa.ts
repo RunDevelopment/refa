@@ -1,39 +1,51 @@
 /* eslint-disable */
 
-module.exports["NFA >> fromRegex >> /a?/"] = `
+var unescapeBackslashes = (str: string): string => {
+	return str.replace(/(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g, (m, backslashes: string, c: string) => {
+		return "\\".repeat(Math.floor(backslashes.length / 2)) + c;
+	});
+};
+var lit = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(1, -1));
+};
+var n = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(0, -1));
+};
+
+module.exports[n`NFA >> fromRegex >> /a?/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a??/"] = `
+module.exports[n`NFA >> fromRegex >> /a??/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+/"] = `
+module.exports[n`NFA >> fromRegex >> /a+/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+?/"] = `
+module.exports[n`NFA >> fromRegex >> /a+?/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a|b)+c/"] = `
+module.exports[n`NFA >> fromRegex >> /(a|b)+c/ `] = lit`
 (0) -> (1) : a b
 
 (1) -> (1) : a b
     -> [2] : c
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*b*c*/"] = `
+module.exports[n`NFA >> fromRegex >> /a*b*c*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
     -> [3] : c
@@ -46,9 +58,9 @@ module.exports["NFA >> fromRegex >> /a*b*c*/"] = `
     -> [3] : c
 
 [3] -> [3] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*b*?c*/"] = `
+module.exports[n`NFA >> fromRegex >> /a*b*?c*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
     -> [3] : c
@@ -61,9 +73,9 @@ module.exports["NFA >> fromRegex >> /a*b*?c*/"] = `
     -> [3] : c
 
 [3] -> [3] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*?b*c*?/"] = `
+module.exports[n`NFA >> fromRegex >> /a*?b*c*?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
     -> [3] : c
@@ -76,9 +88,9 @@ module.exports["NFA >> fromRegex >> /a*?b*c*?/"] = `
     -> [3] : c
 
 [3] -> [3] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+b+?c+/"] = `
+module.exports[n`NFA >> fromRegex >> /a+b+?c+/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (1) : a
@@ -88,9 +100,9 @@ module.exports["NFA >> fromRegex >> /a+b+?c+/"] = `
     -> [3] : c
 
 [3] -> [3] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a{4}/"] = `
+module.exports[n`NFA >> fromRegex >> /a{4}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -100,9 +112,9 @@ module.exports["NFA >> fromRegex >> /a{4}/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a{4}?/"] = `
+module.exports[n`NFA >> fromRegex >> /a{4}?/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -112,9 +124,9 @@ module.exports["NFA >> fromRegex >> /a{4}?/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a|){3}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a|){3}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [2] : a
@@ -122,9 +134,9 @@ module.exports["NFA >> fromRegex >> /(a|){3}/"] = `
 [2] -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(|a){3}/"] = `
+module.exports[n`NFA >> fromRegex >> /(|a){3}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [2] : a
@@ -132,9 +144,9 @@ module.exports["NFA >> fromRegex >> /(|a){3}/"] = `
 [2] -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(|a|){3}/"] = `
+module.exports[n`NFA >> fromRegex >> /(|a|){3}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [2] : a
@@ -142,9 +154,9 @@ module.exports["NFA >> fromRegex >> /(|a|){3}/"] = `
 [2] -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a{2,4}/"] = `
+module.exports[n`NFA >> fromRegex >> /a{2,4}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
@@ -154,9 +166,9 @@ module.exports["NFA >> fromRegex >> /a{2,4}/"] = `
 [3] -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a{2,4}?/"] = `
+module.exports[n`NFA >> fromRegex >> /a{2,4}?/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
@@ -166,9 +178,9 @@ module.exports["NFA >> fromRegex >> /a{2,4}?/"] = `
 [3] -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a{2,6}/"] = `
+module.exports[n`NFA >> fromRegex >> /a{2,6}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
@@ -182,9 +194,9 @@ module.exports["NFA >> fromRegex >> /a{2,6}/"] = `
 [5] -> [6] : a
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(ab){0,3}/"] = `
+module.exports[n`NFA >> fromRegex >> /(ab){0,3}/ `] = lit`
 [0] -> (1) : a
 
 (1) -> [2] : b
@@ -198,73 +210,73 @@ module.exports["NFA >> fromRegex >> /(ab){0,3}/"] = `
 (5) -> [6] : b
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(){100,1000}/"] = `
+module.exports[n`NFA >> fromRegex >> /(){100,1000}/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+|/"] = `
+module.exports[n`NFA >> fromRegex >> /a+|/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /|a+/"] = `
+module.exports[n`NFA >> fromRegex >> /|a+/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*/"] = `
+module.exports[n`NFA >> fromRegex >> /a*/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*?/"] = `
+module.exports[n`NFA >> fromRegex >> /a*?/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a|)+/"] = `
+module.exports[n`NFA >> fromRegex >> /(a|)+/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a*)+/"] = `
+module.exports[n`NFA >> fromRegex >> /(a*)+/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a*){4}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a*){4}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a+|){4}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a+|){4}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a+)+/"] = `
+module.exports[n`NFA >> fromRegex >> /(a+)+/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a+|){0,4}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a+|){0,4}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a+){4}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a+){4}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : a
@@ -274,30 +286,30 @@ module.exports["NFA >> fromRegex >> /(a+){4}/"] = `
 (3) -> [4] : a
 
 [4] -> [4] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a*){4,}/"] = `
+module.exports[n`NFA >> fromRegex >> /(a*){4,}/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /((a*)+)?/"] = `
+module.exports[n`NFA >> fromRegex >> /((a*)+)?/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a|b)?c/"] = `
+module.exports[n`NFA >> fromRegex >> /(a|b)?c/ `] = lit`
 (0) -> (1) : a b
     -> [2] : c
 
 (1) -> [2] : c
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a+|b+)*/"] = `
+module.exports[n`NFA >> fromRegex >> /(a+|b+)*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
@@ -306,26 +318,26 @@ module.exports["NFA >> fromRegex >> /(a+|b+)*/"] = `
 
 [2] -> [1] : a
     -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /()*/"] = `
+module.exports[n`NFA >> fromRegex >> /()*/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /([^\\s\\S])*/"] = `
+module.exports[n`NFA >> fromRegex >> /([^\s\S])*/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a*|b*/"] = `
+module.exports[n`NFA >> fromRegex >> /a*|b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+|b+|c+/"] = `
+module.exports[n`NFA >> fromRegex >> /a+|b+|c+/ `] = lit`
 (0) -> [1] : a
     -> [2] : b
     -> [3] : c
@@ -335,9 +347,9 @@ module.exports["NFA >> fromRegex >> /a+|b+|c+/"] = `
 [2] -> [2] : b
 
 [3] -> [3] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(a*|b*)+/"] = `
+module.exports[n`NFA >> fromRegex >> /(a*|b*)+/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
@@ -346,37 +358,37 @@ module.exports["NFA >> fromRegex >> /(a*|b*)+/"] = `
 
 [2] -> [1] : a
     -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /[^\\s\\S]/"] = `
+module.exports[n`NFA >> fromRegex >> /[^\s\S]/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /ab[^\\s\\S]ba/"] = `
+module.exports[n`NFA >> fromRegex >> /ab[^\s\S]ba/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /([^\\s\\S]|a|[^\\s\\S]|b[^\\s\\S]b|[^\\s\\S])a/"] = `
+module.exports[n`NFA >> fromRegex >> /([^\s\S]|a|[^\s\S]|b[^\s\S]b|[^\s\S])a/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /[^\\s\\S]+/"] = `
+module.exports[n`NFA >> fromRegex >> /[^\s\S]+/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /[^\\s\\S]*/"] = `
+module.exports[n`NFA >> fromRegex >> /[^\s\S]*/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /[^\\s\\S]?/"] = `
+module.exports[n`NFA >> fromRegex >> /[^\s\S]?/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+|aaab/"] = `
+module.exports[n`NFA >> fromRegex >> /a+|aaab/ `] = lit`
 (0) -> [1] : a
     -> (2) : a
 
@@ -389,9 +401,9 @@ module.exports["NFA >> fromRegex >> /a+|aaab/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a+|a*aa*/"] = `
+module.exports[n`NFA >> fromRegex >> /a+|a*aa*/ `] = lit`
 (0) -> [1] : a
     -> (2) : a
     -> [3] : a
@@ -404,17 +416,17 @@ module.exports["NFA >> fromRegex >> /a+|a*aa*/"] = `
 [3] -> [4] : a
 
 [4] -> [4] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /(?:a+){2,}/"] = `
+module.exports[n`NFA >> fromRegex >> /(?:a+){2,}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /abc|ab|abd|abcd/"] = `
+module.exports[n`NFA >> fromRegex >> /abc|ab|abd|abcd/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -426,9 +438,9 @@ module.exports["NFA >> fromRegex >> /abc|ab|abd|abcd/"] = `
 [3] -> none
 
 (4) -> [3] : d
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /abc?|abd|abcd/"] = `
+module.exports[n`NFA >> fromRegex >> /abc?|abd|abcd/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -442,9 +454,9 @@ module.exports["NFA >> fromRegex >> /abc?|abd|abcd/"] = `
 (4) -> [5] : d
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /food|fool|foot/"] = `
+module.exports[n`NFA >> fromRegex >> /food|fool|foot/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -454,9 +466,9 @@ module.exports["NFA >> fromRegex >> /food|fool|foot/"] = `
 (3) -> [4] : d l t
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /fo(od|ol|ot)/"] = `
+module.exports[n`NFA >> fromRegex >> /fo(od|ol|ot)/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -466,9 +478,9 @@ module.exports["NFA >> fromRegex >> /fo(od|ol|ot)/"] = `
 (3) -> [4] : d l t
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /bet|get|pet|set/"] = `
+module.exports[n`NFA >> fromRegex >> /bet|get|pet|set/ `] = lit`
 (0) -> (1) : b g p s
 
 (1) -> (2) : e
@@ -476,9 +488,9 @@ module.exports["NFA >> fromRegex >> /bet|get|pet|set/"] = `
 (2) -> [3] : t
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /bet|bat|bit/"] = `
+module.exports[n`NFA >> fromRegex >> /bet|bat|bit/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a e i
@@ -486,9 +498,9 @@ module.exports["NFA >> fromRegex >> /bet|bat|bit/"] = `
 (2) -> [3] : t
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /a(?:bc)?|dbc/"] = `
+module.exports[n`NFA >> fromRegex >> /a(?:bc)?|dbc/ `] = lit`
 (0) -> [1] : a
     -> (2) : d
 
@@ -499,9 +511,9 @@ module.exports["NFA >> fromRegex >> /a(?:bc)?|dbc/"] = `
 (3) -> [4] : c
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?/i"] = `
+module.exports[n`NFA >> fromRegex >> /\d+(?:\.\d+)?(?:e[+-]?\d+)?/i `] = lit`
 (0) -> [1] : 0-9
 
 [1] -> [1] : 0-9
@@ -519,9 +531,9 @@ module.exports["NFA >> fromRegex >> /\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?/i"] = `
 (5) -> [6] : 0-9
 
 [6] -> [6] : 0-9
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\\/=?/"] = `
+module.exports[n`NFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\/=?/ `] = lit`
 (0) -> (1) : ':'
     -> [2] : '/' '>'
     -> [3] : '<'
@@ -536,9 +548,9 @@ module.exports["NFA >> fromRegex >> /<[=>]?|>=?|=>?|:=|\\/=?/"] = `
 [4] -> [5] : '>'
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /\\{[^\\r\\n}:]+\\}/"] = `
+module.exports[n`NFA >> fromRegex >> /\{[^\r\n}:]+\}/ `] = lit`
 (0) -> (1) : '{'
 
 (1) -> (2) : not U+A U+D ':' '}'
@@ -547,9 +559,9 @@ module.exports["NFA >> fromRegex >> /\\{[^\\r\\n}:]+\\}/"] = `
     -> [3] : '}'
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /'(?:%.|[^%'\\r\\n])+'/"] = `
+module.exports[n`NFA >> fromRegex >> /'(?:%.|[^%'\r\n])+'/ `] = lit`
 (0) -> (1) : '''
 
 (1) -> (2) : '%'
@@ -562,9 +574,9 @@ module.exports["NFA >> fromRegex >> /'(?:%.|[^%'\\r\\n])+'/"] = `
     -> [4] : '''
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /&[bchou][a-z\\d]+/i"] = `
+module.exports[n`NFA >> fromRegex >> /&[bchou][a-z\d]+/i `] = lit`
 (0) -> (1) : '&'
 
 (1) -> (2) : B C H O U b c h o u
@@ -572,9 +584,9 @@ module.exports["NFA >> fromRegex >> /&[bchou][a-z\\d]+/i"] = `
 (2) -> [3] : 0-9 A-Z a-z
 
 [3] -> [3] : 0-9 A-Z a-z
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
+module.exports[n`NFA >> fromRegex >> /"(?:[^\\"]|\\.)*"|'[^']*'/ `] = lit`
 (0) -> (1) : '''
     -> (2) : '"'
 
@@ -582,8 +594,8 @@ module.exports["NFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
     -> (4) : not '''
 
 (2) -> [3] : '"'
-    -> (5) : '\\'
-    -> (6) : not '"' '\\'
+    -> (5) : '\'
+    -> (6) : not '"' '\'
 
 [3] -> none
 
@@ -593,11 +605,11 @@ module.exports["NFA >> fromRegex >> /\"(?:[^\\\\\"]|\\\\.)*\"|'[^']*'/"] = `
 (5) -> (6) : not U+A U+D U+2028 U+2029
 
 (6) -> [3] : '"'
-    -> (5) : '\\'
-    -> (6) : not '"' '\\'
-`.slice(1, -1);
+    -> (5) : '\'
+    -> (6) : not '"' '\'
+`;
 
-module.exports["NFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo$|bar/"] = `
+module.exports[n`NFA >> fromRegex options >> {"assertions":"disable"}: /^foo$|bar/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -605,9 +617,9 @@ module.exports["NFA >> fromRegex options >> {\"assertions\":\"disable\"}: /^foo$
 (2) -> [3] : r
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$|bar/"] = `
+module.exports[n`NFA >> fromRegex options >> {"assertions":"ignore"}: /^foo$|bar/ `] = lit`
 (0) -> (1) : b
     -> (2) : f
 
@@ -620,193 +632,193 @@ module.exports["NFA >> fromRegex options >> {\"assertions\":\"ignore\"}: /^foo$|
 (4) -> [5] : o
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /()/ ∪ /()/"] = `
+module.exports[n`NFA >> union >> /()/ ∪ /()/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /()/ ∪ /b/"] = `
+module.exports[n`NFA >> union >> /()/ ∪ /b/ `] = lit`
 [0] -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /()/ ∪ /b?/"] = `
+module.exports[n`NFA >> union >> /()/ ∪ /b?/ `] = lit`
 [0] -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /()/ ∪ /b*/"] = `
+module.exports[n`NFA >> union >> /()/ ∪ /b*/ `] = lit`
 [0] -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /()/ ∪ /b+/"] = `
+module.exports[n`NFA >> union >> /()/ ∪ /b+/ `] = lit`
 [0] -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /()/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /b/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /b/ `] = lit`
 (0) -> [1] : a b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /b?/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /b?/ `] = lit`
 [0] -> [1] : a b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /b*/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> none
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /b+/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /b+/ `] = lit`
 (0) -> [1] : a
     -> [2] : b
 
 [1] -> none
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a?/ ∪ /()/"] = `
+module.exports[n`NFA >> union >> /a?/ ∪ /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a?/ ∪ /b/"] = `
+module.exports[n`NFA >> union >> /a?/ ∪ /b/ `] = lit`
 [0] -> [1] : a b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a?/ ∪ /b?/"] = `
+module.exports[n`NFA >> union >> /a?/ ∪ /b?/ `] = lit`
 [0] -> [1] : a b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a?/ ∪ /b*/"] = `
+module.exports[n`NFA >> union >> /a?/ ∪ /b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> none
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a?/ ∪ /b+/"] = `
+module.exports[n`NFA >> union >> /a?/ ∪ /b+/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> none
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /()/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /b/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /b/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /b?/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /b?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /b*/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /b+/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /b+/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a+/ ∪ /()/"] = `
+module.exports[n`NFA >> union >> /a+/ ∪ /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a+/ ∪ /b/"] = `
+module.exports[n`NFA >> union >> /a+/ ∪ /b/ `] = lit`
 (0) -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a+/ ∪ /b?/"] = `
+module.exports[n`NFA >> union >> /a+/ ∪ /b?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a+/ ∪ /b*/"] = `
+module.exports[n`NFA >> union >> /a+/ ∪ /b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a+/ ∪ /b+/"] = `
+module.exports[n`NFA >> union >> /a+/ ∪ /b+/ `] = lit`
 (0) -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /ab/ ∪ /ba/"] = `
+module.exports[n`NFA >> union >> /ab/ ∪ /ba/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
 
@@ -815,9 +827,9 @@ module.exports["NFA >> union >> /ab/ ∪ /ba/"] = `
 (2) -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /foo/ ∪ /bar/"] = `
+module.exports[n`NFA >> union >> /foo/ ∪ /bar/ `] = lit`
 (0) -> (1) : b
     -> (2) : f
 
@@ -830,18 +842,18 @@ module.exports["NFA >> union >> /foo/ ∪ /bar/"] = `
 (4) -> [5] : o
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a/ ∪ /a*/"] = `
+module.exports[n`NFA >> union >> /a/ ∪ /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
 
 [1] -> none
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /a*b*c*/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /a*b*c*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -857,9 +869,9 @@ module.exports["NFA >> union >> /a*/ ∪ /a*b*c*/"] = `
     -> [4] : c
 
 [4] -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/"] = `
+module.exports[n`NFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/ `] = lit`
 (0) -> (1) : a
     -> [2] : a-c
     -> (3) : b
@@ -872,9 +884,9 @@ module.exports["NFA >> union >> /a|b|c{2}/ ∪ /a{2}|b{2}|c/"] = `
 (3) -> [2] : b
 
 (4) -> [2] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /ba/ ∪ /ab/"] = `
+module.exports[n`NFA >> union >> /ba/ ∪ /ab/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
 
@@ -883,9 +895,9 @@ module.exports["NFA >> union >> /ba/ ∪ /ab/"] = `
 (2) -> [3] : a
 
 [3] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /bar/ ∪ /foo/"] = `
+module.exports[n`NFA >> union >> /bar/ ∪ /foo/ `] = lit`
 (0) -> (1) : b
     -> (2) : f
 
@@ -898,18 +910,18 @@ module.exports["NFA >> union >> /bar/ ∪ /foo/"] = `
 (4) -> [5] : o
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*/ ∪ /a/"] = `
+module.exports[n`NFA >> union >> /a*/ ∪ /a/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
 
 [1] -> [1] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a*b*c*/ ∪ /a*/"] = `
+module.exports[n`NFA >> union >> /a*b*c*/ ∪ /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -925,9 +937,9 @@ module.exports["NFA >> union >> /a*b*c*/ ∪ /a*/"] = `
     -> [4] : c
 
 [4] -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/"] = `
+module.exports[n`NFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/ `] = lit`
 (0) -> (1) : a
     -> [2] : a-c
     -> (3) : b
@@ -940,123 +952,123 @@ module.exports["NFA >> union >> /a{2}|b{2}|c/ ∪ /a|b|c{2}/"] = `
 (3) -> [2] : b
 
 (4) -> [2] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /()/ * /()/"] = `
+module.exports[n`NFA >> append >> /()/ * /()/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /()/ * /b/"] = `
+module.exports[n`NFA >> append >> /()/ * /b/ `] = lit`
 (0) -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /()/ * /b?/"] = `
+module.exports[n`NFA >> append >> /()/ * /b?/ `] = lit`
 [0] -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /()/ * /b*/"] = `
+module.exports[n`NFA >> append >> /()/ * /b*/ `] = lit`
 [0] -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /()/ * /b+/"] = `
+module.exports[n`NFA >> append >> /()/ * /b+/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /()/"] = `
+module.exports[n`NFA >> append >> /a/ * /()/ `] = lit`
 (0) -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /b/"] = `
+module.exports[n`NFA >> append >> /a/ * /b/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /b?/"] = `
+module.exports[n`NFA >> append >> /a/ * /b?/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /b*/"] = `
+module.exports[n`NFA >> append >> /a/ * /b*/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /b+/"] = `
+module.exports[n`NFA >> append >> /a/ * /b+/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a?/ * /()/"] = `
+module.exports[n`NFA >> append >> /a?/ * /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a?/ * /b/"] = `
+module.exports[n`NFA >> append >> /a?/ * /b/ `] = lit`
 (0) -> (1) : a
     -> [2] : b
 
 (1) -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a?/ * /b?/"] = `
+module.exports[n`NFA >> append >> /a?/ * /b?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a?/ * /b*/"] = `
+module.exports[n`NFA >> append >> /a?/ * /b*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a?/ * /b+/"] = `
+module.exports[n`NFA >> append >> /a?/ * /b+/ `] = lit`
 (0) -> (1) : a
     -> [2] : b
 
 (1) -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*/ * /()/"] = `
+module.exports[n`NFA >> append >> /a*/ * /()/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*/ * /b/"] = `
+module.exports[n`NFA >> append >> /a*/ * /b/ `] = lit`
 (0) -> (1) : a
     -> [2] : b
 
@@ -1064,29 +1076,29 @@ module.exports["NFA >> append >> /a*/ * /b/"] = `
     -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*/ * /b?/"] = `
-[0] -> [1] : a
-    -> [2] : b
-
-[1] -> [1] : a
-    -> [2] : b
-
-[2] -> none
-`.slice(1, -1);
-
-module.exports["NFA >> append >> /a*/ * /b*/"] = `
+module.exports[n`NFA >> append >> /a*/ * /b?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
     -> [2] : b
 
-[2] -> [2] : b
-`.slice(1, -1);
+[2] -> none
+`;
 
-module.exports["NFA >> append >> /a*/ * /b+/"] = `
+module.exports[n`NFA >> append >> /a*/ * /b*/ `] = lit`
+[0] -> [1] : a
+    -> [2] : b
+
+[1] -> [1] : a
+    -> [2] : b
+
+[2] -> [2] : b
+`;
+
+module.exports[n`NFA >> append >> /a*/ * /b+/ `] = lit`
 (0) -> (1) : a
     -> [2] : b
 
@@ -1094,51 +1106,51 @@ module.exports["NFA >> append >> /a*/ * /b+/"] = `
     -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a+/ * /()/"] = `
+module.exports[n`NFA >> append >> /a+/ * /()/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a+/ * /b/"] = `
+module.exports[n`NFA >> append >> /a+/ * /b/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (1) : a
     -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a+/ * /b?/"] = `
+module.exports[n`NFA >> append >> /a+/ * /b?/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
     -> [2] : b
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a+/ * /b*/"] = `
+module.exports[n`NFA >> append >> /a+/ * /b*/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
     -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a+/ * /b+/"] = `
+module.exports[n`NFA >> append >> /a+/ * /b+/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (1) : a
     -> [2] : b
 
 [2] -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /ab/ * /ba/"] = `
+module.exports[n`NFA >> append >> /ab/ * /ba/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -1148,9 +1160,9 @@ module.exports["NFA >> append >> /ab/ * /ba/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /foo/ * /bar/"] = `
+module.exports[n`NFA >> append >> /foo/ * /bar/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -1164,17 +1176,17 @@ module.exports["NFA >> append >> /foo/ * /bar/"] = `
 (5) -> [6] : r
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a/ * /a*/"] = `
+module.exports[n`NFA >> append >> /a/ * /a*/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*/ * /a*b*c*/"] = `
+module.exports[n`NFA >> append >> /a*/ * /a*b*c*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -1193,9 +1205,9 @@ module.exports["NFA >> append >> /a*/ * /a*b*c*/"] = `
     -> [4] : c
 
 [4] -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
+module.exports[n`NFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/ `] = lit`
 (0) -> (1) : a b
     -> (2) : c
 
@@ -1210,9 +1222,9 @@ module.exports["NFA >> append >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /ba/ * /ab/"] = `
+module.exports[n`NFA >> append >> /ba/ * /ab/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -1222,9 +1234,9 @@ module.exports["NFA >> append >> /ba/ * /ab/"] = `
 (3) -> [4] : b
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /bar/ * /foo/"] = `
+module.exports[n`NFA >> append >> /bar/ * /foo/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -1238,9 +1250,9 @@ module.exports["NFA >> append >> /bar/ * /foo/"] = `
 (5) -> [6] : o
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*/ * /a/"] = `
+module.exports[n`NFA >> append >> /a*/ * /a/ `] = lit`
 (0) -> (1) : a
     -> [2] : a
 
@@ -1248,9 +1260,9 @@ module.exports["NFA >> append >> /a*/ * /a/"] = `
     -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a*b*c*/ * /a*/"] = `
+module.exports[n`NFA >> append >> /a*b*c*/ * /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -1269,9 +1281,9 @@ module.exports["NFA >> append >> /a*b*c*/ * /a*/"] = `
 
 [4] -> [2] : a
     -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
+module.exports[n`NFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -1286,60 +1298,60 @@ module.exports["NFA >> append >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
 [4] -> none
 
 (5) -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /()/ * /()/"] = `
+module.exports[n`NFA >> prepend >> /()/ * /()/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b/ * /()/"] = `
+module.exports[n`NFA >> prepend >> /b/ * /()/ `] = lit`
 (0) -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b?/ * /()/"] = `
+module.exports[n`NFA >> prepend >> /b?/ * /()/ `] = lit`
 [0] -> [1] : b
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b*/ * /()/"] = `
+module.exports[n`NFA >> prepend >> /b*/ * /()/ `] = lit`
 [0] -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b+/ * /()/"] = `
+module.exports[n`NFA >> prepend >> /b+/ * /()/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [1] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /()/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /()/ * /a/ `] = lit`
 (0) -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /b/ * /a/ `] = lit`
 (0) -> (1) : b
 
 (1) -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b?/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /b?/ * /a/ `] = lit`
 (0) -> [1] : a
     -> (2) : b
 
 [1] -> none
 
 (2) -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b*/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /b*/ * /a/ `] = lit`
 (0) -> [1] : a
     -> (2) : b
 
@@ -1347,41 +1359,41 @@ module.exports["NFA >> prepend >> /b*/ * /a/"] = `
 
 (2) -> [1] : a
     -> (2) : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b+/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /b+/ * /a/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (1) : b
     -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /()/ * /a?/"] = `
+module.exports[n`NFA >> prepend >> /()/ * /a?/ `] = lit`
 [0] -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b/ * /a?/"] = `
+module.exports[n`NFA >> prepend >> /b/ * /a?/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b?/ * /a?/"] = `
+module.exports[n`NFA >> prepend >> /b?/ * /a?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> none
 
 [2] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b*/ * /a?/"] = `
+module.exports[n`NFA >> prepend >> /b*/ * /a?/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
@@ -1389,41 +1401,41 @@ module.exports["NFA >> prepend >> /b*/ * /a?/"] = `
 
 [2] -> [1] : a
     -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b+/ * /a?/"] = `
+module.exports[n`NFA >> prepend >> /b+/ * /a?/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [1] : b
     -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /()/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /()/ * /a*/ `] = lit`
 [0] -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /b/ * /a*/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b?/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /b?/ * /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
 [1] -> [1] : a
 
 [2] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b*/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /b*/ * /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : b
 
@@ -1431,41 +1443,41 @@ module.exports["NFA >> prepend >> /b*/ * /a*/"] = `
 
 [2] -> [1] : a
     -> [2] : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b+/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /b+/ * /a*/ `] = lit`
 (0) -> [1] : b
 
 [1] -> [1] : b
     -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /()/ * /a+/"] = `
+module.exports[n`NFA >> prepend >> /()/ * /a+/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b/ * /a+/"] = `
+module.exports[n`NFA >> prepend >> /b/ * /a+/ `] = lit`
 (0) -> (1) : b
 
 (1) -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b?/ * /a+/"] = `
+module.exports[n`NFA >> prepend >> /b?/ * /a+/ `] = lit`
 (0) -> [1] : a
     -> (2) : b
 
 [1] -> [1] : a
 
 (2) -> [1] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b*/ * /a+/"] = `
+module.exports[n`NFA >> prepend >> /b*/ * /a+/ `] = lit`
 (0) -> [1] : a
     -> (2) : b
 
@@ -1473,18 +1485,18 @@ module.exports["NFA >> prepend >> /b*/ * /a+/"] = `
 
 (2) -> [1] : a
     -> (2) : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /b+/ * /a+/"] = `
+module.exports[n`NFA >> prepend >> /b+/ * /a+/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (1) : b
     -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /ba/ * /ab/"] = `
+module.exports[n`NFA >> prepend >> /ba/ * /ab/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -1494,9 +1506,9 @@ module.exports["NFA >> prepend >> /ba/ * /ab/"] = `
 (3) -> [4] : b
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /bar/ * /foo/"] = `
+module.exports[n`NFA >> prepend >> /bar/ * /foo/ `] = lit`
 (0) -> (1) : b
 
 (1) -> (2) : a
@@ -1510,9 +1522,9 @@ module.exports["NFA >> prepend >> /bar/ * /foo/"] = `
 (5) -> [6] : o
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a*/ * /a/"] = `
+module.exports[n`NFA >> prepend >> /a*/ * /a/ `] = lit`
 (0) -> (1) : a
     -> [2] : a
 
@@ -1520,9 +1532,9 @@ module.exports["NFA >> prepend >> /a*/ * /a/"] = `
     -> [2] : a
 
 [2] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a*b*c*/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /a*b*c*/ * /a*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -1541,9 +1553,9 @@ module.exports["NFA >> prepend >> /a*b*c*/ * /a*/"] = `
 
 [4] -> [2] : a
     -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
+module.exports[n`NFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/ `] = lit`
 (0) -> (1) : a
     -> (2) : b
     -> (3) : c
@@ -1558,9 +1570,9 @@ module.exports["NFA >> prepend >> /a{2}|b{2}|c/ * /a|b|c{2}/"] = `
 [4] -> none
 
 (5) -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /ab/ * /ba/"] = `
+module.exports[n`NFA >> prepend >> /ab/ * /ba/ `] = lit`
 (0) -> (1) : a
 
 (1) -> (2) : b
@@ -1570,9 +1582,9 @@ module.exports["NFA >> prepend >> /ab/ * /ba/"] = `
 (3) -> [4] : a
 
 [4] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /foo/ * /bar/"] = `
+module.exports[n`NFA >> prepend >> /foo/ * /bar/ `] = lit`
 (0) -> (1) : f
 
 (1) -> (2) : o
@@ -1586,17 +1598,17 @@ module.exports["NFA >> prepend >> /foo/ * /bar/"] = `
 (5) -> [6] : r
 
 [6] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a/ * /a*/"] = `
+module.exports[n`NFA >> prepend >> /a/ * /a*/ `] = lit`
 (0) -> [1] : a
 
 [1] -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a*/ * /a*b*c*/"] = `
+module.exports[n`NFA >> prepend >> /a*/ * /a*b*c*/ `] = lit`
 [0] -> [1] : a
     -> [2] : a
     -> [3] : b
@@ -1615,9 +1627,9 @@ module.exports["NFA >> prepend >> /a*/ * /a*b*c*/"] = `
     -> [4] : c
 
 [4] -> [4] : c
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
+module.exports[n`NFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/ `] = lit`
 (0) -> (1) : a b
     -> (2) : c
 
@@ -1632,19 +1644,19 @@ module.exports["NFA >> prepend >> /a|b|c{2}/ * /a{2}|b{2}|c/"] = `
 (4) -> [5] : b
 
 [5] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> intersect >> /a/ ∩ /b/"] = `
+module.exports[n`NFA >> intersect >> /a/ ∩ /b/ `] = lit`
 (0) -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> intersect >> /a*/ ∩ /a/"] = `
+module.exports[n`NFA >> intersect >> /a*/ ∩ /a/ `] = lit`
 (0) -> [1] : a
 
 [1] -> none
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> intersect >> /b*(ab+)*a/ ∩ /a*(ba+)*/"] = `
+module.exports[n`NFA >> intersect >> /b*(ab+)*a/ ∩ /a*(ba+)*/ `] = lit`
 (0) -> (1) : a
     -> [2] : a
     -> (3) : b
@@ -1660,16 +1672,16 @@ module.exports["NFA >> intersect >> /b*(ab+)*a/ ∩ /a*(ba+)*/"] = `
     -> (5) : a
 
 (5) -> (4) : b
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> intersect >> /a+/ ∩ /(?:a+){2,}/"] = `
+module.exports[n`NFA >> intersect >> /a+/ ∩ /(?:a+){2,}/ `] = lit`
 (0) -> (1) : a
 
 (1) -> [2] : a
 
 [2] -> [2] : a
-`.slice(1, -1);
+`;
 
-module.exports["NFA >> intersect >> /a*/ ∩ /b*/"] = `
+module.exports[n`NFA >> intersect >> /a*/ ∩ /b*/ `] = lit`
 [0] -> none
-`.slice(1, -1);
+`;

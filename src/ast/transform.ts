@@ -23,6 +23,10 @@ import { visitAst } from "./visit";
  * the given AST.
  */
 export interface Transformer {
+	/**
+	 * An optional name useful for diagnostics.
+	 */
+	readonly name?: string;
 	onAlternation?(node: NoParent<Alternation>, context: TransformContext): void;
 	onAssertion?(node: NoParent<Assertion>, context: TransformContext): void;
 	onCharacterClass?(node: NoParent<CharacterClass>, context: TransformContext): void;
@@ -47,14 +51,81 @@ export interface TransformContext {
 	readonly signalMutation: () => void;
 }
 
-const TRANSFORMER_KEYS: readonly (keyof Transformer)[] = [
-	"onAlternation",
-	"onAssertion",
-	"onCharacterClass",
-	"onConcatenation",
-	"onExpression",
-	"onQuantifier",
-];
+/**
+ * A transformer that runs all given transformers in sequentially order.
+ */
+export class CombinedTransformer implements Transformer {
+	readonly name = "CombinedTransformer";
+	readonly transformers: readonly Transformer[];
+
+	constructor(transformers: Iterable<Transformer>) {
+		const list: Transformer[] = [];
+		for (const t of transformers) {
+			if (t instanceof CombinedTransformer) {
+				list.push(...t.transformers);
+			} else {
+				list.push(t);
+			}
+		}
+		this.transformers = list;
+	}
+
+	onAlternation(node: NoParent<Alternation>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onAlternation) {
+				t.onAlternation(node, context);
+			}
+		}
+	}
+
+	onAssertion(node: NoParent<Assertion>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onAssertion) {
+				t.onAssertion(node, context);
+			}
+		}
+	}
+
+	onCharacterClass(node: NoParent<CharacterClass>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onCharacterClass) {
+				t.onCharacterClass(node, context);
+			}
+		}
+	}
+
+	onConcatenation(node: NoParent<Concatenation>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onConcatenation) {
+				t.onConcatenation(node, context);
+			}
+		}
+	}
+
+	onExpression(node: NoParent<Expression>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onExpression) {
+				t.onExpression(node, context);
+			}
+		}
+	}
+
+	onQuantifier(node: NoParent<Quantifier>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onQuantifier) {
+				t.onQuantifier(node, context);
+			}
+		}
+	}
+
+	onUnknown(node: NoParent<Unknown>, context: TransformContext): void {
+		for (const t of this.transformers) {
+			if (t.onUnknown) {
+				t.onUnknown(node, context);
+			}
+		}
+	}
+}
 /**
  * Creates a new transformer that performs all given transformers in sequentially order.
  *
@@ -64,47 +135,29 @@ const TRANSFORMER_KEYS: readonly (keyof Transformer)[] = [
  * The given iterable can be changed and reused after this function returns.
  *
  * @param transformers
+ * @deprecated Use `new CombinedTransformer(transformers)` instead.
  */
-export function combineTransformers(transformers: Iterable<Transformer>): Transformer {
-	type OnFunction = (path: never, context: TransformContext) => void;
-	const functionLists: Partial<Record<keyof Transformer, OnFunction[]>> = {};
-
-	for (const t of transformers) {
-		for (const key of TRANSFORMER_KEYS) {
-			const fn = t[key];
-			if (fn) {
-				const list = (functionLists[key] = functionLists[key] ?? []);
-				list.push(fn.bind(t));
-			}
-		}
-	}
-
-	function toFunction(key: keyof Transformer): OnFunction | undefined {
-		const list = functionLists[key];
-		if (list === undefined || list.length === 0) {
-			return undefined;
-		} else if (list.length === 1) {
-			return list[0];
-		} else {
-			return function (path, context) {
-				for (const fn of list) {
-					fn(path, context);
-				}
-			};
-		}
-	}
-
-	return {
-		onAlternation: toFunction("onAlternation"),
-		onAssertion: toFunction("onAssertion"),
-		onCharacterClass: toFunction("onCharacterClass"),
-		onConcatenation: toFunction("onConcatenation"),
-		onExpression: toFunction("onExpression"),
-		onQuantifier: toFunction("onQuantifier"),
-		onUnknown: toFunction("onUnknown"),
-	};
+export function combineTransformers(transformers: Iterable<Transformer>): CombinedTransformer {
+	return new CombinedTransformer(transformers);
 }
 
+export interface TransformEvents {
+	/**
+	 * An optional callback that will be called at the start of every pass.
+	 *
+	 * @param ast The AST that will be transformed.
+	 * @param pass The number of the pass that will be performed. Starts at `1`.
+	 */
+	onPassStart?: (ast: NoParent<Expression>, pass: number) => void;
+	/**
+	 * An optional callback that will be called every time a transformer mutates the AST.
+	 *
+	 * @param ast The AST that was transformed.
+	 * @param node The node that was mutated by the transformer. Descendants of this node may have been mutated as well.
+	 * @param transformer The transformer that mutated the AST.
+	 */
+	onChange?: (ast: NoParent<Expression>, node: NoParent<Node>, transformer: Transformer) => void;
+}
 export interface TransformOptions {
 	/**
 	 * The maximum number of times the transformer will be applied to the AST.
@@ -115,6 +168,11 @@ export interface TransformOptions {
 	 * @default 10
 	 */
 	maxPasses?: number;
+
+	/**
+	 * Optional events to observe the transformation process.
+	 */
+	events?: TransformEvents;
 }
 
 /**
@@ -131,16 +189,18 @@ export function transform(
 	ast: NoParent<Expression>,
 	options?: Readonly<TransformOptions>
 ): NoParent<Expression> {
-	options = options ?? {};
-	let passesLeft = options.maxPasses ?? 10;
+	const { maxPasses = 10, events } = options ?? {};
 
 	const context: Context = {
 		transformer,
 		ast,
 		maxCharacter: determineMaxCharacter(ast),
+		events: events,
 	};
 
-	for (; passesLeft >= 1; passesLeft--) {
+	for (let i = 1; i <= maxPasses; i++) {
+		events?.onPassStart?.(ast, i);
+
 		if (!transformPass(context)) {
 			break;
 		}
@@ -174,24 +234,60 @@ interface Context {
 	transformer: Transformer;
 	ast: NoParent<Expression>;
 	maxCharacter: Char;
+	events: TransformEvents | undefined;
 }
 
-function transformPass({ transformer, ast, maxCharacter }: Context): boolean {
+function transformPass({ transformer, ast, maxCharacter, events }: Context): boolean {
 	let changed = false;
-	const transformerContext: TransformContext = {
-		maxCharacter,
-		signalMutation() {
-			changed = true;
-		},
+	let leaveNode: (node: NoParent<Node>) => void;
+
+	const transformers = transformer instanceof CombinedTransformer ? transformer.transformers : [transformer];
+	const byKey: Record<`on${Node["type"]}`, Transformer[]> = {
+		onAlternation: transformers.filter(t => t.onAlternation),
+		onAssertion: transformers.filter(t => t.onAssertion),
+		onCharacterClass: transformers.filter(t => t.onCharacterClass),
+		onConcatenation: transformers.filter(t => t.onConcatenation),
+		onExpression: transformers.filter(t => t.onExpression),
+		onQuantifier: transformers.filter(t => t.onQuantifier),
+		onUnknown: transformers.filter(t => t.onUnknown),
 	};
 
-	function leaveNode(node: NoParent<Node>): void {
-		const fnName = "on" + node.type;
+	if (events?.onChange) {
+		let changedPrivate = false;
+		const transformerContext: TransformContext = {
+			maxCharacter,
+			signalMutation() {
+				changed = changedPrivate = true;
+			},
+		};
 
-		const fn = transformer[fnName as keyof Transformer];
-		if (fn) {
-			fn(node as never, transformerContext);
-		}
+		leaveNode = node => {
+			const fnName = `on${node.type}` as const;
+
+			for (const t of byKey[fnName]) {
+				changedPrivate = false;
+				t[fnName]!(node as never, transformerContext);
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				if (changedPrivate) {
+					events.onChange!(ast, node, t);
+				}
+			}
+		};
+	} else {
+		const transformerContext: TransformContext = {
+			maxCharacter,
+			signalMutation() {
+				changed = true;
+			},
+		};
+
+		leaveNode = node => {
+			const fnName = `on${node.type}` as const;
+
+			for (const t of byKey[fnName]) {
+				t[fnName]!(node as never, transformerContext);
+			}
+		};
 	}
 
 	visitAst(ast, {

@@ -1,4 +1,4 @@
-import { DFA, JS, NFA, Transformers, combineTransformers, transform } from "../src";
+import { CombinedTransformer, DFA, JS, NFA, Transformers, transform } from "../src";
 import { PrismRegexes } from "../tests/helper/prism-regex-data";
 import { performance } from "perf_hooks";
 import { logDurations } from "./util";
@@ -45,7 +45,7 @@ function perfTest(): void {
 			measure("toLiteral fast", () => JS.toLiteral(expression, { fastCharacters: true }));
 
 			const finalExpression = measure("transformers", () => {
-				const applyTransformer = combineTransformers([
+				const applyTransformer = new CombinedTransformer([
 					Transformers.inline(),
 					Transformers.removeDeadBranches(),
 					Transformers.removeUnnecessaryAssertions(),

@@ -81,6 +81,29 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 			}
 		});
 
+		// make e.g. ab(ab)* -> (ab)+
+		for (let i = 0; i < elements.length; i++) {
+			const current = elements[i];
+			if (current.type === "Quantifier" && current.alternatives.length === 1) {
+				const alt = current.alternatives[0];
+				if (
+					alt.elements.length >= 2 &&
+					i + 1 + alt.elements.length <= elements.length &&
+					alt.elements.every((e, j) => {
+						if (direction === "rtl") {
+							j = alt.elements.length - 1 - j;
+						}
+						return structurallyEqual(e, elements[i + 1 + j]);
+					})
+				) {
+					context.signalMutation();
+					current.min++;
+					current.max++;
+					elements.splice(i + 1, alt.elements.length);
+					i--;
+				}
+			}
+		}
 		// make e.g. a*(a+|b*)? -> a*(a|b*)
 		if (ignoreAmbiguity) {
 			for (let i = 1; i < elements.length; i++) {
@@ -98,6 +121,7 @@ export function mergeWithQuantifier(options?: Readonly<CreationOptions>): Transf
 	}
 
 	return {
+		name: "mergeWithQuantifier",
 		onConcatenation(node, context) {
 			const elements = node.elements;
 			const { signalMutation } = context;

@@ -1,9 +1,9 @@
-import { Concatenation, Element, NoParent, Parent, TransformContext, Transformer } from "../ast";
+import { Alternation, Concatenation, Element, NoParent, Parent, TransformContext, Transformer } from "../ast";
 import { MatchingDirection, structurallyEqual } from "../ast-analysis";
 import { CharSet } from "../char-set";
 import { minOf } from "../util";
 import { CreationOptions } from "./creation-options";
-import { copySource } from "./util";
+import { at, atInRange, copySource, firstIndexFor } from "./util";
 
 function getPrefixAndSuffix(node: NoParent<Parent>): { prefix: NoParent<Element>[]; suffix: NoParent<Element>[] } {
 	let prefixLength = 0;
@@ -172,6 +172,74 @@ function tryFactorOutQuantifiedCharacter(
 }
 
 /**
+ * Assertions are a huge problem when converting a regex to an NFA, so we want as few of them as possible.
+ *
+ * @param node
+ * @param direction
+ * @param root0
+ * @param root0.signalMutation
+ */
+function tryFactorOutAssertion(
+	node: NoParent<Parent>,
+	direction: MatchingDirection,
+	{ signalMutation }: TransformContext
+): void {
+	if (node.alternatives.length < 2) {
+		return;
+	}
+
+	const firstIndex = firstIndexFor(direction);
+
+	for (let i = 0; i < node.alternatives.length; i++) {
+		const alt = node.alternatives[i];
+
+		const assertion = at(alt.elements, firstIndex);
+		if (!assertion || assertion.type !== "Assertion") {
+			continue;
+		}
+
+		let same = 0;
+		for (let j = i + 1; j < node.alternatives.length; j++) {
+			const a = node.alternatives[j];
+			if (a.elements.length > 0 && structurallyEqual(assertion, atInRange(a.elements, firstIndex))) {
+				same++;
+			} else {
+				break;
+			}
+		}
+
+		if (same > 0) {
+			signalMutation();
+
+			// remove assertion from alternatives
+			for (let j = 0; j <= same; j++) {
+				const a = node.alternatives[i + j];
+				a.elements.splice(firstIndex, 1);
+			}
+
+			// replace old alternatives with new alternative
+			const newAlt: NoParent<Concatenation> = {
+				type: "Concatenation",
+				elements: [assertion],
+				source: copySource(alt.source),
+			};
+			const oldAlternatives = node.alternatives.splice(i, same + 1, newAlt);
+
+			const prefix: NoParent<Alternation> = {
+				type: "Alternation",
+				alternatives: oldAlternatives,
+				source: copySource(alt.source),
+			};
+			if (direction === "ltr") {
+				newAlt.elements.push(prefix);
+			} else {
+				newAlt.elements.unshift(prefix);
+			}
+		}
+	}
+}
+
+/**
  * This will factor out common prefixes and suffixes in parent nodes.
  *
  * Examples:
@@ -191,13 +259,14 @@ function tryFactorOutQuantifiedCharacter(
 export function factorOut(options?: Readonly<CreationOptions>): Transformer {
 	const { ignoreOrder = false } = options ?? {};
 
-	function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
+	function onParent(node: NoParent<Parent>, context: TransformContext): void {
+		const { signalMutation } = context;
 		if (node.alternatives.length < 2) {
 			return;
 		}
 
+		// try to find a common prefix/suffix for all alternatives
 		const { prefix, suffix } = getPrefixAndSuffix(node);
-
 		if (prefix.length > 0 || suffix.length > 0) {
 			signalMutation();
 
@@ -223,18 +292,24 @@ export function factorOut(options?: Readonly<CreationOptions>): Transformer {
 					source: copySource(node.source),
 				},
 			];
-		} else {
-			const noLazyStar = !ignoreOrder;
-			if (tryFactorOutQuantifiedCharacter(node, "ltr", noLazyStar)) {
-				signalMutation();
-			}
-			if (tryFactorOutQuantifiedCharacter(node, "rtl", noLazyStar)) {
-				signalMutation();
-			}
+			return;
 		}
+
+		// try to find a common prefix/suffix for all alternatives by unrolling a quantifier
+		const noLazyStar = !ignoreOrder;
+		if (tryFactorOutQuantifiedCharacter(node, "ltr", noLazyStar)) {
+			signalMutation();
+		}
+		if (tryFactorOutQuantifiedCharacter(node, "rtl", noLazyStar)) {
+			signalMutation();
+		}
+
+		tryFactorOutAssertion(node, "ltr", context);
+		tryFactorOutAssertion(node, "rtl", context);
 	}
 
 	return {
+		name: "factorOut",
 		onAlternation: onParent,
 		onAssertion: onParent,
 		onExpression: onParent,

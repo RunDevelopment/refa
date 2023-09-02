@@ -1,13 +1,13 @@
 import {
 	Alternation,
 	CharacterClass,
+	CombinedTransformer,
 	Concatenation,
 	Element,
 	Expression,
 	NoParent,
 	Quantifier,
 	TransformContext,
-	combineTransformers,
 	transform,
 } from "../ast";
 import { CharSet } from "../char-set";
@@ -26,15 +26,15 @@ import {
 import { TooManyNodesError } from "../errors";
 
 const TRANSFORMER_CREATION_OPTIONS: CreationOptions = { ignoreAmbiguity: true, ignoreOrder: true };
-const CONCAT_TRANSFORMER = combineTransformers([mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS)]);
-const UNION_TRANSFORMER = combineTransformers([
+const CONCAT_TRANSFORMER = new CombinedTransformer([mergeWithQuantifier(TRANSFORMER_CREATION_OPTIONS)]);
+const UNION_TRANSFORMER = new CombinedTransformer([
 	unionCharacters(TRANSFORMER_CREATION_OPTIONS),
 	factorOut(TRANSFORMER_CREATION_OPTIONS),
 	moveUpEmpty(TRANSFORMER_CREATION_OPTIONS),
 	inline(TRANSFORMER_CREATION_OPTIONS),
 ]);
-const QUANTIFIER_TRANSFORMER = combineTransformers([nestedQuantifiers(TRANSFORMER_CREATION_OPTIONS)]);
-const FULL_OPTIMIZE_TRANSFORMER = combineTransformers([
+const QUANTIFIER_TRANSFORMER = new CombinedTransformer([nestedQuantifiers(TRANSFORMER_CREATION_OPTIONS)]);
+const FULL_OPTIMIZE_TRANSFORMER = new CombinedTransformer([
 	inline(TRANSFORMER_CREATION_OPTIONS),
 	unionCharacters(TRANSFORMER_CREATION_OPTIONS),
 	factorOut(TRANSFORMER_CREATION_OPTIONS),

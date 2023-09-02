@@ -11,7 +11,9 @@ import {
 	visitAst,
 } from "../ast";
 import {
+	FirstLookChar,
 	MatchingDirection,
+	firstConsumedToLook,
 	getFirstCharAfter,
 	getFirstCharConsumedBy,
 	getLengthRange,
@@ -23,7 +25,7 @@ import {
 } from "../ast-analysis";
 import {
 	SingleCharacterParent,
-	at,
+	atInRange,
 	emptyAlternation,
 	firstIndexFor,
 	inRange,
@@ -33,12 +35,18 @@ import {
 } from "./util";
 import { CharSet } from "../char-set";
 import { CreationOptions } from "./creation-options";
+import { debugAssert } from "../util";
 
 const enum Result {
 	ACCEPT,
 	REJECT,
-	DEPENDS_ON_INPUT,
+	DEPENDS,
 }
+/**
+ * Returns whether the assertion always trivially accepts/rejects no matter the input string and surrounding assertions.
+ *
+ * @param assertion
+ */
 function getTrivialResult(assertion: NoParent<Assertion>): Result {
 	// the idea here is that a negate assertion accepts when non-negated version reject and vise versa.
 	const ACCEPT = assertion.negate ? Result.REJECT : Result.ACCEPT;
@@ -51,34 +59,28 @@ function getTrivialResult(assertion: NoParent<Assertion>): Result {
 		// the body of the assertion can always accept any input string
 		return ACCEPT;
 	} else {
-		return Result.DEPENDS_ON_INPUT;
+		return Result.DEPENDS;
 	}
 }
-function analyzeAssertion(
-	concatStack: readonly NoParent<Node>[],
+/**
+ * Returns whether the assertion always trivially accepts/rejects because the next character after it is known.
+ *
+ * @param assertion
+ * @param after
+ * @param context
+ */
+function getTrivialResultWithAfter(
 	assertion: NoParent<Assertion>,
+	after: FirstLookChar,
 	context: TransformContext
 ): Result {
-	const trivial = getTrivialResult(assertion);
-	if (trivial !== Result.DEPENDS_ON_INPUT) {
-		return trivial;
-	}
-
 	// the idea here is that a negate assertion accepts when non-negated version reject and vise versa.
 	const ACCEPT = assertion.negate ? Result.REJECT : Result.ACCEPT;
 	const REJECT = assertion.negate ? Result.ACCEPT : Result.REJECT;
 
-	// Now that the easy trivial cases are over, we have to be a little more clever. The basic idea here is that we
-	// compare the first character that the regex consumes before/after the assertion can compare that character
-	// with the first character the assertion asserts. This will filter out a lot of trivial assertions.
-
 	const direction = toMatchingDirection(assertion.kind);
-	const after = getFirstCharAfter(stackPath(concatStack, assertion), direction, context.maxCharacter);
-	if (after.edge) {
-		return Result.DEPENDS_ON_INPUT;
-	}
 
-	if (tryRemoveRejectingAssertionBranches(assertion, after.char, false, direction, context.maxCharacter)) {
+	if (tryRemoveRejectingAssertionBranches(assertion, after.char, after.edge, direction, context.maxCharacter)) {
 		context.signalMutation();
 
 		if (assertion.alternatives.length === 0) {
@@ -87,9 +89,13 @@ function analyzeAssertion(
 		}
 	}
 
+	if (after.edge) {
+		return Result.DEPENDS;
+	}
+
 	const firstOf = getFirstCharConsumedBy(assertion.alternatives, direction, context.maxCharacter);
 	if (firstOf.empty) {
-		return Result.DEPENDS_ON_INPUT;
+		return Result.DEPENDS;
 	}
 
 	// Careful now! If exact is false, we are only guaranteed to have a superset of the actual character.
@@ -114,7 +120,75 @@ function analyzeAssertion(
 		}
 	}
 
-	return Result.DEPENDS_ON_INPUT;
+	return Result.DEPENDS;
+}
+/**
+ * Returns whether the assertion always trivially accepts/rejects because of a single neighboring assertion
+ * no matter the input string.
+ *
+ * @param concatStack
+ * @param assertion
+ * @param context
+ */
+function getTrivialResultBecauseOfNeighbor(
+	concatStack: readonly NoParent<Node>[],
+	assertion: NoParent<Assertion>,
+	context: TransformContext
+): Result {
+	const parent = concatStack[concatStack.length - 1];
+	if (parent.type !== "Concatenation") {
+		throw new Error("Assertion is not a child of a concatenation");
+	}
+
+	const direction = toMatchingDirection(assertion.kind);
+
+	const index = parent.elements.indexOf(assertion);
+	const inc = incrementFor(invertMatchingDirection(direction));
+
+	// the description of this function says "neighboring assertion", but we actually only need to check
+	// the neighbors in the opposite direction of the assertion. The other direction is check by the
+	// character check in `analyzeAssertion`
+	for (let i = index + inc; i >= 0 && i < parent.elements.length; i += inc) {
+		const element = parent.elements[i];
+		if (element.type !== "Assertion") {
+			break;
+		}
+		if (element.kind !== assertion.kind || element.negate) {
+			continue;
+		}
+
+		const after = firstConsumedToLook(
+			getFirstCharConsumedBy(element.alternatives, direction, context.maxCharacter)
+		);
+		const result = getTrivialResultWithAfter(assertion, after, context);
+		if (result !== Result.DEPENDS) {
+			return result;
+		}
+	}
+
+	return Result.DEPENDS;
+}
+function analyzeAssertion(
+	concatStack: readonly NoParent<Node>[],
+	assertion: NoParent<Assertion>,
+	context: TransformContext
+): Result {
+	const trivial = getTrivialResult(assertion);
+	if (trivial !== Result.DEPENDS) {
+		return trivial;
+	}
+	const trivialNeighbor = getTrivialResultBecauseOfNeighbor(concatStack, assertion, context);
+	if (trivialNeighbor !== Result.DEPENDS) {
+		return trivial;
+	}
+
+	// Now that the easy trivial cases are over, we have to be a little more clever. The basic idea here is that we
+	// compare the first character that the regex consumes before/after the assertion can compare that character
+	// with the first character the assertion asserts. This will filter out a lot of trivial assertions.
+
+	const direction = toMatchingDirection(assertion.kind);
+	const after = getFirstCharAfter(stackPath(concatStack, assertion), direction, context.maxCharacter);
+	return getTrivialResultWithAfter(assertion, after, context);
 }
 
 function removeTrivialAssertions(
@@ -167,7 +241,7 @@ function removeAdjacentAssertions(
 
 		for (const { elements } of node.alternatives) {
 			for (let i = firstIndex; inRange(elements, i); i += inc) {
-				const element = at(elements, i);
+				const element = atInRange(elements, i);
 				if (element.type === "Assertion") {
 					if (element.kind === kind && isNegatedSingleCharAssertion(element)) {
 						const elementChar = element.alternatives[0].elements[0].characters;
@@ -194,7 +268,7 @@ function removeAdjacentAssertions(
 	const inc = incrementFor(direction);
 
 	for (let i = firstIndex; inRange(elements, i); i += inc) {
-		const assertion = at(elements, i);
+		const assertion = atInRange(elements, i);
 		if (assertion.type !== "Assertion" || assertion.kind !== kind || !isNegatedSingleCharAssertion(assertion)) {
 			continue;
 		}
@@ -202,7 +276,7 @@ function removeAdjacentAssertions(
 
 		let assertionRemoved = false;
 		for (let j = i + inc; inRange(elements, j); j += inc) {
-			const other = at(elements, j);
+			const other = atInRange(elements, j);
 			if (other.type === "Assertion") {
 				if (other.kind === kind && isNegatedSingleCharAssertion(other)) {
 					const otherChar = other.alternatives[0].elements[0].characters;
@@ -229,7 +303,7 @@ function removeAdjacentAssertions(
 
 		if (!assertionRemoved) {
 			for (let j = i + inc; inRange(elements, j); j += inc) {
-				const other = at(elements, j);
+				const other = atInRange(elements, j);
 				if (other.type === "Assertion") {
 					// move to the next element
 				} else if (other.type === "Alternation" || (other.type === "Quantifier" && other.max === 1)) {
@@ -240,7 +314,7 @@ function removeAdjacentAssertions(
 				}
 			}
 			for (let j = i - inc; inRange(elements, j); j -= inc) {
-				const other = at(elements, j);
+				const other = atInRange(elements, j);
 				if (other.type === "Assertion") {
 					// move to the next element
 				} else if (other.type === "Alternation" || (other.type === "Quantifier" && other.max === 1)) {
@@ -255,6 +329,91 @@ function removeAdjacentAssertions(
 }
 
 /**
+ * This removes optional breaches at the end of the expression tree of assertions.
+ * E.g. `(?!a+)` => `(?!a)`.
+ *
+ * @param assertion
+ * @param context
+ */
+function removeDeadBranches(assertion: NoParent<Assertion>, context: TransformContext): void {
+	const direction = invertMatchingDirection(assertion.kind);
+
+	const firstIndex = firstIndexFor(direction);
+	const inc = incrementFor(direction);
+
+	const remove = (concat: NoParent<Concatenation>): void => {
+		const { elements } = concat;
+
+		for (let i = firstIndex; inRange(elements, i); i += inc) {
+			const element = atInRange(elements, i);
+
+			if (isPotentiallyEmpty(element)) {
+				// remove
+				context.signalMutation();
+				elements.splice(i, 1);
+				i -= inc;
+				continue;
+			}
+
+			if (element.type === "Quantifier" && element.min !== element.max) {
+				// e.g. `(?=a{2,})` => `(?=a{2})`
+				context.signalMutation();
+				element.max = element.min;
+				element.lazy = false;
+			}
+
+			if (element.type === "Alternation") {
+				element.alternatives.forEach(remove);
+			}
+
+			break;
+		}
+	};
+
+	assertion.alternatives.forEach(remove);
+}
+
+/**
+ * E.g. `(?!a|$)` => `(?=[^a])` and `(?=a|$)` => `(?![^a])`.
+ *
+ * @param assertion
+ * @param context
+ */
+function removeEdgeAssertion(assertion: NoParent<Assertion>, context: TransformContext): void {
+	if (assertion.alternatives.length !== 2) {
+		return;
+	}
+
+	const hasCharacter = assertion.alternatives.findIndex(a => {
+		return a.elements.length === 1 && a.elements[0].type === "CharacterClass";
+	});
+	const hasEdgeAssertion = assertion.alternatives.findIndex(a => {
+		if (a.elements.length !== 1) {
+			return false;
+		}
+		const single = a.elements[0];
+		return (
+			single.type === "Assertion" &&
+			single.kind === assertion.kind &&
+			single.negate &&
+			isSingleCharacterParent(single) &&
+			single.alternatives[0].elements[0].characters.isAll
+		);
+	});
+
+	if (hasCharacter === -1 || hasEdgeAssertion === -1) {
+		return;
+	}
+
+	context.signalMutation();
+	assertion.alternatives.splice(hasEdgeAssertion, 1);
+	debugAssert(isSingleCharacterParent(assertion));
+	const char = assertion.alternatives[0].elements[0];
+	char.characters = char.characters.negate();
+	assertion.negate = !assertion.negate;
+}
+
+/**
  * This will remove all assertions that are known to always reject/accept no matter the input string.
  *
  * @param _options
@@ -262,6 +421,13 @@ function removeAdjacentAssertions(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function removeUnnecessaryAssertions(_options?: Readonly<CreationOptions>): Transformer {
 	return {
+		name: "removeUnnecessaryAssertions",
+
+		onAssertion(node, context) {
+			removeDeadBranches(node, context);
+			removeEdgeAssertion(node, context);
+		},
+
 		onConcatenation(node, context) {
 			removeTrivialAssertions(node, getTrivialResult, context);
 

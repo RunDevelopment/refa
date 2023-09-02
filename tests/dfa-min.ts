@@ -4,7 +4,7 @@ import { literalToString } from "./helper/fa";
 import { Parser } from "../src/js";
 import { NFA } from "../src/nfa";
 import { PrismRegexes } from "./helper/prism-regex-data";
-import { combineTransformers, transform } from "../src/ast";
+import { CombinedTransformer, transform } from "../src/ast";
 import * as Transformers from "../src/transformers";
 import { TooManyNodesError } from "../src/errors";
 import { CONFIG_RUN_STRESS_TEST } from "./helper/config";
@@ -24,7 +24,7 @@ describe("DFA minimization", function () {
 	function toDFA(regex: RegExp): DFA {
 		const result = Parser.fromLiteral(regex).parse({ backreferences: "disable" });
 
-		const applyTransformer = combineTransformers([
+		const applyTransformer = new CombinedTransformer([
 			Transformers.inline(),
 			Transformers.removeDeadBranches(),
 			Transformers.removeUnnecessaryAssertions(),

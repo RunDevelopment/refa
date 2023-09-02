@@ -46,15 +46,31 @@ function getRoot(test: Mocha.Runnable): Mocha.Suite {
 
 const toUpdate = new Map<string, Map<string, string>>();
 
-function toStringLiteral(value: string): string {
-	return "`\n" + value.replace(/[`\\$]/g, m => "\\" + m) + "\n`.slice(1, -1)";
+const escapeRegex = /(\\*)(`|\$\{|\\u(?![a-fA-F0-9]{4}))/g;
+function escapeBackslashes(value: string): string {
+	return value.replace(escapeRegex, (m, backslashes: string, c: string) => {
+		return backslashes + backslashes + "\\" + c;
+	});
 }
 
 function createSnapshot(values: Map<string, string>): string {
-	let s = "/* eslint-disable */\n";
+	let s = `/* eslint-disable */
+
+var unescapeBackslashes = (str: string): string => {
+	return str.replace(${escapeRegex}, (m, backslashes: string, c: string) => {
+		return "\\\\".repeat(Math.floor(backslashes.length / 2)) + c;
+	});
+};
+var lit = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(1, -1));
+};
+var n = (array: TemplateStringsArray): string => {
+	return unescapeBackslashes(array.raw[0].slice(0, -1));
+};
+`;
 
 	for (const [title, value] of values) {
-		s += `\nmodule.exports[${JSON.stringify(title)}] = ${toStringLiteral(value)};\n`;
+		s += `\nmodule.exports[n\`${escapeBackslashes(title)} \`] = lit\`\n${escapeBackslashes(value)}\n\`;\n`;
 	}
 
 	return s;

@@ -1,4 +1,4 @@
-import { Concatenation, NoParent, Parent, SourceLocation, TransformContext, Transformer } from "../ast";
+import { Concatenation, NoParent, Parent, Quantifier, SourceLocation, TransformContext, Transformer } from "../ast";
 import { isEmpty, isPotentiallyEmpty } from "../ast-analysis";
 import { filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
@@ -84,6 +84,54 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
 	}
 }
 
+function onParentSafe(node: NoParent<Parent>, { signalMutation }: TransformContext): void {
+	if (node.alternatives.length < 2) {
+		return;
+	}
+
+	if (node.alternatives[0].elements.length === 0) {
+		// e.g. `(?:|a|b)` => `(?:a|b)??`
+		const quant: NoParent<Quantifier> = {
+			type: "Quantifier",
+			lazy: true,
+			min: 0,
+			max: 1,
+			alternatives: node.alternatives.slice(1),
+			source: copySource(node.source),
+		};
+		node.alternatives = [
+			{
+				type: "Concatenation",
+				elements: [quant],
+				source: copySource(node.source),
+			},
+		];
+		signalMutation();
+		return;
+	}
+
+	if (node.alternatives[node.alternatives.length - 1].elements.length === 0) {
+		// e.g. `(?:a|b|)` => `(?:a|b)?`
+		const quant: NoParent<Quantifier> = {
+			type: "Quantifier",
+			lazy: false,
+			min: 0,
+			max: 1,
+			alternatives: node.alternatives.slice(0, -1),
+			source: copySource(node.source),
+		};
+		node.alternatives = [
+			{
+				type: "Concatenation",
+				elements: [quant],
+				source: copySource(node.source),
+			},
+		];
+		signalMutation();
+		return;
+	}
+}
+
 /**
  * This tries to simplify how a given sub-expression accepts the empty string. The goal is to modify the sub-expression
  * such that exactly one path accepts the empty string. This has the emergent result that the operator that causes the
@@ -100,14 +148,18 @@ function onParent(node: NoParent<Parent>, { signalMutation }: TransformContext):
  * @param options
  */
 export function moveUpEmpty(options?: Readonly<CreationOptions>): Transformer {
+	let on: (node: NoParent<Parent>, context: TransformContext) => void;
 	if (!options?.ignoreOrder || !options.ignoreAmbiguity) {
-		return {}; // noop
+		on = onParentSafe;
 	} else {
-		return {
-			onAlternation: onParent,
-			onAssertion: onParent,
-			onExpression: onParent,
-			onQuantifier: onParent,
-		};
+		on = onParent;
 	}
+
+	return {
+		name: "moveUpEmpty",
+		onAlternation: on,
+		onAssertion: on,
+		onExpression: on,
+		onQuantifier: on,
+	};
 }

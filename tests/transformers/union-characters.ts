@@ -1,6 +1,6 @@
 import { itTest, regexSnapshot } from "../helper/transform";
 import { inline, removeDeadBranches, unionCharacters } from "../../src/transformers";
-import { combineTransformers } from "../../src/ast";
+import { CombinedTransformer } from "../../src/ast";
 
 describe("Transformers", function () {
 	describe(/[\w-]+(?=\.\w+)/i.exec(__filename)![0], function () {
@@ -28,7 +28,7 @@ describe("Transformers", function () {
 		]);
 
 		it("Prism regex snapshot", function () {
-			const transformer = combineTransformers([unionCharacters(), inline(), removeDeadBranches()]);
+			const transformer = new CombinedTransformer([unionCharacters(), inline(), removeDeadBranches()]);
 
 			regexSnapshot(this, transformer);
 		});
