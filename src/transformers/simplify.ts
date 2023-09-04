@@ -3,6 +3,7 @@ import { applyAssertions } from "./apply-assertions";
 import { CreationOptions } from "./creation-options";
 import { factorOut } from "./factor-out";
 import { inline } from "./inline";
+import { makeGreedy } from "./make-greedy";
 import { mergeWithQuantifier } from "./merge-with-quantifier";
 import { moveUpEmpty } from "./move-up-empty";
 import { nestedQuantifiers } from "./nested-quantifiers";
@@ -30,6 +31,7 @@ export function simplify(options?: Readonly<CreationOptions>): CombinedTransform
 		applyAssertions(options),
 		sortAssertions(options),
 		factorOut(options),
+		makeGreedy(options),
 		mergeWithQuantifier(options),
 		moveUpEmpty(options),
 		nestedQuantifiers(options),
