@@ -33,6 +33,9 @@ describe("Transformers", function () {
 			},
 
 			/a$|b$|c/,
+
+			/a(?:b|c)|b|c|d/,
+			/b|c|a(?:b|c)|d/,
 		]);
 
 		it("Prism regex snapshot", function () {

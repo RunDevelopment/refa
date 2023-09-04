@@ -54,6 +54,11 @@ yarn add refa
   * Quantification
   * Reverse
 
+- AST transformations
+
+  * Simplify and change the AST of a regex
+  * Remove assertions
+
 - JavaScript RegExp
 
   * RegExp to RE AST and RE AST to RegExp
@@ -249,27 +254,17 @@ Prefer using the parser to remove assertions if possible. The parser is quite cl
 
 However, simply removing assertions is not ideal since they are a lot more common than backreferences. To work around this, refa has AST transformers. AST transformers can make changes to a given AST. While each transformer is rather simple, they can also work together to accomplish more complex tasks. Applying and removing assertions is one such task.
 
-The details about the transformers used in this example can be found in their documentation.
+The simplest transformer to remove assertions (among other things) is the `simplify` transformer. It will inline expressions, remove dead branches, apply/remove assertions, optimize quantifiers, and more.
 
 ```ts
-import { combineTransformers, JS, NFA, transform, Transformers } from "refa";
+import { JS, NFA, Transformers, transform } from "refa";
 
 const regex = /\b(?!\d)\w+\b|->/;
 const { expression, maxCharacter } = JS.Parser.fromLiteral(regex).parse();
-
 console.log(JS.toLiteral(expression));
-// => { source: '\\b(?!\\d)\\w+\\b|->', flags: 'i' }
+// => { source: '\\b(?!\\d)\\w+\\b|->', flags: '' }
 
-const applyTransformer = combineTransformers([
-	Transformers.inline(),
-	Transformers.removeDeadBranches(),
-	Transformers.removeUnnecessaryAssertions(),
-	Transformers.sortAssertions(),
-	Transformers.applyAssertions(),
-	Transformers.removeUnnecessaryAssertions(),
-]);
-const modifiedExpression = transform(applyTransformer, expression);
-
+const modifiedExpression = transform(Transformers.simplify(), expression);
 console.log(JS.toLiteral(modifiedExpression));
 // => { source: '(?<!\\w)[A-Z_]\\w*(?!\\w)|->', flags: 'i' }
 
@@ -277,18 +272,46 @@ console.log(JS.toLiteral(modifiedExpression));
 // The only assertions left assert characters beyond the edge of the pattern.
 // Removing those assertions is easy but slightly changes the pattern.
 
-const finalExpression = transform(
-	Transformers.patternEdgeAssertions({ remove: true }),
-	modifiedExpression
-);
-
+const finalExpression = transform(Transformers.patternEdgeAssertions({ remove: true }), modifiedExpression);
 console.log(JS.toLiteral(finalExpression));
 // => { source: '[A-Z_]\\w*|->', flags: 'i' }
 
 const nfa = NFA.fromRegex(finalExpression, { maxCharacter });
-
 console.log(JS.toLiteral(nfa.toRegex()));
 // => { source: '->|[A-Z_]\\w*', flags: 'i' }
 ```
 
-AST transformers can handle a lot of assertions but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST.
+AST transformers can handle a lot of assertions, but there are limitations. Transformers cannot handle assertions that are too complex or require large-scale changes to the AST. Let's take a look at a few examples:
+
+```ts
+import { JS, Transformers, transform } from "refa";
+
+function simplify(regex: RegExp): void {
+  const { expression } = JS.Parser.fromLiteral(regex).parse();
+
+  const simplifiedExpression = transform(Transformers.simplify(), expression);
+
+  const literal = JS.toLiteral(simplifiedExpression);
+  console.log(new RegExp(literal.source, literal.flags));
+}
+
+simplify(/\b(?!\d)\b\w+\b\s*\(/);
+// => /(?<!\w)[A-Z_]\w*\s*\(/i
+simplify(/(?:^|@)\b\w+\b/);
+// => /(?:^|@)\w+(?!\w)/
+simplify(/"""(?:(?!""").)*"""/s);
+// => /"""(?:"{0,2}[^"])*"""/
+simplify(/"""((?!""")(?:[^\\]|\\"))*"""/);
+// => /"""(?:"{0,2}(?:[^"\\]|\\"))*"""/
+simplify(/<title>(?:(?!<\/title>).)*<\/title>/s);
+// => /<title>(?:[^<]|<+(?:[^/<]|\/(?!title>)))*<+\/title>/
+simplify(/^```$.*?^```$/ms);
+// => /^```[\n\r\u2028\u2029](?:[^]*?[\n\r\u2028\u2029])??```$/m
+```
+
+<details>
+<summary> Note </summary>
+
+`Transformers.simplify` is *very* aggressive when it comes to assertions. It will try to remove assertions whenever possible even if it means that the overall AST will become more complex (within some limits). This may result in longer/more complex regexes, but it will also allow `NFA` and `ENFA` to support many more regexes.
+
+</details>

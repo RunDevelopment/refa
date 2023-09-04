@@ -12,19 +12,39 @@ var n = (array: TemplateStringsArray): string => {
 	return unescapeBackslashes(array.raw[0].slice(0, -1));
 };
 
-module.exports[n`Transformers >> factor-out >> /a$|b$|c/ `] = lit`
-/(?:a|b)$|c/
+module.exports[n`Transformers >> make-greedy >> /abc+/ `] = lit`
+/abc+/
 `;
 
-module.exports[n`Transformers >> factor-out >> /a(?:b|c)|b|c|d/ `] = lit`
-/a?(?:b|c)|d/
+module.exports[n`Transformers >> make-greedy >> /abc+?/ `] = lit`
+/abc+?/
 `;
 
-module.exports[n`Transformers >> factor-out >> /b|c|a(?:b|c)|d/ `] = lit`
-/a??(?:b|c)|d/
+module.exports[n`Transformers >> make-greedy >> /abc+?c/ `] = lit`
+/abc+?c/
 `;
 
-module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
+module.exports[n`Transformers >> make-greedy >> /abc+?$/ `] = lit`
+/abc+$/
+`;
+
+module.exports[n`Transformers >> make-greedy >> /abc+?d/ `] = lit`
+/abc+d/
+`;
+
+module.exports[n`Transformers >> make-greedy >> /abc{3,3}?/ `] = lit`
+/abc{3}/
+`;
+
+module.exports[n`Transformers >> make-greedy >> /(?!cc+?d)/ `] = lit`
+/(?!cc+d)/
+`;
+
+module.exports[n`Transformers >> make-greedy >> /(?<!cc+?d)/ `] = lit`
+/(?<!cc+?d)/
+`;
+
+module.exports[n`Transformers >> make-greedy >> Prism regex snapshot `] = lit`
 /<!--[^]*?-->/
 /<\?[^]+?\?>/
 /<!\[CDATA\[[^]*?\]\]>/i
@@ -70,31 +90,31 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^\s*STYLE/i
 /.+/
 /\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/
-/\b(?:tru|fals)e\b/
+/\b(?:true|false)\b/
 /\w+(?=\()/
-/\b0X[\dA-F]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?/i
+/\b0X[\dA-F]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?/i
 /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[%*/?~^]/
 /[(),.:;[\]{}]/
 /"(?:\\(?:\r\n|[^])|(?!")[^\n\r\\])*"|'(?:\\(?:\r\n|[^])|(?!')[^\n\r\\])*'/
-/\b(?:(?:CLASS|INTERFACE|EXTENDS|IMPLEMENTS|TRAIT|INSTANCEOF|NEW)\s+|CATCH\s+\()[\w.\\]+/i
+/(?:\b(?:CLASS|INTERFACE|EXTENDS|IMPLEMENTS|TRAIT|INSTANCEOF|NEW)\s+|\bCATCH\s+\()[\w.\\]+/i
 /(?:^|[^\\])\/\*[^]*?(?:\*\/|$)/
 /(?:^|[^:\\])\/\/.*/
 /[.\\]/
 /\b[A-Z](?:[A-Z_]|\dx?)*\b/
 /#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*(?:\.\s*(?:apply|bind|call)\s*)?\()/
-/\b(?:0(?:[Xx](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|[Bb](?:[01](?:_[01])?)+|[Oo](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][-+]?(?:\d(?:_\d)?)+)?/
+/\b(?:(?:0[Xx](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[Bb](?:[01](?:_[01])?)+|0[Oo](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][-+]?(?:\d(?:_\d)?)+)?/
 /--|\+\+|\*\*=?|=>|&&=?|\|\|=?|[!=]==|<<=?|>>>?=?|[-!%&*+/<=>|^]=?|\.{3}|\?\?=?|\?\.?|[:~]/
 /\b(?:class|interface|extends|implements|instanceof|new)\s+[\w.\\]+/
 /\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
 /(?:^|[^\x09-\x0d "$').0-9A-Z\]_a-z\xa0-\uffff]|\b(?:return|yield))\s*\/(?:\[(?:[^\n\r\\\]]|\\.)*\]|\\.|[^\n\r/[\\])+\/[gimsuy]{0,6}(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\n\r),.:;\]}]|\/\/))/
-/#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*[:=]\s*(?:async\s*)?(?:\bfunction(?:(?<!\w)\w|(?<=\w)(?!\w))|(?:\((?:[^()]|\([^()]*\))*\)|[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/
+/#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*[:=]\s*(?:async\s*)?(?:\bfunction\b|(?:\((?:[^()]|\([^()]*\))*\)|[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/
 /(?:^|[^\w$\xa0-\uffff])[$A-Z_\xa0-\uffff][\w$\xa0-\uffff]*(?=\.(?:prototype|constructor))/
 /function(?:\s+[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*)?\s*\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/
 /[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*=>)/
 /\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*=>)/
-/(?:(?:(?<!\w)(?=\w)|(?<=\w)(?!\w)|\s|^)(?!(?:as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?![\w$\xa0-\uffff]))[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*|\])\s*\(\s*(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*\{)/
+/(?:(?:(?<!\w)(?=\w)|(?<=\w)(?!\w)|\s|^)(?!(?:as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?![\w$\xa0-\uffff]))[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*\s*\(\s*|\]\s*\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*\{)/
 /(?:^|\})\s*(?:catch|finally)\b/
-/(?:^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function(?:(?<!\w)\w|(?<=\w)(?!\w))|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|(?:g|s)et(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/
+/(?:^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[\w$\xa0-\uffff]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|(?:get|set)(?=\s*[\w$[\xa0-\uffff])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/
 /^\`|\`$/
 /(?:^|[^\\])(?:\\{2})*\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}/
 /^\$\{|\}$/
@@ -116,7 +136,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:%[is])?"[^\n\r"]*"/
 /%(?:B[01]+-[01]+|D\d+-\d+|X[\dA-F]+-[\dA-F]+)/i
 /%(?:B[01]+(?:\.[01]+)*|D\d+(?:\.\d+)*|X[\dA-F]+(?:\.[\dA-F]+)*)/i
-/(?:^|[^-\w])\d*(?:\*\d*|\d)/
+/(?:^|[^-\w])(?:\d*\*\d*|\d+)/
 /^[\t ]*(?:[a-z][-\w]*|<[^\n\r>]*>)(?=\s*=)/m
 /(?:(?:^|[^-\w<])(?:ALPHA|BIT|CHAR|CR|CRLF|CTL|DIGIT|DQUOTE|HEXDIG|HTAB|LF|LWSP|OCTET|SP|VCHAR|WSP)|<(?:ALPHA|BIT|CHAR|CR|CRLF|CTL|DIGIT|DQUOTE|HEXDIG|HTAB|LF|LWSP|OCTET|SP|VCHAR|WSP)>)(?![-\w])/i
 /(?:^|[^-\w<])[A-Z][-\w]*|<[^\n\r>]*>/i
@@ -129,7 +149,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /"(?:""|[^\n\f\r"])*"/
 /\b'\w+/
 /\b(?:ABORT|ABS|ABSTRACT|ACCEPT|ACCESS|ALIASED|ALL|AND|ARRAY|AT|BEGIN|BODY|CASE|CONSTANT|DECLARE|DELAY|DELTA|DIGITS|DO|ELSE|NEW|RETURN|ELSIF|END|ENTRY|EXCEPTION|EXIT|FOR|FUNCTION|GENERIC|GOTO|IF|IN|INTERFACE|IS|LIMITED|LOOP|MOD|NOT|NULL|OF|OTHERS|OUT|OVERRIDING|PACKAGE|PRAGMA|PRIVATE|PROCEDURE|PROTECTED|RAISE|RANGE|RECORD|REM|RENAMES|REQUEUE|REVERSE|SELECT|SEPARATE|SOME|SUBTYPE|SYNCHRONIZED|TAGGED|TASK|TERMINATE|THEN|TYPE|UNTIL|USE|WHEN|WHILE|WITH|XOR)\b/i
-/\b(?:TRU|FALS)E\b/i
+/\b(?:TRUE|FALSE)\b/i
 /<[=>]?|>=?|=>?|:=|\/=?|\*\*?|[-&+]/
 /\.\.?|[(),:;]/
 /'.'/
@@ -141,20 +161,20 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:Set|abstract|constructor|data|eta-equality|field|forall|forall|hiding|import|in|inductive|infix|infixl|infixr|instance|let|macro|module|mutual|no-eta-equality|open|overlap|pattern|postulate|primitive|private|public|quote|quoteContext|quoteGoal|quoteTerm|record|renaming|rewrite|syntax|tactic|unquote|unquoteDecl|unquoteDef|using|variable|where|with)\b/
 /"(?:\\(?:\r\n|[^])|[^\n\r"\\])*"/
 /(?:data|record) +\S+/
-/^[\t ]*[^\n\r:]+?(?=:)/m
+/^[\t ]*[^\n\r:]+(?=:)/m
 /(?:^\s*|\s)(?:[:=?\\_|\u03bb\u2192\u2200]|->)(?=\s)/
-/\/(?:\/.*|\*[^]*?\*\/)/
-/\b(?:0X[\dA-F]+|(?:\d+\.?|\.\d)\d*(?:E[-+]?\d+)?)(?:F|U(?:LL?)?|LL?)?\b/i
-/\b(?:FALS|TRU)E\b/i
+/\/\/.*|\/\*[^]*?\*\//
+/\b(?:0X[\dA-F]+|(?:\d+\.?\d*|\.\d+)(?:E[-+]?\d+)?)(?:F|U(?:LL?)?|LL?)?\b/i
+/\b(?:FALSE|TRUE)\b/i
 /\b(?:Curr(?:FieldNo|Page|Report)|RequestOptionsPage|x?Rec)\b/
 /\b(?:AUTOMATION|BIGINTEGER|BIGTEXT|BLOB|BOOLEAN|BYTE|CHAR|CLIENTTYPE|CODE|COMPLETIONTRIGGERERRORLEVEL|CONNECTIONTYPE|DATABASE|DATACLASSIFICATION|DATASCOPE|DATE|DATEFORMULA|DATETIME|DECIMAL|DEFAULTLAYOUT|DIALOG|DICTIONARY|DOTNETASSEMBLY|DOTNETTYPEDECLARATION|DURATION|ERRORINFO|ERRORTYPE|EXECUTIONCONTEXT|EXECUTIONMODE|FIELDCLASS|FIELDREF|FIELDTYPE|FILE|FILTERPAGEBUILDER|GUID|HTTPCLIENT|HTTPCONTENT|HTTPHEADERS|HTTPREQUESTMESSAGE|HTTPRESPONSEMESSAGE|INSTREAM|INTEGER|JOKER|JSONARRAY|JSONOBJECT|JSONTOKEN|JSONVALUE|KEYREF|LIST|MODULEDEPENDENCYINFO|MODULEINFO|NONE|NOTIFICATION|NOTIFICATIONSCOPE|OBJECTTYPE|OPTION|OUTSTREAM|PAGERESULT|RECORD|RECORDID|RECORDREF|REPORTFORMAT|SECURITYFILTER|SESSIONSETTINGS|TABLECONNECTIONTYPE|TABLEFILTER|TESTACTION|TESTFIELD|TESTFILTERFIELD|TESTPAGE|TESTPERMISSIONS|TESTREQUESTPAGE|TEXT|TEXTBUILDER|TEXTCONST|TEXTENCODING|TIME|TRANSACTIONMODEL|TRANSACTIONTYPE|VARIANT|VERBOSITY|VERSION|VIEW|VIEWS|WEBSERVICEACTIONCONTEXT|WEBSERVICEACTIONRESULTCODE|XMLATTRIBUTE|XMLATTRIBUTECOLLECTION|XMLCDATA|XMLCOMMENT|XMLDECLARATION|XMLDOCUMENT|XMLDOCUMENTTYPE|XMLELEMENT|XMLNAMESPACEMANAGER|XMLNAMETABLE|XMLNODE|XMLNODELIST|XMLPROCESSINGINSTRUCTION|XMLREADOPTIONS|XMLTEXT|XMLWRITEOPTIONS)\b/i
 /\.\.|:[:=]|[-*+/]=?|<>|[<>]=?|=|\b(?:AND|DIV|MOD|NOT|OR|XOR)\b/i
 /[(),.:;[\]{}]/
 /'(?:''|[^\n\r'])*'(?!')|"(?:""|[^\n\r"])*"(?!")/
-/(?:\b(?:EVENT|PROCEDURE|TRIGGER)\s|(?:^|[^.])\.)\s*[A-Z_]\w*(?=\s*\()/i
+/(?:\b(?:EVENT|PROCEDURE|TRIGGER)\s+|(?:^|[^.])\.\s*)[A-Z_]\w*(?=\s*\()/i
 /\b(?:ARRAY|ASSERTERROR|BEGIN|BREAK|CASE|DO|DOWNTO|ELSE|END|EVENT|EXIT|FOR|FOREACH|FUNCTION|IF|IMPLEMENTS|IN|INDATASET|INTERFACE|INTERNAL|LOCAL|OF|PROCEDURE|PROGRAM|PROTECTED|REPEAT|RUNONCLIENT|SECURITYFILTERING|SUPPRESSDISPOSE|TEMPORARY|THEN|TO|TRIGGER|UNTIL|VAR|WHILE|WITH|WITHEVENTS)\b/i
 /\b(?:ACTION|ACTIONS|ADDAFTER|ADDBEFORE|ADDFIRST|ADDLAST|AREA|ASSEMBLY|CHARTPART|CODEUNIT|COLUMN|CONTROLADDIN|CUEGROUP|CUSTOMIZES|DATAITEM|DATASET|DOTNET|ELEMENTS|ENUM|ENUMEXTENSION|EXTENDS|FIELD|FIELDATTRIBUTE|FIELDELEMENT|FIELDGROUP|FIELDGROUPS|FIELDS|FILTER|FIXED|GRID|GROUP|KEY|KEYS|LABEL|LABELS|LAYOUT|MODIFY|MOVEAFTER|MOVEBEFORE|MOVEFIRST|MOVELAST|PAGE|PAGECUSTOMIZATION|PAGEEXTENSION|PART|PROFILE|QUERY|REPEATER|REPORT|REQUESTPAGE|SCHEMA|SEPARATOR|SYSTEMPART|TABLE|TABLEELEMENT|TABLEEXTENSION|TEXTATTRIBUTE|TEXTELEMENT|TYPE|USERCONTROL|VALUE|XMLPORT)\b/i
-/\/(?:\/.*|\*[^]*?(?:\*\/|$))/
+/\/\/.*|\/\*[^]*?(?:\*\/|$)/
 /\b(?:catch|channels|finally|fragment|grammar|import|lexer|locals|mode|options|parser|returns|throws|tokens)\b/
 /\b[A-Z][A-Z_]*\b/
 /\.\.|->|[|~]|[*+?]\??/
@@ -177,7 +197,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /#.*/
 /[$%]\{?(?:\w\.?[-+:]?)+\}?/
 /\^?.*\$|\^.*\$?/
-/^\s*\b(?:ACCEPTFILTER|ACCEPTPATHINFO|ACCESSFILENAME|ACTION|ADD(?:ALT|ALTBYENCODING|ALTBYTYPE|CHARSET|DEFAULTCHARSET|DESCRIPTION|ENCODING|HANDLER|ICON|ICONBYENCODING|ICONBYTYPE|INPUTFILTER|LANGUAGE|MODULEINFO|OUTPUTFILTER|OUTPUTFILTERBYTYPE|TYPE)|ALIAS|ALIASMATCH|ALLOW(?:CONNECT|ENCODEDSLASHES|METHODS|OVERRIDE|OVERRIDELIST)?|ANONYMOUS(?:_(?:LOGEMAIL|MUSTGIVEEMAIL|NOUSERID|VERIFYEMAIL))?|ASYNCREQUESTWORKERFACTOR|AUTH(?:BASICAUTHORITATIVE|BASICFAKE|BASICPROVIDER|BASICUSEDIGESTALGORITHM|DBDUSERPWQUERY|DBDUSERREALMQUERY|DBMGROUPFILE|DBMTYPE|DBMUSERFILE|DIGEST(?:ALGORITHM|DOMAIN|NONCELIFETIME|PROVIDER|QOP|SHMEMSIZE)|FORM(?:AUTHORITATIVE|BODY|DISABLENOSTORE|FAKEBASICAUTH|LOCATION|LOGINREQUIREDLOCATION|LOGINSUCCESSLOCATION|LOGOUTLOCATION|METHOD|MIMETYPE|PASSWORD|PROVIDER|SITEPASSPHRASE|SIZE|USERNAME)|GROUPFILE|LDAP(?:AUTHORIZEPREFIX|BINDAUTHORITATIVE|BINDDN|BINDPASSWORD|CHARSETCONFIG|COMPAREASUSER|COMPAREDNONSERVER|DEREFERENCEALIASES|GROUPATTRIBUTE|GROUPATTRIBUTEISDN|INITIALBINDASUSER|INITIALBINDPATTERN|MAXSUBGROUPDEPTH|REMOTEUSERATTRIBUTE|REMOTEUSERISDN|SEARCHASUSER|SUBGROUPATTRIBUTE|SUBGROUPCLASS|URL)|MERGING|NAME|TYPE|USERFILE|NCACHE(?:CONTEXT|ENABLE|PROVIDEFOR|SOCACHE|TIMEOUT)|NZFCGICHECKAUTHNPROVIDER|NZFCGIDEFINEPROVIDER|ZDBDLOGINTOREFERER|ZDBDQUERY|ZDBDREDIRECTQUERY|ZDBMTYPE|ZSENDFORBIDDENONFAILURE)|BALANCERGROWTH|BALANCERINHERIT|BALANCERMEMBER|BALANCERPERSIST|BROWSERMATCH|BROWSERMATCHNOCASE|BUFFERSIZE|BUFFEREDLOGS|CGIDSCRIPTTIMEOUT|CGIMAPEXTENSION|CACHE(?:DEFAULTEXPIRE|DETAILHEADER|DIRLENGTH|DIRLEVELS|DISABLE|ENABLE|FILE|HEADER|IGNORECACHECONTROL|IGNOREHEADERS|IGNORENOLASTMOD|IGNOREQUERYSTRING|IGNOREURLSESSIONIDENTIFIERS|KEYBASEURL|LASTMODIFIEDFACTOR|LOCK|LOCKMAXAGE|LOCKPATH|MAXEXPIRE|MAXFILESIZE|MINEXPIRE|MINFILESIZE|NEGOTIATEDDOCS|QUICKHANDLER|READSIZE|READTIME|ROOT|SOCACHE(?:(?:MAXSIZ|MAXTIM|MINTIM|READSIZ|READTIM)E)?|STALEONERROR|STOREEXPIRED|STORENOSTORE|STOREPRIVATE)|CHARSETDEFAULT|CHARSETOPTIONS|CHARSETSOURCEENC|CHECKCASEONLY|CHECKSPELLING|CHROOTDIR|CONTENTDIGEST|COOKIEDOMAIN|COOKIEEXPIRES|COOKIENAME|COOKIESTYLE|COOKIETRACKING|COREDUMPDIRECTORY|CUSTOMLOG|DBDEXPTIME|DBDINITSQL|DBDKEEP|DBDMAX|DBDMIN|DBDPARAMS|DBDPERSIST|DBDPREPARESQL|DBDRIVER|DTRACEPRIVILEGES|DAV|DAVDEPTHINFINITY|DAVGENERICLOCKDB|DAVLOCKDB|DAVMINTIMEOUT|DEFAULTICON|DEFAULTLANGUAGE|DEFAULTRUNTIMEDIR|DEFAULTTYPE|DEFINE|DEFLATE(?:BUFFERSIZE|COMPRESSIONLEVEL|FILTERNOTE|INFLATELIMITREQUESTBODY|INFLATERATIO(?:BURS|LIMI)T|MEMLEVEL|WINDOWSIZE)|DENY|DIRECTORYCHECKHANDLER|DIRECTORYINDEX|DIRECTORYINDEXREDIRECT|DIRECTORYSLASH|DOCUMENTROOT|DUMPIOINPUT|DUMPIOOUTPUT|ENABLEEXCEPTIONHOOK|ENABLEMMAP|ENABLESENDFILE|ERROR|ERRORDOCUMENT|ERRORLOG|ERRORLOGFORMAT|EXAMPLE|EXPIRESACTIVE|EXPIRESBYTYPE|EXPIRESDEFAULT|EXTFILTERDEFINE|EXTFILTEROPTIONS|EXTENDEDSTATUS|FALLBACKRESOURCE|FILEETAG|FILTERCHAIN|FILTERDECLARE|FILTERPROTOCOL|FILTERPROVIDER|FILTERTRACE|FORCELANGUAGEPRIORITY|FORCETYPE|FORENSICLOG|GPROFDIR|GRACEFULSHUTDOWNTIMEOUT|GROUP|HEADER|HEADERNAME|HEARTBEAT(?:ADDRESS|LISTEN|MAXSERVERS|STORAGE)|HOSTNAMELOOKUPS|ISAPI(?:APPENDLOGTOERRORS|APPENDLOGTOQUERY|CACHEFILE|FAKEASYNC|LOGNOTSUPPORTED|READAHEADBUFFER)|IDENTITYCHECK|IDENTITYCHECKTIMEOUT|IMAPBASE|IMAPDEFAULT|IMAPMENU|INCLUDE|INCLUDEOPTIONAL|INDEX(?:HEADINSERT|IGNORE|IGNORERESET|OPTIONS|ORDERDEFAULT|STYLESHEET)|INPUTSED|KEEPALIVE|KEEPALIVETIMEOUT|KEPTBODYSIZE|LDAP(?:CACHEENTRIES|CACHETTL|CONNECTIONPOOLTTL|CONNECTIONTIMEOUT|LIBRARYDEBUG|OPCACHEENTRIES|OPCACHETTL|REFERRALHOPLIMIT|REFERRALS|RETRIES|RETRYDELAY|SHAREDCACHEFILE|SHAREDCACHESIZE|TIMEOUT|TRUSTEDCLIENTCERT|TRUSTEDGLOBALCERT|TRUSTEDMODE|VERIFYSERVERCERT)|LANGUAGEPRIORITY|LIMIT(?:INTERNALRECURSION|REQUEST(?:BODY|FIELDSIZE|FIELDS|LINE)|XMLREQUESTBODY)|LISTEN|LISTENBACKLOG|LOADFILE|LOADMODULE|LOGFORMAT|LOGLEVEL|LOGMESSAGE|LUAAUTHZPROVIDER|LUACODECACHE|LUA(?:HOOK(?:ACCESSCHECKER|AUTHCHECKER|CHECKUSERID|FIXUPS|INSERTFILTER|LOG|MAPTOSTORAGE|TRANSLATENAME|TYPECHECKER)|INHERIT|INPUTFILTER|MAPHANDLER|OUTPUTFILTER|PACKAGECPATH|PACKAGEPATH|QUICKHANDLER|ROOT|SCOPE)|MMAPFILE|MAX(?:CONNECTIONSPERCHILD|KEEPALIVEREQUESTS|MEMFREE|RANGEOVERLAPS|RANGEREVERSALS|RANGES|REQUESTWORKERS|SPARESERVERS|SPARETHREADS|THREADS)|MERGETRAILERS|METADIR|METAFILES|METASUFFIX|MIMEMAGICFILE|MINSPARESERVERS|MINSPARETHREADS|MODMIMEUSEPATHINFO|MODEMSTANDARD|MULTIVIEWSMATCH|MUTEX|NWSSLTRUSTEDCERTS|NWSSLUPGRADEABLE|NAMEVIRTUALHOST|NOPROXY|OPTIONS|ORDER|OUTPUTSED|PASSENV|PIDFILE|PRIVILEGESMODE|PROTOCOL|PROTOCOLECHO|PROXY(?:ADDHEADERS|BADHEADER|BLOCK|DOMAIN|ERROROVERRIDE|EXPRESSDBMFILE|EXPRESSDBMTYPE|EXPRESSENABLE|FTPDIRCHARSET|FTPESCAPEWILDCARDS|FTPLISTONWILDCARD|HTML(?:BUFSIZE|CHARSETOUT|DOCTYPE|ENABLE|EVENTS|EXTENDED|FIXUPS|INTERP|LINKS|META|STRIPCOMMENTS|URLMAP)|IOBUFFERSIZE|MAXFORWARDS|PASS(?:INHERIT|INTERPOLATEENV|MATCH|REVERSE|REVERSECOOKIEDOMAIN|REVERSECOOKIEPATH)?|PRESERVEHOST|RECEIVEBUFFERSIZE|REMOTE|REMOTEMATCH|REQUESTS|SCGIINTERNALREDIRECT|SCGISENDFILE|SET|SOURCEADDRESS|STATUS|TIMEOUT|VIA)|RLIMITCPU|RLIMITMEM|RLIMITNPROC|READMENAME|RECEIVEBUFFERSIZE|REDIRECT|REDIRECTMATCH|REDIRECTPERMANENT|REDIRECTTEMP|REFLECTORHEADER|REMOTEIP(?:HEADER|INTERNALPROXY|INTERNALPROXYLIST|PROXIESHEADER|TRUSTEDPROXY|TRUSTEDPROXYLIST)|REMOVECHARSET|REMOVEENCODING|REMOVEHANDLER|REMOVEINPUTFILTER|REMOVELANGUAGE|REMOVEOUTPUTFILTER|REMOVETYPE|REQUESTHEADER|REQUESTREADTIMEOUT|REQUIRE|REWRITE(?:BASE|COND|ENGINE|MAP|OPTIONS|RULE)|SSIETAG|SSIENDTAG|SSIERRORMSG|SSILASTMODIFIED|SSILEGACYEXPRPARSER|SSISTARTTAG|SSITIMEFORMAT|SSIUNDEFINEDECHO|SSL(?:CACERTIFICATEFILE|CACERTIFICATEPATH|CADNREQUESTFILE|CADNREQUESTPATH|CAREVOCATIONCHECK|CAREVOCATIONFILE|CAREVOCATIONPATH|CERTIFICATECHAINFILE|CERTIFICATEFILE|CERTIFICATEKEYFILE|CIPHERSUITE|COMPRESSION|CRYPTODEVICE|ENGINE|FIPS|HONORCIPHERORDER|INSECURERENEGOTIATION|OCSP(?:DEFAULTRESPONDER|ENABLE|OVERRIDERESPONDER|RESPONDERTIMEOUT|RESPONSEMAXAGE|RESPONSETIMESKEW|USEREQUESTNONCE)|OPENSSLCONFCMD|OPTIONS|PASSPHRASEDIALOG|PROTOCOL|PROXY(?:CACERTIFICATEFILE|CACERTIFICATEPATH|CAREVOCATION(?:CHECK|FILE|PATH)|CHECKPEER(?:CN|EXPIRE|NAME)|CIPHERSUITE|ENGINE|MACHINECERTIFICATE(?:CHAINFILE|FILE|PATH)|PROTOCOL|VERIFY|VERIFYDEPTH)|RANDOMSEED|RENEGBUFFERSIZE|REQUIRE|REQUIRESSL|SRPUNKNOWNUSERSEED|SRPVERIFIERFILE|SESSION(?:CACHE|CACHETIMEOUT|TICKETKEYFILE|TICKETS)|STAPLING(?:CACHE|ERRORCACHETIMEOUT|FAKETRYLATER|FORCEURL|RESPONDERTIMEOUT|RESPONSEMAXAGE|RESPONSETIMESKEW|RETURNRESPONDERERRORS|STANDARDCACHETIMEOUT)|STRICTSNIVHOSTCHECK|USESTAPLING|USERNAME|VERIFYCLIENT|VERIFYDEPTH)|SATISFY|SCOREBOARDFILE|SCRIPT(?:ALIAS|ALIASMATCH|INTERPRETERSOURCE|LOG|LOGBUFFER|LOGLENGTH|SOCK)?|SECURELISTEN|SEEREQUESTTAIL|SENDBUFFERSIZE|SERVER(?:ADMIN|ALIAS|LIMIT|NAME|PATH|ROOT|SIGNATURE|TOKENS)|SESSION(?:COOKIE(?:NAME|NAME2|REMOVE)|CRYPTO(?:CIPHER|DRIVER|PASSPHRASE|PASSPHRASEFILE)|DBD(?:COOKIENAME|COOKIENAME2|COOKIEREMOVE|DELETELABEL|INSERTLABEL|PERUSER|SELECTLABEL|UPDATELABEL)|ENV|EXCLUDE|HEADER|INCLUDE|MAXAGE)?|SETENV|SETENVIF|SETENVIFEXPR|SETENVIFNOCASE|SETHANDLER|SETINPUTFILTER|SETOUTPUTFILTER|STARTSERVERS|STARTTHREADS|SUBSTITUTE|SUEXEC|SUEXECUSERGROUP|THREADLIMIT|THREADSTACKSIZE|THREADSPERCHILD|TIMEOUT|TRACEENABLE|TRANSFERLOG|TYPESCONFIG|UNDEFINE|UNDEFMACRO|UNSETENV|USE|USECANONICALNAME|USECANONICALPHYSICALPORT|USER|USERDIR|VHOSTCGIMODE|VHOSTCGIPRIVS|VHOSTGROUP|VHOSTPRIVS|VHOSTSECURE|VHOSTUSER|VIRTUAL(?:DOCUMENTROOT|SCRIPTALIAS)(?:IP)?|WATCHDOGINTERVAL|XBITHACK|XML2ENCALIAS|XML2ENCDEFAULT|XML2STARTPARSE)\b/im
+/^\s*\b(?:ACCEPTFILTER|ACCEPTPATHINFO|ACCESSFILENAME|ACTION|ADD(?:ALT|ALTBYENCODING|ALTBYTYPE|CHARSET|DEFAULTCHARSET|DESCRIPTION|ENCODING|HANDLER|ICON|ICONBYENCODING|ICONBYTYPE|INPUTFILTER|LANGUAGE|MODULEINFO|OUTPUTFILTER|OUTPUTFILTERBYTYPE|TYPE)|ALIAS|ALIASMATCH|ALLOW(?:CONNECT|ENCODEDSLASHES|METHODS|OVERRIDE|OVERRIDELIST)?|ANONYMOUS(?:_LOGEMAIL|_MUSTGIVEEMAIL|_NOUSERID|_VERIFYEMAIL)?|ASYNCREQUESTWORKERFACTOR|AUTH(?:BASICAUTHORITATIVE|BASICFAKE|BASICPROVIDER|BASICUSEDIGESTALGORITHM|DBDUSERPWQUERY|DBDUSERREALMQUERY|DBMGROUPFILE|DBMTYPE|DBMUSERFILE|DIGEST(?:ALGORITHM|DOMAIN|NONCELIFETIME|PROVIDER|QOP|SHMEMSIZE)|FORM(?:AUTHORITATIVE|BODY|DISABLENOSTORE|FAKEBASICAUTH|LOCATION|LOGINREQUIREDLOCATION|LOGINSUCCESSLOCATION|LOGOUTLOCATION|METHOD|MIMETYPE|PASSWORD|PROVIDER|SITEPASSPHRASE|SIZE|USERNAME)|GROUPFILE|LDAP(?:AUTHORIZEPREFIX|BINDAUTHORITATIVE|BINDDN|BINDPASSWORD|CHARSETCONFIG|COMPAREASUSER|COMPAREDNONSERVER|DEREFERENCEALIASES|GROUPATTRIBUTE|GROUPATTRIBUTEISDN|INITIALBINDASUSER|INITIALBINDPATTERN|MAXSUBGROUPDEPTH|REMOTEUSERATTRIBUTE|REMOTEUSERISDN|SEARCHASUSER|SUBGROUPATTRIBUTE|SUBGROUPCLASS|URL)|MERGING|NAME|TYPE|USERFILE|NCACHE(?:CONTEXT|ENABLE|PROVIDEFOR|SOCACHE|TIMEOUT)|NZFCGICHECKAUTHNPROVIDER|NZFCGIDEFINEPROVIDER|ZDBDLOGINTOREFERER|ZDBDQUERY|ZDBDREDIRECTQUERY|ZDBMTYPE|ZSENDFORBIDDENONFAILURE)|BALANCERGROWTH|BALANCERINHERIT|BALANCERMEMBER|BALANCERPERSIST|BROWSERMATCH|BROWSERMATCHNOCASE|BUFFERSIZE|BUFFEREDLOGS|CGIDSCRIPTTIMEOUT|CGIMAPEXTENSION|CACHE(?:DEFAULTEXPIRE|DETAILHEADER|DIRLENGTH|DIRLEVELS|DISABLE|ENABLE|FILE|HEADER|IGNORECACHECONTROL|IGNOREHEADERS|IGNORENOLASTMOD|IGNOREQUERYSTRING|IGNOREURLSESSIONIDENTIFIERS|KEYBASEURL|LASTMODIFIEDFACTOR|LOCK|LOCKMAXAGE|LOCKPATH|MAXEXPIRE|MAXFILESIZE|MINEXPIRE|MINFILESIZE|NEGOTIATEDDOCS|QUICKHANDLER|READSIZE|READTIME|ROOT|SOCACHE(?:MAXSIZE|MAXTIME|MINTIME|READSIZE|READTIME)?|STALEONERROR|STOREEXPIRED|STORENOSTORE|STOREPRIVATE)|CHARSETDEFAULT|CHARSETOPTIONS|CHARSETSOURCEENC|CHECKCASEONLY|CHECKSPELLING|CHROOTDIR|CONTENTDIGEST|COOKIEDOMAIN|COOKIEEXPIRES|COOKIENAME|COOKIESTYLE|COOKIETRACKING|COREDUMPDIRECTORY|CUSTOMLOG|DBDEXPTIME|DBDINITSQL|DBDKEEP|DBDMAX|DBDMIN|DBDPARAMS|DBDPERSIST|DBDPREPARESQL|DBDRIVER|DTRACEPRIVILEGES|DAV|DAVDEPTHINFINITY|DAVGENERICLOCKDB|DAVLOCKDB|DAVMINTIMEOUT|DEFAULTICON|DEFAULTLANGUAGE|DEFAULTRUNTIMEDIR|DEFAULTTYPE|DEFINE|DEFLATE(?:BUFFERSIZE|COMPRESSIONLEVEL|FILTERNOTE|INFLATELIMITREQUESTBODY|INFLATERATIO(?:BURST|LIMIT)|MEMLEVEL|WINDOWSIZE)|DENY|DIRECTORYCHECKHANDLER|DIRECTORYINDEX|DIRECTORYINDEXREDIRECT|DIRECTORYSLASH|DOCUMENTROOT|DUMPIOINPUT|DUMPIOOUTPUT|ENABLEEXCEPTIONHOOK|ENABLEMMAP|ENABLESENDFILE|ERROR|ERRORDOCUMENT|ERRORLOG|ERRORLOGFORMAT|EXAMPLE|EXPIRESACTIVE|EXPIRESBYTYPE|EXPIRESDEFAULT|EXTFILTERDEFINE|EXTFILTEROPTIONS|EXTENDEDSTATUS|FALLBACKRESOURCE|FILEETAG|FILTERCHAIN|FILTERDECLARE|FILTERPROTOCOL|FILTERPROVIDER|FILTERTRACE|FORCELANGUAGEPRIORITY|FORCETYPE|FORENSICLOG|GPROFDIR|GRACEFULSHUTDOWNTIMEOUT|GROUP|HEADER|HEADERNAME|HEARTBEAT(?:ADDRESS|LISTEN|MAXSERVERS|STORAGE)|HOSTNAMELOOKUPS|ISAPI(?:APPENDLOGTOERRORS|APPENDLOGTOQUERY|CACHEFILE|FAKEASYNC|LOGNOTSUPPORTED|READAHEADBUFFER)|IDENTITYCHECK|IDENTITYCHECKTIMEOUT|IMAPBASE|IMAPDEFAULT|IMAPMENU|INCLUDE|INCLUDEOPTIONAL|INDEX(?:HEADINSERT|IGNORE|IGNORERESET|OPTIONS|ORDERDEFAULT|STYLESHEET)|INPUTSED|KEEPALIVE|KEEPALIVETIMEOUT|KEPTBODYSIZE|LDAP(?:CACHEENTRIES|CACHETTL|CONNECTIONPOOLTTL|CONNECTIONTIMEOUT|LIBRARYDEBUG|OPCACHEENTRIES|OPCACHETTL|REFERRALHOPLIMIT|REFERRALS|RETRIES|RETRYDELAY|SHAREDCACHEFILE|SHAREDCACHESIZE|TIMEOUT|TRUSTEDCLIENTCERT|TRUSTEDGLOBALCERT|TRUSTEDMODE|VERIFYSERVERCERT)|LANGUAGEPRIORITY|LIMIT(?:INTERNALRECURSION|REQUEST(?:BODY|FIELDSIZE|FIELDS|LINE)|XMLREQUESTBODY)|LISTEN|LISTENBACKLOG|LOADFILE|LOADMODULE|LOGFORMAT|LOGLEVEL|LOGMESSAGE|LUAAUTHZPROVIDER|LUACODECACHE|LUA(?:HOOK(?:ACCESSCHECKER|AUTHCHECKER|CHECKUSERID|FIXUPS|INSERTFILTER|LOG|MAPTOSTORAGE|TRANSLATENAME|TYPECHECKER)|INHERIT|INPUTFILTER|MAPHANDLER|OUTPUTFILTER|PACKAGECPATH|PACKAGEPATH|QUICKHANDLER|ROOT|SCOPE)|MMAPFILE|MAX(?:CONNECTIONSPERCHILD|KEEPALIVEREQUESTS|MEMFREE|RANGEOVERLAPS|RANGEREVERSALS|RANGES|REQUESTWORKERS|SPARESERVERS|SPARETHREADS|THREADS)|MERGETRAILERS|METADIR|METAFILES|METASUFFIX|MIMEMAGICFILE|MINSPARESERVERS|MINSPARETHREADS|MODMIMEUSEPATHINFO|MODEMSTANDARD|MULTIVIEWSMATCH|MUTEX|NWSSLTRUSTEDCERTS|NWSSLUPGRADEABLE|NAMEVIRTUALHOST|NOPROXY|OPTIONS|ORDER|OUTPUTSED|PASSENV|PIDFILE|PRIVILEGESMODE|PROTOCOL|PROTOCOLECHO|PROXY(?:ADDHEADERS|BADHEADER|BLOCK|DOMAIN|ERROROVERRIDE|EXPRESSDBMFILE|EXPRESSDBMTYPE|EXPRESSENABLE|FTPDIRCHARSET|FTPESCAPEWILDCARDS|FTPLISTONWILDCARD|HTML(?:BUFSIZE|CHARSETOUT|DOCTYPE|ENABLE|EVENTS|EXTENDED|FIXUPS|INTERP|LINKS|META|STRIPCOMMENTS|URLMAP)|IOBUFFERSIZE|MAXFORWARDS|PASS(?:INHERIT|INTERPOLATEENV|MATCH|REVERSE|REVERSECOOKIEDOMAIN|REVERSECOOKIEPATH)?|PRESERVEHOST|RECEIVEBUFFERSIZE|REMOTE|REMOTEMATCH|REQUESTS|SCGIINTERNALREDIRECT|SCGISENDFILE|SET|SOURCEADDRESS|STATUS|TIMEOUT|VIA)|RLIMITCPU|RLIMITMEM|RLIMITNPROC|READMENAME|RECEIVEBUFFERSIZE|REDIRECT|REDIRECTMATCH|REDIRECTPERMANENT|REDIRECTTEMP|REFLECTORHEADER|REMOTEIP(?:HEADER|INTERNALPROXY|INTERNALPROXYLIST|PROXIESHEADER|TRUSTEDPROXY|TRUSTEDPROXYLIST)|REMOVECHARSET|REMOVEENCODING|REMOVEHANDLER|REMOVEINPUTFILTER|REMOVELANGUAGE|REMOVEOUTPUTFILTER|REMOVETYPE|REQUESTHEADER|REQUESTREADTIMEOUT|REQUIRE|REWRITE(?:BASE|COND|ENGINE|MAP|OPTIONS|RULE)|SSIETAG|SSIENDTAG|SSIERRORMSG|SSILASTMODIFIED|SSILEGACYEXPRPARSER|SSISTARTTAG|SSITIMEFORMAT|SSIUNDEFINEDECHO|SSL(?:CACERTIFICATEFILE|CACERTIFICATEPATH|CADNREQUESTFILE|CADNREQUESTPATH|CAREVOCATIONCHECK|CAREVOCATIONFILE|CAREVOCATIONPATH|CERTIFICATECHAINFILE|CERTIFICATEFILE|CERTIFICATEKEYFILE|CIPHERSUITE|COMPRESSION|CRYPTODEVICE|ENGINE|FIPS|HONORCIPHERORDER|INSECURERENEGOTIATION|OCSP(?:DEFAULTRESPONDER|ENABLE|OVERRIDERESPONDER|RESPONDERTIMEOUT|RESPONSEMAXAGE|RESPONSETIMESKEW|USEREQUESTNONCE)|OPENSSLCONFCMD|OPTIONS|PASSPHRASEDIALOG|PROTOCOL|PROXY(?:CACERTIFICATEFILE|CACERTIFICATEPATH|CAREVOCATION(?:CHECK|FILE|PATH)|CHECKPEER(?:CN|EXPIRE|NAME)|CIPHERSUITE|ENGINE|MACHINECERTIFICATE(?:CHAINFILE|FILE|PATH)|PROTOCOL|VERIFY|VERIFYDEPTH)|RANDOMSEED|RENEGBUFFERSIZE|REQUIRE|REQUIRESSL|SRPUNKNOWNUSERSEED|SRPVERIFIERFILE|SESSION(?:CACHE|CACHETIMEOUT|TICKETKEYFILE|TICKETS)|STAPLING(?:CACHE|ERRORCACHETIMEOUT|FAKETRYLATER|FORCEURL|RESPONDERTIMEOUT|RESPONSEMAXAGE|RESPONSETIMESKEW|RETURNRESPONDERERRORS|STANDARDCACHETIMEOUT)|STRICTSNIVHOSTCHECK|USESTAPLING|USERNAME|VERIFYCLIENT|VERIFYDEPTH)|SATISFY|SCOREBOARDFILE|SCRIPT(?:ALIAS|ALIASMATCH|INTERPRETERSOURCE|LOG|LOGBUFFER|LOGLENGTH|SOCK)?|SECURELISTEN|SEEREQUESTTAIL|SENDBUFFERSIZE|SERVER(?:ADMIN|ALIAS|LIMIT|NAME|PATH|ROOT|SIGNATURE|TOKENS)|SESSION(?:COOKIE(?:NAME|NAME2|REMOVE)|CRYPTO(?:CIPHER|DRIVER|PASSPHRASE|PASSPHRASEFILE)|DBD(?:COOKIENAME|COOKIENAME2|COOKIEREMOVE|DELETELABEL|INSERTLABEL|PERUSER|SELECTLABEL|UPDATELABEL)|ENV|EXCLUDE|HEADER|INCLUDE|MAXAGE)?|SETENV|SETENVIF|SETENVIFEXPR|SETENVIFNOCASE|SETHANDLER|SETINPUTFILTER|SETOUTPUTFILTER|STARTSERVERS|STARTTHREADS|SUBSTITUTE|SUEXEC|SUEXECUSERGROUP|THREADLIMIT|THREADSTACKSIZE|THREADSPERCHILD|TIMEOUT|TRACEENABLE|TRANSFERLOG|TYPESCONFIG|UNDEFINE|UNDEFMACRO|UNSETENV|USE|USECANONICALNAME|USECANONICALPHYSICALPORT|USER|USERDIR|VHOSTCGIMODE|VHOSTCGIPRIVS|VHOSTGROUP|VHOSTPRIVS|VHOSTSECURE|VHOSTUSER|VIRTUAL(?:DOCUMENTROOT|SCRIPTALIAS)(?:IP)?|WATCHDOGINTERVAL|XBITHACK|XML2ENCALIAS|XML2ENCDEFAULT|XML2STARTPARSE)\b/im
 /<\/?\b(?:AUTH[NZ]PROVIDERALIAS|DIRECTORY|DIRECTORYMATCH|ELSE|ELSEIF|FILES|FILESMATCH|IF|IFDEFINE|IFMODULE|IFVERSION|LIMIT|LIMITEXCEPT|LOCATION|LOCATIONMATCH|MACRO|PROXY|REQUIRE(?:ALL|ANY|NONE)|VIRTUALHOST)\b *.*>/i
 /\[(?:\w,?)+\]/
 /".*"|'.*'/
@@ -198,18 +218,18 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\u2190/
 /[:{}\u2207\u236b\u2375\u2376\u2379\u237a]/
 /"(?:\\.|[^\n\r"\\])*"/
-/(?:\b\d+\.?|\B\.\d)\d*(?:E-?\d+)?\b/i
+/(?:\b\d+\.?\d*|\B\.\d+)(?:E-?\d+)?\b/i
 /\b(?:about|above|after|against|apart from|around|aside from|at|back|before|beginning|behind|below|beneath|beside|between|but|by|considering|continue|copy|does|eighth|else|end|equal|error|every|exit|false|fifth|first|for|fourth|from|front|get|given|global|if|ignoring|in|instead of|into|is|it|its|last|local|me|middle|my|ninth|of|on|onto|out of|over|prop|property|put|repeat|return|returning|second|set|seventh|since|sixth|some|tell|tenth|that|the|then|third|through|thru|timeout|times|to|transaction|true|try|until|where|while|whose|with|without)\b/
 /[(),:{}\xab\xac\xbb\u300a\u300b]/
 /\(\*(?:\(\*(?:[^*]|\*(?!\)))*\*\)|(?!\(\*)[^])*?\*\)/
 /--.+/
 /#.+/
 /[-&*+/=\xf7\u2260\u2264\u2265^]|[<>]=?/
-/\b(?:(?:start|begin|end)s? with|does(?: no|n')t contain|contains?|is(?:|n't| not) (?:in|contained by)|(?:is(?:|n't| not) )?(?:greater|less) than(?: or equal)?(?: to)?|(?:does(?: no|n')t come|comes) (?:before|after)|is(?:|n't| not) equal(?: to)?|does(?: no|n')t equal|equals|equal to|isn't|is not|(?:a )?ref(?:(?: to)?|erence to)|and|or|div|mod|as|not)\b/
+/\b(?:(?:start|begin|end)s? with|(?:does not|doesn't) contain|contains?|(?:is|isn't|is not) (?:in|contained by)|(?:(?:is|isn't|is not) )?(?:greater|less) than(?: or equal)?(?: to)?|(?:(?:does not|doesn't) come|comes) (?:before|after)|(?:is|isn't|is not) equal(?: to)?|(?:does not|doesn't) equal|equals|equal to|isn't|is not|(?:a )?(?:ref(?: to)?|reference to)|and|or|div|mod|as|not)\b/
 /\b(?:alias|application|boolean|class|constant|date|file|integer|list|number|POSIX file|real|record|reference|RGB color|script|text|centimetres|centimeters|feet|inches|kilometres|kilometers|metres|meters|miles|yards|square feet|square kilometres|square kilometers|square metres|square meters|square miles|square yards|cubic centimetres|cubic centimeters|cubic feet|cubic inches|cubic metres|cubic meters|cubic yards|gallons|litres|liters|quarts|grams|kilograms|ounces|pounds|degrees Celsius|degrees Fahrenheit|degrees Kelvin)\b/
 /@@?\w+/
 /(?!\d)\w+(?=\s*\()/
-/(?:TRU|FALS)E/i
+/TRUE|FALSE/i
 /(?:\B\.\d+|\b(?:0|[1-9]\d*)(?:\.\d+)?)(?:E[-+]?\d+)?/i
 /\*{2,}|[!=]~|[!<=>]=?|&&|\|\||[-%*+/]/
 /::|[(),.:;?[\]{}]/
@@ -217,21 +237,21 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /"(?:(?!")[^\n\r\\]|\\.)*"|'(?:(?!')[^\n\r\\]|\\.)*'|\`(?:(?!\`)[^\n\r\\]|\\.)*\`|\xb4(?:(?!\xb4)[^\n\r\\]|\\.)*\xb4/
 /\b(?:AGGREGATE|ALL|AND|ANY|ASC|COLLECT|DESC|DISTINCT|FILTER|FOR|GRAPH|IN|INBOUND|INSERT|INTO|K_SHORTEST_PATHS|LET|LIKE|LIMIT|NONE|NOT|NULL|OR|OUTBOUND|REMOVE|REPLACE|RETURN|SHORTEST_PATH|SORT|UPDATE|UPSERT|WITH)\b/i
 /\.\./
-/\bWITH\s+COUNT(?=\s+INTO(?:(?<!\w)\w|(?<=\w)(?!\w)))/i
+/\bWITH\s+COUNT(?=\s+INTO\b)/i
 /(?:^|[^\w.[])(?:KEEP|PRUNE|SEARCH|TO)\b/i
 /(?:^|[^\w.[])(?:CURRENT|NEW|OLD)\b/
 /\bOPTIONS(?=\s*\{)/i
 /\b(?:__FILE__|__LINE__|__DATE__|__TIME__|__TIMESTAMP__|__func__|EOF|NULL|SEEK_CUR|SEEK_END|SEEK_SET|stdin|stdout|stderr)\b/
 /\b(?:__attribute__|_Alignas|_Alignof|_Atomic|_Bool|_Complex|_Generic|_Imaginary|_Noreturn|_Static_assert|_Thread_local|asm|typeof|inline|auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while)\b/
 /[A-Z_]\w*(?=\s*\()/i
-/(?:\b0X(?:[\dA-F]+\.?|\.[\dA-F])[\dA-F]*(?:P[-+]?\d+)?|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?)[FLU]*/i
+/(?:\b0X(?:[\dA-F]+\.?[\dA-F]*|\.[\dA-F]+)(?:P[-+]?\d+)?|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?)[FLU]*/i
 />>=?|<<=?|->|&&|\+\+|--|::|\|\||[:?~]|[-!%&*+/<=>|^]=?/
 /\b(?:alignas|alignof|asm|auto|bool|break|case|catch|char|char8_t|char16_t|char32_t|class|compl|concept|const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|float|for|friend|goto|if|inline|int|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t|long|mutable|namespace|new|noexcept|nullptr|operator|private|protected|public|register|reinterpret_cast|requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|thread_local|throw|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while)\b/
 />>=?|<<=?|->|&&|\+\+|--|::|\|\||[:?~]|<=>|[-!%&*+/<=>|^]=?|\b(?:and|and_eq|bitand|bitor|not|not_eq|or|or_eq|xor|xor_eq)\b/
 /\b(?:DIGITAL_MESSAGE|FIRMATA_STRING|ANALOG_MESSAGE|REPORT_DIGITAL|REPORT_ANALOG|INPUT_PULLUP|SET_PIN_MODE|INTERNAL2V56|SYSTEM_RESET|LED_BUILTIN|INTERNAL1V1|SYSEX_START|INTERNAL|EXTERNAL|DEFAULT|OUTPUT|INPUT|HIGH|LOW)\b/
 /\b(?:setup|if|else|while|do|for|return|in|instanceof|default|function|loop|goto|switch|case|new|try|throw|catch|finally|null|break|continue|boolean|bool|void|byte|word|string|String|array|int|long|integer|double)\b/
 /\b(?:KeyboardController|MouseController|SoftwareSerial|EthernetServer|EthernetClient|LiquidCrystal|LiquidCrystal_I2C|RobotControl|GSMVoiceCall|EthernetUDP|EsploraTFT|HttpClient|RobotMotor|WiFiClient|GSMScanner|FileSystem|Scheduler|GSMServer|YunClient|YunServer|IPAddress|GSMClient|GSMModem|Keyboard|Ethernet|Console|GSMBand|Esplora|Stepper|Process|WiFiUDP|GSM_SMS|Mailbox|USBHost|Firmata|PImage|Client|Server|GSMPIN|FileIO|Bridge|Serial|EEPROM|Stream|Mouse|Audio|Servo|File|Task|GPRS|WiFi|Wire|TFT|GSM|SPI|SD|runShellCommandAsynchronously|analogWriteResolution|retrieveCallingNumber|printFirmwareVersion|analogReadResolution|sendDigitalPortPair|noListenOnLocalhost|readJoystickButton|setFirmwareVersion|readJoystickSwitch|scrollDisplayRight|getVoiceCallStatus|scrollDisplayLeft|writeMicroseconds|delayMicroseconds|beginTransmission|getSignalStrength|runAsynchronously|getAsynchronously|listenOnLocalhost|getCurrentCarrier|readAccelerometer|messageAvailable|sendDigitalPorts|lineFollowConfig|countryNameWrite|runShellCommand|readStringUntil|rewindDirectory|readTemperature|setClockDivider|readLightSensor|endTransmission|analogReference|detachInterrupt|countryNameRead|attachInterrupt|encryptionType|readBytesUntil|robotNameWrite|readMicrophone|robotNameRead|cityNameWrite|userNameWrite|readJoystickY|readJoystickX|mouseReleased|openNextFile|scanNetworks|noInterrupts|digitalWrite|beginSpeaker|mousePressed|isActionDone|mouseDragged|displayLogos|noAutoscroll|addParameter|remoteNumber|getModifiers|keyboardRead|userNameRead|waitContinue|processInput|parseCommand|printVersion|readNetworks|writeMessage|blinkVersion|cityNameRead|readMessage|setDataMode|parsePacket|isListening|setBitOrder|beginPacket|isDirectory|motorsWrite|drawCompass|digitalRead|clearScreen|serialEvent|rightToLeft|setTextSize|leftToRight|requestFrom|keyReleased|compassRead|analogWrite|interrupts|WiFiServer|disconnect|playMelody|parseFloat|autoscroll|getPINUsed|setPINUsed|setTimeout|sendAnalog|readSlider|analogRead|beginWrite|createChar|motorsStop|keyPressed|tempoWrite|readButton|subnetMask|debugPrint|macAddress|writeGreen|randomSeed|attachGPRS|readString|sendString|remotePort|releaseAll|mouseMoved|background|getXChange|getYChange|answerCall|getResult|voiceCall|endPacket|constrain|getSocket|writeJSON|getButton|available|connected|findUntil|readBytes|exitValue|readGreen|writeBlue|startLoop|IPAddress|isPressed|sendSysex|pauseMode|gatewayIP|setCursor|getOemKey|tuneWrite|noDisplay|loadImage|switchPIN|onRequest|onReceive|changePIN|playFile|noBuffer|parseInt|overflow|checkPIN|knobRead|beginTFT|bitClear|updateIR|bitWrite|position|writeRGB|highByte|writeRed|setSpeed|readBlue|noStroke|remoteIP|transfer|shutdown|hangCall|beginSMS|endWrite|attached|maintain|noCursor|checkReg|checkPUK|shiftOut|isValid|shiftIn|pulseIn|connect|println|localIP|pinMode|getIMEI|display|noBlink|process|getBand|running|beginSD|drawBMP|lowByte|setBand|release|bitRead|prepare|pointTo|readRed|setMode|noFill|remove|listen|stroke|detach|attach|noTone|exists|buffer|height|bitSet|circle|config|cursor|random|IRread|setDNS|endSMS|getKey|micros|millis|begin|print|write|ready|flush|width|isPIN|blink|clear|press|mkdir|rmdir|close|point|yield|image|BSSID|click|delay|read|text|move|peek|beep|rect|line|open|seek|fill|size|turn|stop|home|find|step|tone|sqrt|RSSI|SSID|end|bit|tan|cos|sin|pow|map|abs|max|min|get|run|put)\b/
-/\/(?:\/(?:[^\n\r\\]|\\(?:\r\n?|\n|(?![\n\r])))*|\*[^]*?(?:\*\/|$))/
+/\/\/(?:[^\n\r\\]|\\(?:\r\n?|\n|(?![\n\r])))*|\/\*[^]*?(?:\*\/|$)/
 /^\s*#\s*[A-Z]+(?:[^\n\r/\\]|\/(?!\*)|\/\*(?:[^*]|\*(?!\/))*\*\/|\\(?:\r\n|[^]))*/im
 /\b(?:enum|struct)\s+(?:__attribute__\s*\(\([^]*?\)\)\s*)?\w+/
 /R"[^ ()\\]{0,16}\([^]*?\)[]Unknown:\\1[]"/
@@ -239,11 +259,11 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b[A-Z]\w*(?=\s*::\s*\w+\s*\()/
 /\b[A-Z_]\w*(?=\s*::\s*~\w+\s*\()/i
 /\w+(?=\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>\s*::\s*\w+\s*\()/
-/(?:\b0B['01]+|\b0X(?:[\d'A-F]+\.?|\.[\d'A-F])[\d'A-F]*(?:P[-+]?[\d']+)?|(?:\b[\d']+\.?|\B\.[\d'])[\d']*(?:E[-+]?[\d']+)?)[FLU]*/i
+/(?:\b0B['01]+|\b0X(?:[\d'A-F]+\.?[\d'A-F]*|\.[\d'A-F]+)(?:P[-+]?[\d']+)?|(?:\b[\d']+\.?[\d']*|\B\.[\d']+)(?:E[-+]?[\d']+)?)[FLU]*/i
 /^#/
 /##|\\(?=[\n\r])/
 /\b[A-Z_]\w*\b(?!\s*::)/i
-/\b(?:class|concept|enum|struct|typename)\s+(?!\b(?:alignas|alignof|asm|auto|bool|break|case|catch|char|char8_t|char16_t|char32_t|class|compl|concept|const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|float|for|friend|goto|if|inline|int|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t|long|mutable|namespace|new|noexcept|nullptr|operator|private|protected|public|register|reinterpret_cast|requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|thread_local|throw|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))\w+/
+/\b(?:class|concept|enum|struct|typename)\s+(?!\b(?:alignas|alignof|asm|auto|bool|break|case|catch|char|char8_t|char16_t|char32_t|class|compl|concept|const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|float|for|friend|goto|if|inline|int|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t|long|mutable|namespace|new|noexcept|nullptr|operator|private|protected|public|register|reinterpret_cast|requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|thread_local|throw|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while)\b)\w+/
 /^#\s*[a-z]+/
 /\S[^]*/
 /^#\s*include\s*<[^>]+>/
@@ -262,7 +282,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^[\t ]*(?:-|\*{1,5}|\.{1,5}|(?:[A-Z]|\d+)\.|[IVX]+\))(?= )/im
 /^[\t ]*[\dA-Z].+(?::{2,4}|;;)(?=\s)/im
 /(?:\r\n\r\n|\n\n|\r\r)[\t ]+\S.*(?:(?:\r?\n|\r)[]Unknown:\\3[].+)*(?=(?:[]Unknown:\\2[]){2}|$)/
-/^(?:.+(?:\r?\n|\r)(?:={3,}|-{3,}|~{3,}|\^{3,}|\+{3,})$|={1,5} +.+|\.(?![\s.]).*)/m
+/^.+(?:\r?\n|\r)(?:={3,}|-{3,}|~{3,}|\^{3,}|\+{3,})$|^={1,5} +.+|^\.(?![\s.]).*/m
 /^:[^\n\r:]+:(?: .*?(?: \+(?:\r?\n|\r).*?)*)?$/m
 /^[\t ]*\[(?!\[)(?:"(?:(?!")[^\\]|\\.)*"|\$(?:(?!\$)[^\\]|\\.)*\$|'(?:(?!')[^\\]|\\.)*'|\`(?:(?!\`)[^\\]|\\.)*\`|\[(?:[^\\\]]|\\.)*\]|[^\\\]]|\\.)*\]/m
 /^'{3,}$/m
@@ -309,12 +329,12 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\?\.?|::|[(),.:;[\]{}]/
 /\b(?:namespace|using)\s+@?\b[A-Z_a-z]\w*\b(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b)*(?=\s*[;{])/
 /\b(?:default|typeof|sizeof)\s*\(\s*(?:[^\s()]|\s(?!\s*\))|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*(?=\s*\))/
-/(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s+(?:(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*\s*(?:=>|[({]|\.\s*this\s*\[)|this\s*\[))/
-/\bnew\s+(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s*[([{])/
+/(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s+(?:(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*\s*(?:=>|[({]|\.\s*this\s*\[)|this\s*\[))/
+/\bnew\s+(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s*[([{])/
 /@?\b[A-Z_]\w*\b\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>(?=\s*\()/i
-/\b(?:\b(?:class|enum|interface|struct)\b\s+@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?|where\s+@?\b[A-Z_a-z]\w*\b)\s*:\s*(?:(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?|\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)(?:\s*,\s*(?:(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?|\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b))*(?=\s*(?:where|[;{]|=>|$))/
+/\b(?:\b(?:class|enum|interface|struct)\b\s+@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?|where\s+@?\b[A-Z_a-z]\w*\b)\s*:\s*(?:(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?|\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)(?:\s*,\s*(?:(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?|\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b))*(?=\s*(?:where|[;{]|=>|$))/
 /^\s*#.*/m
-/(?:^|[^\s\w)>?])\s*\[\s*(?:\b(?:assembly|event|field|method|module|param|property|return|type)\b\s*:\s*)?(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\))*\))?(?:\s*,\s*(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\))*\))?)*(?=\s*\])/
+/(?:^|[^\s\w)>?])\s*\[\s*(?:\b(?:assembly|event|field|method|module|param|property|return|type)\b\s*:\s*)?(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\))*\))?(?:\s*,\s*(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\))*\))?)*(?=\s*\])/
 /[(,]\s*@?\b[A-Z_]\w*\b(?=\s*:)/i
 /<%--[^]*?--%>/
 /<SCRIPT(?=.*RUNAT=["']?SERVER["']?)[^]*?>[^]*?(?=<\/SCRIPT>)/i
@@ -331,20 +351,20 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^@?\b[A-Z_]\w*\b/i
 /,/
 /[,:]/
-/\busing\s+static\s+(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?=\s*;)/
-/\busing\s+@?\b[A-Z_a-z]\w*\b\s*=\s*(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s*;)/
+/\busing\s+static\s+(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?=\s*;)/
+/\busing\s+@?\b[A-Z_a-z]\w*\b\s*=\s*(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s*;)/
 /\busing\s+@?\b[A-Z_a-z]\w*\b(?=\s*=)/
 /\b\b(?:class|enum|interface|struct)\b\s+@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?/
-/\bcatch\s*\(\s*(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*/
+/\bcatch\s*\(\s*(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*/
 /\bwhere\s+@?\b[A-Z_a-z]\w*\b/
-/\b(?:is(?:\s+not)?|as)\s+(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?/
-/\b(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s+(?!\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b\s*(?:[),:;=\]{]|\s(?:i|whe)n(?:(?<!\w)\w|(?<=\w)(?!\w))))/
+/\b(?:is(?:\s+not)?|as)\s+(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?/
+/\b(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?(?=\s+(?!\b(?:bool|byte|char|decimal|double|dynamic|float|int|long|object|sbyte|short|string|uint|ulong|ushort|var|void|class|enum|interface|struct|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*[),:;=\]{]|\s+(?:in|when)\b))/
 /<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>/
-/(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?/
+/(?:\((?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+(?:,(?:[^-%&()*+,/;<=>[\]\^|]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)|\[\s*(?:,\s*)*\])+)+\)|(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*)(?:\s*(?:\?\s*)?\[\s*(?:,\s*)*\])*(?:\s*\?)?/
 /\s*#\b(?:define|elif|else|endif|endregion|error|if|line|pragma|region|undef|warning)\b/
 /^\b(?:assembly|event|field|method|module|param|property|return|type)\b(?=\s*:)/
 /\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\))*\)/
-/(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*/
+/(?!\b(?:class|enum|interface|struct|add|alias|and|ascending|async|await|by|descending|from|get|global|group|into|join|let|nameof|not|notnull|on|or|orderby|partial|remove|select|set|unmanaged|value|when|where|where|abstract|as|base|break|case|catch|checked|const|continue|default|delegate|do|else|event|explicit|extern|finally|fixed|for|foreach|goto|if|implicit|in|internal|is|lock|namespace|new|null|operator|out|override|params|private|protected|public|readonly|ref|return|sealed|sizeof|stackalloc|static|switch|this|throw|try|typeof|unchecked|unsafe|using|virtual|volatile|while|yield)\b)@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?(?:\s*\.\s*@?\b[A-Z_a-z]\w*\b(?:\s*<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<(?:[^-%&*+/;<=>|^]|<[^-%&*+/;<=>|^]*>)*>)*>)*>)?)*/
 /<%\s*@\s*(?:ASSEMBLY|CONTROL|IMPLEMENTS|IMPORT|MASTER(?:TYPE)?|OUTPUTCACHE|PAGE|PREVIOUSPAGETYPE|REFERENCE|REGISTER)?|%>/i
 /<%\s*?[#$%:=]{0,2}|%>/
 /(?:^|[^{])(?:\{\{)*\{(?!\{)(?:(?![:}])(?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\((?:[^"'()/]|\/(?![*/])|\/\/[^\n\r]*[\n\r]|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\.|[^\n\r"\\])*"|'(?:[^\n\r'\\]|\\.|\\[Uux][\dA-Fa-f]{1,8})'|\(\))*\))*\))*\)))*(?::[^\n\r}]+)?\}/
@@ -361,9 +381,9 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /#?\b\d+\b/
 /\b[AXY]\b/i
 /"(?:[^\n\r"]|"")*"/
-/^[\t ]*[^\s:]+?(?=:(?:[^:]|$))/m
+/^[\t ]*[^\s:]+(?=:(?:[^:]|$))/m
 /%\w+%/
-/\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:[Ee]-?\d+)?/
+/\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee]-?\d+)?/
 /\?|\/\/?=?|:=|\|[=|]?|&[&=]?|\+[+=]?|-[-=]?|\*[*=]?|<(?:<=?|>|=)?|>>?=?|[!.=~^]=?|\b(?:AND|NOT|OR)\b/
 /\b(?:AUTOTRIM|BLOCKINPUT|BREAK|CLICK|CLIPWAIT|CONTINUE|CONTROL|CONTROLCLICK|CONTROLFOCUS|CONTROLGET|CONTROLGETFOCUS|CONTROLGETPOS|CONTROLGETTEXT|CONTROLMOVE|CONTROLSEND|CONTROLSENDRAW|CONTROLSETTEXT|COORDMODE|CRITICAL|DETECTHIDDENTEXT|DETECTHIDDENWINDOWS|DRIVE|DRIVEGET|DRIVESPACEFREE|ENVADD|ENVDIV|ENVGET|ENVMULT|ENVSET|ENVSUB|ENVUPDATE|EXIT|EXITAPP|FILEAPPEND|FILECOPY|FILECOPYDIR|FILECREATEDIR|FILECREATESHORTCUT|FILEDELETE|FILEENCODING|FILEGETATTRIB|FILEGETSHORTCUT|FILEGETSIZE|FILEGETTIME|FILEGETVERSION|FILEINSTALL|FILEMOVE|FILEMOVEDIR|FILEREAD|FILEREADLINE|FILERECYCLE|FILERECYCLEEMPTY|FILEREMOVEDIR|FILESELECTFILE|FILESELECTFOLDER|FILESETATTRIB|FILESETTIME|FORMATTIME|GETKEYSTATE|GOSUB|GOTO|GROUPACTIVATE|GROUPADD|GROUPCLOSE|GROUPDEACTIVATE|GUI|GUICONTROL|GUICONTROLGET|HOTKEY|IMAGESEARCH|INIDELETE|INIREAD|INIWRITE|INPUT|INPUTBOX|KEYWAIT|LISTHOTKEYS|LISTLINES|LISTVARS|LOOP|MENU|MOUSECLICK|MOUSECLICKDRAG|MOUSEGETPOS|MOUSEMOVE|MSGBOX|ONEXIT|OUTPUTDEBUG|PAUSE|PIXELGETCOLOR|PIXELSEARCH|POSTMESSAGE|PROCESS|PROGRESS|RANDOM|REGDELETE|REGREAD|REGWRITE|RELOAD|REPEAT|RETURN|RUN|RUNAS|RUNWAIT|SEND|SENDEVENT|SENDINPUT|SENDMESSAGE|SENDMODE|SENDPLAY|SENDRAW|SETBATCHLINES|SETCAPSLOCKSTATE|SETCONTROLDELAY|SETDEFAULTMOUSESPEED|SETENV|SETFORMAT|SETKEYDELAY|SETMOUSEDELAY|SETNUMLOCKSTATE|SETREGVIEW|SETSCROLLLOCKSTATE|SETSTORECAPSLOCKMODE|SETTIMER|SETTITLEMATCHMODE|SETWINDELAY|SETWORKINGDIR|SHUTDOWN|SLEEP|SORT|SOUNDBEEP|SOUNDGET|SOUNDGETWAVEVOLUME|SOUNDPLAY|SOUNDSET|SOUNDSETWAVEVOLUME|SPLASHIMAGE|SPLASHTEXTOFF|SPLASHTEXTON|SPLITPATH|STATUSBARGETTEXT|STATUSBARWAIT|STRINGCASESENSE|STRINGGETPOS|STRINGLEFT|STRINGLEN|STRINGLOWER|STRINGMID|STRINGREPLACE|STRINGRIGHT|STRINGSPLIT|STRINGTRIMLEFT|STRINGTRIMRIGHT|STRINGUPPER|SUSPEND|SYSGET|THREAD|TOOLTIP|TRANSFORM|TRAYTIP|URLDOWNLOADTOFILE|WINACTIVATE|WINACTIVATEBOTTOM|WINCLOSE|WINGET|WINGETACTIVESTATS|WINGETACTIVETITLE|WINGETCLASS|WINGETPOS|WINGETTEXT|WINGETTITLE|WINHIDE|WINKILL|WINMAXIMIZE|WINMENUSELECTITEM|WINMINIMIZE|WINMINIMIZEALL|WINMINIMIZEALLUNDO|WINMOVE|WINRESTORE|WINSET|WINSETTITLE|WINSHOW|WINWAIT|WINWAITACTIVE|WINWAITCLOSE|WINWAITNOTACTIVE)\b/i
 /\b(?:A_AHKPATH|A_AHKVERSION|A_APPDATA|A_APPDATACOMMON|A_AUTOTRIM|A_BATCHLINES|A_CARETX|A_CARETY|A_COMPUTERNAME|A_CONTROLDELAY|A_CURSOR|A_DD|A_DDD|A_DDDD|A_DEFAULTMOUSESPEED|A_DESKTOP|A_DESKTOPCOMMON|A_DETECTHIDDENTEXT|A_DETECTHIDDENWINDOWS|A_ENDCHAR|A_EVENTINFO|A_EXITREASON|A_FILEENCODING|A_FORMATFLOAT|A_FORMATINTEGER|A_GUI|A_GUIEVENT|A_GUICONTROL|A_GUICONTROLEVENT|A_GUIHEIGHT|A_GUIWIDTH|A_GUIX|A_GUIY|A_HOUR|A_ICONFILE|A_ICONHIDDEN|A_ICONNUMBER|A_ICONTIP|A_INDEX|A_IPADDRESS1|A_IPADDRESS2|A_IPADDRESS3|A_IPADDRESS4|A_IS64BITOS|A_ISADMIN|A_ISCOMPILED|A_ISCRITICAL|A_ISPAUSED|A_ISSUSPENDED|A_ISUNICODE|A_KEYDELAY|A_LANGUAGE|A_LASTERROR|A_LINEFILE|A_LINENUMBER|A_LOOPFIELD|A_LOOPFILEATTRIB|A_LOOPFILEDIR|A_LOOPFILEEXT|A_LOOPFILEFULLPATH|A_LOOPFILELONGPATH|A_LOOPFILENAME|A_LOOPFILESHORTNAME|A_LOOPFILESHORTPATH|A_LOOPFILESIZE|A_LOOPFILESIZEKB|A_LOOPFILESIZEMB|A_LOOPFILETIMEACCESSED|A_LOOPFILETIMECREATED|A_LOOPFILETIMEMODIFIED|A_LOOPREADLINE|A_LOOPREGKEY|A_LOOPREGNAME|A_LOOPREGSUBKEY|A_LOOPREGTIMEMODIFIED|A_LOOPREGTYPE|A_MDAY|A_MIN|A_MM|A_MMM|A_MMMM|A_MON|A_MOUSEDELAY|A_MSEC|A_MYDOCUMENTS|A_NOW|A_NOWUTC|A_NUMBATCHLINES|A_OSTYPE|A_OSVERSION|A_PRIORHOTKEY|A_PRIORKEY|PROGRAMFILES|A_PROGRAMFILES|A_PROGRAMS|A_PROGRAMSCOMMON|A_PTRSIZE|A_REGVIEW|A_SCREENDPI|A_SCREENHEIGHT|A_SCREENWIDTH|A_SCRIPTDIR|A_SCRIPTFULLPATH|A_SCRIPTHWND|A_SCRIPTNAME|A_SEC|A_SPACE|A_STARTMENU|A_STARTMENUCOMMON|A_STARTUP|A_STARTUPCOMMON|A_STRINGCASESENSE|A_TAB|A_TEMP|A_THISFUNC|A_THISHOTKEY|A_THISLABEL|A_THISMENU|A_THISMENUITEM|A_THISMENUITEMPOS|A_TICKCOUNT|A_TIMEIDLE|A_TIMEIDLEPHYSICAL|A_TIMESINCEPRIORHOTKEY|A_TIMESINCETHISHOTKEY|A_TITLEMATCHMODE|A_TITLEMATCHMODESPEED|A_USERNAME|A_WDAY|A_WINDELAY|A_WINDIR|A_WORKINGDIR|A_YDAY|A_YEAR|A_YWEEK|A_YYYY|CLIPBOARD|CLIPBOARDALL|COMSPEC|ERRORLEVEL)\b/i
@@ -371,7 +391,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:ALT|ALTDOWN|ALTUP|APPSKEY|BACKSPACE|BROWSER_BACK|BROWSER_FAVORITES|BROWSER_FORWARD|BROWSER_HOME|BROWSER_REFRESH|BROWSER_SEARCH|BROWSER_STOP|BS|CAPSLOCK|CTRL|CTRLBREAK|CTRLDOWN|CTRLUP|DEL|DELETE|DOWN|END|ENTER|ESC|ESCAPE|F1|F10|F11|F12|F13|F14|F15|F16|F17|F18|F19|F2|F20|F21|F22|F23|F24|F3|F4|F5|F6|F7|F8|F9|HOME|INS|INSERT|JOY1|JOY10|JOY11|JOY12|JOY13|JOY14|JOY15|JOY16|JOY17|JOY18|JOY19|JOY2|JOY20|JOY21|JOY22|JOY23|JOY24|JOY25|JOY26|JOY27|JOY28|JOY29|JOY3|JOY30|JOY31|JOY32|JOY4|JOY5|JOY6|JOY7|JOY8|JOY9|JOYAXES|JOYBUTTONS|JOYINFO|JOYNAME|JOYPOV|JOYR|JOYU|JOYV|JOYX|JOYY|JOYZ|LALT|LAUNCH_APP1|LAUNCH_APP2|LAUNCH_MAIL|LAUNCH_MEDIA|LBUTTON|LCONTROL|LCTRL|LEFT|LSHIFT|LWIN|LWINDOWN|LWINUP|MBUTTON|MEDIA_NEXT|MEDIA_PLAY_PAUSE|MEDIA_PREV|MEDIA_STOP|NUMLOCK|NUMPAD0|NUMPAD1|NUMPAD2|NUMPAD3|NUMPAD4|NUMPAD5|NUMPAD6|NUMPAD7|NUMPAD8|NUMPAD9|NUMPADADD|NUMPADCLEAR|NUMPADDEL|NUMPADDIV|NUMPADDOT|NUMPADDOWN|NUMPADEND|NUMPADENTER|NUMPADHOME|NUMPADINS|NUMPADLEFT|NUMPADMULT|NUMPADPGDN|NUMPADPGUP|NUMPADRIGHT|NUMPADSUB|NUMPADUP|PGDN|PGUP|PRINTSCREEN|RALT|RBUTTON|RCONTROL|RCTRL|RIGHT|RSHIFT|RWIN|RWINDOWN|RWINUP|SCROLLLOCK|SHIFT|SHIFTDOWN|SHIFTUP|SPACE|TAB|UP|VOLUME_DOWN|VOLUME_MUTE|VOLUME_UP|WHEELDOWN|WHEELLEFT|WHEELRIGHT|WHEELUP|XBUTTON1|XBUTTON2)\b/i
 /#\b(?:ALLOWSAMELINECOMMENTS|CLIPBOARDTIMEOUT|COMMENTFLAG|DEREFCHAR|ERRORSTDOUT|ESCAPECHAR|HOTKEYINTERVAL|HOTKEYMODIFIERTIMEOUT|HOTSTRING|IF|IFTIMEOUT|IFWINACTIVE|IFWINEXIST|IFWINNOTACTIVE|IFWINNOTEXIST|INCLUDE|INCLUDEAGAIN|INPUTLEVEL|INSTALLKEYBDHOOK|INSTALLMOUSEHOOK|KEYHISTORY|MAXHOTKEYSPERINTERVAL|MAXMEM|MAXTHREADS|MAXTHREADSBUFFER|MAXTHREADSPERHOTKEY|MENUMASKKEY|NOENV|NOTRAYICON|PERSISTENT|SINGLEINSTANCE|USEHOOK|WARN|WINACTIVATEFORCE)\b/i
 /\b(?:ABORT|ABOVENORMAL|ADD|AHK_CLASS|AHK_EXE|AHK_GROUP|AHK_ID|AHK_PID|ALL|ALNUM|ALPHA|ALTSUBMIT|ALTTAB|ALTTABANDMENU|ALTTABMENU|ALTTABMENUDISMISS|ALWAYSONTOP|AUTOSIZE|BACKGROUND|BACKGROUNDTRANS|BELOWNORMAL|BETWEEN|BITAND|BITNOT|BITOR|BITSHIFTLEFT|BITSHIFTRIGHT|BITXOR|BOLD|BORDER|BUTTON|BYREF|CHECKBOX|CHECKED|CHECKEDGRAY|CHOOSE|CHOOSESTRING|CLOSE|COLOR|COMBOBOX|CONTAINS|CONTROLLIST|COUNT|DATE|DATETIME|DAYS|DDL|DEFAULT|DELETEALL|DELIMITER|DEREF|DESTROY|DIGIT|DISABLE|DISABLED|DROPDOWNLIST|EDIT|EJECT|ELSE|ENABLE|ENABLED|ERROR|EXIST|EXPAND|EXSTYLE|FILESYSTEM|FIRST|FLASH|FLOAT|FLOATFAST|FOCUS|FONT|FOR|GLOBAL|GRID|GROUP|GROUPBOX|GUICLOSE|GUICONTEXTMENU|GUIDROPFILES|GUIESCAPE|GUISIZE|HDR|HIDDEN|HIDE|HIGH|HKCC|HKCR|HKCU|HKEY_CLASSES_ROOT|HKEY_CURRENT_CONFIG|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKLM|HKU|HOURS|HSCROLL|ICON|ICONSMALL|ID|IDLAST|IF|IFEQUAL|IFEXIST|IFGREATER|IFGREATEROREQUAL|IFINSTRING|IFLESS|IFLESSOREQUAL|IFMSGBOX|IFNOTEQUAL|IFNOTEXIST|IFNOTINSTRING|IFWINACTIVE|IFWINEXIST|IFWINNOTACTIVE|IFWINNOTEXIST|IGNORE|IMAGELIST|IN|INTEGER|INTEGERFAST|INTERRUPT|IS|ITALIC|JOIN|LABEL|LASTFOUND|LASTFOUNDEXIST|LIMIT|LINES|LIST|LISTBOX|LISTVIEW|LOCAL|LOCK|LOGOFF|LOW|LOWER|LOWERCASE|MAINWINDOW|MARGIN|MAXIMIZE|MAXIMIZEBOX|MAXSIZE|MINIMIZE|MINIMIZEBOX|MINMAX|MINSIZE|MINUTES|MONTHCAL|MOUSE|MOVE|MULTI|NA|NO|NOACTIVATE|NODEFAULT|NOHIDE|NOICON|NOMAINWINDOW|NORM|NORMAL|NOSORT|NOSORTHDR|NOSTANDARD|NOT|NOTAB|NOTIMERS|NUMBER|OFF|OK|ON|OWNDIALOGS|OWNER|PARSE|PASSWORD|PICTURE|PIXEL|POS|POW|PRIORITY|PROCESSNAME|RADIO|RANGE|READ|READONLY|REALTIME|REDRAW|REG_BINARY|REG_DWORD|REG_EXPAND_SZ|REG_MULTI_SZ|REG_SZ|REGION|RELATIVE|RENAME|REPORT|RESIZE|RESTORE|RETRY|RGB|SCREEN|SECONDS|SECTION|SERIAL|SETLABEL|SHIFTALTTAB|SHOW|SINGLE|SLIDER|SORTDESC|STANDARD|STATIC|STATUS|STATUSBAR|STATUSCD|STRIKE|STYLE|SUBMIT|SYSMENU|TAB2|TABSTOP|TEXT|THEME|TILE|TOGGLECHECK|TOGGLEENABLE|TOOLWINDOW|TOP|TOPMOST|TRANSCOLOR|TRANSPARENT|TRAY|TREEVIEW|TRYAGAIN|THROW|TRY|CATCH|FINALLY|TYPE|UNCHECK|UNDERLINE|UNICODE|UNLOCK|UNTIL|UPDOWN|UPPER|UPPERCASE|USEERRORLEVEL|VIS|VISFIRST|VISIBLE|VSCROLL|WAIT|WAITCLOSE|WANTCTRLA|WANTF2|WANTRETURN|WHILE|WRAP|XDIGIT|XM|XP|XS|YES|YM|YP|YS)\b/i
-/[^-\t\n %&()*+,/:;<=>?[\\\]]+?(?=\()/
+/[^-\t\n %&()*+,/:;<=>?[\\\]]+(?=\()/
 /[(),:[\]{}]/
 /(?:^|\s);.*/
 /^\s*\/\*[^\n\r]*(?:[\n\r](?![\t ]*\*\/)|[^\n\r])*(?:[\n\r][\t ]*\*\/)?/m
@@ -379,13 +399,13 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[$@]\w+/
 /\b(?:CASE|CONST|CONTINUE(?:CASE|LOOP)|DEFAULT|DIM|DO|ELSE(?:IF)?|END(?:FUNC|IF|SELECT|SWITCH|WITH)|ENUM|EXIT(?:LOOP)?|FOR|FUNC|GLOBAL|IF|IN|LOCAL|NEXT|NULL|REDIM|SELECT|STATIC|STEP|SWITCH|THEN|TO|UNTIL|VOLATILE|WEND|WHILE|WITH)\b/i
 /\b(?:0X[\dA-F]+|\d+(?:\.\d+)?(?:E[-+]?\d+)?)\b/i
-/\b(?:TRU|FALS)E\b/i
+/\b(?:TRUE|FALSE)\b/i
 /<[=>]?|[-&*+/=>]=?|[?^]|\b(?:AND|OR|NOT)\b/i
 /[(),.:[\]]/
 /^\s*#include\s+(?:<[^\n\r>]+>|"[^\n\r"]+")/m
 /"(?:""|(?!")[^\n\r])*"|'(?:''|(?!')[^\n\r])*'/
 /^\s*#\w+/m
-/^\s*#c(?:omments-start|s)[^]*?^\s*#c(?:omments-end|e)/m
+/^\s*#(?:comments-start|cs)[^]*?^\s*#(?:comments-end|ce)/m
 /\$\w+\$|%\w+%|@\w+@/
 /\$?\(\(?|\)\)?|\.\.|[;[\\\]{}]/
 /^#!\s*\/.*/
@@ -397,14 +417,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|[\s&;|]|[<>]\()(?:add|apropos|apt|aptitude|apt-cache|apt-get|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|composer|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?=$|[\s&);|])/
 /(?:^|[\s&;|]|[<>]\()(?:if|then|else|elif|fi|for|while|in|case|esac|function|select|do|done|until)(?=$|[\s&);|])/
 /(?:^|[\s&;|]|[<>]\()(?:\.|:|break|cd|continue|eval|exec|exit|export|getopts|hash|pwd|readonly|return|shift|test|times|trap|umask|unset|alias|bind|builtin|caller|command|declare|echo|enable|help|let|local|logout|mapfile|printf|read|readarray|source|type|typeset|ulimit|unalias|set|shopt)(?=$|[\s&);|])/
-/(?:^|[\s&;|]|[<>]\()(?:tru|fals)e(?=$|[\s&);|])/
+/(?:^|[\s&;|]|[<>]\()(?:true|false)(?=$|[\s&);|])/
 /\B&\d\b/
 /\d?<>|>\||\+=|==?|!=?|=~|<<[-<]?|[\d&]?>>|\d?[<>]&?|&[&>]?|\|[&|]?|<=?|>=?/
 /(?:^|\s)(?:[1-9]\d*|0)(?:[,.]\d+)?\b/
 /\bfunction\s+\w+(?=(?:\s*\(?:\s*\))?\s*\{)/
 /\b\w+(?=\s*\(\s*\)\s*\{)/
-/(?:^|[^<])<<-?\s*\w+?\s*(?:\r?\n|\r)[^]*?(?:\r?\n|\r)[]Unknown:\\2[]/
-/(?:^|[^<])<<-?\s*(?:"\w+"|'\w+')\s*(?:\r?\n|\r)[^]*?(?:\r?\n|\r)[]Unknown:\\3[]/
+/(?:^|[^<])<<-?\s*\w+\s*(?:\r?\n|\r)[^]*?(?:\r?\n|\r)[]Unknown:\\2[]/
+/(?:^|[^<])<<-?\s*(?:"\w+"\s*(?:\r?\n|\r)[^]*?(?:\r?\n|\r)[]Unknown:\\3[]|'\w+'\s*(?:\r?\n|\r)[^]*?(?:\r?\n|\r)[]Unknown:\\3[])/
 /(?:^|[^\\](?:\\\\)*)(?:"(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!")[^\\])*"|'(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!')[^\\])*')/
 /\$?\(\([^]+?\)\)/
 /\$\((?:\([^)]+\)|[^()])+\)|\`[^\`]+\`/
@@ -413,15 +433,15 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\\(?:["E\\abcefnrtv]|O?[0-7]{1,3}|x[\dA-Fa-f]{1,2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/
 /--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/
 /\(\(?|\)\)?|,|;/
-/^(?:\$\(|\`)|(?:\)|\`)$/
+/^\$\(|^\`|\)$|\`$/
 /:[-+=?]?|[!/]|##?|%%?|\^\^?|,,?/
 /^\d/
 /\$\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/
 /^\$\(\(/
 /\{\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/
 /^\$\(\([^]+\)\)/
-/(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?/i
-/\b(?:AS|BEEP|BLOAD|BSAVE|CALL(?: ABSOLUTE)?|CASE|CHAIN|CHDIR|CLEAR|CLOSE|CLS|COM|COMMON|CONST|DATA|DECLARE|DEF(?: FN| SEG|DBL|INT|LNG|SNG|STR)|DIM|DO|DOUBLE|ELSE|ELSEIF|END|ENVIRON|ERASE|ERROR|EXIT|FIELD|FILES|FOR|FUNCTION|GET|GOSUB|GOTO|IF|INPUT|INTEGER|IOCTL|KEY|KILL|LINE INPUT|LOCATE|LOCK|LONG|LOOP|LSET|MKDIR|NAME|NEXT|OFF|ON(?: (?:COM|ERROR|KEY|TIMER))?|OPEN|OPTION BASE|OUT|POKE|PUT|READ|REDIM|REM|RESTORE|RESUME|RETURN|RMDIR|RSET|RUN|SHARED|SINGLE|SELECT CASE|SHELL|SLEEP|STATIC|STEP|STOP|STRING|SUB|SWAP|SYSTEM|THEN|TIMER|TO|TROFF|TRON|TYPE|UNLOCK|UNTIL|USING|VIEW PRINT|WAIT|WEND|WHILE|WRITE)(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
+/(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?/i
+/\b(?:AS|BEEP|BLOAD|BSAVE|CALL(?: ABSOLUTE)?|CASE|CHAIN|CHDIR|CLEAR|CLOSE|CLS|COM|COMMON|CONST|DATA|DECLARE|DEF(?: FN| SEG|DBL|INT|LNG|SNG|STR)|DIM|DO|DOUBLE|ELSE|ELSEIF|END|ENVIRON|ERASE|ERROR|EXIT|FIELD|FILES|FOR|FUNCTION|GET|GOSUB|GOTO|IF|INPUT|INTEGER|IOCTL|KEY|KILL|LINE INPUT|LOCATE|LOCK|LONG|LOOP|LSET|MKDIR|NAME|NEXT|OFF|ON(?: COM| ERROR| KEY| TIMER)?|OPEN|OPTION BASE|OUT|POKE|PUT|READ|REDIM|REM|RESTORE|RESUME|RETURN|RMDIR|RSET|RUN|SHARED|SINGLE|SELECT CASE|SHELL|SLEEP|STATIC|STEP|STOP|STRING|SUB|SWAP|SYSTEM|THEN|TIMER|TO|TROFF|TRON|TYPE|UNLOCK|UNTIL|USING|VIEW PRINT|WAIT|WEND|WHILE|WRITE)(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /\b(?:ABS|ACCESS|ACOS|ANGLE|AREA|ARITHMETIC|ARRAY|ASIN|ASK|AT|ATN|BASE|BEGIN|BREAK|CAUSE|CEIL|CHR|CLIP|COLLATE|COLOR|CON|COS|COSH|COT|CSC|DATE|DATUM|DEBUG|DECIMAL|DEF|DEG|DEGREES|DELETE|DET|DEVICE|DISPLAY|DOT|ELAPSED|EPS|ERASABLE|EXLINE|EXP|EXTERNAL|EXTYPE|FILETYPE|FIXED|FP|GO|GRAPH|HANDLER|IDN|IMAGE|IN|INT|INTERNAL|IP|IS|KEYED|LBOUND|LCASE|LEFT|LEN|LENGTH|LET|LINE|LINES|LOG|LOG10|LOG2|LTRIM|MARGIN|MAT|MAX|MAXNUM|MID|MIN|MISSING|MOD|NATIVE|NUL|NUMERIC|OF|OPTION|ORD|ORGANIZATION|OUTIN|OUTPUT|PI|POINT|POINTER|POINTS|POS|PRINT|PROGRAM|PROMPT|RAD|RADIANS|RANDOMIZE|RECORD|RECSIZE|RECTYPE|RELATIVE|REMAINDER|REPEAT|REST|RETRY|REWRITE|RIGHT|RND|ROUND|RTRIM|SAME|SEC|SELECT|SEQUENTIAL|SET|SETTER|SGN|SIN|SINH|SIZE|SKIP|SQR|STANDARD|STATUS|STR|STREAM|STYLE|TAB|TAN|TANH|TEMPLATE|TEXT|THERE|TIME|TIMEOUT|TRACE|TRANSFORM|TRUNCATE|UBOUND|UCASE|USE|VAL|VARIABLE|VIEWPORT|WHEN|WINDOW|WITH|ZER|ZONEWIDTH)(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /<[=>]?|>=?|[-&*+/=^]|\b(?:AND|EQV|IMP|NOT|OR|XOR)\b/i
 /[(),:;]/
@@ -438,12 +458,12 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|[&()])[\t ]*ELSE\b/im
 /(?:^|[&(])[\t ]*SET(?: ?\/[A-Z](?:[ :](?:"[^"]*"|\S+))?)* (?:[^\n\r&)^]|\^(?:\r\n|[^]))*/im
 /(?:^|[&(])[\t ]*@?\w+\b(?:"(?:["\\]"|[^"])*"(?!")|[^\n\r"&)^]|\^(?:\r\n|[^]))*/m
-/(?:^FOR|\b(?:IN|DO))\b/i
+/^FOR\b|\b(?:IN|DO)\b/i
 /"(?:["\\]"|[^"])*"(?!")/
 /%%?[\w:~]+%?|!\S+!/
 /(?:(?<!\w)(?=\w)|(?<=\w)(?!\w)|-)\d+\b/
 /['(),]/
-/(?:^IF|\b(?:NOT|CMDEXTVERSION|DEFINED|ERRORLEVEL|EXIST))\b/i
+/^IF\b|\b(?:NOT|CMDEXTVERSION|DEFINED|ERRORLEVEL|EXIST)\b/i
 /\^|==|\b(?:EQU|NEQ|LSS|LEQ|GTR|GEQ)\b/i
 /^ELSE\b/i
 /^SET\b/i
@@ -464,7 +484,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\S+(?=:)/
 /%\w+/
 /%[%?]|[:;<>[\]|]/
-/(?:%\{[^]*?%|\{(?:\{[^}]*\}|[^{}])*)\}/
+/%\{[^]*?%\}|\{(?:\{[^}]*\}|[^{}])*\}/
 /(?:^|[^@])\b(?:0X[\dA-F]+|\d+)/i
 /^%?\{|%?\}$/
 /[$@](?:<[^\s>]+>)?[\w$]+/
@@ -497,16 +517,16 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /--?|\+\+?|!=?=?|<=?|>=?|==?=?|&&|\|\|?|\?|\*|\/|~|\^|%/
 /(?:^|[^$\\])#.*/
 /(?:function|hook|event) \w+(?:::\w+)?/
-/(?:GLOB|LOC)AL \w+/i
+/(?:GLOBAL|LOCAL) \w+/i
 /CONST \w+/i
 /\b(?:TODO|FIXME|XXX)\b/
 /^(?:function|hook|event)/
-/(?:glob|loc)al/
+/global|local/
 /const/
 /\/\/.*/
 /\[[\w.]+\]/
 /\b(?:abstract|ansi|assembly|auto|autochar|beforefieldinit|bool|bstr|byvalstr|catch|char|cil|class|currency|date|decimal|default|enum|error|explicit|extends|extern|famandassem|family|famorassem|final(?:ly)?|float32|float64|hidebysig|iant|idispatch|implements|import|initonly|instance|u?int(?:8|16|32|64)?|interface|iunknown|literal|lpstr|lpstruct|lptstr|lpwstr|managed|method|native(?:Type)?|nested|newslot|object(?:ref)?|pinvokeimpl|private|privatescope|public|reqsecobj|rtspecialname|runtime|sealed|sequential|serializable|specialname|static|string|struct|syschar|tbstr|unicode|unmanagedexp|unsigned|value(?:type)?|variant|virtual|void)\b/
-/\b(?:(?:constrained|unaligned|volatile|readonly|tail|no)\.)?(?:conv\.(?:[iu][1248]?|ovf\.[iu][1248]?(?:\.un)?|r\.un|r4|r8)|ldc\.(?:i4(?:\.(?:\d+|[Mm]1|s))?|i8|r4|r8)|ldelem(?:\.[iu][1248]?|\.r[48]|\.ref|a)?|ldind\.(?:[iu][1248]?|r[48]|ref)|stelem\.?(?:i[1248]?|r[48]|ref)?|stind\.(?:i[1248]?|r[48]|ref)?|endf(?:ault|ilter|inally)|ldarg(?:\.[0-3s]|a(?:\.s)?)?|ldloc(?:\.(?:\d+|s))?|sub(?:\.ovf(?:\.un)?)?|mul(?:\.ovf(?:\.un)?)?|add(?:\.ovf(?:\.un)?)?|stloc(?:\.[0-3s])?|refany(?:type|val)|blt(?:\.un)?(?:\.s)?|ble(?:\.un)?(?:\.s)?|bgt(?:\.un)?(?:\.s)?|bge(?:\.un)?(?:\.s)?|unbox(?:\.any)?|init(?:blk|obj)|call(?:i|virt)?|brfalse(?:\.s)?|bne\.un(?:\.s)?|ldloca(?:\.s)?|brzero(?:\.s)?|brtrue(?:\.s)?|brnull(?:\.s)?|brinst(?:\.s)?|starg(?:\.s)?|leave(?:\.s)?|shr(?:\.un)?|rem(?:\.un)?|div(?:\.un)?|clt(?:\.un)?|alignment|ldvirtftn|castclass|beq(?:\.s)?|mkrefany|localloc|ckfinite|rethrow|ldtoken|ldsflda|cgt\.un|arglist|switch|stsfld|sizeof|newobj|newarr|ldsfld|ldnull|ldflda|isinst|throw|stobj|stloc|stfld|ldstr|ldobj|ldlen|ldftn|ldfld|cpobj|cpblk|break|br\.s|xor|shl|ret|pop|not|nop|neg|jmp|dup|clt|cgt|ceq|box|and|or|br)\b/
+/\b(?:(?:constrained|unaligned|volatile|readonly|tail|no)\.)?(?:conv\.(?:[iu][1248]?|ovf\.[iu][1248]?(?:\.un)?|r\.un|r4|r8)|ldc\.(?:i4(?:\.\d+|\.[Mm]1|\.s)?|i8|r4|r8)|ldelem(?:\.[iu][1248]?|\.r[48]|\.ref|a)?|ldind\.(?:[iu][1248]?|r[48]|ref)|stelem\.?(?:i[1248]?|r[48]|ref)?|stind\.(?:i[1248]?|r[48]|ref)?|end(?:fault|filter|finally)|ldarg(?:\.[0-3s]|a(?:\.s)?)?|ldloc(?:\.\d+|\.s)?|sub(?:\.ovf(?:\.un)?)?|mul(?:\.ovf(?:\.un)?)?|add(?:\.ovf(?:\.un)?)?|stloc(?:\.[0-3s])?|refany(?:type|val)|blt(?:\.un)?(?:\.s)?|ble(?:\.un)?(?:\.s)?|bgt(?:\.un)?(?:\.s)?|bge(?:\.un)?(?:\.s)?|unbox(?:\.any)?|init(?:blk|obj)|call(?:i|virt)?|brfalse(?:\.s)?|bne\.un(?:\.s)?|ldloca(?:\.s)?|brzero(?:\.s)?|brtrue(?:\.s)?|brnull(?:\.s)?|brinst(?:\.s)?|starg(?:\.s)?|leave(?:\.s)?|shr(?:\.un)?|rem(?:\.un)?|div(?:\.un)?|clt(?:\.un)?|alignment|ldvirtftn|castclass|beq(?:\.s)?|mkrefany|localloc|ckfinite|rethrow|ldtoken|ldsflda|cgt\.un|arglist|switch|stsfld|sizeof|newobj|newarr|ldsfld|ldnull|ldflda|isinst|throw|stobj|stloc|stfld|ldstr|ldobj|ldlen|ldftn|ldfld|cpobj|cpblk|break|br\.s|xor|shl|ret|pop|not|nop|neg|jmp|dup|clt|cgt|ceq|box|and|or|br)\b/
 /\b-?(?:0X[\dA-F]+|\d+)(?:\.[\dA-F]+)?\b/i
 /[(),:;=[\]{}]|IL_[\dA-Za-z]+/
 /(?:^|\W)\.[a-z]+(?=\s)/
@@ -515,7 +535,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b[\dA-F]+\b/i
 /[(),[\]{}]/
 /[^-\w'*+?](?:def|if|do|let|\.\.|quote|var|->>|->|fn|loop|recur|throw|try|monitor-enter|\.|new|set!|def-|defn|defn-|defmacro|defmulti|defmethod|defstruct|defonce|declare|definline|definterface|defprotocol|==|defrecord|>=|deftype|<=|defproject|ns|\*|\+|-|\/|<|=|>|accessor|agent|agent-errors|aget|alength|all-ns|alter|and|append-child|apply|array-map|aset|aset-boolean|aset-byte|aset-char|aset-double|aset-float|aset-int|aset-long|aset-short|assert|assoc|await|await-for|bean|binding|bit-and|bit-not|bit-or|bit-shift-left|bit-shift-right|bit-xor|boolean|branch\?|butlast|byte|cast|char|children|class|clear-agent-errors|comment|commute|comp|comparator|complement|concat|conj|cons|constantly|cond|if-not|construct-proxy|contains\?|count|create-ns|create-struct|cycle|dec|deref|difference|disj|dissoc|distinct|doall|doc|dorun|doseq|dosync|dotimes|doto|double|down|drop|drop-while|edit|end\?|ensure|eval|every\?|false\?|ffirst|file-seq|filter|find|find-doc|find-ns|find-var|first|float|flush|for|fnseq|frest|gensym|get-proxy-class|get|hash-map|hash-set|identical\?|identity|if-let|import|in-ns|inc|index|insert-child|insert-left|insert-right|inspect-table|inspect-tree|instance\?|int|interleave|intersection|into|into-array|iterate|join|key|keys|keyword|keyword\?|last|lazy-cat|lazy-cons|left|lefts|line-seq|list\*|list|load|load-file|locking|long|loop|macroexpand|macroexpand-1|make-array|make-node|map|map-invert|map\?|mapcat|max|max-key|memfn|merge|merge-with|meta|min|min-key|name|namespace|neg\?|new|newline|next|nil\?|node|not|not-any\?|not-every\?|not=|ns-imports|ns-interns|ns-map|ns-name|ns-publics|ns-refers|ns-resolve|ns-unmap|nth|nthrest|or|parse|partial|path|peek|pop|pos\?|pr|pr-str|print|print-str|println|println-str|prn|prn-str|project|proxy|proxy-mappings|quot|rand|rand-int|range|re-find|re-groups|re-matcher|re-matches|re-pattern|re-seq|read|read-line|reduce|ref|ref-set|refer|rem|remove|remove-method|remove-ns|rename|rename-keys|repeat|replace|replicate|resolve|rest|resultset-seq|reverse|rfirst|right|rights|root|rrest|rseq|second|select|select-keys|send|send-off|seq|seq-zip|seq\?|set|short|slurp|some|sort|sort-by|sorted-map|sorted-map-by|sorted-set|special-symbol\?|split-at|split-with|str|string\?|struct|struct-map|subs|subvec|symbol|symbol\?|sync|take|take-nth|take-while|test|time|to-array|to-array-2d|tree-seq|true\?|union|up|update-proxy|val|vals|var-get|var-set|var\?|vector|vector-zip|vector\?|when|when-first|when-let|when-not|with-local-vars|with-meta|with-open|with-out-str|xml-seq|xml-zip|zero\?|zipmap|zipper)(?=[^-\w'*+?])/
-/\b(?:CMAKE_\w+|\w+_(?:VERSION(?:_(?:MAJOR|MINOR|PATCH|TWEAK))?|(?:BINARY|SOURCE)_DIR|DESCRIPTION|HOMEPAGE_URL|ROOT)|CTEST_CUSTOM_(?:MAXIMUM_(?:(?:FAIL|PASS)ED_TEST_OUTPUT_SIZE|NUMBER_OF_(?:ERROR|WARNING)S)|ERROR_(?:P(?:OST|RE)_CONTEXT|EXCEPTION|MATCH)|P(?:OST|RE)_MEMCHECK|WARNING_(?:EXCEPTION|MATCH)|(?:MEMCHECK|TESTS)_IGNORE|P(?:OST|RE)_TEST|COVERAGE_EXCLUDE)|ANDROID|APPLE|BORLAND|BUILD_SHARED_LIBS|CACHE|CPACK_(?:ABSOLUTE_DESTINATION_FILES|COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY|ERROR_ON_ABSOLUTE_INSTALL_DESTINATION|INCLUDE_TOPLEVEL_DIRECTORY|INSTALL_DEFAULT_DIRECTORY_PERMISSIONS|INSTALL_SCRIPT|PACKAGING_INSTALL_PREFIX|SET_DESTDIR|WARN_ON_ABSOLUTE_INSTALL_DESTINATION)|CTEST_(?:BINARY_DIRECTORY|BUILD_COMMAND|BUILD_NAME|BZR_COMMAND|BZR_UPDATE_OPTIONS|CHANGE_ID|CHECKOUT_COMMAND|CONFIGURATION_TYPE|CONFIGURE_COMMAND|COVERAGE_COMMAND|COVERAGE_EXTRA_FLAGS|CURL_OPTIONS|CUSTOM_(?:COVERAGE_EXCLUDE|ERROR_EXCEPTION|ERROR_MATCH|ERROR_POST_CONTEXT|ERROR_PRE_CONTEXT|MAXIMUM_FAILED_TEST_OUTPUT_SIZE|MAXIMUM_NUMBER_OF_(?:ERROR|WARNING)S|MAXIMUM_PASSED_TEST_OUTPUT_SIZE|MEMCHECK_IGNORE|POST_MEMCHECK|POST_TEST|PRE_MEMCHECK|PRE_TEST|TESTS_IGNORE|WARNING_EXCEPTION|WARNING_MATCH)|CVS_CHECKOUT|CVS_COMMAND|CVS_UPDATE_OPTIONS|DROP_LOCATION|DROP_METHOD|DROP_SITE|DROP_SITE_CDASH|DROP_SITE_PASSWORD|DROP_SITE_USER|EXTRA_COVERAGE_GLOB|GIT_COMMAND|GIT_INIT_SUBMODULES|GIT_UPDATE_CUSTOM|GIT_UPDATE_OPTIONS|HG_COMMAND|HG_UPDATE_OPTIONS|LABELS_FOR_SUBPROJECTS|MEMORYCHECK_(?:COMMAND|COMMAND_OPTIONS|SANITIZER_OPTIONS|SUPPRESSIONS_FILE|TYPE)|NIGHTLY_START_TIME|P4_CLIENT|P4_COMMAND|P4_OPTIONS|P4_UPDATE_OPTIONS|RUN_CURRENT_SCRIPT|SCP_COMMAND|SITE|SOURCE_DIRECTORY|SUBMIT_URL|SVN_COMMAND|SVN_OPTIONS|SVN_UPDATE_OPTIONS|TEST_LOAD|TEST_TIMEOUT|TRIGGER_SITE|UPDATE_COMMAND|UPDATE_OPTIONS|UPDATE_VERSION_ONLY|USE_LAUNCHERS)|CYGWIN|ENV|EXECUTABLE_OUTPUT_PATH|GHS-MULTI|IOS|LIBRARY_OUTPUT_PATH|MINGW|MSVC(?:10|11|12|14|60|70|71|80|90|_IDE|_TOOLSET_VERSION|_VERSION)?|MSYS|PROJECT_(?:BINARY_DIR|DESCRIPTION|HOMEPAGE_URL|NAME|SOURCE_DIR|VERSION|VERSION_(?:MAJOR|MINOR|PATCH|TWEAK))|UNIX|WIN32|WINCE|WINDOWS_PHONE|WINDOWS_STORE|XCODE|XCODE_VERSION)\b/
+/\b(?:CMAKE_\w+|\w+_(?:VERSION(?:_MAJOR|_MINOR|_PATCH|_TWEAK)?|(?:BINARY|SOURCE)_DIR|DESCRIPTION|HOMEPAGE_URL|ROOT)|CTEST_CUSTOM_(?:MAXIMUM_(?:(?:FAIL|PASS)ED_TEST_OUTPUT_SIZE|NUMBER_OF_(?:ERROR|WARNING)S)|ERROR_(?:P(?:OST|RE)_CONTEXT|EXCEPTION|MATCH)|P(?:OST|RE)_MEMCHECK|WARNING_(?:EXCEPTION|MATCH)|(?:MEMCHECK|TESTS)_IGNORE|P(?:OST|RE)_TEST|COVERAGE_EXCLUDE)|ANDROID|APPLE|BORLAND|BUILD_SHARED_LIBS|CACHE|CPACK_(?:ABSOLUTE_DESTINATION_FILES|COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY|ERROR_ON_ABSOLUTE_INSTALL_DESTINATION|INCLUDE_TOPLEVEL_DIRECTORY|INSTALL_DEFAULT_DIRECTORY_PERMISSIONS|INSTALL_SCRIPT|PACKAGING_INSTALL_PREFIX|SET_DESTDIR|WARN_ON_ABSOLUTE_INSTALL_DESTINATION)|CTEST_(?:BINARY_DIRECTORY|BUILD_COMMAND|BUILD_NAME|BZR_COMMAND|BZR_UPDATE_OPTIONS|CHANGE_ID|CHECKOUT_COMMAND|CONFIGURATION_TYPE|CONFIGURE_COMMAND|COVERAGE_COMMAND|COVERAGE_EXTRA_FLAGS|CURL_OPTIONS|CUSTOM_(?:COVERAGE_EXCLUDE|ERROR_EXCEPTION|ERROR_MATCH|ERROR_POST_CONTEXT|ERROR_PRE_CONTEXT|MAXIMUM_FAILED_TEST_OUTPUT_SIZE|MAXIMUM_NUMBER_OF_(?:ERRORS|WARNINGS)|MAXIMUM_PASSED_TEST_OUTPUT_SIZE|MEMCHECK_IGNORE|POST_MEMCHECK|POST_TEST|PRE_MEMCHECK|PRE_TEST|TESTS_IGNORE|WARNING_EXCEPTION|WARNING_MATCH)|CVS_CHECKOUT|CVS_COMMAND|CVS_UPDATE_OPTIONS|DROP_LOCATION|DROP_METHOD|DROP_SITE|DROP_SITE_CDASH|DROP_SITE_PASSWORD|DROP_SITE_USER|EXTRA_COVERAGE_GLOB|GIT_COMMAND|GIT_INIT_SUBMODULES|GIT_UPDATE_CUSTOM|GIT_UPDATE_OPTIONS|HG_COMMAND|HG_UPDATE_OPTIONS|LABELS_FOR_SUBPROJECTS|MEMORYCHECK_(?:COMMAND|COMMAND_OPTIONS|SANITIZER_OPTIONS|SUPPRESSIONS_FILE|TYPE)|NIGHTLY_START_TIME|P4_CLIENT|P4_COMMAND|P4_OPTIONS|P4_UPDATE_OPTIONS|RUN_CURRENT_SCRIPT|SCP_COMMAND|SITE|SOURCE_DIRECTORY|SUBMIT_URL|SVN_COMMAND|SVN_OPTIONS|SVN_UPDATE_OPTIONS|TEST_LOAD|TEST_TIMEOUT|TRIGGER_SITE|UPDATE_COMMAND|UPDATE_OPTIONS|UPDATE_VERSION_ONLY|USE_LAUNCHERS)|CYGWIN|ENV|EXECUTABLE_OUTPUT_PATH|GHS-MULTI|IOS|LIBRARY_OUTPUT_PATH|MINGW|MSVC(?:10|11|12|14|60|70|71|80|90|_IDE|_TOOLSET_VERSION|_VERSION)?|MSYS|PROJECT_(?:BINARY_DIR|DESCRIPTION|HOMEPAGE_URL|NAME|SOURCE_DIR|VERSION|VERSION_(?:MAJOR|MINOR|PATCH|TWEAK))|UNIX|WIN32|WINCE|WINDOWS_PHONE|WINDOWS_STORE|XCODE|XCODE_VERSION)\b/
 /\b(?:cxx_\w+|(?:ARCHIVE_OUTPUT_(?:DIRECTORY|NAME)|COMPILE_DEFINITIONS|COMPILE_PDB_NAME|COMPILE_PDB_OUTPUT_DIRECTORY|EXCLUDE_FROM_DEFAULT_BUILD|IMPORTED_(?:IMPLIB|LIBNAME|LINK_DEPENDENT_LIBRARIES|LINK_INTERFACE_LANGUAGES|LINK_INTERFACE_LIBRARIES|LINK_INTERFACE_MULTIPLICITY|LOCATION|NO_SONAME|OBJECTS|SONAME)|INTERPROCEDURAL_OPTIMIZATION|LIBRARY_OUTPUT_DIRECTORY|LIBRARY_OUTPUT_NAME|LINK_FLAGS|LINK_INTERFACE_LIBRARIES|LINK_INTERFACE_MULTIPLICITY|LOCATION|MAP_IMPORTED_CONFIG|OSX_ARCHITECTURES|OUTPUT_NAME|PDB_NAME|PDB_OUTPUT_DIRECTORY|RUNTIME_OUTPUT_DIRECTORY|RUNTIME_OUTPUT_NAME|STATIC_LIBRARY_FLAGS|VS_CSHARP|VS_DOTNET_REFERENCEPROP|VS_DOTNET_REFERENCE|VS_GLOBAL_SECTION_POST|VS_GLOBAL_SECTION_PRE|VS_GLOBAL|XCODE_ATTRIBUTE)_\w+|\w+_(?:CLANG_TIDY|COMPILER_LAUNCHER|CPPCHECK|CPPLINT|INCLUDE_WHAT_YOU_USE|OUTPUT_NAME|POSTFIX|VISIBILITY_PRESET)|ABSTRACT|ADDITIONAL_MAKE_CLEAN_FILES|ADVANCED|ALIASED_TARGET|ALLOW_DUPLICATE_CUSTOM_TARGETS|ANDROID_(?:ANT_ADDITIONAL_OPTIONS|API|API_MIN|ARCH|ASSETS_DIRECTORIES|GUI|JAR_DEPENDENCIES|NATIVE_LIB_DEPENDENCIES|NATIVE_LIB_DIRECTORIES|PROCESS_MAX|PROGUARD|PROGUARD_CONFIG_PATH|SECURE_PROPS_PATH|SKIP_ANT_STEP|STL_TYPE)|ARCHIVE_OUTPUT_DIRECTORY|ARCHIVE_OUTPUT_NAME|ATTACHED_FILES|ATTACHED_FILES_ON_FAIL|AUTOGEN_(?:BUILD_DIR|ORIGIN_DEPENDS|PARALLEL|SOURCE_GROUP|TARGETS_FOLDER|TARGET_DEPENDS)|AUTOMOC|AUTOMOC_(?:COMPILER_PREDEFINES|DEPEND_FILTERS|EXECUTABLE|MACRO_NAMES|MOC_OPTIONS|SOURCE_GROUP|TARGETS_FOLDER)|AUTORCC|AUTORCC_EXECUTABLE|AUTORCC_OPTIONS|AUTORCC_SOURCE_GROUP|AUTOUIC|AUTOUIC_EXECUTABLE|AUTOUIC_OPTIONS|AUTOUIC_SEARCH_PATHS|BINARY_DIR|BUILDSYSTEM_TARGETS|BUILD_RPATH|BUILD_RPATH_USE_ORIGIN|BUILD_WITH_INSTALL_NAME_DIR|BUILD_WITH_INSTALL_RPATH|BUNDLE|BUNDLE_EXTENSION|CACHE_VARIABLES|CLEAN_NO_CUSTOM|COMMON_LANGUAGE_RUNTIME|COMPATIBLE_INTERFACE_(?:BOOL|NUMBER_MAX|NUMBER_MIN|STRING)|COMPILE_(?:DEFINITIONS|FEATURES|FLAGS|OPTIONS|PDB_NAME|PDB_OUTPUT_DIRECTORY)|COST|CPACK_DESKTOP_SHORTCUTS|CPACK_NEVER_OVERWRITE|CPACK_PERMANENT|CPACK_STARTUP_SHORTCUTS|CPACK_START_MENU_SHORTCUTS|CPACK_WIX_ACL|CROSSCOMPILING_EMULATOR|CUDA_EXTENSIONS|CUDA_PTX_COMPILATION|CUDA_RESOLVE_DEVICE_SYMBOLS|CUDA_SEPARABLE_COMPILATION|CUDA_STANDARD|CUDA_STANDARD_REQUIRED|CXX_EXTENSIONS|CXX_STANDARD|CXX_STANDARD_REQUIRED|C_EXTENSIONS|C_STANDARD|C_STANDARD_REQUIRED|DEBUG_CONFIGURATIONS|DEBUG_POSTFIX|DEFINE_SYMBOL|DEFINITIONS|DEPENDS|DEPLOYMENT_ADDITIONAL_FILES|DEPLOYMENT_REMOTE_DIRECTORY|DISABLED|DISABLED_FEATURES|ECLIPSE_EXTRA_CPROJECT_CONTENTS|ECLIPSE_EXTRA_NATURES|ENABLED_FEATURES|ENABLED_LANGUAGES|ENABLE_EXPORTS|ENVIRONMENT|EXCLUDE_FROM_ALL|EXCLUDE_FROM_DEFAULT_BUILD|EXPORT_NAME|EXPORT_PROPERTIES|EXTERNAL_OBJECT|EchoString|FAIL_REGULAR_EXPRESSION|FIND_LIBRARY_USE_LIB32_PATHS|FIND_LIBRARY_USE_LIB64_PATHS|FIND_LIBRARY_USE_LIBX32_PATHS|FIND_LIBRARY_USE_OPENBSD_VERSIONING|FIXTURES_CLEANUP|FIXTURES_REQUIRED|FIXTURES_SETUP|FOLDER|FRAMEWORK|Fortran_FORMAT|Fortran_MODULE_DIRECTORY|GENERATED|GENERATOR_FILE_NAME|GENERATOR_IS_MULTI_CONFIG|GHS_INTEGRITY_APP|GHS_NO_SOURCE_GROUP_FILE|GLOBAL_DEPENDS_DEBUG_MODE|GLOBAL_DEPENDS_NO_CYCLES|GNUtoMS|HAS_CXX|HEADER_FILE_ONLY|HELPSTRING|IMPLICIT_DEPENDS_INCLUDE_TRANSFORM|IMPORTED|IMPORTED_(?:COMMON_LANGUAGE_RUNTIME|CONFIGURATIONS|GLOBAL|IMPLIB|LIBNAME|LINK_DEPENDENT_LIBRARIES|LINK_INTERFACE_(?:LANGUAGES|LIBRARIES|MULTIPLICITY)|LOCATION|NO_SONAME|OBJECTS|SONAME)|IMPORT_PREFIX|IMPORT_SUFFIX|INCLUDE_DIRECTORIES|INCLUDE_REGULAR_EXPRESSION|INSTALL_NAME_DIR|INSTALL_RPATH|INSTALL_RPATH_USE_LINK_PATH|INTERFACE_(?:AUTOUIC_OPTIONS|COMPILE_DEFINITIONS|COMPILE_FEATURES|COMPILE_OPTIONS|INCLUDE_DIRECTORIES|LINK_DEPENDS|LINK_DIRECTORIES|LINK_LIBRARIES|LINK_OPTIONS|POSITION_INDEPENDENT_CODE|SOURCES|SYSTEM_INCLUDE_DIRECTORIES)|INTERPROCEDURAL_OPTIMIZATION|IN_TRY_COMPILE|IOS_INSTALL_COMBINED|JOB_POOLS|JOB_POOL_COMPILE|JOB_POOL_LINK|KEEP_EXTENSION|LABELS|LANGUAGE|LIBRARY_OUTPUT_DIRECTORY|LIBRARY_OUTPUT_NAME|LINKER_LANGUAGE|LINK_(?:DEPENDS|DEPENDS_NO_SHARED|DIRECTORIES|FLAGS|INTERFACE_LIBRARIES|INTERFACE_MULTIPLICITY|LIBRARIES|OPTIONS|SEARCH_END_STATIC|SEARCH_START_STATIC|WHAT_YOU_USE)|LISTFILE_STACK|LOCATION|MACOSX_BUNDLE|MACOSX_BUNDLE_INFO_PLIST|MACOSX_FRAMEWORK_INFO_PLIST|MACOSX_PACKAGE_LOCATION|MACOSX_RPATH|MACROS|MANUALLY_ADDED_DEPENDENCIES|MEASUREMENT|MODIFIED|NAME|NO_SONAME|NO_SYSTEM_FROM_IMPORTED|OBJECT_DEPENDS|OBJECT_OUTPUTS|OSX_ARCHITECTURES|OUTPUT_NAME|PACKAGES_FOUND|PACKAGES_NOT_FOUND|PARENT_DIRECTORY|PASS_REGULAR_EXPRESSION|PDB_NAME|PDB_OUTPUT_DIRECTORY|POSITION_INDEPENDENT_CODE|POST_INSTALL_SCRIPT|PREDEFINED_TARGETS_FOLDER|PREFIX|PRE_INSTALL_SCRIPT|PRIVATE_HEADER|PROCESSORS|PROCESSOR_AFFINITY|PROJECT_LABEL|PUBLIC_HEADER|REPORT_UNDEFINED_PROPERTIES|REQUIRED_FILES|RESOURCE|RESOURCE_LOCK|RULE_LAUNCH_COMPILE|RULE_LAUNCH_CUSTOM|RULE_LAUNCH_LINK|RULE_MESSAGES|RUNTIME_OUTPUT_DIRECTORY|RUNTIME_OUTPUT_NAME|RUN_SERIAL|SKIP_AUTOGEN|SKIP_AUTOMOC|SKIP_AUTORCC|SKIP_AUTOUIC|SKIP_BUILD_RPATH|SKIP_RETURN_CODE|SOURCES|SOURCE_DIR|SOVERSION|STATIC_LIBRARY_FLAGS|STATIC_LIBRARY_OPTIONS|STRINGS|SUBDIRECTORIES|SUFFIX|SYMBOLIC|TARGET_ARCHIVES_MAY_BE_SHARED_LIBS|TARGET_MESSAGES|TARGET_SUPPORTS_SHARED_LIBS|TESTS|TEST_INCLUDE_FILE|TEST_INCLUDE_FILES|TIMEOUT|TIMEOUT_AFTER_MATCH|TYPE|USE_FOLDERS|VALUE|VARIABLES|VERSION|VISIBILITY_INLINES_HIDDEN|VS_(?:CONFIGURATION_TYPE|COPY_TO_OUT_DIR|DEBUGGER_(?:COMMAND|COMMAND_ARGUMENTS|ENVIRONMENT|WORKING_DIRECTORY)|DEPLOYMENT_CONTENT|DEPLOYMENT_LOCATION|DOTNET_REFERENCES|DOTNET_REFERENCES_COPY_LOCAL|GLOBAL_KEYWORD|GLOBAL_PROJECT_TYPES|GLOBAL_ROOTNAMESPACE|INCLUDE_IN_VSIX|IOT_STARTUP_TASK|KEYWORD|RESOURCE_GENERATOR|SCC_AUXPATH|SCC_LOCALPATH|SCC_PROJECTNAME|SCC_PROVIDER|SDK_REFERENCES|SHADER_(?:DISABLE_OPTIMIZATIONS|ENABLE_DEBUG|ENTRYPOINT|FLAGS|MODEL|OBJECT_FILE_NAME|OUTPUT_HEADER_FILE|TYPE|VARIABLE_NAME)|STARTUP_PROJECT|TOOL_OVERRIDE|USER_PROPS|WINRT_COMPONENT|WINRT_EXTENSIONS|WINRT_REFERENCES|XAML_TYPE)|WILL_FAIL|WIN32_EXECUTABLE|WINDOWS_EXPORT_ALL_SYMBOLS|WORKING_DIRECTORY|WRAP_EXCLUDE|XCODE_(?:EMIT_EFFECTIVE_PLATFORM_NAME|EXPLICIT_FILE_TYPE|FILE_ATTRIBUTES|LAST_KNOWN_FILE_TYPE|PRODUCT_TYPE|SCHEME_(?:ADDRESS_SANITIZER|ADDRESS_SANITIZER_USE_AFTER_RETURN|ARGUMENTS|DISABLE_MAIN_THREAD_CHECKER|DYNAMIC_LIBRARY_LOADS|DYNAMIC_LINKER_API_USAGE|ENVIRONMENT|EXECUTABLE|GUARD_MALLOC|MAIN_THREAD_CHECKER_STOP|MALLOC_GUARD_EDGES|MALLOC_SCRIBBLE|MALLOC_STACK|THREAD_SANITIZER(?:_STOP)?|UNDEFINED_BEHAVIOUR_SANITIZER(?:_STOP)?|ZOMBIE_OBJECTS))|XCTEST)\b/
 /\b(?:add_compile_definitions|add_compile_options|add_custom_command|add_custom_target|add_definitions|add_dependencies|add_executable|add_library|add_link_options|add_subdirectory|add_test|aux_source_directory|break|build_command|build_name|cmake_host_system_information|cmake_minimum_required|cmake_parse_arguments|cmake_policy|configure_file|continue|create_test_sourcelist|ctest_build|ctest_configure|ctest_coverage|ctest_empty_binary_directory|ctest_memcheck|ctest_read_custom_files|ctest_run_script|ctest_sleep|ctest_start|ctest_submit|ctest_test|ctest_update|ctest_upload|define_property|else|elseif|enable_language|enable_testing|endforeach|endfunction|endif|endmacro|endwhile|exec_program|execute_process|export|export_library_dependencies|file|find_file|find_library|find_package|find_path|find_program|fltk_wrap_ui|foreach|function|get_cmake_property|get_directory_property|get_filename_component|get_property|get_source_file_property|get_target_property|get_test_property|if|include|include_directories|include_external_msproject|include_guard|include_regular_expression|install|install_files|install_programs|install_targets|link_directories|link_libraries|list|load_cache|load_command|macro|make_directory|mark_as_advanced|math|message|option|output_required_files|project|qt_wrap_cpp|qt_wrap_ui|remove|remove_definitions|return|separate_arguments|set|set_directory_properties|set_property|set_source_files_properties|set_target_properties|set_tests_properties|site_name|source_group|string|subdir_depends|subdirs|target_compile_definitions|target_compile_features|target_compile_options|target_include_directories|target_link_directories|target_link_libraries|target_link_options|target_sources|try_compile|try_run|unset|use_mangled_mesa|utility_source|variable_requires|variable_watch|while|write_file)(?=\s*\()\b/
 /\b(?:ON|OFF|TRUE|FALSE)\b/
@@ -542,8 +562,8 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /"(?:\\[^]|[^"\\])*"/
 /#\{[^}]+\}/
 /\b(?:abstract|actor|also|annotation|assert|async|await|bool|boolean|break|byte|case|catch|changed|char|class|closed|constant|continue|def|default|del|double|elif|else|enum|every|extends|false|finally|float|for|from|global|gpudef|gpukernel|if|import|in|init|inject|int|lambda|local|long|loop|match|new|nodefault|null|of|onchange|open|out|override|package|parfor|parforsync|post|pre|private|protected|provide|provider|public|return|shared|short|single|size_t|sizeof|super|sync|this|throw|trait|trans|transient|true|try|typedef|unchecked|using|val|var|void|while|with)\b/
-/\b(?:fals|tru)e\b/
-/\b0B[01][01_]*L?\b|\b0X[\dA-F_]*\.?[-\d+A-FP_]+\b|(?:\b\d[\d_]*\.?|\B\.\d)[\d_]*(?:E[-+]?\d[\d_]*)?[DFLS]?/i
+/\b(?:false|true)\b/
+/\b0B[01][01_]*L?\b|\b0X[\dA-F_]*\.?[-\d+A-FP_]+\b|(?:\b\d[\d_]*\.?[\d_]*|\B\.\d[\d_]*)(?:E[-+]?\d[\d_]*)?[DFLS]?/i
 /<==|>==|=>|->|<-|<>|\^|&==|&<>|!|\?|\?:|\.\?|\+\+|--|[-*+/<=>]=?|\b(?:and|as|band|bor|bxor|comp|is|isnot|mod|or)\b=?/
 /[rs]?(?:"(?:\\.|(?!")[^\n\r\\])*"|'(?:\\.|(?!')[^\n\r\\])*')/
 /\w+\s*\|\|[^]+?\|\|/
@@ -551,14 +571,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /@(?:\w+:)?(?:\w*|\[[^\]]+\])/
 /(?:^|[^\\])(?:\\{2})*\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}/
 /\b(?:BASE-URI|BLOCK-ALL-MIXED-CONTENT|(?:CHILD|CONNECT|DEFAULT|FONT|FRAME|IMG|MANIFEST|MEDIA|OBJECT|SCRIPT|STYLE|WORKER)-SRC|DISOWN-OPENER|FORM-ACTION|FRAME-ANCESTORS|PLUGIN-TYPES|REFERRER|REFLECTED-XSS|REPORT-TO|REPORT-URI|REQUIRE-SRI-FOR|SANDBOX|UPGRADE-INSECURE-REQUESTS)\b/i
-/'(?:self|none|strict-dynamic|(?:nonce|sha(?:256|384|512))-[\d+/=A-Za-z]+)'/
+/'(?:self|none|strict-dynamic|(?:nonce-|sha(?:256|384|512)-)[\d+/=A-Za-z]+)'/
 /'unsafe-inline'|'unsafe-eval'|'unsafe-hashed-attributes'|\*/
 /[$@]+[A-Z_]\w*(?:[!?]|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /\b(?:alias|and|BEGIN|begin|break|case|class|def|define_method|defined|do|each|else|elsif|END|end|ensure|extend|for|if|in|include|module|new|next|nil|not|or|prepend|protected|private|public|raise|redo|require|rescue|retry|return|self|super|then|throw|undef|unless|until|when|while|yield)\b/
 /\b(?:Array|Bignum|Binding|Class|Continuation|Dir|Exception|FalseClass|File|Stat|Fixnum|Float|Hash|Integer|IO|MatchData|Method|Module|NilClass|Numeric|Object|Proc|Range|Regexp|String|Struct|TMS|Symbol|ThreadGroup|Thread|Time|TrueClass)\b/
 /\b[A-Z]\w*(?:[!?]|(?<!\w)(?=\w)|(?<=\w)(?!\w))/
 /\b(?:0b[01_]*[01]|0o[0-7_]*[0-7]|0x[\dA-F_a-f]*[\dA-Fa-f]|\d(?:[\d_]*\d)?(?:\.[\d_]*\d)?(?:[Ee][-+]?[\d_]*\d)?)(?:_(?:[fiu](?:8|16|32|64))?)?\b/
-/\bC(?:LASS\s+|ATCH\s+\()[\w.\\]+/i
+/(?:\bCLASS\s+|\bCATCH\s+\()[\w.\\]+/i
 /(?:^|[^:]):[A-Z_]\w*(?:[!?]|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /\bdef\s+[\w.]+/
 /@\[.+?\]/
@@ -566,7 +586,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^=begin\s[^]*?^=end/m
 /%[IQWiqswx]?(?:[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[]|\((?:[^()\\]|\\[^])*\)|\{(?:[^#\\{}]|#(?:\{[^}]+\})?|\\[^])*\}|\[(?:[^[\\\]]|\\[^])*\]|<(?:[^<>\\]|\\[^])*>)/
 /"(?:#\{[^}]+\}|\\(?:\r\n|[^])|(?!")[^\n\r\\])*"|'(?:#\{[^}]+\}|\\(?:\r\n|[^])|(?!')[^\n\r\\])*'/
-/%r(?:[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[]|\((?:[^()\\]|\\[^])*\)|\{(?:[^#\\{}]|#(?:\{[^}]+\})?|\\[^])*\}|\[(?:[^[\\\]]|\\[^])*\]|<(?:[^<>\\]|\\[^])*>)[gim]{0,3}/
+/%r(?:[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[][gim]{0,3}|\((?:[^()\\]|\\[^])*\)[gim]{0,3}|\{(?:[^#\\{}]|#(?:\{[^}]+\})?|\\[^])*\}[gim]{0,3}|\[(?:[^[\\\]]|\\[^])*\][gim]{0,3}|<(?:[^<>\\]|\\[^])*>[gim]{0,3})/
 /(?:^|[^/])\/(?!\/)(?:\[[^\n\r\]]+\]|\\.|[^\n\r/[\\])+\/[gim]{0,3}(?=\s*(?:$|[\n\r),.;}]))/
 /\w+$/
 /\{\{.+?\}\}/
@@ -583,13 +603,13 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:ALICEBLUE|ANTIQUEWHITE|AQUA|AQUAMARINE|AZURE|BEIGE|BISQUE|BLACK|BLANCHEDALMOND|BLUE|BLUEVIOLET|BROWN|BURLYWOOD|CADETBLUE|CHARTREUSE|CHOCOLATE|CORAL|CORNFLOWERBLUE|CORNSILK|CRIMSON|CYAN|DARKBLUE|DARKCYAN|DARKGOLDENROD|DARKGR[AE]Y|DARKGREEN|DARKKHAKI|DARKMAGENTA|DARKOLIVEGREEN|DARKORANGE|DARKORCHID|DARKRED|DARKSALMON|DARKSEAGREEN|DARKSLATEBLUE|DARKSLATEGR[AE]Y|DARKTURQUOISE|DARKVIOLET|DEEPPINK|DEEPSKYBLUE|DIMGR[AE]Y|DODGERBLUE|FIREBRICK|FLORALWHITE|FORESTGREEN|FUCHSIA|GAINSBORO|GHOSTWHITE|GOLD|GOLDENROD|GR[AE]Y|GREEN|GREENYELLOW|HONEYDEW|HOTPINK|INDIANRED|INDIGO|IVORY|KHAKI|LAVENDER|LAVENDERBLUSH|LAWNGREEN|LEMONCHIFFON|LIGHTBLUE|LIGHTCORAL|LIGHTCYAN|LIGHTGOLDENRODYELLOW|LIGHTGR[AE]Y|LIGHTGREEN|LIGHTPINK|LIGHTSALMON|LIGHTSEAGREEN|LIGHTSKYBLUE|LIGHTSLATEGR[AE]Y|LIGHTSTEELBLUE|LIGHTYELLOW|LIME|LIMEGREEN|LINEN|MAGENTA|MAROON|MEDIUMAQUAMARINE|MEDIUMBLUE|MEDIUMORCHID|MEDIUMPURPLE|MEDIUMSEAGREEN|MEDIUMSLATEBLUE|MEDIUMSPRINGGREEN|MEDIUMTURQUOISE|MEDIUMVIOLETRED|MIDNIGHTBLUE|MINTCREAM|MISTYROSE|MOCCASIN|NAVAJOWHITE|NAVY|OLDLACE|OLIVE|OLIVEDRAB|ORANGE|ORANGERED|ORCHID|PALEGOLDENROD|PALEGREEN|PALETURQUOISE|PALEVIOLETRED|PAPAYAWHIP|PEACHPUFF|PERU|PINK|PLUM|POWDERBLUE|PURPLE|RED|ROSYBROWN|ROYALBLUE|SADDLEBROWN|SALMON|SANDYBROWN|SEAGREEN|SEASHELL|SIENNA|SILVER|SKYBLUE|SLATEBLUE|SLATEGR[AE]Y|SNOW|SPRINGGREEN|STEELBLUE|TAN|TEAL|THISTLE|TOMATO|TRANSPARENT|TURQUOISE|VIOLET|WHEAT|WHITE|WHITESMOKE|YELLOW|YELLOWGREEN)\b/i
 /\b\d+(?:%|[a-z]+\b)/
 /(?:^|[^\w\-.])-?\d*\.?\d+/
-/:(?:after|before|first-letter|first-line|selection|:[-\w]+)/
+/:(?:after|before|first-letter|first-line|selection)|::[-\w]+/
 /:[-\w]+/
 /\.[-\w]+/
 /#[-\w]+/
 />|\+|~|\|\|/
 /[(),]/
-/\b(?:RGB|HSL)(?:\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?|A\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*(?:0|0?\.\d+|1))\s*\)\B/i
+/\b(?:RGB|HSL)\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\)\B|\b(?:RGB|HSL)A\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*(?:0|0?\.\d+|1)\s*\)\B/i
 /\[(?:[^"'[\]]|"(?:\\(?:\r\n|[^])|(?!")[^\n\r\\])*"|'(?:\\(?:\r\n|[^])|(?!')[^\n\r\\])*')*\]/
 /[-\w]+(?=\()/
 /^\[|\]$/
@@ -612,19 +632,19 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[(),.;[\]{}]/
 /"(?:[^\n\r"\\]|\\.)*"|'(?:[^\n\r'\\]|\\.)*'/
 /:\s*(?:\w+|\`[^\n\r\\\\\`]*\`)(?=\s*[):{])/
-/(?:-\[\s*(?:(?:\w+|\`[^\n\r\\\\\`]*\`)\s*)?|\|\s*):\s*(?:\w+|\`[^\n\r\\\\\`]*\`)/
+/(?:-\[\s*(?:\w+\s*|\`[^\n\r\\\\\`]*\`\s*)?:\s*|\|\s*:\s*)(?:\w+|\`[^\n\r\\\\\`]*\`)/
 /\`[^\n\r\\\\\`]*\`/
 /\B@\w*/
 /\$|\b(?:abstract|alias|align|asm|assert|auto|body|bool|break|byte|case|cast|catch|cdouble|cent|cfloat|char|class|const|continue|creal|dchar|debug|default|delegate|delete|deprecated|do|double|else|enum|export|extern|false|final|finally|float|for|foreach|foreach_reverse|function|goto|idouble|if|ifloat|immutable|import|inout|int|interface|invariant|ireal|lazy|long|macro|mixin|module|new|nothrow|null|out|override|package|pragma|private|protected|public|pure|real|ref|return|scope|shared|short|static|struct|super|switch|synchronized|template|this|throw|true|try|typedef|typeid|typeof|ubyte|ucent|uint|ulong|union|unittest|ushort|version|void|volatile|wchar|while|with|__(?:(?:FILE|MODULE|LINE|FUNCTION|PRETTY_FUNCTION|DATE|EOF|TIME|TIMESTAMP|VENDOR|VERSION)__|gshared|traits|vector|parameters)|string|wstring|dstring|size_t|ptrdiff_t)\b/
 /\|[=|]?|&[&=]?|\+[+=]?|-[-=]?|\.?\.\.|=[=>]?|!(?:i[ns]\b|<>?=?|>=?|=)?|\bi[ns]\b|(?:<[<>]?|>>?>?|\^\^|[%*/~^])=?/
-/\b(?:(?:[A-D][HLX]|E[A-D]X|E?(?:BP|SP|DI|SI)|[C-GS]S|CR[0234]|DR[0-367]|TR[3-7]|X?MM[0-7]|R[A-D]X|[BS]PL|R[BS]P|[DS]IL|R[DS]I|R(?:[89]|1[0-5])[BDW]?|XMM(?:[89]|1[0-5])|YMM(?:1[0-5]|\d))\b|ST(?:\([0-7]\)|(?<!\w)(?=\w)|(?<=\w)(?!\w)))/
+/\b(?:[A-D][HLX]|E[A-D]X|E?(?:BP|SP|DI|SI)|[C-GS]S|CR[0234]|DR[0-367]|TR[3-7]|X?MM[0-7]|R[A-D]X|[BS]PL|R[BS]P|[DS]IL|R[DS]I|R(?:[89]|1[0-5])[BDW]?|XMM(?:[89]|1[0-5])|YMM(?:1[0-5]|\d))\b|\bST(?:\([0-7]\)|(?<!\w)(?=\w)|(?<=\w)(?!\w))/
 /\b0X\.?[\dA-F_]+(?:(?!\.\.)\.[\dA-F_]*)?(?:P[-+]?[\dA-F_]+)?[FILU]*/i
 /^\s*#!.+/
-/(?:^|[^\\])\/(?:\+(?:\/\+(?:[^+]|\+(?!\/))*\+\/|(?!\/\+)[^])*?\+\/|\/.*|\*[^]*?\*\/)/
+/(?:^|[^\\])(?:\/\+(?:\/\+(?:[^+]|\+(?!\/))*\+\/|(?!\/\+)[^])*?\+\/|\/\/.*|\/\*[^]*?\*\/)/
 /\b[rx]"(?:\\[^]|[^"\\])*"[cdw]?|\bq"(?:\[[^]*?\]|\([^]*?\)|<[^]*?>|\{[^]*?\})"|\bq"(?!\d)\w+$[^]*?^[]Unknown:\\1[]"|\bq".[^]*?[]Unknown:\\2[]"|'(?:\\(?:\W|\w+)|[^\\])'|(?:"(?:\\[^]|(?!")[^\\])*"|\`(?:\\[^]|(?!\`)[^\\])*\`)[cdw]?/m
 /\bq\{(?:\{[^{}]*\}|[^{}])*\}/
-/(?:\.\.)?(?:\b(?:0B\.?)?|\.)\d[\d_]*(?:(?!\.\.)\.[\d_]*)?(?:E[-+]?\d[\d_]*)?[FILU]*/i
-/\bis!|\b(?:a|i)s\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[-!%&*+/<=>|^]=?|\?/
+/(?:\.\.)?(?:\b0B\.?|(?<!\w)(?=\w)|(?<=\w)(?!\w)|\.)\d[\d_]*(?:(?!\.\.)\.[\d_]*)?(?:E[-+]?\d[\d_]*)?[FILU]*/i
+/\bis!|\b(?:as|is)\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[-!%&*+/<=>|^]=?|\?/
 /\b(?:async|sync|yield)\*/
 /\b(?:abstract|assert|async|await|break|case|catch|class|const|continue|covariant|default|deferred|do|dynamic|else|enum|export|extension|external|extends|factory|final|finally|for|Function|get|hide|if|implements|interface|import|in|library|mixin|new|null|on|operator|part|rethrow|return|set|show|static|super|switch|sync|this|throw|try|typedef|var|void|while|with|yield)\b/
 /@\w+/
@@ -642,9 +662,9 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:TRUE|FALSE|NULL)\b/i
 /--.*|\{-(?:[^-{]|-(?!\})|\{(?!-)|\{-(?:[^-{]|-(?!\})|\{(?!-))*-\})*-\}/
 /\b(?:as|assert|else|forall|if|in|let|merge|missing|then|toMap|using|with)\b|\u2200/
-/\b(?:Som|Non)e\b/
-/\b(?:Fals|Tru)e\b/
-/(?:\bNaN|-?\bInfinity|[-+]?\b(?:0x[\dA-Fa-f]+|\d+(?:\.\d+)?(?:e[-+]?\d+)?))\b/
+/\b(?:Some|None)\b/
+/\b(?:False|True)\b/
+/\bNaN\b|-?\bInfinity\b|[-+]?\b(?:0x[\dA-Fa-f]+|\d+(?:\.\d+)?(?:e[-+]?\d+)?)\b/
 /\/\\|\/\/\\\\|&&|\|\||[!=]=|===|\/\/|->|\+\+|::|[#*+:<=>?@\\|\u03bb\u2192\u2227\u2261\u2a53\u2afd]/
 /\.\.|[(),./[\]{}]/
 /\b[A-Z]\w*\b/
@@ -674,14 +694,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b[A-Z_]\w+(?=\s*\()/i
 /\b(?:and|as|by|else|for|if|import|in|is|loop|not|or|recursive|with|without)\b/
 /[-%*+/=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|~^]/
-/(?:[Tt]ru|[Ff]als|[Nn]on)e/
+/[Tt]rue|[Ff]alse|[Nn]one/
 /\b\w+?\b/
 /[(),.:;[\]{}]/
 /^\{%[-+]?\s*\w+/
 /^\{[%{][-+]?|[-+]?[%}]\}$/
 /"(?:\\.|(?!")[^\n\r\\])*"|'(?:\\.|(?!')[^\n\r\\])*'/
 /\|\w+/
-/\bis\s+(?:not\s+)?(?!not(?:(?<!\w)\w|(?<=\w)(?!\w)))\w+/
+/\bis\s+(?:not\s+)?(?!not\b)\w+/
 /^\$(?:ORIGIN|INCLUDE|TTL)(?=\s|$)/m
 /[()]/
 /(?:^|\s)(?:IN|CH|CS|HS)(?=\s|$)/
@@ -763,20 +783,20 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /'(?:\\.|[^\n\r'\\])+'/
 /\$\\?./
 /\d+#[\dA-Z]+/i
-/(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?/i
+/(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?/i
 /(?:^|[^@])(?:(?<!\w)(?=\w)|(?<=\w)(?!\w)|\?)[A-Z_][\w@]*/
 /[/:<=>]=|=[/:]=|\+\+?|--?|[!*/=]|\b(?:bnot|div|rem|band|bor|bxor|bsl|bsr|not|and|or|xor|orelse|andalso)\b/
 /(?:^|[^<])<(?!<)/
 /(?:^|[^>])>(?!>)/
 /(?:\b\d+(?:\.\d+)?|\B\.\d+)(?:E[-+]?\d+)?\b/i
-/\b(?:TRU|FALS)E\b/i
+/\b(?:TRUE|FALSE)\b/i
 /[-%&*+,/=^]|<[=>]?|>=?/
 /[();[\]{|}]/
 /\bN\(\s*"(?:[^"]|"")*"(?=\s*\))/i
 /(?:'[^']*'|(?:[^\s"$&'()*,;<>?[\]{}]*\[[^\s"'()*<>?[\]\^{}]+\])?\w+)!/
 /\b[A-Z]\w*(?=\()/i
 /\$?\b(?:[A-Z]+\$?\d+:\$?[A-Z]+\$?\d+|[A-Z]+:\$?[A-Z]+|\d+:\$?\d+)\b/i
-/(?:\b[A-Z]+|\$[A-Za-z]+\$?|\b[A-Za-z]+\$)\d+\b/
+/\b[A-Z]+\d+\b|\$[A-Za-z]+\$?\d+\b|\b[A-Za-z]+\$\d+\b/
 /!$/
 /'/
 /\$?[A-Z]+\$?\d+/i
@@ -785,15 +805,15 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[^[\]]+$/
 /\[[^[\]]+\]$/
 /[[\]]/
-/\b(?:(?:let|return|use|yield)(?:!\B|(?<!\w)(?=\w)|(?<=\w)(?!\w))|(?:abstract|and|as|assert|base|begin|class|default|delegate|do|done|downcast|downto|elif|else|end|exception|extern|false|finally|for|fun|function|global|if|in|inherit|inline|interface|internal|lazy|match|member|module|mutable|namespace|new|not|null|of|open|or|override|private|public|rec|select|static|struct|then|to|true|try|type|upcast|val|void|when|while|with|asr|land|lor|lsl|lsr|lxor|mod|sig|atomic|break|checked|component|const|constraint|constructor|continue|eager|event|external|fixed|functor|include|method|mixin|object|parallel|process|protected|pure|sealed|tailcall|trait|virtual|volatile)\b)/
+/\b(?:let|return|use|yield)(?:!\B|(?<!\w)(?=\w)|(?<=\w)(?!\w))|\b(?:abstract|and|as|assert|base|begin|class|default|delegate|do|done|downcast|downto|elif|else|end|exception|extern|false|finally|for|fun|function|global|if|in|inherit|inline|interface|internal|lazy|match|member|module|mutable|namespace|new|not|null|of|open|or|override|private|public|rec|select|static|struct|then|to|true|try|type|upcast|val|void|when|while|with|asr|land|lor|lsl|lsr|lxor|mod|sig|atomic|break|checked|component|const|constraint|constructor|continue|eager|event|external|fixed|functor|include|method|mixin|object|parallel|process|protected|pure|sealed|tailcall|trait|virtual|volatile)\b/
 /&&&|<<<|>>>|\^\^\^|~~~|&&|\*\*|\.\.|::|<<|>>|<-|->|[!:=]=|<?\|{1,3}>?|\??(?:<=|>=|<>|[-%*+/<=>])\??|[!&?^]|~[-+~]|:>|:\?>?/
 /\[<.+?>\]/
-/(?:(?:"""[^]*?""|@"(?:""|[^"])*|"(?:\\[^]|[^"\\])*)"|'(?:[^'\\]|\\(?:.|\d{3}|x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}))')B?/
-/(?:\b(?:exception|inherit|interface|new|of|type)\s|\w\s*:|\s:\??>)\s*[\w.]+\b(?:\s*(?:->|\*)\s*[\w.]+\b)*(?!\s*[.:])/
+/(?:"""[^]*?"""|@"(?:""|[^"])*"|"(?:\\[^]|[^"\\])*")B?|'(?:[^'\\]|\\(?:.|\d{3}|x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}))'B?/
+/(?:\b(?:exception|inherit|interface|new|of|type)\s+|\w\s*:\s*|\s:\??>\s*)[\w.]+\b(?:\s*(?:->|\*)\s*[\w.]+\b)*(?!\s*[.:])/
 /^[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*#.*/m
 /\b0x[\dA-Fa-f]+(?:un|lf|LF)?\b/
-/\b0b[01]+(?:(?:|u)y)?\b/
-/(?:\b\d+\.?|\B\.\d)\d*(?:[FM]|E[-+]?\d+)?\b/i
+/\b0b[01]+(?:y|uy)?\b/
+/(?:\b\d+\.?\d*|\B\.\d+)(?:[FM]|E[-+]?\d+)?\b/i
 /\b\d+(?:[ILlsy]|u[lsy]?|UL)?\b/
 /[A-Z_]\w*(?=\s*\{)/i
 /(?:^|[^\\])\(\*[^]*?\*\)/
@@ -801,7 +821,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /->|\*/
 /^\w+$|(?:^|;\s*)[A-Z]\w*(?=\()/
 /\s*#\b(?:else|endif|if|light|line|nowarn)\b/
-/(?:^|\s)R\/\s+(?:\\\S|[^/\\])*\/[dimrs]*(?:|[dimrs]-[dimrs]+)(?=\s|$)/
+/(?:^|\s)R\/\s+(?:\\\S|[^/\\])*\/(?:[dimrs]*|[dimrs]+-[dimrs]+)(?=\s|$)/
 /(?:^|\s)[ft](?=\s|$)/
 /(?:^|\s)[-\dA-Z]+"\s(?:\\\S|[^"\\])*"/
 /(?:^|\s)USING:(?:\s\S+)*(?=\s+;(?:\s|$))/
@@ -809,14 +829,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|\s)(?:or|2nipd|4drop|tuck|wrapper|nip|wrapper\?|callstack>array|die|dupd|callstack|callstack\?|3dup|hashcode|pick|4nip|build|>boolean|nipd|clone|5nip|eq\?|\?|=|swapd|2over|clear|2dup|get-retainstack|not|tuple\?|dup|3nipd|call|-rotd|object|drop|assert=|assert\?|-rot|execute|boa|get-callstack|curried\?|3drop|pickd|overd|over|roll|3nip|swap|and|2nip|rotd|throw|\(clone\)|hashcode\*|spin|reach|4dup|equal\?|get-datastack|assert|2drop|<wrapper>|boolean\?|identity-hashcode|identity-tuple\?|null|composed\?|new|5drop|rot|-roll|xor|identity-tuple|boolean)(?=\s|$)/
 /(?:^|\s)(?:member-eq\?|mismatch|append|assert-sequence=|longer|repetition|clone-like|3sequence|assert-sequence\?|last-index-from|reversed|index-from|cut\*|pad-tail|join-as|remove-eq!|concat-as|but-last|snip|nths|nth|sequence|longest|slice\?|<slice>|remove-nth|tail-slice|empty\?|tail\*|member\?|virtual-sequence\?|set-length|drop-prefix|iota|unclip|bounds-error\?|unclip-last-slice|non-negative-integer-expected|non-negative-integer-expected\?|midpoint@|longer\?|\?set-nth|\?first|rest-slice|prepend-as|prepend|fourth|sift|subseq-start|new-sequence|\?last|like|first4|1sequence|reverse|slice|virtual@|repetition\?|set-last|index|4sequence|max-length|set-second|immutable-sequence|first2|first3|supremum|unclip-slice|suffix!|insert-nth|tail|3append|short|suffix|concat|flip|immutable\?|reverse!|2sequence|sum|delete-all|indices|snip-slice|<iota>|check-slice|sequence\?|head|append-as|halves|sequence=|collapse-slice|\?second|slice-error\?|product|bounds-check\?|bounds-check|immutable|virtual-exemplar|harvest|remove|pad-head|last|set-fourth|cartesian-product|remove-eq|shorten|shorter|reversed\?|shorter\?|shortest|head-slice|pop\*|tail-slice\*|but-last-slice|iota\?|append!|cut-slice|new-resizable|head-slice\*|sequence-hashcode|pop|set-nth|\?nth|second|join|immutable-sequence\?|<reversed>|3append-as|virtual-sequence|subseq\?|remove-nth!|length|last-index|lengthen|assert-sequence|copy|move|third|first|tail\?|set-first|prefix|bounds-error|<repetition>|exchange|surround|cut|min-length|set-third|push-all|head\?|subseq-start-from|delete-slice|rest|sum-lengths|head\*|infimum|remove!|glue|slice-error|subseq|push|replace-slice|subseq-as|unclip-last)(?=\s|$)/
 /(?:^|\s)(?:number=|next-power-of-2|\?1\+|fp-special\?|imaginary-part|float>bits|number\?|fp-infinity\?|bignum\?|fp-snan\?|denominator|gcd|\*|\+|fp-bitwise=|-|u>=|\/|>=|bitand|power-of-2\?|log2-expects-positive|neg\?|<|log2|>|integer\?|number|bits>double|2\/|zero\?|bits>float|float\?|shift|ratio\?|rect>|even\?|ratio|fp-sign|bitnot|>fixnum|complex\?|\/i|integer>fixnum|\/f|sgn|>bignum|next-float|u<|u>|mod|recip|rational|>float|2\^|integer|fixnum\?|neg|fixnum|sq|bignum|>rect|bit\?|fp-qnan\?|simple-gcd|complex|<fp-nan>|real|>fraction|double>bits|bitor|rem|fp-nan-payload|real-part|log2-expects-positive\?|prev-float|align|unordered\?|float|fp-nan\?|abs|bitxor|integer>fixnum-strict|u<=|odd\?|<=|\/mod|>integer|real\?|rational\?|numerator)(?=\s|$)/
-/(?:^|\s)<(?!(?:=+|-+)>)\S+>(?=\s|$)/
+/(?:^|\s)<(?!=+>|-+>)\S+>(?=\s|$)/
 /(?:^|\s)(?:=======|recursive|flushable|>>|<<<<<<|M\\|B|PRIVATE>|\\|======|final|inline|delimiter|deprecated|<PRIVATE|>>>>>>|<<<<<<<|parse-complex|malformed-complex|read-only|>>>>>>>|call-next-method|<<|foldable|\$|\$\[|\$\{)(?=\s|$)/
 /(?:^|\s)(?!")(?:(?:set|change|with|new)-\S+|\$\S+|>[^\s>]+|[^\s:>]+>|[^\s>]+>[^\s>]+|\+[^\s+]+\+|[^\s?]+\?|\?[^\s?]+|[^\s>]+>>|>>[^\s>]+|[^\s<]+<<|\([^\s()]+\)|[^\s!]+!|[^\s*]\S*\*|[^\s.]\S*\.)(?=\s|$)/
-/(?:^|\s)(?:[-\dA-Z]+#?)?:{1,2}\s+(?:;|(?!;))\S+(?=\s|$)/
+/(?:^|\s)(?:[-\dA-Z]+#?)?:{1,2}\s+(?:;\S+|(?!;)\S+)(?=\s|$)/
 /\s(?:;|:>)(?=\s|$)/
 /(?:^|\s)[^\s"]\S*(?=\s|$)/
 /"(?:\\\S|[^"\\])*"/
-/(?:^|\s)!(?: .*|$)/
+/(?:^|\s)(?:! .*|!$)/
 /(?:^|\s)\/\*\s[^]*?\*\/(?=\s|$)/
 /(?:^|\s)!\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?=\s|$)/
 /(?:^|\s)[-+]?\d+(?=\s|$)/
@@ -824,14 +844,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|\s)[-+]?\d+\/\d+\.?(?=\s|$)/
 /(?:^|\s)\+?\d+\+\d+\/\d+(?=\s|$)/
 /(?:^|\s)-\d+-\d+\/\d+(?=\s|$)/
-/(?:^|\s)[-+]?\d*(?:\.\d+|\d\.\d*|\d)(?:E[-+]?\d+)?(?=\s|$)/i
+/(?:^|\s)[-+]?(?:\d*\.\d+|\d+\.\d*|\d+)(?:E[-+]?\d+)?(?=\s|$)/i
 /(?:^|\s)NAN:\s+[\dA-Fa-f]+(?=\s|$)/
 /(?:^|\s)[-+]?0(?:B1\.[01]*|O1\.[0-7]*|D1\.\d*|X1\.[\dA-F]*)P\d+(?=\s|$)/i
 /\\\S/
 /[$()*+.?[\]\^{|}]/
 /\\\S|%\w|\//
-/(?:^|\s)STRING:\s+\S+(?:|\r)\n.*(?:|\r)\n\s*;(?=\s|$)/
-/(?:^|\s)HEREDOC:\s+\S+(?:|\r)\n.*(?:|\r)\n\s*\S+(?=\s|$)/
+/(?:^|\s)STRING:\s+\S+(?:\n|\r\n).*(?:\n|\r\n)\s*;(?=\s|$)/
+/(?:^|\s)HEREDOC:\s+\S+(?:\n|\r\n).*(?:\n|\r\n)\s*\S+(?=\s|$)/
 /(?:^|\s)\[(?:======\[\s[^]*?\]======|=====\[\s[^]*?\]=====|====\[\s[^]*?\]====|===\[\s[^]*?\]===|==\[\s[^]*?\]==|=\[\s[^]*?\]=|\[\s[^]*?\])\](?=\s|$)/
 /(?:^|\s)(?:call|execute|eval)?\((?=\s)/
 /\s--(?=\s)/
@@ -844,21 +864,21 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:TODOS?|FIX(?:MES?)?|NOTES?|BUGS?|XX+|HACKS?|WARN(?:ING)?|\?{2,}|!{2,})\b/
 /\/[dimrs]+(?:-[dimrs]+)?/
 /\s[^\s:]+/
-/(?:|\r)\n\s*;(?=\s|$)/
+/(?:\n|\r\n)\s*;(?=\s|$)/
 /\b(?:allow|function|if|match|null|return|rules_version|service)\b/
-/&&|\|\||[!<=>]=?|[-%*+/=]|\bi(?:n|s)\b/
+/&&|\|\||[!<=>]=?|[-%*+/=]|\b(?:in|is)\b/
 /(?:^|[\s(),])(?:\/(?:[\w\xa0-\uffff]+|\{[\w\xa0-\uffff]+(?:=\*\*)?\}|\$\([\w.\xa0-\uffff]+\)))+/
 /\ballow\s+[a-z]+(?:\s*,\s*[a-z]+)*(?=\s*[:;])/
 /\//
 /\{[\w\xa0-\uffff]+(?:=\*\*)?\}|\$\([\w.\xa0-\uffff]+\)/
 /\*\*/
 /[$().{}]/
-/[$A-Z_\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*=\s*(?:FUNCTION(?:(?<!\w)\w|(?<=\w)(?!\w))|(?:\([^()]*\)(?:\s*:\s*\w+)?|[$A-Z_\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/i
+/[$A-Z_\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*=\s*(?:FUNCTION\b|(?:\([^()]*\)(?:\s*:\s*\w+)?|[$A-Z_\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/i
 /\{\||\|\}/
 /\b(?:[Nn]umber|[Ss]tring|[Bb]oolean|Function|any|mixed|null|void)\b/
 /(?:^|[^$]\b)(?:type|opaque|declare|Class)\b(?!\$)/
 /(?:^|[^$]\B)\$(?:await|Diff|Exact|Keys|ObjMap|PropertyType|Shape|Record|Supertype|Subtype|Enum)\b(?!\$)/
-/\.(?:TRU|FALS)E\.(?:_\w+)?/i
+/\.(?:TRUE|FALSE)\.(?:_\w+)?/i
 /(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:[DE][-+]?\d+)?(?:_\w+)?/i
 /\(\/|\/\)|[&(),:;]/
 /[BOZ](?:"[\dA-F]+"|'[\dA-F]+')/i
@@ -889,10 +909,10 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /"(?:(?!"|\$\{)[^\\]|\\.|\$\{(?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\(\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*?\})*"|'(?:(?!'|\$\{)[^\\]|\\.|\$\{(?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\(\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*?\})*'/
 /(?:^|[^\\])(?:\\\\)*\$\{(?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\((?:[^"'()<]|\(\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)|<(?!#--)|<#--(?:[^-]|-(?!->))*-->|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*?\}/
 /\b(?:if|else|switch|case|default|break|for|repeat|while|do|until|continue|exit|return|globalvar|var|enum)\b/
-/(?:\b0X[\dA-F]+|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?)[FLU]*/i
+/(?:\b0X[\dA-F]+|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?)[FLU]*/i
 /[-%+=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|~^]|\b(?:or|and|not|with|at|xor|not)\b/
-/\b(?:self|other|all|noone|global|local|undefined|pointer_(?:invalid|null)|action_(?:stop|restart|continue|reverse)|pi|GM_build_date|GM_version|timezone_(?:local|utc)|gamespeed_(?:fp|microsecond)s|ev_(?:create|destroy|step|alarm|keyboard|mouse|collision|other|draw|draw_(?:begin|end|pre|post)|keypress|keyrelease|trigger|(?:left|right|middle|no)_button|(?:left|right|middle)_press|(?:left|right|middle)_release|mouse_(?:enter|leave|wheel_up|wheel_down)|global_(?:left|right|middle)_button|global_(?:left|right|middle)_press|global_(?:left|right|middle)_release|joystick(?:1|2)_(?:left|right|up|down|button1|button2|button3|button4|button5|button6|button7|button8)|outside|boundary|game_start|game_end|room_start|room_end|no_more_lives|animation_end|end_of_path|no_more_health|user\d|step_(?:normal|begin|end)|gui|gui_begin|gui_end)|vk_(?:nokey|anykey|enter|return|shift|control|alt|escape|space|backspace|tab|pause|printscreen|left|right|up|down|home|end|delete|insert|pageup|pagedown|f\d|numpad\d|divide|multiply|subtract|add|decimal|lshift|lcontrol|lalt|rshift|rcontrol|ralt)|mb_(?:any|none|left|right|middle)|c_(?:aqua|black|blue|dkgray|fuchsia|gray|green|lime|ltgray|maroon|navy|olive|purple|red|silver|teal|white|yellow|orange)|fa_(?:left|center|right|top|middle|bottom|readonly|hidden|sysfile|volumeid|directory|archive)|pr_(?:pointlist|linelist|linestrip|trianglelist|trianglestrip|trianglefan)|bm_(?:complex|normal|add|max|subtract|zero|one|src_colour|inv_src_colour|src_color|inv_src_color|src_alpha|inv_src_alpha|dest_alpha|inv_dest_alpha|dest_colour|inv_dest_colour|dest_color|inv_dest_color|src_alpha_sat)|audio_(?:falloff_(?:none|inverse_distance|inverse_distance_clamped|linear_distance|linear_distance_clamped|exponent_distance|exponent_distance_clamped)|old_system|new_system|mono|stereo|3d)|cr_(?:default|none|arrow|cross|beam|size_nesw|size_ns|size_nwse|size_we|uparrow|hourglass|drag|appstart|handpoint|size_all)|spritespeed_framesper(?:second|gameframe)|asset_(?:object|unknown|sprite|sound|room|path|script|font|timeline|tiles|shader)|ds_type_(?:map|list|stack|queue|grid|priority)|ef_(?:explosion|ring|ellipse|firework|smoke|smokeup|star|spark|flare|cloud|rain|snow)|pt_shape_(?:pixel|disk|square|line|star|circle|ring|sphere|flare|spark|explosion|cloud|smoke|snow)|ps_(?:distr|shape)_(?:linear|gaussian|invgaussian|rectangle|ellipse|diamond|line)|ty_(?:real|string)|dll_(?:cde|cdec|stdcal)l|matrix_(?:view|projection|world)|os_(?:win32|windows|macosx|ios|android|linux|unknown|winphone|win8native|psvita|ps4|xboxone|ps3|uwp)|browser_(?:not_a_browser|unknown|ie|firefox|chrome|safari|safari_mobile|opera|tizen|windows_store|ie_mobile)|device_ios_(?:unknown|iphone|iphone_retina|ipad|ipad_retina|iphone5|iphone6|iphone6plus)|device_(?:emulator|tablet)|display_(?:landscape|landscape_flipped|portrait|portrait_flipped)|of_challenge_(?:win|lose|tie)|leaderboard_type_(?:number|time_mins_secs)|cmpfunc_(?:never|less|equal|lessequal|greater|notequal|greaterequal|always)|cull_(?:noculling|clockwise|counterclockwise)|lighttype_(?:dir|point)|iap_(?:ev_storeload|ev_product|ev_purchase|ev_consume|ev_restore|storeload_ok|storeload_failed|status_uninitialised|status_unavailable|status_loading|status_available|status_processing|status_restoring|failed|unavailable|available|purchased|canceled|refunded)|fb_login_(?:default|fallback_to_webview|no_fallback_to_webview|forcing_webview|use_system_account|forcing_safari)|phy_joint_(?:anchor_1_x|anchor_1_y|anchor_2_x|anchor_2_y|reaction_force_x|reaction_force_y|reaction_torque|motor_speed|angle|motor_torque|max_motor_torque|translation|speed|motor_force|max_motor_force|length_1|length_2|damping_ratio|frequency|lower_angle_limit|upper_angle_limit|angle_limits|max_length|max_torque|max_force)|phy_debug_render_(?:aabb|collision_pairs|coms|core_shapes|joints|obb|shapes)|phy_particle_flag_(?:water|zombie|wall|spring|elastic|viscous|powder|tensile|colourmixing|colormixing)|phy_particle_group_flag_(?:sol|rig)id|phy_particle_data_flag_(?:typeflags|position|velocity|colour|color|category)|achievement_(?:our_info|friends_info|leaderboard_info|info|filter_(?:all_players|friends_only|favorites_only)|type_challenge|type_score_challenge|pic_loaded|show_(?:ui|profile|leaderboard|achievement|bank|friend_picker|purchase_prompt))|network_(?:socket_(?:tcp|udp|bluetooth)|type_(?:connect|disconnect|data|non_blocking_connect)|config_(?:connect_timeout|use_non_blocking_socket|enable_reliable_udp|disable_reliable_udp))|buffer_(?:fixed|grow|wrap|fast|vbuffer|network|u8|s8|u16|s16|u32|s32|u64|f16|f32|f64|bool|text|string|seek_start|seek_relative|seek_end|generalerror|outofspace|outofbounds|invalidtype)|gp_(?:face\d|shoulderl|shoulderr|shoulderlb|shoulderrb|select|start|stickl|stickr|padu|padd|padl|padr|axislh|axislv|axisrh|axisrv)|ov_(?:friends|community|players|settings|gamegroup|achievements)|lb_sort_(?:none|ascending|descending)|lb_disp_(?:none|numeric|time_sec|time_ms)|ugc_(?:result_success|filetype_(?:community|microtrans)|visibility_(?:public|friends_only|private)|query_RankedBy(?:Vote|PublicationDate|Trend|NumTimesReported|TotalVotesAsc|VotesUp|TextSearch)|query_(?:AcceptedForGameRankedByAcceptanceDate|FavoritedByFriendsRankedByPublicationDate|CreatedByFriendsRankedByPublicationDate|NotYetRated)|sortorder_CreationOrder(?:De|A)sc|sortorder_(?:TitleAsc|LastUpdatedDesc|SubscriptionDateDesc|VoteScoreDesc|ForModeration)|list_(?:Published|VotedOn|VotedUp|VotedDown|WillVoteLater|Favorited|Subscribed|UsedOrPlayed|Followed)|match_(?:Items|Items_Mtx|Items_ReadyToUse|Collections|Artwork|Videos|Screenshots|AllGuides|WebGuides|IntegratedGuides|UsableInGame|ControllerBindings))|vertex_usage_(?:position|colour|color|normal|texcoord|textcoord|blendweight|blendindices|psize|tangent|binormal|fog|depth|sample)|vertex_type_(?:float\d|colour|color|ubyte4)|layerelementtype_(?:undefined|background|instance|oldtilemap|sprite|tilemap|particlesystem|tile)|tile_(?:rotate|flip|mirror|index_mask)|input_type|se_(?:chorus|compressor|echo|equalizer|flanger|gargle|none|reverb)|text_type|(?:obj|scr|spr|rm)\w+)\b/
-/\b(?:(?:x|y)(?:previous|start)??|(?:h|v)speed|direction|speed|friction|gravity|gravity_direction|path_(?:index|position|positionprevious|speed|scale|orientation|endaction)|object_index|id|solid|persistent|mask_index|instance_(?:count|id)|alarm|timeline_(?:index|position|speed|running|loop)|visible|sprite_(?:index|width|height|xoffset|yoffset)|image_(?:number|index|speed|depth|xscale|yscale|angle|alpha|blend)|bbox_(?:left|right|top|bottom)|layer|phy_(?:rotation|(?:position|linear_velocity|speed|com|collision|col_normal)_(?:x|y)|angular_(?:velocity|damping)|position_(?:x|y)previous|speed|linear_damping|bullet|fixed_rotation|active|mass|inertia|dynamic|kinematic|sleeping|collision_points)|working_directory|webgl_enabled|view_(?:(?:y|x|w|h)view|(?:y|x|w|h)port|(?:v|h)(?:speed|border)|visible|surface_id|object|enabled|current|angle)|undefined|transition_(?:steps|kind|color)|temp_directory|show_(?:score|lives|health)|secure_mode|score|room_(?:width|speed|persistent|last|height|first|caption)|room|pointer_(?:null|invalid)|os_(?:version|type|device|browser)|mouse_(?:y|x|lastbutton|button)|lives|keyboard_(?:string|lastkey|lastchar|key)|iap_data|health|gamemaker_(?:version|registered|pro)|game_(?:save|project|display)_(?:id|name)|fps_real|fps|event_(?:type|object|number|action)|error_(?:occurred|last)|display_aa|delta_time|debug_mode|cursor_sprite|current_(?:year|weekday|time|second|month|minute|hour|day)|caption_(?:score|lives|health)|browser_(?:width|height)|background_(?:yscale|y|xscale|x|width|vtiled|vspeed|visible|showcolour|showcolor|index|htiled|hspeed|height|foreground|colour|color|blend|alpha)|async_load|application_surface|argument(?:_relitive|_count|\d)|argument|global|local|self|other)\b/
+/\b(?:self|other|all|noone|global|local|undefined|pointer_(?:invalid|null)|action_(?:stop|restart|continue|reverse)|pi|GM_build_date|GM_version|timezone_(?:local|utc)|gamespeed_(?:fps|microseconds)|ev_(?:create|destroy|step|alarm|keyboard|mouse|collision|other|draw|draw_(?:begin|end|pre|post)|keypress|keyrelease|trigger|(?:left|right|middle|no)_button|(?:left|right|middle)_press|(?:left|right|middle)_release|mouse_(?:enter|leave|wheel_up|wheel_down)|global_(?:left|right|middle)_button|global_(?:left|right|middle)_press|global_(?:left|right|middle)_release|joystick(?:1|2)_(?:left|right|up|down|button1|button2|button3|button4|button5|button6|button7|button8)|outside|boundary|game_start|game_end|room_start|room_end|no_more_lives|animation_end|end_of_path|no_more_health|user\d|step_(?:normal|begin|end)|gui|gui_begin|gui_end)|vk_(?:nokey|anykey|enter|return|shift|control|alt|escape|space|backspace|tab|pause|printscreen|left|right|up|down|home|end|delete|insert|pageup|pagedown|f\d|numpad\d|divide|multiply|subtract|add|decimal|lshift|lcontrol|lalt|rshift|rcontrol|ralt)|mb_(?:any|none|left|right|middle)|c_(?:aqua|black|blue|dkgray|fuchsia|gray|green|lime|ltgray|maroon|navy|olive|purple|red|silver|teal|white|yellow|orange)|fa_(?:left|center|right|top|middle|bottom|readonly|hidden|sysfile|volumeid|directory|archive)|pr_(?:pointlist|linelist|linestrip|trianglelist|trianglestrip|trianglefan)|bm_(?:complex|normal|add|max|subtract|zero|one|src_colour|inv_src_colour|src_color|inv_src_color|src_alpha|inv_src_alpha|dest_alpha|inv_dest_alpha|dest_colour|inv_dest_colour|dest_color|inv_dest_color|src_alpha_sat)|audio_(?:falloff_(?:none|inverse_distance|inverse_distance_clamped|linear_distance|linear_distance_clamped|exponent_distance|exponent_distance_clamped)|old_system|new_system|mono|stereo|3d)|cr_(?:default|none|arrow|cross|beam|size_nesw|size_ns|size_nwse|size_we|uparrow|hourglass|drag|appstart|handpoint|size_all)|spritespeed_framesper(?:second|gameframe)|asset_(?:object|unknown|sprite|sound|room|path|script|font|timeline|tiles|shader)|ds_type_(?:map|list|stack|queue|grid|priority)|ef_(?:explosion|ring|ellipse|firework|smoke|smokeup|star|spark|flare|cloud|rain|snow)|pt_shape_(?:pixel|disk|square|line|star|circle|ring|sphere|flare|spark|explosion|cloud|smoke|snow)|ps_(?:distr|shape)_(?:linear|gaussian|invgaussian|rectangle|ellipse|diamond|line)|ty_(?:real|string)|dll_(?:cdel|cdecl|stdcall)|matrix_(?:view|projection|world)|os_(?:win32|windows|macosx|ios|android|linux|unknown|winphone|win8native|psvita|ps4|xboxone|ps3|uwp)|browser_(?:not_a_browser|unknown|ie|firefox|chrome|safari|safari_mobile|opera|tizen|windows_store|ie_mobile)|device_ios_(?:unknown|iphone|iphone_retina|ipad|ipad_retina|iphone5|iphone6|iphone6plus)|device_(?:emulator|tablet)|display_(?:landscape|landscape_flipped|portrait|portrait_flipped)|of_challenge_(?:win|lose|tie)|leaderboard_type_(?:number|time_mins_secs)|cmpfunc_(?:never|less|equal|lessequal|greater|notequal|greaterequal|always)|cull_(?:noculling|clockwise|counterclockwise)|lighttype_(?:dir|point)|iap_(?:ev_storeload|ev_product|ev_purchase|ev_consume|ev_restore|storeload_ok|storeload_failed|status_uninitialised|status_unavailable|status_loading|status_available|status_processing|status_restoring|failed|unavailable|available|purchased|canceled|refunded)|fb_login_(?:default|fallback_to_webview|no_fallback_to_webview|forcing_webview|use_system_account|forcing_safari)|phy_joint_(?:anchor_1_x|anchor_1_y|anchor_2_x|anchor_2_y|reaction_force_x|reaction_force_y|reaction_torque|motor_speed|angle|motor_torque|max_motor_torque|translation|speed|motor_force|max_motor_force|length_1|length_2|damping_ratio|frequency|lower_angle_limit|upper_angle_limit|angle_limits|max_length|max_torque|max_force)|phy_debug_render_(?:aabb|collision_pairs|coms|core_shapes|joints|obb|shapes)|phy_particle_flag_(?:water|zombie|wall|spring|elastic|viscous|powder|tensile|colourmixing|colormixing)|phy_particle_group_flag_(?:solid|rigid)|phy_particle_data_flag_(?:typeflags|position|velocity|colour|color|category)|achievement_(?:our_info|friends_info|leaderboard_info|info|filter_(?:all_players|friends_only|favorites_only)|type_challenge|type_score_challenge|pic_loaded|show_(?:ui|profile|leaderboard|achievement|bank|friend_picker|purchase_prompt))|network_(?:socket_(?:tcp|udp|bluetooth)|type_(?:connect|disconnect|data|non_blocking_connect)|config_(?:connect_timeout|use_non_blocking_socket|enable_reliable_udp|disable_reliable_udp))|buffer_(?:fixed|grow|wrap|fast|vbuffer|network|u8|s8|u16|s16|u32|s32|u64|f16|f32|f64|bool|text|string|seek_start|seek_relative|seek_end|generalerror|outofspace|outofbounds|invalidtype)|gp_(?:face\d|shoulderl|shoulderr|shoulderlb|shoulderrb|select|start|stickl|stickr|padu|padd|padl|padr|axislh|axislv|axisrh|axisrv)|ov_(?:friends|community|players|settings|gamegroup|achievements)|lb_sort_(?:none|ascending|descending)|lb_disp_(?:none|numeric|time_sec|time_ms)|ugc_(?:result_success|filetype_(?:community|microtrans)|visibility_(?:public|friends_only|private)|query_RankedBy(?:Vote|PublicationDate|Trend|NumTimesReported|TotalVotesAsc|VotesUp|TextSearch)|query_(?:AcceptedForGameRankedByAcceptanceDate|FavoritedByFriendsRankedByPublicationDate|CreatedByFriendsRankedByPublicationDate|NotYetRated)|sortorder_CreationOrder(?:Desc|Asc)|sortorder_(?:TitleAsc|LastUpdatedDesc|SubscriptionDateDesc|VoteScoreDesc|ForModeration)|list_(?:Published|VotedOn|VotedUp|VotedDown|WillVoteLater|Favorited|Subscribed|UsedOrPlayed|Followed)|match_(?:Items|Items_Mtx|Items_ReadyToUse|Collections|Artwork|Videos|Screenshots|AllGuides|WebGuides|IntegratedGuides|UsableInGame|ControllerBindings))|vertex_usage_(?:position|colour|color|normal|texcoord|textcoord|blendweight|blendindices|psize|tangent|binormal|fog|depth|sample)|vertex_type_(?:float\d|colour|color|ubyte4)|layerelementtype_(?:undefined|background|instance|oldtilemap|sprite|tilemap|particlesystem|tile)|tile_(?:rotate|flip|mirror|index_mask)|input_type|se_(?:chorus|compressor|echo|equalizer|flanger|gargle|none|reverb)|text_type|(?:obj|scr|spr|rm)\w+)\b/
+/\b(?:x|y|(?:x|y)(?:previous|start)|(?:h|v)speed|direction|speed|friction|gravity|gravity_direction|path_(?:index|position|positionprevious|speed|scale|orientation|endaction)|object_index|id|solid|persistent|mask_index|instance_(?:count|id)|alarm|timeline_(?:index|position|speed|running|loop)|visible|sprite_(?:index|width|height|xoffset|yoffset)|image_(?:number|index|speed|depth|xscale|yscale|angle|alpha|blend)|bbox_(?:left|right|top|bottom)|layer|phy_(?:rotation|(?:position|linear_velocity|speed|com|collision|col_normal)_(?:x|y)|angular_(?:velocity|damping)|position_(?:x|y)previous|speed|linear_damping|bullet|fixed_rotation|active|mass|inertia|dynamic|kinematic|sleeping|collision_points)|working_directory|webgl_enabled|view_(?:(?:y|x|w|h)view|(?:y|x|w|h)port|(?:v|h)(?:speed|border)|visible|surface_id|object|enabled|current|angle)|undefined|transition_(?:steps|kind|color)|temp_directory|show_(?:score|lives|health)|secure_mode|score|room_(?:width|speed|persistent|last|height|first|caption)|room|pointer_(?:null|invalid)|os_(?:version|type|device|browser)|mouse_(?:y|x|lastbutton|button)|lives|keyboard_(?:string|lastkey|lastchar|key)|iap_data|health|gamemaker_(?:version|registered|pro)|game_(?:save|project|display)_(?:id|name)|fps_real|fps|event_(?:type|object|number|action)|error_(?:occurred|last)|display_aa|delta_time|debug_mode|cursor_sprite|current_(?:year|weekday|time|second|month|minute|hour|day)|caption_(?:score|lives|health)|browser_(?:width|height)|background_(?:yscale|y|xscale|x|width|vtiled|vspeed|visible|showcolour|showcolor|index|htiled|hspeed|height|foreground|colour|color|blend|alpha)|async_load|application_surface|argument(?:_relitive|_count|\d)|argument|global|local|self|other)\b/
 /;.*|\B\(.*?\)\B/
 /\b[GM]\d+(?:\.\d+)?\b/
 /\b[A-Z]/
@@ -904,8 +924,8 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /->|:=|&&|\|\||<<|>>|[-!%&*+/<=>|]=?|[~^]/
 /[(),.:;[\]{}]/
 /@?(?:(?:"(?:(?!")[^\n\\]|\\[^])*"|'(?:(?!')[^\n\\]|\\[^])*')(?!"|')|"""(?:[^\\]|\\[^])*?""")/
-/(?:^(?:(?:class_name|class|extends)[\t ]|export\()|\bas[\t ]|(?:\b(?:const|var)[\t ]|[(,])[\t ]*\w+[\t ]*:|->)[\t ]*[A-Z_a-z]\w*/m
-/(?:\b0b[01_]+|\b0x[\dA-F_a-f]+|(?:\b\d[\d_]*(?:\.[\d_]*)?|\B\.[\d_]+)(?:e[-+]?[\d_]+)?)\b/
+/(?:^(?:class_name|class|extends)[\t ]+|^export\([\t ]*|\bas[\t ]+|(?:\b(?:const|var)[\t ]|[(,])[\t ]*\w+[\t ]*:[\t ]*|->[\t ]*)[A-Z_a-z]\w*/m
+/\b0b[01_]+\b|\b0x[\dA-F_a-f]+\b|(?:\b\d[\d_]*(?:\.[\d_]*)?|\B\.[\d_]+)(?:e[-+]?[\d_]+)?\b/
 /\b(?:INF|NAN|PI|TAU)\b/
 /^\s*\d+ +(?:@\w[^\0-\x1f@\x7f\xff-\uffff]*@ +)?\w+ +.+/m
 /^\s*\d+ +(?:@\w[^\0-\x1f@\x7f\xff-\uffff]*@ +)?\w+/m
@@ -921,7 +941,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:\r?\n|\r)[\t ]*\|.+\|.*/
 /^[\t ]+(?:'ach|'a|'ej|7|a|A tak\xe9|A taktie\u017e|A tie\u017e|A z\xe1rove\u0148|Aber|Ac|Adott|Akkor|Ak|Aleshores|Ale|Ali|Allora|Alors|Als|Ama|Amennyiben|Amikor|Ampak|an|AN|Ananging|And y'all|And|Angenommen|Anrhegedig a|An|Apabila|At\xe8s|Atesa|Atunci|Avast!|Aye|A|awer|Bagi|Banjur|Bet|Bi\u1ebft|Blimey!|Buh|But at the end of the day I reckon|But y'all|But|BUT|Cal|C\xe2nd|Cando|Cand|Ce|Cuando|\u010ce|\xd0a \xf0e|\xd0a|Dadas|Dada|Dados|Dado|DaH ghu' bejlu'|dann|Dann|Dano|Dan|Dar|Dat fiind|Data|Date fiind|Date|Dati fiind|Dati|Da\u0163i fiind|Da\u021bi fiind|Dato|DEN|Den youse gotta|Dengan|De|Diberi|Diyelim ki|Donada|Donat|Donita\u0135o|Do|Dun|Duota|\xd0urh|Eeldades|Ef|E\u011fer ki|Entao|Ent\xe3o|Ent\xf3n|Entonces|En|Epi|E|\xc9s|Etant donn\xe9e|Etant donn\xe9|Et|\xc9tant donn\xe9es|\xc9tant donn\xe9e|\xc9tant donn\xe9|Etant donn\xe9es|Etant donn\xe9s|\xc9tant donn\xe9s|Fakat|Gangway!|Gdy|Gegeben seien|Gegeben sei|Gegeven|Gegewe|ghu' noblu'|Gitt|Given y'all|Given|Givet|Givun|Ha|Cho|I CAN HAZ|In|Ir|It's just unbelievable|I|Ja|Je\u015bli|Je\u017celi|Kadar|Kada|Kad|Kai|Kaj|Kdy\u017e|Ke\u010f|Kemudian|Ketika|Khi|Kiedy|Ko|Kuid|Kui|Kun|Lan|latlh|Le sa a|Let go and haul|Le|L\xe8 sa a|L\xe8|Logo|Lorsqu'<|Lorsque|m\xe4|Maar|Mais|Maj\u0105c|Majd|Maka|Manawa|Mas|Ma|Menawa|Men|Mutta|Nalikaning|Nalika|Nanging|N\xe5r|N\xe4r|Nato|Nh\u01b0ng|Niin|Njuk|O zaman|Og|Och|Oletetaan|Onda|Ond|Oraz|Pak|Pero|Per\xf2|Podano|Pokia\u013e|Pokud|Potem|Potom|Privzeto|Pryd|qaSDI'|Quando|Quand|Quan|S\xe5|Sed|Se|Siis|Sipoze ke|Sipoze Ke|Sipoze|Si|\u015ei|\u0218i|Soit|Stel|Tada|Tad|Takrat|Tak|Tapi|Ter|Tetapi|Tha the|Tha|Then y'all|Then|Th\xec|Thurh|Toda|Too right|ugeholl|Und|Un|V\xe0|vaj|Vendar|Ve|wann|Wanneer|WEN|Wenn|When y'all|When|Wtedy|Wun|Y'know|Yeah nah|Yna|Youse know like when|Youse know when youse got|Y|Za predpokladu|Za p\u0159edpokladu|Zadani|Zadano|Zadan|Zadate|Zadato|Zak\u0142adaj\u0105c|Zaradi|Zatati|\xdea \xfee|\xdea|\xde\xe1|\xdeegar|\xdeurh|\u0391\u03bb\u03bb\u03ac|\u0394\u03b5\u03b4\u03bf\u03bc\u03ad\u03bd\u03bf\u03c5|\u039a\u03b1\u03b9|\u038c\u03c4\u03b1\u03bd|\u03a4\u03cc\u03c4\u03b5|\u0410 \u0442\u0430\u043a\u043e\u0436|\u0410\u0433\u0430\u0440|\u0410\u043b\u0435|\u0410\u043b\u0438|\u0410\u043c\u043c\u043e|\u0410|\u04d8\u0433\u04d9\u0440|\u04d8\u0439\u0442\u0438\u043a|\u04d8\u043c\u043c\u0430|\u0411\u0438\u0440\u043e\u043a|\u0412\u0430|\u0412\u04d9|\u0414\u0430\u0434\u0435\u043d\u043e|\u0414\u0430\u043d\u043e|\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c|\u0415\u0441\u043b\u0438|\u0417\u0430\u0434\u0430\u0442\u0435|\u0417\u0430\u0434\u0430\u0442\u0438|\u0417\u0430\u0434\u0430\u0442\u043e|\u0418|\u0406|\u041a \u0442\u043e\u043c\u0443 \u0436\u0435|\u041a\u0430\u0434\u0430|\u041a\u0430\u0434|\u041a\u043e\u0433\u0430\u0442\u043e|\u041a\u043e\u0433\u0434\u0430|\u041a\u043e\u043b\u0438|\u041b\u04d9\u043a\u0438\u043d|\u041b\u0435\u043a\u0438\u043d|\u041d\u04d9\u0442\u0438\u0497\u04d9\u0434\u04d9|\u041d\u0435\u0445\u0430\u0439|\u041d\u043e|\u041e\u043d\u0434\u0430|\u041f\u0440\u0438\u043f\u0443\u0441\u0442\u0438\u043c\u043e, \u0449\u043e|\u041f\u0440\u0438\u043f\u0443\u0441\u0442\u0438\u043c\u043e|\u041f\u0443\u0441\u0442\u044c|\u0422\u0430\u043a\u0436\u0435|\u0422\u0430|\u0422\u043e\u0433\u0434\u0430|\u0422\u043e\u0434\u0456|\u0422\u043e|\u0423\u043d\u0434\u0430|\u04ba\u04d9\u043c|\u042f\u043a\u0449\u043e|\u05d0\u05d1\u05dc|\u05d0\u05d6\u05d9|\u05d0\u05d6|\u05d1\u05d4\u05d9\u05e0\u05ea\u05df|\u05d5\u05d2\u05dd|\u05db\u05d0\u05e9\u05e8|\u0622\u0646\u06af\u0627\u0647|\u0627\u0630\u0627\u064b|\u0627\u06af\u0631|\u0627\u0645\u0627|\u0627\u0648\u0631|\u0628\u0627 \u0641\u0631\u0636|\u0628\u0627\u0644\u0641\u0631\u0636|\u0628\u0641\u0631\u0636|\u067e\u06be\u0631|\u062a\u0628|\u062b\u0645|\u062c\u0628|\u0639\u0646\u062f\u0645\u0627|\u0641\u0631\u0636 \u06a9\u06cc\u0627|\u0644\u0643\u0646|\u0644\u06cc\u06a9\u0646|\u0645\u062a\u0649|\u0647\u0646\u06af\u0627\u0645\u06cc|\u0648|\u0905\u0917\u0930|\u0914\u0930|\u0915\u0926\u093e|\u0915\u093f\u0928\u094d\u0924\u0941|\u091a\u0942\u0902\u0915\u093f|\u091c\u092c|\u0924\u0925\u093e|\u0924\u0926\u093e|\u0924\u092c|\u092a\u0930\u0928\u094d\u0924\u0941|\u092a\u0930|\u092f\u0926\u093f|\u0a05\u0a24\u0a47|\u0a1c\u0a26\u0a4b\u0a02|\u0a1c\u0a3f\u0a35\u0a47\u0a02 \u0a15\u0a3f|\u0a1c\u0a47\u0a15\u0a30|\u0a24\u0a26|\u0a2a\u0a30|\u0c05\u0c2a\u0c4d\u0c2a\u0c41\u0c21\u0c41|\u0c08 \u0c2a\u0c30\u0c3f\u0c38\u0c4d\u0c25\u0c3f\u0c24\u0c3f\u0c32\u0c4b|\u0c15\u0c3e\u0c28\u0c3f|\u0c1a\u0c46\u0c2a\u0c4d\u0c2a\u0c2c\u0c21\u0c3f\u0c28\u0c26\u0c3f|\u0c2e\u0c30\u0c3f\u0c2f\u0c41|\u0c86\u0ca6\u0cb0\u0cc6|\u0ca8\u0c82\u0ca4\u0cb0|\u0ca8\u0cbf\u0cd5\u0ca1\u0cbf\u0ca6|\u0cae\u0ca4\u0ccd\u0ca4\u0cc1|\u0cb8\u0ccd\u0ca5\u0cbf\u0ca4\u0cbf\u0caf\u0ca8\u0ccd\u0ca8\u0cc1|\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e43\u0e2b\u0e49|\u0e14\u0e31\u0e07\u0e19\u0e31\u0e49\u0e19|\u0e41\u0e15\u0e48|\u0e40\u0e21\u0e37\u0e48\u0e2d|\u0e41\u0e25\u0e30|\uadf8\ub7ec\uba74<|\uadf8\ub9ac\uace0<|\ub2e8<|\ub9cc\uc57d<|\ub9cc\uc77c<|\uba3c\uc800<|\uc870\uac74<|\ud558\uc9c0\ub9cc<|\u304b\u3064<|\u3057\u304b\u3057<|\u305f\u3060\u3057<|\u306a\u3089\u3070<|\u3082\u3057<|\u4e26\u4e14<|\u4f46\u3057<|\u4f46\u662f<|\u5047\u5982<|\u5047\u5b9a<|\u5047\u8a2d<|\u5047\u8bbe<|\u524d\u63d0<|\u540c\u65f6<|\u540c\u6642<|\u5e76\u4e14<|\u5f53<|\u7576<|\u800c\u4e14<|\u90a3\u4e48<|\u90a3\u9ebc<)(?=[\t ])/m
 /"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'/
-/<[^>]+?>/
+/<[^>]+>/
 /[^\n\r:]+:/
 /\|/
 /:[^\n\r]+/
@@ -937,7 +957,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:attribute|const|uniform|varying|buffer|shared|coherent|volatile|restrict|readonly|writeonly|atomic_uint|layout|centroid|flat|smooth|noperspective|patch|sample|break|continue|do|for|while|switch|case|default|if|else|subroutine|in|out|inout|float|double|int|void|bool|true|false|invariant|precise|discard|return|d?mat[234](?:x[234])?|[bdiu]?vec[234]|uint|lowp|mediump|highp|precision|[iu]?sampler[123]D|[iu]?samplerCube|sampler[12]DShadow|samplerCubeShadow|[iu]?sampler[12]DArray|sampler[12]DArrayShadow|[iu]?sampler2DRect|sampler2DRectShadow|[iu]?samplerBuffer|[iu]?sampler2DMS(?:Array)?|[iu]?samplerCubeArray|samplerCubeArrayShadow|[iu]?image[123]D|[iu]?image2DRect|[iu]?imageCube|[iu]?imageBuffer|[iu]?image[12]DArray|[iu]?imageCubeArray|[iu]?image2DMS(?:Array)?|struct|common|partition|active|asm|class|union|enum|typedef|template|this|resource|goto|inline|noinline|public|static|extern|external|interface|long|short|half|fixed|unsigned|superp|input|output|hvec[234]|fvec[234]|sampler3DRect|filter|sizeof|cast|namespace|using)\b/
 /\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go(?:to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b/
 /\b(?:_|iota|nil|true|false)\b/
-/(?:\b0X[\dA-F]+|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?)I?/i
+/(?:\b0X[\dA-F]+|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?)I?/i
 /[!%*/=^]=?|\+[+=]?|-[-=]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\./
 /\b(?:bool|byte|complex(?:64|128)|error|float(?:32|64)|rune|string|u?int(?:8|16|32|64)?|uintptr|append|cap|close|complex|copy|delete|imag|len|make|new|panic|print(?:ln)?|real|recover)\b/
 /"(?:\\[^]|(?!")[^\\])*"|'(?:\\[^]|(?!')[^\\])*'|\`(?:\\[^]|(?!\`)[^\\])*\`/
@@ -946,13 +966,13 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:directive|enum|extend|fragment|implements|input|interface|mutation|on|query|repeatable|scalar|schema|subscription|type|union)\b/
 /[!&=|]|\.{3}/
 /[!(),:=[\]{}]/
-/\b(?!ID(?:(?<!\w)\w|(?<=\w)(?!\w)))[A-Z][\dA-Z_]*\b/
-/"(?:""(?:[^"]|(?!""")")*""|(?:\\.|[^\n\r"\\])*)"(?=\s*[A-Z_])/i
-/"(?:""(?:[^"]|(?!""")")*""|(?:\\.|[^\n\r"\\])*)"/
+/\b(?!ID\b)[A-Z][\dA-Z_]*\b/
+/(?:"""(?:[^"]|(?!""")")*"""|"(?:\\.|[^\n\r"\\])*")(?=\s*[A-Z_])/i
+/"""(?:[^"]|(?!""")")*"""|"(?:\\.|[^\n\r"\\])*"/
 /@[A-Z_]\w*/i
 /[A-Z_]\w*(?=\s*(?:\((?:[^"()]|"(?:\\.|[^\n\r"\\])*")*\))?:)/i
-/(?:\b(?:enum|implements|interface|on|scalar|type|union)\s|&)\s*[A-Z_a-z]\w*/
-/(?:\bfragment\s+|\.{3}\s*(?!on(?:(?<!\w)\w|(?<=\w)(?!\w))))[A-Z_a-z]\w*/
+/(?:\b(?:enum|implements|interface|on|scalar|type|union)\s+|&\s*)[A-Z_a-z]\w*/
+/(?:\bfragment\s+|\.{3}\s*(?!on\b))[A-Z_a-z]\w*/
 /^"(?:"")?(?![]Unknown:\\1[])[^]+(?=[]Unknown:\\1[]$)/
 /^>(?:[\t ]*>)*/m
 /^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)(?:\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$))*/m
@@ -961,10 +981,10 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/
 /(?:^|[^\\])(?:\\{2})*(?:\b__(?:(?!_)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?))|_(?:(?!_)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+_)+__\b|\*\*(?:(?!\*)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?))|\*(?:(?!\*)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+\*)+\*\*)/
 /(?:^|[^\\])(?:\\{2})*(?:\b_(?:(?!_)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?))|__(?:(?!_)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+__)+_\b|\*(?:(?!\*)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?))|\*\*(?:(?!\*)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+\*\*)+\*)/
-/(?:^|[^\\])(?:\\{2})*~(?:~(?:(?!~)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+?~|(?:(?!~)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+?)~/
+/(?:^|[^\\])(?:\\{2})*(?:~~(?:(?!~)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+~~|~(?:(?!~)(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+~)/
 /(?:^|[^\\])(?:\\{2})*!?\[(?:(?!\])(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+\](?:\([^\s)]+(?:[\t ]+"(?:\\.|[^"\\])*")?\)| ?\[(?:(?!\])(?:\\.|[^\n\r\\]|(?:\n|\r\n?)(?!\n|\r\n?)))+\])/
 /(?:(?:^|\n)[\t ]*\n|(?:^|\r\n?)[\t ]*\r\n?)(?: {4}|\t).+(?:(?:\n|\r\n?)(?: {4}|\t).+)*/
-/\`(?:\`.+?\`|[^\n\r\`]+)\`/
+/\`\`.+?\`\`|\`[^\n\r\`]+\`/
 /^\`\`\`[^]*?^\`\`\`$/m
 /\S.*(?:\n|\r\n?)(?:==+|--+)(?=[\t ]*$)/m
 /^\s*#+.+/m
@@ -977,7 +997,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)\|?[\t ]*:?-{3,}:?[\t ]*(?:\|[\t ]*:?-{3,}:?[\t ]*)+\|?(?:\n|\r\n?)$/
 /^\|?(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+(?:\|(?:\\.|\`\`(?:[^\n\r\`]|\`(?!\`))+\`\`|\`[^\n\r\`]+\`|[^\n\r\\\\\`|])+)+\|?(?:\n|\r\n?|$)$/
 /\`\`\`/
-/(?:==+|--+)$/
+/==+$|--+$/
 /^#+|#+$/
 /^!?\[[^\]]+/
 /^..[^]+(?=..$)/
@@ -1014,7 +1034,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|[^#])\{(?:\{[^}]+\}|[^}])+\}/
 /\([^)]+\)/
 /\[[^\]]+\]/
-/[-\w:]+(?=\s*(?:!?=|[),]))/
+/[-\w:]+(?=\s*!?=|\s*[),])/
 /[(),=]/
 /=\s*(?:"(?:\\.|[^\n\r"\\])*"|[^\s)]+)/
 /(?:@\{[-\w]+\}|[-\w])+(?:\+_?)?(?=\s*:)/
@@ -1025,7 +1045,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:@\{[-\w]+\}|[^\s;@{}])(?:@\{[-\w]+\}|\((?:[^(){}]|\([^(){}]*\))*\)|[^();@{}])*?(?=\s*\{)/
 /@@?[-\w]+/
 /[;{]\s*[#.](?!\d)[-\w]+.*?(?=[(;])/
-/(?:^|[^\\])\/(?:\*[^]*?\*\/|\/.*)/
+/(?:^|[^\\])(?:\/\*[^]*?\*\/|\/\/.*)/
 /@(?:IF|ELSE(?: IF)?|FOR|EACH|WHILE|IMPORT|EXTEND|DEBUG|WARN|MIXIN|INCLUDE|FUNCTION|RETURN|CONTENT)/i
 /@[-\w]+(?:\([^()]+\)|[^(])*?(?=\s+[;{])/
 /(?=\S)[^();@{}]?(?:[^();@{}]|#\{\$[-\w]+\})+(?=\s*\{(?:\}|\s|[^}]+[:{][^}]+))/
@@ -1090,7 +1110,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[/\\]\d+|\S/
 /\{[^}]+\}/
 /\{\{![^]*?\}\}/
-/\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:[Ee][-+]?\d+)?/
+/\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+)?/
 /[^-\0-\x20$0-9?A-Z_a-z\x7f-\uffff]/
 /[^\s!"#\x25-\x2c/;<=>@[\\\]\^\`{|}~]+/
 /^\{\{\{?|\}\}\}?$/
@@ -1106,7 +1126,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /"(?:[^"\\]|\\(?:["&'\\abfnrtv]|\^[\x40-\x5b\]\^_]|NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|\d+|o[0-7]+|x[\dA-Fa-f]+)|\\\s+\\)*"/
 /(?:\r?\n|\r|^)\s*import\s+(?:qualified\s+)?[A-Z][\w']*(?:\.[A-Z][\w']*)*(?:\s+as\s+[A-Z][\w']*(?:\.[A-Z][\w']*)*)?(?:\s+hiding\b)?/m
 /\b(?:import|qualified|as|hiding)\b/
-/\b(?:this|(?:abstract|as|break|case|cast|catch|class|continue|default|do|dynamic|else|enum|extends|extern|from|for|function|if|implements|import|in|inline|interface|macro|new|null|override|public|private|return|static|super|switch|throw|to|try|typedef|using|var|while)(?!\.))\b/
+/\bthis\b|\b(?:abstract|as|break|case|cast|catch|class|continue|default|do|dynamic|else|enum|extends|extern|from|for|function|if|implements|import|in|inline|interface|macro|new|null|override|public|private|return|static|super|switch|throw|to|try|typedef|using|var|while)(?!\.)\b/
 /\.{3}|\+\+?|-[->]?|[!=]=?|&&?|\|\|?|<[<=]?|>[=>]?|[%*/~^]/
 /"(?:(?!")[^\\]|\\[^])*"|'(?:(?!')[^\\]|\\[^])*'/
 /~\/(?:[^\n\r/\\]|\\.)+\/[gimsu]*/
@@ -1116,7 +1136,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /(?:^|[^\\])\$(?:\w+|\{[^}]+\})/
 /^\$\w*/
 /(?:\/\/|#).*|\/\*[^]*?(?:\*\/|$)/
-/\b(?:0X[\dA-F]+\b|\d+\.?\d*(?:E[-+]?\d+)?)/i
+/\b0X[\dA-F]+\b|\b\d+\.?\d*(?:E[-+]?\d+)?/i
 /[=[\]{}]/
 /<<-?\w+[^]*?^\s*[]Unknown:\\1[]/m
 /[-\w]+(?=\s+\{)/
@@ -1131,11 +1151,11 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b(?:TERRAFORM|VAR|SELF|COUNT|MODULE|PATH|DATA|LOCAL)\b/i
 /[^-\0-\x20"0-9A-Z_a-z\x7f-\uffff]/
 /\b(?:TERRAFORM|VAR|SELF|COUNT|MODULE|PATH|DATA|LOCAL)\b\.[\w*]+/i
-/(?:(?:\b\d+\.?|\B\.\d)\d*(?:[Ee][-+]?\d+)?|\b0x[\dA-Fa-f]+)[FHLUfhlu]?\b/
+/(?:(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+)?|\b0x[\dA-Fa-f]+)[FHLUfhlu]?\b/
 /\b(?:AppendStructuredBuffer|BlendState|Buffer|ByteAddressBuffer|CompileShader|ComputeShader|ConsumeStructuredBuffer|DepthStencilState|DepthStencilView|DomainShader|GeometryShader|Hullshader|InputPatch|LineStream|OutputPatch|PixelShader|PointStream|RasterizerState|RenderTargetView|RWBuffer|RWByteAddressBuffer|RWStructuredBuffer|RWTexture(?:1D|1DArray|2D|2DArray|3D)|SamplerComparisonState|SamplerState|StructuredBuffer|Texture(?:1D|1DArray|2D|2DArray|2DMS|2DMSArray|3D|Cube|CubeArray)|TriangleStream|VertexShader)\b/
 /\b(?:asm|asm_fragment|auto|break|case|catch|cbuffer|centroid|char|class|column_major|compile|compile_fragment|const|const_cast|continue|default|delete|discard|do|dynamic_cast|else|enum|explicit|export|extern|for|friend|fxgroup|goto|groupshared|if|in|inline|inout|interface|line|lineadj|linear|long|matrix|mutable|namespace|new|nointerpolation|noperspective|operator|out|packoffset|pass|pixelfragment|point|precise|private|protected|public|register|reinterpret_cast|return|row_major|sample|sampler|shared|short|signed|sizeof|snorm|stateblock|stateblock_state|static|static_cast|string|struct|switch|tbuffer|technique|technique10|technique11|template|texture|this|throw|triangle|triangleadj|try|typedef|typename|uniform|union|unorm|unsigned|using|vector|vertexfragment|virtual|void|volatile|while)\b/
-/\b(?:bool|double|dword|float|half|int|min1(?:0floa|2in|6(?:floa|in|uin))t|uint)(?:[1-4](?:x[1-4])?)?\b/
-/^(?:POST|GET|PUT|DELETE|OPTIONS|PATCH|TRACE|CONNECT)\s(?:https?:\/|)\/\S+\sHTTP\/[\d.]+/m
+/\b(?:bool|double|dword|float|half|int|min(?:10float|12int|16(?:float|int|uint))|uint)(?:[1-4](?:x[1-4])?)?\b/
+/^(?:POST|GET|PUT|DELETE|OPTIONS|PATCH|TRACE|CONNECT)\s(?:https?:\/\/|\/)\S+\sHTTP\/[\d.]+/m
 /^HTTP\/1.[01] \d+.*/m
 /^[-\w]+:(?=.)/m
 /^(?:POST|GET|PUT|DELETE|OPTIONS|PATCH|TRACE|CONNECT)\b/
@@ -1158,15 +1178,15 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b\d{8,}\b/
 /\b\d{1,7}\b/
 /(?:\B'|REM)[^\n\r]*/i
-/\B#[\dA-F]+|\B\`[01]+|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?/i
+/\B#[\dA-F]+|\B\`[01]+|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?/i
 /\b(?:BEEP|BPS|CASE|CLEAR|CLK|CLO|CLP|CLS|CLT|CLV|CONT|COPY|ELSE|END|FILE|FILES|FOR|GOSUB|GSB|GOTO|IF|INPUT|KBD|LED|LET|LIST|LOAD|LOCATE|LRUN|NEW|NEXT|OUT|RIGHT|PLAY|POKE|PRINT|PWM|REM|RENUM|RESET|RETURN|RTN|RUN|SAVE|SCROLL|SLEEP|SRND|STEP|STOP|SUB|TEMPO|THEN|TO|UART|VIDEO|WAIT)(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /\b(?:ABS|ANA|ASC|BIN|BTN|DEC|END|FREE|HELP|HEX|I2CR|I2CW|IN|INKEY|LEN|LINE|PEEK|RND|SCR|SOUND|STR|TICK|USR|VER|VPEEK|ZER)(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /\B@\S+/
 /<[=>]?|>=?|\|\||&&|[-!&*+/=|~^]|\b(?:AND|NOT|OR)\b/i
 /[(),:;[\]]/
-/(?:\b\d+(?:R[\dA-Z]+|(?:\.\d+)?(?:E[-+]?\d+)?)|\.\d+)\b/i
+/\b(?:\d+R[\dA-Z]+|\d+(?:\.\d+)?(?:E[-+]?\d+)?)\b|\.\d+\b/i
 /\b(?:break|by|case|create|default|do|else|end|every|fail|global|if|initial|invocable|link|local|next|not|of|procedure|record|repeat|return|static|suspend|then|to|until|while)\b/
-/(?!\d)\w+(?=\s*(?:[({]|!\s*\[))/
+/(?!\d)\w+(?=\s*[({]|\s*!\s*\[)/
 /[-+]:(?!=)|(?:[%&/?@^]|\+\+?|--?|==?=?|~==?=?|\*\*?|\|\|\|?|<(?:->?|<?=?)|>>?=?)(?::=)?|:(?:=:?)?|[!.\\|~]/
 /[(),;[\]{}]/
 /"(?:(?!")[^\n\r\\_]|\\.|_(?!")(?:\r\n|[^]))*"|'(?:(?!')[^\n\r\\_]|\\.|_(?!')(?:\r\n|[^]))*'/
@@ -1178,20 +1198,20 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[(),.:;{}]/
 /"[^"]*"/
 /^[\t ]*(?:VOLUME|BOOK|PART(?! OF)|CHAPTER|SECTION|TABLE)\b.+/im
-/(?:^|[^-])\b(?:\d+(?:\.\d+)?(?:\^\d+)?\w*|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE)\b(?!-)/i
+/(?:^|[^-])(?:\b\d+(?:\.\d+)?(?:\^\d+)?\w*|\b(?:ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE))\b(?!-)/i
 /(?:^|[^-])\b(?:APPLYING TO|ARE|ATTACKING|ANSWERING|ASKING|BE(?:ING)?|BURNING|BUYING|CALLED|CARRIES|CARRY(?! OUT)|CARRYING|CLIMBING|CLOSING|CONCEAL(?:S|ING)?|CONSULTING|CONTAIN(?:S|ING)?|CUTTING|DRINKING|DROPPING|EATING|ENCLOS(?:ES?|ING)|ENTERING|EXAMINING|EXITING|GETTING|GIVING|GOING|HA(?:VE|S|VING)|HOLD(?:S|ING)?|IMPL(?:Y|IES)|INCORPORAT(?:ES?|ING)|INSERTING|IS|JUMPING|KISSING|LISTENING|LOCKING|LOOKING|MEAN(?:S|ING)?|OPENING|PROVID(?:ES?|ING)|PULLING|PUSHING|PUTTING|RELAT(?:ES?|ING)|REMOVING|SEARCHING|SEE(?:S|ING)?|SETTING|SHOWING|SINGING|SLEEPING|SMELLING|SQUEEZING|SWITCHING|SUPPORT(?:S|ING)?|SWEARING|TAKING|TASTING|TELLING|THINKING|THROWING|TOUCHING|TURNING|TYING|UNLOCK(?:S|ING)?|VAR(?:Y|IES|YING)|WAITING|WAKING|WAVING|WEAR(?:S|ING)?)\b(?!-)/i
 /(?:^|[^-])\b(?:AFTER|BEFORE|CARRY OUT|CHECK|CONTINUE THE ACTION|DEFINITION(?= *:)|DO NOTHING|ELSE|END (?:IF|UNLESS|THE STORY)|EVERY TURN|IF|INCLUDE|INSTEAD(?: OF)?|LET|MOVE|NO|NOW|OTHERWISE|REPEAT|REPORT|RESUME THE STORY|RULE FOR|RUNNING THROUGH|SAY(?:ING)?|STOP THE ACTION|TEST|TRY(?:ING)?|UNDERSTAND|UNLESS|USE|WHEN|WHILE|YES)\b(?!-)/i
-/(?:^|[^-])\b(?:ADJACENT(?! TO)|CARRIED|CLOSED|CONCEALED|CONTAINED|DARK|DESCRIBED|EDIBLE|EMPTY|ENCLOSED|ENTERABLE|EVEN|FEMALE|FIXED IN PLACE|FULL|HANDLED|HELD|IMPROPER-NAMED|INCORPORATED|INEDIBLE|INVISIBLE|LIGHTED|LIT|LOCK(?:ABLE|ED)|MALE|MARKED FOR LISTING|MENTIONED|NEGATIVE|NEUTER|NON-(?:EMPTY|FULL|RECURRING)|ODD|OPAQUE|OPEN(?:ABLE)?|PLURAL-NAMED|PORTABLE|POSITIVE|PRIVATELY-NAMED|PROPER-NAMED|PROVIDED|PUBLICALLY-NAMED|PUSHABLE BETWEEN ROOMS|RECURRING|RELATED|RUBBING|SCENERY|SEEN|SINGULAR-NAMED|SUPPORTED|SWINGING|SWITCH(?:ABLE|ED(?: O(?:N|FF))?)|TOUCH(?:ABLE|ED)|TRANSPARENT|UNCONCEALED|UNDESCRIBED|UNLIT|UNLOCKED|UNMARKED FOR LISTING|UNMENTIONED|UNOPENABLE|UNTOUCHABLE|UNVISITED|VARIABLE|VISIBLE|VISITED|WEARABLE|WORN)\b(?!-)/i
-/(?:^|[^-])\b(?:ABOVE|ADJACENT TO|BACK SIDE OF|BELOW|BETWEEN|DOWN|EAST|EVERYWHERE|FRONT SIDE|HERE|IN|INSIDE(?: FROM)?|NORTH(?:(?:EA|WE)ST)?|NOWHERE|ON(?: TOP OF)?|OTHER SIDE|OUTSIDE(?: FROM)?|PARTS? OF|REGIONALLY IN|SOUTH(?:(?:EA|WE)ST)?|THROUGH|UP|WEST|WITHIN)\b(?!-)/i
+/(?:^|[^-])\b(?:ADJACENT(?! TO)|CARRIED|CLOSED|CONCEALED|CONTAINED|DARK|DESCRIBED|EDIBLE|EMPTY|ENCLOSED|ENTERABLE|EVEN|FEMALE|FIXED IN PLACE|FULL|HANDLED|HELD|IMPROPER-NAMED|INCORPORATED|INEDIBLE|INVISIBLE|LIGHTED|LIT|LOCK(?:ABLE|ED)|MALE|MARKED FOR LISTING|MENTIONED|NEGATIVE|NEUTER|NON-(?:EMPTY|FULL|RECURRING)|ODD|OPAQUE|OPEN(?:ABLE)?|PLURAL-NAMED|PORTABLE|POSITIVE|PRIVATELY-NAMED|PROPER-NAMED|PROVIDED|PUBLICALLY-NAMED|PUSHABLE BETWEEN ROOMS|RECURRING|RELATED|RUBBING|SCENERY|SEEN|SINGULAR-NAMED|SUPPORTED|SWINGING|SWITCH(?:ABLE|ED(?: ON| OFF)?)|TOUCH(?:ABLE|ED)|TRANSPARENT|UNCONCEALED|UNDESCRIBED|UNLIT|UNLOCKED|UNMARKED FOR LISTING|UNMENTIONED|UNOPENABLE|UNTOUCHABLE|UNVISITED|VARIABLE|VISIBLE|VISITED|WEARABLE|WORN)\b(?!-)/i
+/(?:^|[^-])\b(?:ABOVE|ADJACENT TO|BACK SIDE OF|BELOW|BETWEEN|DOWN|EAST|EVERYWHERE|FRONT SIDE|HERE|IN|INSIDE(?: FROM)?|NORTH(?:EAST|WEST)?|NOWHERE|ON(?: TOP OF)?|OTHER SIDE|OUTSIDE(?: FROM)?|PARTS? OF|REGIONALLY IN|SOUTH(?:EAST|WEST)?|THROUGH|UP|WEST|WITHIN)\b(?!-)/i
 /(?:^|[^-])\b(?:ACTIONS?|ACTIVIT(?:Y|IES)|ACTORS?|ANIMALS?|BACKDROPS?|CONTAINERS?|DEVICES?|DIRECTIONS?|DOORS?|HOLDERS?|KINDS?|LISTS?|M[AE]N|NOBODY|NOTHING|NOUNS?|NUMBERS?|OBJECTS?|PEOPLE|PERSONS?|PLAYER(?:'S HOLDALL)?|REGIONS?|RELATIONS?|ROOMS?|RULE(?:BOOK)?S?|SCENES?|SOMEONE|SOMETHING|SUPPORTERS?|TABLES?|TEXTS?|THINGS?|TIME|VEHICLES?|WOM[AE]N)\b(?!-)/i
 /\S(?:\s*\S)*/
 /^[\t ]*[#;].*$/m
 /^[\t ]*\[.*?\]/m
-/^[\t ]*[^\s=]+?(?=[\t ]*=)/m
+/^[\t ]*[^\s=]+(?=[\t ]*=)/m
 /^=/
 /\b(?:activate|activeCoroCount|asString|block|break|catch|clone|collectGarbage|compileString|continue|do|doFile|doMessage|doString|else|elseif|exit|for|foreach|forward|getSlot|getEnvironmentVariable|hasSlot|if|ifFalse|ifNil|ifNilEval|ifTrue|isActive|isNil|isResumable|list|message|method|parent|pass|pause|perform|performWithArgList|print|println|proto|raise|raiseResumable|removeSlot|resend|resume|schedulerSleepSeconds|self|sender|setSchedulerSleepSeconds|setSlot|shallowCopy|slotNames|super|system|then|thisBlock|thisContext|call|try|type|uniqueId|updateSlot|wait|while|write|yield)\b/
 /\b(?:Array|AudioDevice|AudioMixer|Block|Box|Buffer|CFunction|CGI|Color|Curses|DBM|DNSResolver|DOConnection|DOProxy|DOServer|Date|Directory|Duration|DynLib|Error|Exception|FFT|File|Fnmatch|Font|Future|GL|GLE|GLScissor|GLU|GLUCylinder|GLUQuadric|GLUSphere|GLUT|Host|Image|Importer|LinkList|List|Lobby|Locals|MD5|MP3Decoder|MP3Encoder|Map|Message|Movie|Notification|Number|Object|OpenGL|Point|Protos|Regex|SGML|SGMLElement|SGMLParser|SQLite|Server|Sequence|ShowMessage|SleepyCat|SleepyCatCursor|Socket|SocketManager|Sound|Soup|Store|String|Tree|UDPSender|UPDReceiver|URL|User|Warning|WeakLink|Random|BigNum|Sequence)\b/
-/\b0X[\dA-F]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:E-?\d+)?/i
+/\b0X[\dA-F]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:E-?\d+)?/i
 /[-!%&*+/=|^]=|>>?=?|<<?=?|:?:?=|\+\+?|--?|\*\*?|\/\/?|%|\|\|?|&&?|\b(?:return|and|or|not)\b|@@?|\?\??|\.\./
 /"""(?:\\[^]|(?!""")[^\\])*"""/
 /"(?:\\.|[^\n\r"\\])*"/
@@ -1205,9 +1225,9 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[}~]|[/\\]\.?|[Mbf]\.|t[.:]/
 /&(?:\.:?|:)?|[.:@][.:]?|[!D][.:]|[;HTd]\.|\`:?|[LS^]:|"/
 /\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|null|open|opens|package|private|protected|provides|public|record|requires|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)\b/
-/\b0B[01][01_]*L?\b|\b0X[\dA-F_]*\.?[-\d+A-FP_]+\b|(?:\b\d[\d_]*\.?|\B\.\d)[\d_]*(?:E[-+]?\d[\d_]*)?[DFL]?/i
-/"""[\t ]*[\n\r](?:(?:"(?:|"))?(?:\\.|[^"\\]))*"""/
-/\b(?:exports|import(?:\s+static)?|module|open|opens|package|provides|requires|to|transitive|uses|with)\s+(?!\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|null|open|opens|package|private|protected|provides|public|record|requires|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)(?:(?<!\w)\w|(?<=\w)(?!\w)))[a-z]\w*(?:\.[a-z]\w*)*\.?/
+/\b0B[01][01_]*L?\b|\b0X[\dA-F_]*\.?[-\d+A-FP_]+\b|(?:\b\d[\d_]*\.?[\d_]*|\B\.\d[\d_]*)(?:E[-+]?\d[\d_]*)?[DFL]?/i
+/"""[\t ]*[\n\r](?:(?:"|"")?(?:\\.|[^"\\]))*"""/
+/\b(?:exports|import(?:\s+static)?|module|open|opens|package|provides|requires|to|transitive|uses|with)\s+(?!\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|null|open|opens|package|private|protected|provides|public|record|requires|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)\b)[a-z]\w*(?:\.[a-z]\w*)*\.?/
 /<(?:[\s\w&,.?]|<(?:[\s\w&,.?]|<(?:[\s\w&,.?]|<[\s\w&,.?]*>)*>)*>)*>/
 /\b[A-Z](?:\w*[a-z]\w*)?\b/
 /\b[A-Z]\w*(?=\s+\w+\s*[(),;=])/
@@ -1231,14 +1251,14 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^\s*(?:\*\s*)*.*[^\s*].*$/m
 /.+/
 /<-|=>|\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|forSome|if|implicit|import|lazy|match|new|null|object|override|package|private|protected|return|sealed|self|super|this|throw|trait|try|type|val|var|while|with|yield)\b/
-/\b0X[\dA-F]*\.?[\dA-F]+|(?:\b\d+\.?|\B\.\d)\d*(?:E\d+)?[DFL]?/i
+/\b0X[\dA-F]*\.?[\dA-F]+|(?:\b\d+\.?\d*|\B\.\d+)(?:E\d+)?[DFL]?/i
 /\b(?:String|Int|Long|Short|Byte|Boolean|Double|Float|Char|Any|AnyRef|AnyVal|Unit|Nothing)\b/
 /'[^\s\d\\]\w*/
 /\$+(?:\w+\b|(?=\{))/
 /\b(?:__HALT_COMPILER|ABSTRACT|AND|ARRAY|AS|BREAK|CALLABLE|CASE|CATCH|CLASS|CLONE|CONST|CONTINUE|DECLARE|DEFAULT|DIE|DO|ECHO|ELSE|ELSEIF|EMPTY|ENDDECLARE|ENDFOR|ENDFOREACH|ENDIF|ENDSWITCH|ENDWHILE|EVAL|EXIT|EXTENDS|FINAL|FINALLY|FOR|FOREACH|FUNCTION|GLOBAL|GOTO|IF|IMPLEMENTS|INCLUDE|INCLUDE_ONCE|INSTANCEOF|INSTEADOF|INTERFACE|ISSET|LIST|NAMESPACE|NEW|OR|PARENT|PRINT|PRIVATE|PROTECTED|PUBLIC|REQUIRE|REQUIRE_ONCE|RETURN|STATIC|SWITCH|THROW|TRAIT|TRY|UNSET|USE|VAR|WHILE|XOR|YIELD)\b/i
 /\?>$|^<\?(?:PHP(?=\s)|=)?/i
 /<<<'[^']+'[\n\r](?:.*[\n\r])*?[]Unknown:\\1[];/
-/<<<(?:"[^"]+"[\n\r](?:.*[\n\r])*?[]Unknown:\\1[]|[A-Z_]\w*[\n\r](?:.*[\n\r])*?[]Unknown:\\2[]);/i
+/<<<(?:"[^"]+"[\n\r](?:.*[\n\r])*?[]Unknown:\\1[];|[A-Z_]\w*[\n\r](?:.*[\n\r])*?[]Unknown:\\2[];)/i
 /(?:\\|namespace\s+|use\s+)[\w\\]+/
 /->\w+/
 /\b[A-Z_][\dA-Z_]*\b/
@@ -1272,7 +1292,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^\w+\.\w+/
 /^(?:Unknown Source|Native Method)$/
 /\b(?:include|define|is_defined|undef|main|init|outputPort|inputPort|Location|Protocol|Interfaces|RequestResponse|OneWay|type|interface|extender|throws|cset|csets|forward|Aggregates|Redirects|embedded|courier|execution|sequential|concurrent|single|scope|install|throw|comp|cH|default|global|linkIn|linkOut|synchronized|this|new|for|if|else|while|in|Jolie|Java|Javascript|nullProcess|spawn|constants|with|provide|until|exit|foreach|instanceof|over|service)\b/
-/(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?L?/i
+/(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?L?/i
 /-[-=>]?|\+[+=]?|<[<=]?|[!*=>]=?|&&|\|\||[%/:?^]/
 /[,.]/
 /\b(?:undefined|string|int|void|long|Byte|bool|double|float|char|any)\b/
@@ -1285,7 +1305,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\bwith\b/
 /\B\$\w+/
 /\b(?:as|break|catch|def|elif|else|end|foreach|if|import|include|label|module|modulemeta|null|reduce|then|try|while)\b/
-/(?:(?:\b\d+|(?<=\w)(?=\w)|(?<!\w)(?!\w))\.)?\b\d+(?:E[-+]?\d+)?\b/i
+/(?:\b\d+\.|\B\.)?\b\d+(?:E[-+]?\d+)?\b/i
 /::|[(),:;[\]{}]|\.(?=\s*[\w$[])/
 /"(?:[^\n\r"\\]|\\[^\n\r(]|\\\((?:[^()]|\([^()]*\))*\))*"(?=\s*:(?!:))/
 /"(?:[^\n\r"\\]|\\[^\n\r(]|\\\((?:[^()]|\([^()]*\))*\))*"/
@@ -1299,7 +1319,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /^\\\([^]+(?=\)$)/
 /\b(?:abstract|as|asserts|async|await|break|case|catch|class|const|constructor|continue|debugger|declare|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|is|keyof|let|module|namespace|new|null|of|package|private|protected|public|readonly|return|require|set|static|super|switch|this|throw|try|type|typeof|undefined|var|void|while|with|yield)\b/
 /\b(?:string|Function|any|number|boolean|Array|symbol|console|Promise|unknown|never)\b/
-/\b(?:class|extends|implements|instanceof|interface|new|type)\s+(?!keyof(?:(?<!\w)\w|(?<=\w)(?!\w)))[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?:\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)?/
+/\b(?:class|extends|implements|instanceof|interface|new|type)\s+(?!keyof\b)[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?:\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)?/
 /#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>(?=\s*\()/
 /@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?[\w$.\xa0-\uffff]+(?=\s|$)/
 /@(?:param|arg|argument|property)\s+(?:\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})+\}\s+)?\[[\w$.\xa0-\uffff]+(?:=[^[\]]+)?\](?=\s|$)/
@@ -1314,20 +1334,20 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /=>|\.\.\.|[&*:?|]/
 /[(),.;<=>[\]{}]/
 /^\s*(?:\*\s*)?.+$/m
-/\.\s*#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*[:=]\s*(?:async\s*)?(?:\bfunction(?:(?<!\w)\w|(?<=\w)(?!\w))|(?:\((?:[^()]|\([^()]*\))*\)|[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/
+/\.\s*#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*[:=]\s*(?:async\s*)?(?:\bfunction\b|(?:\((?:[^()]|\([^()]*\))*\)|[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*)\s*=>))/
 /\.\s*#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*(?:\.\s*(?:apply|bind|call)\s*)?\()/
 /\.\s*#?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*/
 /(?:^|[^\w$\xa0-\uffff])[A-Z][\w$\xa0-\uffff]+/
 /\b(?:document|location|navigator|performance|(?:local|session)Storage|window)\b/
 /\bconsole(?=\s*\.)/
 /^[A-Z][^]*/
-/\b(?:(?:(?:Ui|I)nt(?:8|16|32)|Uint8Clamped|Float(?:32|64))?Array|ArrayBuffer|BigInt|Boolean|DataView|Date|Error|Function|Intl|JSON|Math|Number|Object|Promise|Proxy|Reflect|RegExp|String|Symbol|(?:Weak)?(?:Set|Map)|WebAssembly)\b/
+/\b(?:(?:(?:Uint|Int)(?:8|16|32)|Uint8Clamped|Float(?:32|64))?Array|ArrayBuffer|BigInt|Boolean|DataView|Date|Error|Function|Intl|JSON|Math|Number|Object|Promise|Proxy|Reflect|RegExp|String|Symbol|(?:Weak)?(?:Set|Map)|WebAssembly)\b/
 /\b[A-Z]\w*Error\b/
 /\b(?:as|default|export|from|import)\b/
 /\bundefined\b/
 /\b(?:any|Array|boolean|break|case|catch|class|const|constructor|continue|debugger|declare|default|delete|do|else|enum|export|extends|false|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|module|new|null|number|package|private|protected|public|return|set|static|string|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)\b/
 /@+\w+/
-/[-+]?(?:\b(?:NaN|Infinity|0x[\dA-Fa-f]+)\b|(?:\b\d+\.?|\B\.\d)\d*(?:[Ee][-+]?\d+\b)?)/
+/[-+]?\b(?:NaN|Infinity|0x[\dA-Fa-f]+)\b|[-+]?(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+\b)?/
 /"(?:\\(?:\r\n?|\n|.)|(?!")[^\n\r\\])*"|'(?:\\(?:\r\n?|\n|.)|(?!')[^\n\r\\])*'/
 /(?:"(?:\\(?:\r\n?|\n|.)|(?!")[^\n\r\\])*"|'(?:\\(?:\r\n?|\n|.)|(?!')[^\n\r\\])*')(?=\s*:)/
 /[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*(?=\s*:)/
@@ -1342,16 +1362,16 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\[(?:as\s+)?[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*\]/
 /:\d+(?::\d+)?\b/
 /\b(?:styled(?:\([^)]*\))?(?:\s*\.\s*\w+(?:\([^)]*\))*)*|css(?:\s*\.\s*(?:global|resolve))?|createGlobalStyle|keyframes)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
-/(?:\bhtml|\.\s*(?:inn|out)erHTML\s*\+?=)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
+/(?:\bhtml|\.\s*(?:inner|outer)HTML\s*\+?=)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
 /\bsvg\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
-/\bm(?:d|arkdown)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
-/\bg(?:ql|raphql(?:\s*\.\s*experimental)?)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
+/\b(?:md|markdown)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
+/\b(?:gql|graphql(?:\s*\.\s*experimental)?)\s*\`(?:\\[^]|\$\{(?:[^{}]|\{(?:[^{}]|\{[^}]*\})*\})+\}|(?!\$\{)[^\\\\\`])*\`/
 /\b(?:abstract|baremodule|begin|bitstype|break|catch|ccall|const|continue|do|else|elseif|end|export|finally|for|function|global|if|immutable|import|importall|in|let|local|macro|module|print|println|quote|return|struct|try|type|typealias|using|while)\b/
 /(?:\b(?=\d)|\B(?=\.))(?:0[BOX])?(?:[\dA-F]+(?:_[\dA-F]+)*\.?(?:\d+(?:_\d+)*)?|\.\d+(?:_\d+)*)(?:[EFP][-+]?\d+(?:_\d+)*)?J?/i
 /&&|\|\||[-$%&*+\\\xf7\u22bb^]=?|\/[/=]?|!=?=?|\|[=>]?|<(?:<=?|[:=|])?|>(?:=|>>?=?)?|==?=?|['~\u221a\u221b\u2260\u2264\u2265]/
 /::?|[(),.;?[\]{}]/
 /\b(?:(?:NaN|Inf)(?:16|32|64)?|im|pi|e|catalan|eulergamma|golden)\b|[\u03b3\u03c0\u03c6\u212f]/
-/(?:^|[^\\])#(?:=(?:[^#=]|=(?!#)|#(?!=)|#=(?:[^#=]|=(?!#)|#(?!=))*=#)*=#|.*)/
+/(?:^|[^\\])(?:#=(?:[^#=]|=(?!#)|#(?!=)|#=(?:[^#=]|=(?!#)|#(?!=))*=#)*=#|#.*)/
 /r"(?:\\.|[^\n\r"\\])*"[imsx]{0,4}/
 /"""[^]+?"""|\w*"(?:\\.|[^\n\r"\\])*"|(?:^|[^\w'])'(?:\\[^\n\r][^\n\r']*|[^\n\r\\])'|\`(?:[^\n\r\\\\\`]|\\.)*\`/
 /\bC\s.*/i
@@ -1389,9 +1409,9 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /\b\d+(?:\/\d+)?\b/
 /'[^\s#'()]+/
 /#\\(?:[ux][\dA-Fa-f]+|[-A-Za-z]+|\S)/
-/\((?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()]|$)/
+/\((?:define(?:-library|-macro|-syntax|-values)?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()]|$)/
 /\((?:(?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval)\b|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?=[\s()]|$)/
-/(?:^|[\s()])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?=[\s()]|$)/
+/(?:^|[\s()])(?:(?:#d(?:#[ei])?|#[ei](?:#d)?)?[-+]?(?:(?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)(?:[-+](?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)i)?|(?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)i)|(?:#[box](?:#[ei])?|#[ei](?:#[box])?)[-+]?(?:[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i))(?=[\s()]|$)/
 /(?:^|[\s()])#[ft](?=[\s()]|$)/
 /\((?:[-%*+/]|[<>]=?|=>?)(?=[\s()]|$)/
 /\([^\s'()]+(?=[\s()]|$)/
@@ -1407,7 +1427,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /#\{[^]*?#\}/
 /^#\{|#\}$/
 /\b(?:comment|endcomment|if|elsif|else|endif|unless|endunless|for|endfor|case|endcase|when|in|break|assign|continue|limit|offset|range|reversed|raw|endraw|capture|endcapture|tablerow|endtablerow)\b/
-/\b0B[01]+\b|\b0X[\dA-F]*\.?[-\dA-FP]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?[DF]?/i
+/\b0B[01]+\b|\b0X[\dA-F]*\.?[-\dA-FP]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?[DF]?/i
 /(?:^|[^.])(?:\+[+=]?|-[-=]?|!=?|<<?=?|>>?>?=?|==?|&[&=]?|\|[=|]?|\*=?|\/=?|%=?|\^=?|[:?~])/m
 /(?:^|[\s&;|])(?:append|prepend|capitalize|cycle|cols|increment|decrement|abs|at_least|at_most|ceil|compact|concat|date|default|divided_by|downcase|escape|escape_once|first|floor|join|last|lstrip|map|minus|modulo|newline_to_br|plus|remove|remove_first|replace|replace_first|reverse|round|rstrip|size|slice|sort|sort_natural|split|strip|strip_html|strip_newlines|times|truncate|truncatewords|uniq|upcase|url_decode|url_encode|include|paginate)(?=$|[\s&;|])/
 /;;;.*/
@@ -1419,7 +1439,7 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[\s([](?:t|nil)(?=[\s)])/
 /[\s([][-+]?\d+(?:\.\d*)?(?=[\s)])/
 /\(def(?:var|const|custom|group)\s+[-\w!$%*+/<=>@{}~^]+/
-/\((?:cl-)?def(?:un\*?|macro)\s+[-\w!$%*+/<=>@{}~^]+\s+\([^]*?\)/
+/\((?:cl-)?(?:defun\*?|defmacro)\s+[-\w!$%*+/<=>@{}~^]+\s+\([^]*?\)/
 /\(lambda\s+\((?:&?[-\w!$%*+/<=>@{}~^]+\s*)*\)/
 /\([-\w!$%*+/<=>@{}~^]+/
 /[',\`]?\(|[)[\]]/
@@ -1439,18 +1459,18 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /&key\s+\S+(?:\s+\S+)*(?:\s+&allow-other-keys)?/
 /&[-\w!$%*+/<=>@{}~^]+/
 /\([-\w!$%*+/<=>@{}~^]+\s+\S[^]*(?=\))/
-/\b\d(?:\d*~[\dA-Z]+|[\d_]*(?:\.\d[\d_]*)?(?:[A-Z]\w*)?)/i
+/\b(?:\d+~[\dA-Z]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[A-Z]\w*)?)/i
 /[A-Z_](?:-?[A-Z]|[\d_])*/i
 /[(),.:;[\]\`{|}]/
-/(?:^|[^"])"(?:""(?:\\[^]|(?!""")[^\\])*""|(?:\\[^]|(?!")[^\\])*)"(?!")/
+/(?:^|[^"])(?:"""(?:\\[^]|(?!""")[^\\])*"""|"(?:\\[^]|(?!")[^\\])*")(?!")/
 /\\[^\s),;\]}]+/
 /(?:^|(?!-).)\b(?:break|case|catch|class|const|continue|default|do|else|extends|fallthrough|finally|for(?: ever)?|function|if|implements|it|let|loop|new|null|otherwise|own|return|super|switch|that|then|this|throw|try|unless|until|var|void|when|while|yield)(?!-)\b/m
-/(?:^|[^-])\b(?:(?:delete|require|typeof)!|(?:and|by|delete|export|from|import(?: all)?|in|instanceof|is(?:(?:n| no)t)?|not|of|or|til|to|typeof|with|xor)(?!-)\b)/m
+/(?:^|[^-])\b(?:(?:delete|require|typeof)!|(?:and|by|delete|export|from|import(?: all)?|in|instanceof|is(?:nt| not)?|not|of|or|til|to|typeof|with|xor)(?!-)\b)/m
 /(?:^|[^-])\b(?:false|no|off|on|true|yes)(?!-)\b/m
 /(?:^|(?!\.&\.)[^&])&(?!&)\d*/m
 /\.(?:[=~]|\.\.?)|\.(?:[&|^]|<<|>>>?)\.|:(?:=|:=?)|&&|\|[>|]|<(?:<<?<?|--?!?|~~?!?|[=?|])?|>[=>?]?|-(?:->?|>)?|\+\+?|@@?|%%?|\*\*?|!(?:~?=|--?>|~?~>)?|~(?:~?>|=)?|==?|\^\^?|[/?]/
 /(?:^|[^\\])\/\*[^]*?\*\//
-/'(?:''(?:\\[^]|(?!''')[^\\])*''|(?:\\[^]|(?!')[^\\])*)'/
+/'''(?:\\[^]|(?!''')[^\\])*'''|'(?:\\[^]|(?!')[^\\])*'/
 /<\[[^]*?\]>/
 /\/\/(?:\[[^\n\r\]]*\]|\\.|(?!\/\/)[^[\\])+\/\/[gimuy]{0,5}/
 /\/(?:\[[^\n\r\]]*\]|\\.|[^\n\r/[\\])+\/[gimuy]{0,5}/
@@ -1460,16 +1480,16 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[!#%@](?:(?!\d)(?:[\w$\-.]|\\[\dA-F]{2})+|\d+)/i
 /(?!\d)(?:[\w$\-.]|\\[\dA-F]{2})+:/i
 /\b[_a-z][\d_a-z]*\b/
-/(?:[-+]?\b\d+(?:\.\d+)?(?:[Ee][-+]?\d+)?|\b0x[\dA-Fa-f]+|\b0xK[\dA-Fa-f]{20}|\b0x[LM][\dA-Fa-f]{32}|\b0xH[\dA-Fa-f]{4})\b/
+/[-+]?\b\d+(?:\.\d+)?(?:[Ee][-+]?\d+)?\b|\b0x[\dA-Fa-f]+\b|\b0xK[\dA-Fa-f]{20}\b|\b0x[LM][\dA-Fa-f]{32}\b|\b0xH[\dA-Fa-f]{4}\b/
 /[!()*,.;<=>[\]{}]/
 /\b(?:double|float|fp128|half|i[1-9]\d*|label|metadata|ppc_fp128|token|void|x86_fp80|x86_mmx)\b/
-/(?:\B-)?(?:\b\d+\.?|\B\.\d)\d*/
+/(?:\B-)?(?:\b\d+\.?\d*|\B\.\d+)/
 /\.{3}|\u2026|,|!/
 /\bOBTW\s+[^]*?\s+TLDR\b/
 /\bBTW.+/
 /"(?::.|[^":])*"/
 /(?:^|\s)(?:A )?(?:YARN|NUMBR|NUMBAR|TROOF|BUKKIT|NOOB)(?=\s|,|$)/
-/(?:^|\s)IM (?:IN|OUTTA) YR [A-Za-z]\w*/
+/(?:^|\s)(?:IM IN YR|IM OUTTA YR) [A-Za-z]\w*/
 /(?:^|\s)(?:I IZ|HOW IZ I|IZ) [A-Za-z]\w*/
 /'Z(?=\s|,|$)/
 /(?:^|\s)(?:WIN|FAIL)(?=\s|,|$)/
@@ -1487,10 +1507,10 @@ module.exports[n`Transformers >> factor-out >> Prism regex snapshot `] = lit`
 /[():;{}]/
 /(?:^|[^\\])#(?:\\(?:\r\n|[^])|[^\n\r\\])*/
 /^[^\n\r:=]+(?=\s*:(?!=))/m
-/(?:-include|\b(?:define|else|endef|endif|export|ifn?def|ifn?eq|include|override|private|sinclude|undefine|unexport|vpath))\b/
+/-include\b|\b(?:define|else|endef|endif|export|ifn?def|ifn?eq|include|override|private|sinclude|undefine|unexport|vpath)\b/
 /\$+(?:[^\s#():={}]+|(?=[({]))/
 /\((?:addsuffix|abspath|and|basename|call|dir|error|eval|file|filter(?:-out)?|findstring|firstword|flavor|foreach|guile|if|info|join|lastword|load|notdir|or|origin|patsubst|realpath|shell|sort|strip|subst|suffix|value|warning|wildcard|word(?:s|list)?)(?=[\t ])/
-/(?:\b\d+\.?|\B\.\d)\d*(?:[Ee][-+]?\d+)?[ij]?|\b[ij]\b/
+/(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+)?[ij]?|\b[ij]\b/
 /\b(?:break|case|catch|continue|else|elseif|end|for|function|if|inf|NaN|otherwise|parfor|pause|pi|return|switch|try|while)\b/
 /\.?['*/\\^]|[-+:@]|[<=>~]=?|&&?|\|\|?/
 /\.{3}|[!(),.;[\]{}]/
@@ -1504,7 +1524,7 @@ TooManyNodesError
 /-[A-Z_]\w*/i
 /\+[+=]?|-[-=]?|&&|\|\||[<>]=|[!*/=]=?|[%^]/
 /::.+/
-/(?:@proof|\b(?:according|aggregate|all|and|antonym|are|as|associativity|assume|asymmetry|attr|be|begin|being|by|canceled|case|cases|clusters?|coherence|commutativity|compatibility|connectedness|consider|consistency|constructors|contradiction|correctness|def|deffunc|define|definitions?|defpred|do|does|equals|end|environ|ex|exactly|existence|for|from|func|given|hence|hereby|holds|idempotence|identity|iff?|implies|involutiveness|irreflexivity|is|it|let|means|mode|non|not|notations?|now|of|or|otherwise|over|per|pred|prefix|projectivity|proof|provided|qua|reconsider|redefine|reduce|reducibility|reflexivity|registrations?|requirements|reserve|sch|schemes?|section|selector|set|sethood|st|struct|such|suppose|symmetry|synonym|take|that|the|then|theorems?|thesis|thus|to|transitivity|uniqueness|vocabular(?:y|ies)|when|where|with|wrt))\b/
+/@proof\b|\b(?:according|aggregate|all|and|antonym|are|as|associativity|assume|asymmetry|attr|be|begin|being|by|canceled|case|cases|clusters?|coherence|commutativity|compatibility|connectedness|consider|consistency|constructors|contradiction|correctness|def|deffunc|define|definitions?|defpred|do|does|equals|end|environ|ex|exactly|existence|for|from|func|given|hence|hereby|holds|idempotence|identity|iff?|implies|involutiveness|irreflexivity|is|it|let|means|mode|non|not|notations?|now|of|or|otherwise|over|per|pred|prefix|projectivity|proof|provided|qua|reconsider|redefine|reduce|reducibility|reflexivity|registrations?|requirements|reserve|sch|schemes?|section|selector|set|sethood|st|struct|such|suppose|symmetry|synonym|take|that|the|then|theorems?|thesis|thus|to|transitivity|uniqueness|vocabular(?:y|ies)|when|where|with|wrt)\b/
 /\w+(?=:)/
 /\.\.\.|->|&|\.?=/
 /\(#|#\)|[(),:;[\]{}]/
@@ -1520,13 +1540,13 @@ TooManyNodesError
 /'.+/
 /\b(?:class|continue|do|else|elseif|export|extends|for|from|if|import|in|local|nil|return|self|super|switch|then|unless|using|when|while|with)\b/
 /@@?\w*/
-/(?:(?:\B\.\d+|\b\d+\.\d+|\b\d+(?=[Ee]))(?:[Ee][-+]?\d+)?|\b(?:0x[\dA-Fa-f]+|\d+)(?:U?LL)?)\b/
+/(?:\B\.\d+|\b\d+\.\d+|\b\d+(?=[Ee]))(?:[Ee][-+]?\d+)?\b|\b(?:0x[\dA-Fa-f]+|\d+)(?:U?LL)?\b/
 /\.{3}|[-=]>|~=|(?:[-!%*+/<=>]|\.\.)=?|[#:^]|\b(?:and|or)\b=?|\bnot\b/
 /[(),.[\\\]{}]/
 /\b(?!\d)\w+(?=:)|:(?!\d)\w+/
 /\b(?:_G|_VERSION|assert|collectgarbage|coroutine\.(?:running|create|resume|status|wrap|yield)|debug\.(?:debug|gethook|getinfo|getlocal|getupvalue|setlocal|setupvalue|sethook|traceback|getfenv|getmetatable|getregistry|setfenv|setmetatable)|dofile|error|getfenv|getmetatable|io\.(?:stdin|stdout|stderr|close|flush|input|lines|open|output|popen|read|tmpfile|type|write)|ipairs|load|loadfile|loadstring|math\.(?:abs|acos|asin|atan|atan2|ceil|sin|cos|tan|deg|exp|floor|log|log10|max|min|fmod|modf|cosh|sinh|tanh|pow|rad|sqrt|frexp|ldexp|random|randomseed|pi)|module|next|os\.(?:clock|date|difftime|execute|exit|getenv|remove|rename|setlocale|time|tmpname)|package\.(?:cpath|loaded|loadlib|path|preload|seeall)|pairs|pcall|print|rawequal|rawget|rawset|require|select|setfenv|setmetatable|string\.(?:byte|char|dump|find|len|lower|rep|sub|upper|format|gsub|gmatch|match|reverse)|table\.(?:maxn|concat|sort|insert|remove)|tonumber|tostring|type|unpack|xpcall)\b/
 /'[^']*'|\[=*\[[^]*?\][]Unknown:\\1[]\]/
-/\b(?:clas|extend)s[\t ]+\w+/
+/\b(?:class|extends)[\t ]+\w+/
 /#\{[^{}]*\}/
 /^#\{[^]+(?=\})/
 /#\{|\}/
@@ -1534,7 +1554,7 @@ TooManyNodesError
 /\$[\w.]+/
 /\b(?:ABS|ACOS|ARRAY_AGG|ARRAY_APPEND|ARRAY_AVG|ARRAY_CONCAT|ARRAY_CONTAINS|ARRAY_COUNT|ARRAY_DISTINCT|ARRAY_FLATTEN|ARRAY_IFNULL|ARRAY_INSERT|ARRAY_INTERSECT|ARRAY_LENGTH|ARRAY_MAX|ARRAY_MIN|ARRAY_POSITION|ARRAY_PREPEND|ARRAY_PUT|ARRAY_RANGE|ARRAY_REMOVE|ARRAY_REPEAT|ARRAY_REPLACE|ARRAY_REVERSE|ARRAY_SORT|ARRAY_STAR|ARRAY_SUM|ARRAY_SYMDIFF|ARRAY_SYMDIFFN|ARRAY_UNION|ASIN|ATAN|ATAN2|AVG|BASE64|BASE64_DECODE|BASE64_ENCODE|BITAND|BITCLEAR|BITNOT|BITOR|BITSET|BITSHIFT|BITTEST|BITXOR|CEIL|CLOCK_LOCAL|CLOCK_MILLIS|CLOCK_STR|CLOCK_TZ|CLOCK_UTC|CONTAINS|CONTAINS_TOKEN|CONTAINS_TOKEN_LIKE|CONTAINS_TOKEN_REGEXP|COS|COUNT|CURL|DATE_ADD_MILLIS|DATE_ADD_STR|DATE_DIFF_MILLIS|DATE_DIFF_STR|DATE_FORMAT_STR|DATE_PART_MILLIS|DATE_PART_STR|DATE_RANGE_MILLIS|DATE_RANGE_STR|DATE_TRUNC_MILLIS|DATE_TRUNC_STR|DECODE_JSON|DEGREES|DURATION_TO_STR|E|ENCODED_SIZE|ENCODE_JSON|EXP|FLOOR|GREATEST|HAS_TOKEN|IFINF|IFMISSING|IFMISSINGORNULL|IFNAN|IFNANORINF|IFNULL|INITCAP|ISARRAY|ISATOM|ISBOOLEAN|ISNUMBER|ISOBJECT|ISSTRING|ISBITSET|LEAST|LENGTH|LN|LOG|LOWER|LTRIM|MAX|META|MILLIS|MILLIS_TO_LOCAL|MILLIS_TO_STR|MILLIS_TO_TZ|MILLIS_TO_UTC|MILLIS_TO_ZONE_NAME|MIN|MISSINGIF|NANIF|NEGINFIF|NOW_LOCAL|NOW_MILLIS|NOW_STR|NOW_TZ|NOW_UTC|NULLIF|OBJECT_ADD|OBJECT_CONCAT|OBJECT_INNER_PAIRS|OBJECT_INNER_VALUES|OBJECT_LENGTH|OBJECT_NAMES|OBJECT_PAIRS|OBJECT_PUT|OBJECT_REMOVE|OBJECT_RENAME|OBJECT_REPLACE|OBJECT_UNWRAP|OBJECT_VALUES|PAIRS|PI|POLY_LENGTH|POSINFIF|POSITION|POWER|RADIANS|RANDOM|REGEXP_CONTAINS|REGEXP_LIKE|REGEXP_POSITION|REGEXP_REPLACE|REPEAT|REPLACE|REVERSE|ROUND|RTRIM|SIGN|SIN|SPLIT|SQRT|STR_TO_DURATION|STR_TO_MILLIS|STR_TO_TZ|STR_TO_UTC|STR_TO_ZONE_NAME|SUBSTR|SUFFIXES|SUM|TAN|TITLE|TOARRAY|TOATOM|TOBOOLEAN|TOKENS|TOKENS|TONUMBER|TOOBJECT|TOSTRING|TRIM|TRUNC|TYPE|UPPER|WEEKDAY_MILLIS|WEEKDAY_STR)(?=\s*\()/i
 /\b(?:ALL|ALTER|ANALYZE|AS|ASC|BEGIN|BINARY|BOOLEAN|BREAK|BUCKET|BUILD|BY|CALL|CAST|CLUSTER|COLLATE|COLLECTION|COMMIT|CONNECT|CONTINUE|CORRELATE|COVER|CREATE|DATABASE|DATASET|DATASTORE|DECLARE|DECREMENT|DELETE|DERIVED|DESC|DESCRIBE|DISTINCT|DO|DROP|EACH|ELEMENT|EXCEPT|EXCLUDE|EXECUTE|EXPLAIN|FETCH|FLATTEN|FOR|FORCE|FROM|FUNCTION|GRANT|GROUP|GSI|HAVING|IF|IGNORE|ILIKE|INCLUDE|INCREMENT|INDEX|INFER|INLINE|INNER|INSERT|INTERSECT|INTO|IS|JOIN|KEY|KEYS|KEYSPACE|KNOWN|LAST|LEFT|LET|LETTING|LIMIT|LSM|MAP|MAPPING|MATCHED|MATERIALIZED|MERGE|MINUS|MISSING|NAMESPACE|NEST|NULL|NUMBER|OBJECT|OFFSET|ON|OPTION|ORDER|OUTER|OVER|PARSE|PARTITION|PASSWORD|PATH|POOL|PREPARE|PRIMARY|PRIVATE|PRIVILEGE|PROCEDURE|PUBLIC|RAW|REALM|REDUCE|RENAME|RETURN|RETURNING|REVOKE|RIGHT|ROLE|ROLLBACK|SATISFIES|SCHEMA|SELECT|SELF|SEMI|SET|SHOW|SOME|START|STATISTICS|STRING|SYSTEM|TO|TRANSACTION|TRIGGER|TRUNCATE|UNDER|UNION|UNIQUE|UNKNOWN|UNNEST|UNSET|UPDATE|UPSERT|USE|USER|USING|VALIDATE|VALUE|VALUES|VIA|VIEW|WHERE|WHILE|WITH|WORK|XOR)\b/i
-/(?:\b\d+|(?<=\w)(?=\w)|(?<!\w)(?!\w))\.\d+E[-+]?\d+\b|\b\d+\.?\d*|\B\.\d+\b/i
+/(?:\b\d+\.|\B\.)\d+E[-+]?\d+\b|\b\d+\.?\d*|\B\.\d+\b/i
 /[-%*+/=]|!=|==?|\|\||<[=>]?|>=?|\b(?:AND|ANY|ARRAY|BETWEEN|CASE|ELSE|END|EVERY|EXISTS|FIRST|IN|LIKE|NOT|OR|THEN|VALUED|WHEN|WITHIN)\b/i
 /[(),.:;[\]{}]/
 /"(?:\\[^]|(?!")[^\\]|"")*"|'(?:\\[^]|(?!')[^\\]|'')*'/
@@ -1570,8 +1590,8 @@ TooManyNodesError
 /^\s*SECTION\s*[.A-Z]+:?/im
 /[-(),:=[\]{}]/
 /(?:^|[\s(,:=[{])\d\d\d\d-\d\d?-\d\d?(?:(?:[Tt]| +)\d\d?:\d\d:\d\d(?:\.\d*)? *(?:Z|[-+]\d\d?(?::?\d\d)?)?)?(?=$|[\s),\]}])/
-/(?:^|[\s(,[{])[^\s"'(),:=[\]{}]+(?=\s*(?::(?:$|[\s),\]}])|=))/
-/(?:^|[\s(,:=[{])[-+]?(?:0x[\dA-Fa-f]+|0o[0-7]+|0b[01]+|(?:\d+\.?|\.?\d)\d*(?:[Ee][-+]?\d+)?)(?=$|[\s),:=\]}])/
+/(?:^|[\s(,[{])[^\s"'(),:=[\]{}]+(?=\s*:(?:$|[\s),\]}])|\s*=)/
+/(?:^|[\s(,:=[{])[-+]?(?:0x[\dA-Fa-f]+|0o[0-7]+|0b[01]+|(?:\d+\.?\d*|\.?\d+)(?:[Ee][-+]?\d+)?)(?=$|[\s),:=\]}])/
 /(?:^|[\s(,:=[{])(?:TRUE|FALSE|YES|NO)(?=$|[\s),:=\]}])/i
 /(?:^|[\s(,:=[{])NULL(?=$|[\s),:=\]}])/i
 /(?:^|[\s(,:=[{])(?:'''\r?\n(?:(?:[^\n\r]|\r?\n(?![\t ]*'''))*\r?\n)?[\t ]*'''|"""\r?\n(?:(?:[^\n\r]|\r?\n(?![\t ]*"""))*\r?\n)?[\t ]*"""|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*")/
@@ -1582,7 +1602,7 @@ TooManyNodesError
 /\b(?:0[BOXbox][\dA-F_a-f]+|\d[\d_]*(?:(?!\.\.)\.[\d_]*)?(?:[Ee][-+]?\d[\d_]*)?)(?:'?[fiu]\d*)?/
 /\b(?:addr|as|asm|atomic|bind|block|break|case|cast|concept|const|continue|converter|defer|discard|distinct|do|elif|else|end|enum|except|export|finally|for|from|func|generic|if|import|include|interface|iterator|let|macro|method|mixin|nil|object|out|proc|ptr|raise|ref|return|static|template|try|tuple|type|using|var|when|while|with|without|yield)\b/
 /[([{]\.|\.[)\]}]|[(),:[\]\`{}]/
-/(?:\b(?!\d)(?:\w|\\x[89A-Fa-f][\dA-Fa-f])+)?"(?:""[^]*?"""(?!")|(?:\\[^]|""|[^"\\])*")|'(?:\\(?:\d+|x[\dA-Fa-f]{2}|.)|[^'])'/
+/(?:\b(?!\d)(?:\w|\\x[89A-Fa-f][\dA-Fa-f])+)?(?:"""[^]*?"""(?!")|"(?:\\[^]|""|[^"\\])*")|'(?:\\(?:\d+|x[\dA-Fa-f]{2}|.)|[^'])'/
 /(?:(?!\d)(?:\w|\\x[89A-Fa-f][\dA-Fa-f])+|\`[^\n\r\`]+\`)\*?(?:\[[^\]]+\])?(?=\s*\()/
 /\`[^\n\r\`]+\`/
 /(?:^|[([{](?=\.\.)|(?![([{]\.).)(?:(?:[-!$%&*+/:<=>?@\\|~^]|\.\.|\.(?![)\]}]))+|\b(?:and|div|of|or|in|is|isnot|mod|not|notin|shl|shr|xor)\b)/m
@@ -1590,7 +1610,7 @@ TooManyNodesError
 /\`/
 /\/\*[^]*?\*\/|#.*/
 /\b(?:assert|builtins|else|if|in|inherit|let|null|or|then|with)\b/
-/\b(?:(?:abort|add|all|any|attrNames|attrValues|baseNameOf|compareVersions|concatLists|currentSystem|deepSeq|derivation|dirOf|div|elem(?:At)?|fetch(?:ur|Tarbal)l|filter(?:Source)?|fromJSON|genList|getAttr|getEnv|hasAttr|hashString|head|import|intersectAttrs|is(?:Attrs|Bool|Function|Int|List|Null|String)|length|lessThan|listToAttrs|map|mul|parseDrvName|pathExists|read(?:Dir|File)|removeAttrs|replaceStrings|seq|sort|stringLength|sub(?:string)?|tail|throw|to(?:File|JSON|Path|String|XML)|trace|typeOf)\b|foldl'\B)/
+/\b(?:abort|add|all|any|attrNames|attrValues|baseNameOf|compareVersions|concatLists|currentSystem|deepSeq|derivation|dirOf|div|elem(?:At)?|fetch(?:url|Tarball)|filter(?:Source)?|fromJSON|genList|getAttr|getEnv|hasAttr|hashString|head|import|intersectAttrs|is(?:Attrs|Bool|Function|Int|List|Null|String)|length|lessThan|listToAttrs|map|mul|parseDrvName|pathExists|read(?:Dir|File)|removeAttrs|replaceStrings|seq|sort|stringLength|sub(?:string)?|tail|throw|to(?:File|JSON|Path|String|XML)|trace|typeOf)\b|\bfoldl'\B/
 /[!<=>]=?|\+\+?|\|\||&&|\/\/|->?|[?@]/
 /[(),.:;[\]{}]/
 /"(?:[^"\\]|\\[^])*"|''(?:(?!'')[^]|''(?:'|\\|\$\{))*''/
@@ -1599,15 +1619,15 @@ TooManyNodesError
 /[^/](?:[\w#%&+\-.:=?~]*(?!\/\/)[\w#%&+\-./:=?~])?(?!\/\/)\/[\w#%&+\-./:=?~]*/
 /(?:^|(?:^|(?!'').)[^\\])\$\{(?:[^}]|\{[^}]*\})*\}/
 /^\$(?=\{)/
-/\b(?:admin|all|auto|both|colored|false|force|hide|highest|lastused|leave|listonly|none|normal|notset|off|on|open|print|show|silent|silentlog|smooth|textonly|true|user|ARCHIVE|FILE_ATTRIBUTE_(?:ARCHIVE|NORMAL|OFFLINE|READONLY|SYSTEM|TEMPORARY)|HK(?:(?:CR|CU|LM)(?:32|64)?|DD|PD|U)|HKEY_(?:CLASSES_ROOT|CURRENT_CONFIG|CURRENT_USER|DYN_DATA|LOCAL_MACHINE|PERFORMANCE_DATA|USERS)|ID(?:ABORT|CANCEL|IGNORE|NO|OK|RETRY|YES)|MB_(?:ABORTRETRYIGNORE|DEFBUTTON1|DEFBUTTON2|DEFBUTTON3|DEFBUTTON4|ICONEXCLAMATION|ICONINFORMATION|ICONQUESTION|ICONSTOP|OK|OKCANCEL|RETRYCANCEL|RIGHT|RTLREADING|SETFOREGROUND|TOPMOST|USERICON|YESNO)|NORMAL|OFFLINE|READONLY|SHCTX|SHELL_CONTEXT|SYSTEM|TEMPORARY)\b/
-/\$(?:\{[\w\-.:^]+\}|\([\w\-.:^]+\))/
+/\b(?:admin|all|auto|both|colored|false|force|hide|highest|lastused|leave|listonly|none|normal|notset|off|on|open|print|show|silent|silentlog|smooth|textonly|true|user|ARCHIVE|FILE_(?:ATTRIBUTE_ARCHIVE|ATTRIBUTE_NORMAL|ATTRIBUTE_OFFLINE|ATTRIBUTE_READONLY|ATTRIBUTE_SYSTEM|ATTRIBUTE_TEMPORARY)|HK(?:(?:CR|CU|LM)(?:32|64)?|DD|PD|U)|HKEY_(?:CLASSES_ROOT|CURRENT_CONFIG|CURRENT_USER|DYN_DATA|LOCAL_MACHINE|PERFORMANCE_DATA|USERS)|ID(?:ABORT|CANCEL|IGNORE|NO|OK|RETRY|YES)|MB_(?:ABORTRETRYIGNORE|DEFBUTTON1|DEFBUTTON2|DEFBUTTON3|DEFBUTTON4|ICONEXCLAMATION|ICONINFORMATION|ICONQUESTION|ICONSTOP|OK|OKCANCEL|RETRYCANCEL|RIGHT|RTLREADING|SETFOREGROUND|TOPMOST|USERICON|YESNO)|NORMAL|OFFLINE|READONLY|SHCTX|SHELL_CONTEXT|SYSTEM|TEMPORARY)\b/
+/\$\{[\w\-.:^]+\}|\$\([\w\-.:^]+\)/
 /\$\w+/
 /--?|\+\+?|<=?|>=?|==?=?|&&?|\|\|?|[%*/?~^]/
 /(?:^|[^\\])(?:\/\*[^]*?\*\/|[#;].*)/
-/^\s*(?:Abort|Add(?:BrandingImag|Siz)e|AdvSplash|Allow(?:RootDirInstall|SkipFiles)|AutoCloseWindow|Banner|BG(?:Font|Gradient|Image)|BrandingText|BringToFront|Call(?:InstDLL)?|Caption|ChangeUI|CheckBitmap|ClearErrors|CompletedText|ComponentText|CopyFiles|CRCCheck|Create(?:Directory|Font|ShortCut)|Delete(?:INISec|INIStr|RegKey|RegValue)?|Detail(?:Prin|sButtonTex)t|Dialer|Dir(?:Text|Var|Verify)|EnableWindow|EnumReg(?:Key|Value)|Exch|Exec(?:Shell(?:Wait)?|Wait)?|ExpandEnvStrings|File(?:BufSize|Close|ErrorText|Open|Read|ReadByte|ReadUTF16LE|ReadWord|WriteUTF16LE|Seek|Write|WriteByte|WriteWord)?|Find(?:Close|First|Next|Window)|FlushINI|Get(?:CurInstType|CurrentAddress|DlgItem|DLLVersion(?:Local)?|ErrorLevel|FileTime(?:Local)?|FullPathName|Function(?:Address|End)?|InstDirError|LabelAddress|TempFileName)|Goto|HideWindow|Icon|If(?:Abort|Errors|FileExists|RebootFlag|Silent)|InitPluginsDir|Install(?:ButtonText|Colors|Dir(?:RegKey)?)|InstProgressFlags|InstType(?:(?:G|S)etText)?|Int(?:64|Ptr)?CmpU?|Int(?:64)?Fmt|Int(?:Ptr)?Op|IsWindow|Lang(?:DLL|String)|License(?:BkColor|Data|ForceSelection|LangString|Text)|LoadLanguageFile|LockWindow|Log(?:Se|Tex)t|Manifest(?:DPIAware|SupportedOS)|Math|MessageBox|MiscButtonText|Name|Nop|ns(?:Dialogs|Exec)|NSISdl|OutFile|Page(?:Callbacks)?|PE(?:DllCharacteristics|SubsysVer)|Pop|Push|Quit|Read(?:EnvStr|INIStr|RegDWORD|RegStr)|Reboot|RegDLL|Rename|RequestExecutionLevel|ReserveFile|Return|RMDir|SearchPath|Section(?:End|GetFlags|GetInstTypes|GetSize|GetText|Group|In|SetFlags|SetInstTypes|SetSize|SetText)?|SendMessage|Set(?:AutoClose|BrandingImage|Compress|Compressor(?:DictSize)?|CtlColors|CurInstType|DatablockOptimize|DateSave|Details(?:Print|View)|ErrorLevel|Errors|FileAttributes|Font|OutPath|Overwrite|PluginUnload|RebootFlag|RegView|ShellVarContext|Silent)|Show(?:InstDetails|UninstDetails|Window)|Silent(?:|Un)Install|Sleep|SpaceTexts|Splash|StartMenu|Str(?:CmpS?|Cpy|Len)|SubCaption|System|Unicode|Uninstall(?:ButtonText|Caption|Icon|SubCaption|Text)|UninstPage|UnRegDLL|UserInfo|Var|VI(?:AddVersionKey|FileVersion|ProductVersion)|VPatch|WindowIcon|Write(?:INIStr|Reg(?:Bin|DWORD|ExpandStr|MultiStr|None|Str)|Uninstaller)|XPStyle)\b/m
+/^\s*(?:Abort|Add(?:BrandingImage|Size)|AdvSplash|Allow(?:RootDirInstall|SkipFiles)|AutoCloseWindow|Banner|BG(?:Font|Gradient|Image)|BrandingText|BringToFront|Call(?:InstDLL)?|Caption|ChangeUI|CheckBitmap|ClearErrors|CompletedText|ComponentText|CopyFiles|CRCCheck|Create(?:Directory|Font|ShortCut)|Delete(?:INISec|INIStr|RegKey|RegValue)?|Detail(?:Print|sButtonText)|Dialer|Dir(?:Text|Var|Verify)|EnableWindow|Enum(?:RegKey|RegValue)|Exch|Exec(?:Shell(?:Wait)?|Wait)?|ExpandEnvStrings|File(?:BufSize|Close|ErrorText|Open|Read|ReadByte|ReadUTF16LE|ReadWord|WriteUTF16LE|Seek|Write|WriteByte|WriteWord)?|Find(?:Close|First|Next|Window)|FlushINI|Get(?:CurInstType|CurrentAddress|DlgItem|DLLVersion(?:Local)?|ErrorLevel|FileTime(?:Local)?|FullPathName|Function(?:Address|End)?|InstDirError|LabelAddress|TempFileName)|Goto|HideWindow|Icon|If(?:Abort|Errors|FileExists|RebootFlag|Silent)|InitPluginsDir|Install(?:ButtonText|Colors|Dir(?:RegKey)?)|InstProgressFlags|InstType(?:GetText|SetText)?|Int(?:64|Ptr)?CmpU?|Int(?:64)?Fmt|Int(?:Ptr)?Op|IsWindow|Lang(?:DLL|String)|License(?:BkColor|Data|ForceSelection|LangString|Text)|LoadLanguageFile|LockWindow|Log(?:Set|Text)|Manifest(?:DPIAware|SupportedOS)|Math|MessageBox|MiscButtonText|Name|Nop|ns(?:Dialogs|Exec)|NSISdl|OutFile|Page(?:Callbacks)?|PE(?:DllCharacteristics|SubsysVer)|Pop|Push|Quit|Read(?:EnvStr|INIStr|RegDWORD|RegStr)|Reboot|RegDLL|Rename|RequestExecutionLevel|ReserveFile|Return|RMDir|SearchPath|Section(?:End|GetFlags|GetInstTypes|GetSize|GetText|Group|In|SetFlags|SetInstTypes|SetSize|SetText)?|SendMessage|Set(?:AutoClose|BrandingImage|Compress|Compressor(?:DictSize)?|CtlColors|CurInstType|DatablockOptimize|DateSave|Details(?:Print|View)|ErrorLevel|Errors|FileAttributes|Font|OutPath|Overwrite|PluginUnload|RebootFlag|RegView|ShellVarContext|Silent)|Show(?:InstDetails|UninstDetails|Window)|Silent(?:Install|UnInstall)|Sleep|SpaceTexts|Splash|StartMenu|Str(?:CmpS?|Cpy|Len)|SubCaption|System|Unicode|Uninstall(?:ButtonText|Caption|Icon|SubCaption|Text)|UninstPage|UnRegDLL|UserInfo|Var|VI(?:AddVersionKey|FileVersion|ProductVersion)|VPatch|WindowIcon|Write(?:INIStr|Reg(?:Bin|DWORD|ExpandStr|MultiStr|None|Str)|Uninstaller)|XPStyle)\b/m
 /^\s*!(?:ADDINCLUDEDIR|ADDPLUGINDIR|APPENDFILE|CD|DEFINE|DELFILE|ECHO|ELSE|ENDIF|ERROR|EXECUTE|FINALIZE|GETDLLVERSION|GETTLBVERSION|IFDEF|IFMACRODEF|IFMACRONDEF|IFNDEF|IF|INCLUDE|INSERTMACRO|MACROEND|MACRO|MAKENSIS|PACKHDR|PRAGMA|SEARCHPARSE|SEARCHREPLACE|SYSTEM|TEMPFILE|UNDEF|VERBOSE|WARNING)\b/im
 /"(?:\\(?:\r\n|[^])|(?!")[^\n\r\\])*"|'(?:\\(?:\r\n|[^])|(?!')[^\n\r\\])*'|@"(?:\\(?:\r\n|[^])|[^\n\r"\\])*"/
-/(?:\b(?:asm|typeof|inline|auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while|in|self|super)|@(?:interface|end|implementation|protocol|class|public|protected|private|property|try|catch|finally|throw|synthesize|dynamic|selector))\b/
+/\b(?:asm|typeof|inline|auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while|in|self|super)\b|(?:@interface|@end|@implementation|@protocol|@class|@public|@protected|@private|@property|@try|@catch|@finally|@throw|@synthesize|@dynamic|@selector)\b/
 /-[->]?|\+\+?|!=?|<<?=?|>>?=?|==?|&&?|\|\|?|[%*/?@~^]/
 /\b(?:0X[\dA-F][\dA-F_]+|(?:0[BO])?\d[\d_]*\.?[\d_]*(?:E[-+]?[\d_]+)?)/i
 /\b(?:as|assert|begin|class|constraint|do|done|downto|else|end|exception|external|for|fun|function|functor|if|in|include|inherit|initializer|lazy|let|match|method|module|mutable|new|nonrec|object|of|open|private|rec|sig|struct|then|to|try|type|val|value|virtual|when|where|while|with)\b/
@@ -1619,13 +1639,13 @@ TooManyNodesError
 /\`\w+/
 /\b[A-Z]\w+/
 /'(?:\\(?:\d+|X[\dA-F]+|.)|(?!')[^\n\r\\])'|\`(?:\\(?:\d+|X[\dA-F]+|.)|(?!\`)[^\n\r\\])\`/i
-/\b(?:__attribute__|(?:__)?(?:constant|global|kernel|local|private|read_only|read_write|write_only)|_cl_(?:command_queue|context|device_id|event|kernel|mem|platform_id|program|sampler)|auto|break|case|cl_(?:image_format|mem_fence_flags)|clk_event_t|complex|const|continue|default|do|(?:float|double)(?:16(?:x(?:1|16|2|4|8))?|1x(?:1|16|2|4|8)|2(?:x(?:1|16|2|4|8))?|3|4(?:x(?:1|16|2|4|8))?|8(?:x(?:1|16|2|4|8))?)?|else|enum|event_t|extern|for|goto|(?:u?(?:char|short|int|long)|half|quad|bool)(?:2|3|4|8|16)?|if|image(?:1d_(?:(?:array|buffer)_)?|2d_(?:array_(?:(?:depth|msaa_depth|msaa)_)?|depth_|msaa_depth_|msaa_)?|3d_)t|imaginary|inline|intptr_t|ndrange_t|packed|pipe|ptrdiff_t|queue_t|register|reserve_id_t|restrict|return|sampler_t|signed|size_t|sizeof|static|struct|switch|typedef|uintptr_t|uniform|union|unsigned|void|volatile|while)\b/
-/(?:\b0X(?:[\dA-F]+\.?|\.[\dA-F])[\dA-F]*(?:P[-+]?\d+)?|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?)[FHLU]*/i
-/\bcl_(?:GLenum|GLint|GLuin|addressing_mode|bitfield|bool|buffer_create_type|build_status|channel_(?:order|type)|(?:u?(?:char|short|int|long)|float|double)(?:2|3|4|8|16)?|command_(?:queue(?:_(?:info|properties))?|type)|context(?:_(?:info|properties))?|device_(?:exec_capabilities|fp_config|id|info|local_mem_type|mem_cache_type|type)|(?:event|sampler)(?:_info)?|filter_mode|half|image_info|kernel(?:_(?:|work_group_)info)?|map_flags|mem(?:_(?:flags|info|object_type))?|platform_i(?:d|nfo)|profiling_info|program(?:_(?:build_|)info)?)\b/
-/\bCL_(?:TRU|FALS)E\b/
-/\bCL_(?:A|ABGR|ADDRESS_(?:CLAMP(?:_TO_EDGE)?|MIRRORED_REPEAT|NONE|REPEAT)|ARGB|BGRA|BLOCKING|BUFFER_CREATE_TYPE_REGION|BUILD_(?:ERROR|IN_PROGRESS|NONE|PROGRAM_FAILURE|SUCCESS)|COMMAND_(?:ACQUIRE_GL_OBJECTS|BARRIER|COPY_(?:BUFFER(?:_(?:RECT|TO_IMAGE))?|IMAGE(?:_TO_BUFFER)?)|FILL_(?:BUFFER|IMAGE)|MAP_(?:BUFFER|IMAGE)|MARKER|MIGRATE(?:_SVM)?_MEM_OBJECTS|NATIVE_KERNEL|NDRANGE_KERNEL|READ_(?:BUFFER(?:_RECT)?|IMAGE)|RELEASE_GL_OBJECTS|SVM_(?:FREE|MAP|MEMCPY|MEMFILL|UNMAP)|TASK|UNMAP_MEM_OBJECT|USER|WRITE_(?:BUFFER(?:_RECT)?|IMAGE))|COMPILER_NOT_AVAILABLE|COMPILE_PROGRAM_FAILURE|COMPLETE|CONTEXT_(?:DEVICES|INTEROP_USER_SYNC|NUM_DEVICES|PLATFORM|PROPERTIES|REFERENCE_COUNT)|DEPTH(?:_STENCIL)?|DEVICE_(?:ADDRESS_BITS|AFFINITY_DOMAIN_(?:L[1-4]_CACHE|NEXT_PARTITIONABLE|NUMA)|AVAILABLE|BUILT_IN_KERNELS|COMPILER_AVAILABLE|DOUBLE_FP_CONFIG|ENDIAN_LITTLE|ERROR_CORRECTION_SUPPORT|EXECUTION_CAPABILITIES|EXTENSIONS|GLOBAL_(?:MEM_(?:CACHELINE_SIZ|CACHE_SIZ|CACHE_TYP|SIZ)|VARIABLE_PREFERRED_TOTAL_SIZ)E|HOST_UNIFIED_MEMORY|IL_VERSION|IMAGE(?:2D_MAX_(?:HEIGHT|WIDTH)|3D_MAX_(?:DEPTH|HEIGHT|WIDTH)|_BASE_ADDRESS_ALIGNMENT|_MAX_ARRAY_SIZE|_MAX_BUFFER_SIZE|_PITCH_ALIGNMENT|_SUPPORT)|LINKER_AVAILABLE|LOCAL_MEM_SIZE|LOCAL_MEM_TYPE|MAX_(?:CLOCK_FREQUENCY|COMPUTE_UNITS|CONSTANT_ARGS|CONSTANT_BUFFER_SIZE|GLOBAL_VARIABLE_SIZE|MEM_ALLOC_SIZE|NUM_SUB_GROUPS|ON_DEVICE_(?:EVENT|QUEUE)S|PARAMETER_SIZE|PIPE_ARGS|READ_IMAGE_ARGS|READ_WRITE_IMAGE_ARGS|SAMPLERS|WORK_GROUP_SIZE|WORK_ITEM_DIMENSIONS|WORK_ITEM_SIZES|WRITE_IMAGE_ARGS)|MEM_BASE_ADDR_ALIGN|MIN_DATA_TYPE_ALIGN_SIZE|NAME|NATIVE_VECTOR_WIDTH_(?:CHAR|DOUBLE|FLOAT|HALF|INT|LONG|SHORT)|NOT_(?:AVAILABLE|FOUND)|OPENCL_C_VERSION|PARENT_DEVICE|PARTITION_(?:AFFINITY_DOMAIN|BY_AFFINITY_DOMAIN|BY_COUNTS|BY_COUNTS_LIST_END|EQUALLY|FAILED|MAX_SUB_DEVICES|PROPERTIES|TYPE)|PIPE_MAX_(?:ACTIVE_RESERVATIONS|PACKET_SIZE)|PLATFORM|PREFERRED_(?:GLOBAL_ATOMIC_ALIGNMENT|INTEROP_USER_SYNC|LOCAL_ATOMIC_ALIGNMENT|PLATFORM_ATOMIC_ALIGNMENT|VECTOR_WIDTH_(?:CHAR|DOUBLE|FLOAT|HALF|INT|LONG|SHORT))|PRINTF_BUFFER_SIZE|PROFILE|PROFILING_TIMER_RESOLUTION|QUEUE_(?:ON_(?:DEVICE_(?:MAX_SIZE|PREFERRED_SIZE|PROPERTIES)|HOST_PROPERTIES)|PROPERTIES)|REFERENCE_COUNT|SINGLE_FP_CONFIG|SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS|SVM_(?:ATOMICS|CAPABILITIES|COARSE_GRAIN_BUFFER|FINE_GRAIN_BUFFER|FINE_GRAIN_SYSTEM)|TYPE(?:_(?:ACCELERATOR|ALL|CPU|CUSTOM|DEFAULT|GPU))?|VENDOR(?:_ID)?|VERSION)|DRIVER_VERSION|EVENT_(?:COMMAND_(?:EXECUTION_STATUS|QUEUE|TYPE)|CONTEXT|REFERENCE_COUNT)|EXEC_(?:KERNEL|NATIVE_KERNEL|STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST)|FILTER_(?:LINEAR|NEAREST)|FLOAT|FP_(?:CORRECTLY_ROUNDED_DIVIDE_SQRT|DENORM|FMA|INF_NAN|ROUND_TO_INF|ROUND_TO_NEAREST|ROUND_TO_ZERO|SOFT_FLOAT)|GLOBAL|HALF_FLOAT|IMAGE_(?:ARRAY_SIZE|BUFFER|DEPTH|ELEMENT_SIZE|FORMAT|FORMAT_MISMATCH|FORMAT_NOT_SUPPORTED|HEIGHT|NUM_MIP_LEVELS|NUM_SAMPLES|ROW_PITCH|SLICE_PITCH|WIDTH)|INTENSITY|INVALID_(?:ARG_INDEX|ARG_SIZE|ARG_VALUE|BINARY|BUFFER_SIZE|BUILD_OPTIONS|COMMAND_QUEUE|COMPILER_OPTIONS|CONTEXT|DEVICE|DEVICE_PARTITION_COUNT|DEVICE_QUEUE|DEVICE_TYPE|EVENT|EVENT_WAIT_LIST|GLOBAL_OFFSET|GLOBAL_WORK_SIZE|GL_OBJECT|HOST_PTR|IMAGE_DESCRIPTOR|IMAGE_FORMAT_DESCRIPTOR|IMAGE_SIZE|KERNEL|KERNEL_ARGS|KERNEL_DEFINITION|KERNEL_NAME|LINKER_OPTIONS|MEM_OBJECT|MIP_LEVEL|OPERATION|PIPE_SIZE|PLATFORM|PROGRAM|PROGRAM_EXECUTABLE|PROPERTY|QUEUE_PROPERTIES|SAMPLER|VALUE|WORK_DIMENSION|WORK_GROUP_SIZE|WORK_ITEM_SIZE)|KERNEL_(?:ARG_(?:ACCESS_(?:NONE|QUALIFIER|READ_ONLY|READ_WRITE|WRITE_ONLY)|ADDRESS_(?:CONSTANT|GLOBAL|LOCAL|PRIVATE|QUALIFIER)|INFO_NOT_AVAILABLE|NAME|TYPE_(?:CONST|NAME|NONE|PIPE|QUALIFIER|RESTRICT|VOLATILE))|ATTRIBUTES|COMPILE_NUM_SUB_GROUPS|COMPILE_WORK_GROUP_SIZE|CONTEXT|EXEC_INFO_SVM_FINE_GRAIN_SYSTEM|EXEC_INFO_SVM_PTRS|FUNCTION_NAME|GLOBAL_WORK_SIZE|LOCAL_MEM_SIZE|LOCAL_SIZE_FOR_SUB_GROUP_COUNT|MAX_NUM_SUB_GROUPS|MAX_SUB_GROUP_SIZE_FOR_NDRANGE|NUM_ARGS|PREFERRED_WORK_GROUP_SIZE_MULTIPLE|PRIVATE_MEM_SIZE|PROGRAM|REFERENCE_COUNT|SUB_GROUP_COUNT_FOR_NDRANGE|WORK_GROUP_SIZE)|LINKER_NOT_AVAILABLE|LINK_PROGRAM_FAILURE|LOCAL|LUMINANCE|MAP_(?:FAILURE|READ|WRITE|WRITE_INVALIDATE_REGION)|MEM_(?:ALLOC_HOST_PTR|ASSOCIATED_MEMOBJECT|CONTEXT|COPY_HOST_PTR|COPY_OVERLAP|FLAGS|HOST_NO_ACCESS|HOST_PTR|HOST_READ_ONLY|HOST_WRITE_ONLY|KERNEL_READ_AND_WRITE|MAP_COUNT|OBJECT_(?:ALLOCATION_FAILURE|BUFFER|IMAGE1D|IMAGE1D_ARRAY|IMAGE1D_BUFFER|IMAGE2D|IMAGE2D_ARRAY|IMAGE3D|PIPE)|OFFSET|READ_ONLY|READ_WRITE|REFERENCE_COUNT|SIZE|SVM_ATOMICS|SVM_FINE_GRAIN_BUFFER|TYPE|USES_SVM_POINTER|USE_HOST_PTR|WRITE_ONLY)|MIGRATE_MEM_OBJECT_(?:CONTENT_UNDEFINED|HOST)|MISALIGNED_SUB_BUFFER_OFFSET|NONE|NON_BLOCKING|OUT_OF_(?:HOST_MEMORY|RESOURCES)|PIPE_(?:MAX_PACKETS|PACKET_SIZE)|PLATFORM_(?:EXTENSIONS|HOST_TIMER_RESOLUTION|NAME|PROFILE|VENDOR|VERSION)|PROFILING_(?:COMMAND_(?:COMPLETE|END|QUEUED|START|SUBMIT)|INFO_NOT_AVAILABLE)|PROGRAM_(?:BINARIES|BINARY_SIZES|BINARY_TYPE(?:_(?:COMPILED_OBJECT|EXECUTABLE|LIBRARY|NONE))?|BUILD_(?:GLOBAL_VARIABLE_TOTAL_SIZE|LOG|OPTIONS|STATUS)|CONTEXT|DEVICES|IL|KERNEL_NAMES|NUM_DEVICES|NUM_KERNELS|REFERENCE_COUNT|SOURCE)|QUEUED|QUEUE_(?:CONTEXT|DEVICE|DEVICE_DEFAULT|ON_DEVICE|ON_DEVICE_DEFAULT|OUT_OF_ORDER_EXEC_MODE_ENABLE|PROFILING_ENABLE|PROPERTIES|REFERENCE_COUNT|SIZE)|R|RA|READ_(?:ONLY|WRITE)_CACHE|RG|RGB|RGBA|RGBx|RGx|RUNNING|Rx|SAMPLER_(?:ADDRESSING_MODE|CONTEXT|FILTER_MODE|LOD_MAX|LOD_MIN|MIP_FILTER_MODE|NORMALIZED_COORDS|REFERENCE_COUNT)|(?:UN)?SIGNED_INT(?:8|16|32)|SNORM_INT(?:8|16)|SUBMITTED|SUCCESS|UNORM_INT(?:16|24|8|_101010|_101010_2)|UNORM_SHORT_5(?:5|6)5|VERSION_(?:1_0|1_1|1_2|2_0|2_1)|sBGRA|sRGB|sRGBA|sRGBx)\b/
-/\bcl(?:BuildProgram|CloneKernel|CompileProgram|Create(?:Buffer|CommandQueue(?:WithProperties)?|Context|ContextFromType|Image|Image2D|Image3D|Kernel|KernelsInProgram|Pipe|ProgramWith(?:Binary|BuiltInKernels|IL|Source)|Sampler|SamplerWithProperties|SubBuffer|SubDevices|UserEvent)|Enqueue(?:(?:Barri|Mark)er(?:WithWaitList)?|Copy(?:Buffer(?:Rect|ToImage)?|Image(?:ToBuffer)?)|(?:Fill|Map)(?:Buffer|Image)|MigrateMemObjects|NDRangeKernel|NativeKernel|(?:Read|Write)(?:Buffer(?:Rect)?|Image)|SVM(?:Free|Map|MemFill|Memcpy|MigrateMem|Unmap)|Task|UnmapMemObject|WaitForEvents)|Finish|Flush|Get(?:CommandQueueInfo|ContextInfo|Device(?:AndHostTimer|IDs|Info)|Event(?:Profiling)?Info|ExtensionFunctionAddress(?:ForPlatform)?|HostTimer|ImageInfo|Kernel(?:Arg||SubGroup|WorkGroup)Info|MemObjectInfo|PipeInfo|PlatformI(?:Ds|nfo)|Program(?:Build)?Info|SamplerInfo|SupportedImageFormats)|LinkProgram|Re(?:lease|tain)(?:CommandQueue|Context|Device|Event|Kernel|MemObject|Program|Sampler)|SVM(?:Alloc|Free)|Set(?:CommandQueueProperty|DefaultDeviceCommandQueue|EventCallback|Kernel(?:Arg(?:SVMPointer)?|ExecInfo)|Kernel|MemObjectDestructorCallback|UserEventStatus)|Unload(?:Platform)?Compiler|WaitForEvents)\b/
-/\b(?:CHAR_(?:BIT|MAX|MIN)|CLK_(?:ADDRESS_(?:CLAMP(?:_TO_EDGE)?|NONE|REPEAT)|FILTER_(?:LINEAR|NEAREST)|(?:LOC|GLOB)AL_MEM_FENCE|NORMALIZED_COORDS_(?:FALS|TRU)E)|CL_(?:BGRA|(?:HALF_)?FLOAT|INTENSITY|LUMINANCE|A?R?G?B?[Ax]?|(?:(?:UN)?SIGNED|[SU]NORM)_INT(?:8|16|32)|UNORM_(?:INT_101010|SHORT_5(?:5|6)5))|(?:DBL|FLT|HALF)_(?:DIG|EPSILON|MANT_DIG|M(?:IN|AX)(?:(?:_10)?_EXP)?)|FLT_RADIX|HUGE_VALF?|INFINITY|(?:INT|LONG|SCHAR|SHRT)_M(?:AX|IN)|U(?:CHAR|SHRT|INT|LONG)_MAX|MAXFLOAT|M_(?:[12]_PI|2_SQRTPI|E|LN(?:2|10)|LOG(?:10|2)E?|PI(?:_[24])?|SQRT(?:1_|)2)(?:_(?:F|H))?|NAN)\b/
+/\b(?:__attribute__|(?:__)?(?:constant|global|kernel|local|private|read_only|read_write|write_only)|_cl_(?:command_queue|context|device_id|event|kernel|mem|platform_id|program|sampler)|auto|break|case|cl_(?:image_format|mem_fence_flags)|clk_event_t|complex|const|continue|default|do|(?:float|double)(?:16(?:x(?:1|16|2|4|8))?|1x(?:1|16|2|4|8)|2(?:x(?:1|16|2|4|8))?|3|4(?:x(?:1|16|2|4|8))?|8(?:x(?:1|16|2|4|8))?)?|else|enum|event_t|extern|for|goto|(?:u?(?:char|short|int|long)|half|quad|bool)(?:2|3|4|8|16)?|if|image(?:1d_(?:array_|buffer_)?t|2d_(?:array_(?:depth_|msaa_depth_|msaa_)?|depth_|msaa_depth_|msaa_)?t|3d_t)|imaginary|inline|intptr_t|ndrange_t|packed|pipe|ptrdiff_t|queue_t|register|reserve_id_t|restrict|return|sampler_t|signed|size_t|sizeof|static|struct|switch|typedef|uintptr_t|uniform|union|unsigned|void|volatile|while)\b/
+/(?:\b0X(?:[\dA-F]+\.?[\dA-F]*|\.[\dA-F]+)(?:P[-+]?\d+)?|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?)[FHLU]*/i
+/\bcl_(?:GLenum|GLint|GLuin|addressing_mode|bitfield|bool|buffer_create_type|build_status|channel_(?:order|type)|(?:u?(?:char|short|int|long)|float|double)(?:2|3|4|8|16)?|command_(?:queue(?:_info|_properties)?|type)|context(?:_info|_properties)?|device_(?:exec_capabilities|fp_config|id|info|local_mem_type|mem_cache_type|type)|(?:event|sampler)(?:_info)?|filter_mode|half|image_info|kernel(?:_info|_work_group_info)?|map_flags|mem(?:_flags|_info|_object_type)?|platform_(?:id|info)|profiling_info|program(?:_build_info|_info)?)\b/
+/\bCL_(?:TRUE|FALSE)\b/
+/\bCL_(?:A|ABGR|ADDRESS_(?:CLAMP(?:_TO_EDGE)?|MIRRORED_REPEAT|NONE|REPEAT)|ARGB|BGRA|BLOCKING|BUFFER_CREATE_TYPE_REGION|BUILD_(?:ERROR|IN_PROGRESS|NONE|PROGRAM_FAILURE|SUCCESS)|COMMAND_(?:ACQUIRE_GL_OBJECTS|BARRIER|COPY_(?:BUFFER(?:_RECT|_TO_IMAGE)?|IMAGE(?:_TO_BUFFER)?)|FILL_(?:BUFFER|IMAGE)|MAP(?:_BUFFER|_IMAGE)|MARKER|MIGRATE(?:_SVM)?_MEM_OBJECTS|NATIVE_KERNEL|NDRANGE_KERNEL|READ_(?:BUFFER(?:_RECT)?|IMAGE)|RELEASE_GL_OBJECTS|SVM_(?:FREE|MAP|MEMCPY|MEMFILL|UNMAP)|TASK|UNMAP_MEM_OBJECT|USER|WRITE_(?:BUFFER(?:_RECT)?|IMAGE))|COMPILER_NOT_AVAILABLE|COMPILE_PROGRAM_FAILURE|COMPLETE|CONTEXT_(?:DEVICES|INTEROP_USER_SYNC|NUM_DEVICES|PLATFORM|PROPERTIES|REFERENCE_COUNT)|DEPTH(?:_STENCIL)?|DEVICE_(?:ADDRESS_BITS|AFFINITY_DOMAIN_(?:L[1-4]_CACHE|NEXT_PARTITIONABLE|NUMA)|AVAILABLE|BUILT_IN_KERNELS|COMPILER_AVAILABLE|DOUBLE_FP_CONFIG|ENDIAN_LITTLE|ERROR_CORRECTION_SUPPORT|EXECUTION_CAPABILITIES|EXTENSIONS|GLOBAL_(?:MEM_(?:CACHELINE_SIZE|CACHE_SIZE|CACHE_TYPE|SIZE)|VARIABLE_PREFERRED_TOTAL_SIZE)|HOST_UNIFIED_MEMORY|IL_VERSION|IMAGE(?:2D_MAX_(?:HEIGHT|WIDTH)|3D_MAX_(?:DEPTH|HEIGHT|WIDTH)|_BASE_ADDRESS_ALIGNMENT|_MAX_ARRAY_SIZE|_MAX_BUFFER_SIZE|_PITCH_ALIGNMENT|_SUPPORT)|LINKER_AVAILABLE|LOCAL_MEM_SIZE|LOCAL_MEM_TYPE|MAX_(?:CLOCK_FREQUENCY|COMPUTE_UNITS|CONSTANT_ARGS|CONSTANT_BUFFER_SIZE|GLOBAL_VARIABLE_SIZE|MEM_ALLOC_SIZE|NUM_SUB_GROUPS|ON_DEVICE_(?:EVENTS|QUEUES)|PARAMETER_SIZE|PIPE_ARGS|READ_IMAGE_ARGS|READ_WRITE_IMAGE_ARGS|SAMPLERS|WORK_GROUP_SIZE|WORK_ITEM_DIMENSIONS|WORK_ITEM_SIZES|WRITE_IMAGE_ARGS)|MEM_BASE_ADDR_ALIGN|MIN_DATA_TYPE_ALIGN_SIZE|NAME|NATIVE_VECTOR_WIDTH_(?:CHAR|DOUBLE|FLOAT|HALF|INT|LONG|SHORT)|NOT_(?:AVAILABLE|FOUND)|OPENCL_C_VERSION|PARENT_DEVICE|PARTITION_(?:AFFINITY_DOMAIN|BY_AFFINITY_DOMAIN|BY_COUNTS|BY_COUNTS_LIST_END|EQUALLY|FAILED|MAX_SUB_DEVICES|PROPERTIES|TYPE)|PIPE_MAX_(?:ACTIVE_RESERVATIONS|PACKET_SIZE)|PLATFORM|PREFERRED_(?:GLOBAL_ATOMIC_ALIGNMENT|INTEROP_USER_SYNC|LOCAL_ATOMIC_ALIGNMENT|PLATFORM_ATOMIC_ALIGNMENT|VECTOR_WIDTH_(?:CHAR|DOUBLE|FLOAT|HALF|INT|LONG|SHORT))|PRINTF_BUFFER_SIZE|PROFILE|PROFILING_TIMER_RESOLUTION|QUEUE_(?:ON_(?:DEVICE_(?:MAX_SIZE|PREFERRED_SIZE|PROPERTIES)|HOST_PROPERTIES)|PROPERTIES)|REFERENCE_COUNT|SINGLE_FP_CONFIG|SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS|SVM_(?:ATOMICS|CAPABILITIES|COARSE_GRAIN_BUFFER|FINE_GRAIN_BUFFER|FINE_GRAIN_SYSTEM)|TYPE(?:_ACCELERATOR|_ALL|_CPU|_CUSTOM|_DEFAULT|_GPU)?|VENDOR(?:_ID)?|VERSION)|DRIVER_VERSION|EVENT_(?:COMMAND_(?:EXECUTION_STATUS|QUEUE|TYPE)|CONTEXT|REFERENCE_COUNT)|EXEC_(?:KERNEL|NATIVE_KERNEL|STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST)|FILTER_(?:LINEAR|NEAREST)|FLOAT|FP_(?:CORRECTLY_ROUNDED_DIVIDE_SQRT|DENORM|FMA|INF_NAN|ROUND_TO_INF|ROUND_TO_NEAREST|ROUND_TO_ZERO|SOFT_FLOAT)|GLOBAL|HALF_FLOAT|IMAGE_(?:ARRAY_SIZE|BUFFER|DEPTH|ELEMENT_SIZE|FORMAT|FORMAT_MISMATCH|FORMAT_NOT_SUPPORTED|HEIGHT|NUM_MIP_LEVELS|NUM_SAMPLES|ROW_PITCH|SLICE_PITCH|WIDTH)|INTENSITY|INVALID_(?:ARG_INDEX|ARG_SIZE|ARG_VALUE|BINARY|BUFFER_SIZE|BUILD_OPTIONS|COMMAND_QUEUE|COMPILER_OPTIONS|CONTEXT|DEVICE|DEVICE_PARTITION_COUNT|DEVICE_QUEUE|DEVICE_TYPE|EVENT|EVENT_WAIT_LIST|GLOBAL_OFFSET|GLOBAL_WORK_SIZE|GL_OBJECT|HOST_PTR|IMAGE_DESCRIPTOR|IMAGE_FORMAT_DESCRIPTOR|IMAGE_SIZE|KERNEL|KERNEL_ARGS|KERNEL_DEFINITION|KERNEL_NAME|LINKER_OPTIONS|MEM_OBJECT|MIP_LEVEL|OPERATION|PIPE_SIZE|PLATFORM|PROGRAM|PROGRAM_EXECUTABLE|PROPERTY|QUEUE_PROPERTIES|SAMPLER|VALUE|WORK_DIMENSION|WORK_GROUP_SIZE|WORK_ITEM_SIZE)|KERNEL_(?:ARG_(?:ACCESS_(?:NONE|QUALIFIER|READ_ONLY|READ_WRITE|WRITE_ONLY)|ADDRESS_(?:CONSTANT|GLOBAL|LOCAL|PRIVATE|QUALIFIER)|INFO_NOT_AVAILABLE|NAME|TYPE_(?:CONST|NAME|NONE|PIPE|QUALIFIER|RESTRICT|VOLATILE))|ATTRIBUTES|COMPILE_NUM_SUB_GROUPS|COMPILE_WORK_GROUP_SIZE|CONTEXT|EXEC_INFO_SVM_FINE_GRAIN_SYSTEM|EXEC_INFO_SVM_PTRS|FUNCTION_NAME|GLOBAL_WORK_SIZE|LOCAL_MEM_SIZE|LOCAL_SIZE_FOR_SUB_GROUP_COUNT|MAX_NUM_SUB_GROUPS|MAX_SUB_GROUP_SIZE_FOR_NDRANGE|NUM_ARGS|PREFERRED_WORK_GROUP_SIZE_MULTIPLE|PRIVATE_MEM_SIZE|PROGRAM|REFERENCE_COUNT|SUB_GROUP_COUNT_FOR_NDRANGE|WORK_GROUP_SIZE)|LINKER_NOT_AVAILABLE|LINK_PROGRAM_FAILURE|LOCAL|LUMINANCE|MAP_(?:FAILURE|READ|WRITE|WRITE_INVALIDATE_REGION)|MEM_(?:ALLOC_HOST_PTR|ASSOCIATED_MEMOBJECT|CONTEXT|COPY_HOST_PTR|COPY_OVERLAP|FLAGS|HOST_NO_ACCESS|HOST_PTR|HOST_READ_ONLY|HOST_WRITE_ONLY|KERNEL_READ_AND_WRITE|MAP_COUNT|OBJECT_(?:ALLOCATION_FAILURE|BUFFER|IMAGE1D|IMAGE1D_ARRAY|IMAGE1D_BUFFER|IMAGE2D|IMAGE2D_ARRAY|IMAGE3D|PIPE)|OFFSET|READ_ONLY|READ_WRITE|REFERENCE_COUNT|SIZE|SVM_ATOMICS|SVM_FINE_GRAIN_BUFFER|TYPE|USES_SVM_POINTER|USE_HOST_PTR|WRITE_ONLY)|MIGRATE_MEM_OBJECT_(?:CONTENT_UNDEFINED|HOST)|MISALIGNED_SUB_BUFFER_OFFSET|NONE|NON_BLOCKING|OUT_OF_(?:HOST_MEMORY|RESOURCES)|PIPE_(?:MAX_PACKETS|PACKET_SIZE)|PLATFORM_(?:EXTENSIONS|HOST_TIMER_RESOLUTION|NAME|PROFILE|VENDOR|VERSION)|PROFILING_(?:COMMAND_(?:COMPLETE|END|QUEUED|START|SUBMIT)|INFO_NOT_AVAILABLE)|PROGRAM_(?:BINARIES|BINARY_SIZES|BINARY_TYPE(?:_COMPILED_OBJECT|_EXECUTABLE|_LIBRARY|_NONE)?|BUILD_(?:GLOBAL_VARIABLE_TOTAL_SIZE|LOG|OPTIONS|STATUS)|CONTEXT|DEVICES|IL|KERNEL_NAMES|NUM_DEVICES|NUM_KERNELS|REFERENCE_COUNT|SOURCE)|QUEUED|QUEUE_(?:CONTEXT|DEVICE|DEVICE_DEFAULT|ON_DEVICE|ON_DEVICE_DEFAULT|OUT_OF_ORDER_EXEC_MODE_ENABLE|PROFILING_ENABLE|PROPERTIES|REFERENCE_COUNT|SIZE)|R|RA|READ_(?:ONLY|WRITE)_CACHE|RG|RGB|RGBA|RGBx|RGx|RUNNING|Rx|SAMPLER_(?:ADDRESSING_MODE|CONTEXT|FILTER_MODE|LOD_MAX|LOD_MIN|MIP_FILTER_MODE|NORMALIZED_COORDS|REFERENCE_COUNT)|(?:UN)?SIGNED_INT(?:8|16|32)|SNORM_INT(?:8|16)|SUBMITTED|SUCCESS|UNORM_INT(?:16|24|8|_101010|_101010_2)|UNORM_SHORT_(?:555|565)|VERSION_(?:1_0|1_1|1_2|2_0|2_1)|sBGRA|sRGB|sRGBA|sRGBx)\b/
+/\bcl(?:BuildProgram|CloneKernel|CompileProgram|Create(?:Buffer|CommandQueue(?:WithProperties)?|Context|ContextFromType|Image|Image2D|Image3D|Kernel|KernelsInProgram|Pipe|ProgramWith(?:Binary|BuiltInKernels|IL|Source)|Sampler|SamplerWithProperties|SubBuffer|SubDevices|UserEvent)|Enqueue(?:(?:Barrier|Marker)(?:WithWaitList)?|Copy(?:Buffer(?:Rect|ToImage)?|Image(?:ToBuffer)?)|(?:Fill|Map)(?:Buffer|Image)|MigrateMemObjects|NDRangeKernel|NativeKernel|(?:Read|Write)(?:Buffer(?:Rect)?|Image)|SVM(?:Free|Map|MemFill|Memcpy|MigrateMem|Unmap)|Task|UnmapMemObject|WaitForEvents)|Finish|Flush|Get(?:CommandQueueInfo|ContextInfo|Device(?:AndHostTimer|IDs|Info)|Event(?:Profiling)?Info|ExtensionFunctionAddress(?:ForPlatform)?|HostTimer|ImageInfo|Kernel(?:ArgInfo|Info|SubGroupInfo|WorkGroupInfo)|MemObjectInfo|PipeInfo|Platform(?:IDs|Info)|Program(?:Build)?Info|SamplerInfo|SupportedImageFormats)|LinkProgram|(?:Release|Retain)(?:CommandQueue|Context|Device|Event|Kernel|MemObject|Program|Sampler)|SVM(?:Alloc|Free)|Set(?:CommandQueueProperty|DefaultDeviceCommandQueue|EventCallback|Kernel(?:Arg(?:SVMPointer)?|ExecInfo)|Kernel|MemObjectDestructorCallback|UserEventStatus)|Unload(?:Platform)?Compiler|WaitForEvents)\b/
+/\b(?:CHAR_(?:BIT|MAX|MIN)|CLK_(?:ADDRESS_(?:CLAMP(?:_TO_EDGE)?|NONE|REPEAT)|FILTER_(?:LINEAR|NEAREST)|(?:LOCAL|GLOBAL)_MEM_FENCE|NORMALIZED_COORDS_(?:FALSE|TRUE))|CL_(?:BGRA|(?:HALF_)?FLOAT|INTENSITY|LUMINANCE|A?R?G?B?[Ax]?|(?:(?:UN)?SIGNED|[SU]NORM)_INT(?:8|16|32)|UNORM_(?:INT_101010|SHORT_(?:555|565)))|(?:DBL|FLT|HALF)_(?:DIG|EPSILON|MANT_DIG|(?:MIN|MAX)(?:(?:_10)?_EXP)?)|FLT_RADIX|HUGE_VALF?|INFINITY|(?:INT|LONG|SCHAR|SHRT)_(?:MAX|MIN)|(?:UCHAR|USHRT|UINT|ULONG)_MAX|MAXFLOAT|M_(?:[12]_PI|2_SQRTPI|E|LN(?:2|10)|LOG(?:10|2)E?|PI(?:_[24])?|SQRT(?:1_2|2))(?:_F|_H)?|NAN)\b/
 /\b(?:Buffer|BufferGL|BufferRenderGL|CommandQueue|Context|Device|DeviceCommandQueue|EnqueueArgs|Event|Image|Image1D|Image1DArray|Image1DBuffer|Image2D|Image2DArray|Image2DGL|Image3D|Image3DGL|ImageFormat|ImageGL|Kernel|KernelFunctor|LocalSpaceArg|Memory|NDRange|Pipe|Platform|Program|Sampler|SVMAllocator|SVMTraitAtomic|SVMTraitCoarse|SVMTraitFine|SVMTraitReadOnly|SVMTraitReadWrite|SVMTraitWriteOnly|UserEvent)\b/
 /\/\*[^]*?\*\/|%.*/
 /\$|\[\]|\b(?:_|at|attr|case|catch|choice|class|cond|declare|define|dis|else(?:case|if)?|end|export|fail|false|feat|finally|from|fun|functor|if|import|in|local|lock|meth|nil|not|of|or|prepare|proc|prop|raise|require|self|skip|then|thread|true|try|unit)\b/
@@ -1647,7 +1667,7 @@ TooManyNodesError
 /[();[\]{}]/
 /\s#.*/
 /(?:^|[^\^])\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)/
-/(?:^|[^\^])(?:\^(?:case|eval|for|if|switch|throw)|@(?:BASE|CLASS|GET(?:_DEFAULT)?|OPTIONS|SET_DEFAULT|USE))\b/
+/(?:^|[^\^])(?:\^(?:case|eval|for|if|switch|throw)\b|@(?:BASE|CLASS|GET(?:_DEFAULT)?|OPTIONS|SET_DEFAULT|USE)\b)/
 /(?:^|[^\^])\B\$(?:\w+|(?=[.{]))(?:(?:\.|::?)\w+)*(?:\.|::?)?/
 /(?:^|[^\^])\B[@^]\w+(?:(?:\.|::?)\w+)*(?:\.|::?)?/
 /\^(?:["$'():;@[\]\^{}]|#[\dA-F]*)/i
@@ -1655,7 +1675,7 @@ TooManyNodesError
 /[%*+/\\~]|!(?:\|\|?|=)?|&&?|\|\|?|==|<[<=]?|>[=>]?|-[df]?|\b(?:def|eq|ge|gt|in|is|le|lt|ne)\b/
 /\.|:+/
 /(?:^|[^\^])(?:"(?:(?!")[^\^]|\^[^])*"|'(?:(?!')[^\^]|\^[^])*')/
-/^@(?:G|S)ET_/
+/^@(?:GET_|SET_)/
 /\(\.|\.\)|[(),.:;[\]]/
 /\(\*[^]+?\*\)/
 /\{[^]+?\}/
@@ -1674,12 +1694,12 @@ TooManyNodesError
 /\(\.|\.\)|[(),.:;[\]{}]/
 /"(?:\\[^]|(?!")[^\\])*"|'(?:\\[^]|(?!')[^\\])*'|\`(?:\\[^]|(?!\`)[^\\])*\`|\^[A-Z]/i
 /(?:^|[^&])\b(?:BEGIN|BLOCK|CASE|CONST|ELSE|END|FAIL|FOR|FROM|FUNCTION|IF|IS|NIL|OF|REMOVE|RETURN|SKIP|THEN|TYPE|VAR|WHILE|WITH)\b/i
-/(?:^|[^&])\b(?:TRU|FALS)E\b/i
+/(?:^|[^&])\b(?:TRUE|FALSE)\b/i
 /(?:^|[^&])\b(?:BOOL|INT|LIST|MAP|NAT|RECORD|STRING|UNIT)\b/i
 /%[01]+|&[0-7]+|\$[\dA-F]+/i
 /\b\d+(?:\.\d+)?(?:E[-+]?\d+)?(?:MTZ|N)?/i
 /\bTYPE\s+\w+\s+IS\s+(?:\w+(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))/i
-/(?:\w+(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))(?=\s+IS(?:(?<!\w)\w|(?<=\w)(?!\w)))/i
+/(?:\w+(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))(?=\s+IS\b)/i
 /:\s*(?:\w+(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))/
 /[,;]/
 /YES|NO/
@@ -1714,12 +1734,12 @@ TooManyNodesError
 /v\d+(?:\.\d+)*|\d+(?:\.\d+){2,}/
 /SUB \w+/i
 /^\s*=\w+[^]*?=cut.*/m
-/\bq(?:|q|x|w)\s*[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[]/
-/\bq(?:|q|x|w)\s+(?:0(?:(?!0)[^\\]|\\[^])*0|1(?:(?!1)[^\\]|\\[^])*1|2(?:(?!2)[^\\]|\\[^])*2|3(?:(?!3)[^\\]|\\[^])*3|4(?:(?!4)[^\\]|\\[^])*4|5(?:(?!5)[^\\]|\\[^])*5|6(?:(?!6)[^\\]|\\[^])*6|7(?:(?!7)[^\\]|\\[^])*7|8(?:(?!8)[^\\]|\\[^])*8|9(?:(?!9)[^\\]|\\[^])*9|A(?:(?!A)[^\\]|\\[^])*A|B(?:(?!B)[^\\]|\\[^])*B|C(?:(?!C)[^\\]|\\[^])*C|D(?:(?!D)[^\\]|\\[^])*D|E(?:(?!E)[^\\]|\\[^])*E|F(?:(?!F)[^\\]|\\[^])*F|G(?:(?!G)[^\\]|\\[^])*G|H(?:(?!H)[^\\]|\\[^])*H|I(?:(?!I)[^\\]|\\[^])*I|J(?:(?!J)[^\\]|\\[^])*J|K(?:(?!K)[^\\]|\\[^])*K|L(?:(?!L)[^\\]|\\[^])*L|M(?:(?!M)[^\\]|\\[^])*M|N(?:(?!N)[^\\]|\\[^])*N|O(?:(?!O)[^\\]|\\[^])*O|P(?:(?!P)[^\\]|\\[^])*P|Q(?:(?!Q)[^\\]|\\[^])*Q|R(?:(?!R)[^\\]|\\[^])*R|S(?:(?!S)[^\\]|\\[^])*S|T(?:(?!T)[^\\]|\\[^])*T|U(?:(?!U)[^\\]|\\[^])*U|V(?:(?!V)[^\\]|\\[^])*V|W(?:(?!W)[^\\]|\\[^])*W|X(?:(?!X)[^\\]|\\[^])*X|Y(?:(?!Y)[^\\]|\\[^])*Y|Z(?:(?!Z)[^\\]|\\[^])*Z|a(?:(?!a)[^\\]|\\[^])*a|b(?:(?!b)[^\\]|\\[^])*b|c(?:(?!c)[^\\]|\\[^])*c|d(?:(?!d)[^\\]|\\[^])*d|e(?:(?!e)[^\\]|\\[^])*e|f(?:(?!f)[^\\]|\\[^])*f|g(?:(?!g)[^\\]|\\[^])*g|h(?:(?!h)[^\\]|\\[^])*h|i(?:(?!i)[^\\]|\\[^])*i|j(?:(?!j)[^\\]|\\[^])*j|k(?:(?!k)[^\\]|\\[^])*k|l(?:(?!l)[^\\]|\\[^])*l|m(?:(?!m)[^\\]|\\[^])*m|n(?:(?!n)[^\\]|\\[^])*n|o(?:(?!o)[^\\]|\\[^])*o|p(?:(?!p)[^\\]|\\[^])*p|q(?:(?!q)[^\\]|\\[^])*q|r(?:(?!r)[^\\]|\\[^])*r|s(?:(?!s)[^\\]|\\[^])*s|t(?:(?!t)[^\\]|\\[^])*t|u(?:(?!u)[^\\]|\\[^])*u|v(?:(?!v)[^\\]|\\[^])*v|w(?:(?!w)[^\\]|\\[^])*w|x(?:(?!x)[^\\]|\\[^])*x|y(?:(?!y)[^\\]|\\[^])*y|z(?:(?!z)[^\\]|\\[^])*z)/
-/\bq(?:|q|x|w)\s*\((?:[^()\\]|\\[^])*\)/
-/\bq(?:|q|x|w)\s*\{(?:[^\\{}]|\\[^])*\}/
-/\bq(?:|q|x|w)\s*\[(?:[^[\\\]]|\\[^])*\]/
-/\bq(?:|q|x|w)\s*<(?:[^<>\\]|\\[^])*>/
+/\b(?:q|qq|qx|qw)\s*[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[]/
+/\b(?:q|qq|qx|qw)\s+(?:0(?:(?!0)[^\\]|\\[^])*0|1(?:(?!1)[^\\]|\\[^])*1|2(?:(?!2)[^\\]|\\[^])*2|3(?:(?!3)[^\\]|\\[^])*3|4(?:(?!4)[^\\]|\\[^])*4|5(?:(?!5)[^\\]|\\[^])*5|6(?:(?!6)[^\\]|\\[^])*6|7(?:(?!7)[^\\]|\\[^])*7|8(?:(?!8)[^\\]|\\[^])*8|9(?:(?!9)[^\\]|\\[^])*9|A(?:(?!A)[^\\]|\\[^])*A|B(?:(?!B)[^\\]|\\[^])*B|C(?:(?!C)[^\\]|\\[^])*C|D(?:(?!D)[^\\]|\\[^])*D|E(?:(?!E)[^\\]|\\[^])*E|F(?:(?!F)[^\\]|\\[^])*F|G(?:(?!G)[^\\]|\\[^])*G|H(?:(?!H)[^\\]|\\[^])*H|I(?:(?!I)[^\\]|\\[^])*I|J(?:(?!J)[^\\]|\\[^])*J|K(?:(?!K)[^\\]|\\[^])*K|L(?:(?!L)[^\\]|\\[^])*L|M(?:(?!M)[^\\]|\\[^])*M|N(?:(?!N)[^\\]|\\[^])*N|O(?:(?!O)[^\\]|\\[^])*O|P(?:(?!P)[^\\]|\\[^])*P|Q(?:(?!Q)[^\\]|\\[^])*Q|R(?:(?!R)[^\\]|\\[^])*R|S(?:(?!S)[^\\]|\\[^])*S|T(?:(?!T)[^\\]|\\[^])*T|U(?:(?!U)[^\\]|\\[^])*U|V(?:(?!V)[^\\]|\\[^])*V|W(?:(?!W)[^\\]|\\[^])*W|X(?:(?!X)[^\\]|\\[^])*X|Y(?:(?!Y)[^\\]|\\[^])*Y|Z(?:(?!Z)[^\\]|\\[^])*Z|a(?:(?!a)[^\\]|\\[^])*a|b(?:(?!b)[^\\]|\\[^])*b|c(?:(?!c)[^\\]|\\[^])*c|d(?:(?!d)[^\\]|\\[^])*d|e(?:(?!e)[^\\]|\\[^])*e|f(?:(?!f)[^\\]|\\[^])*f|g(?:(?!g)[^\\]|\\[^])*g|h(?:(?!h)[^\\]|\\[^])*h|i(?:(?!i)[^\\]|\\[^])*i|j(?:(?!j)[^\\]|\\[^])*j|k(?:(?!k)[^\\]|\\[^])*k|l(?:(?!l)[^\\]|\\[^])*l|m(?:(?!m)[^\\]|\\[^])*m|n(?:(?!n)[^\\]|\\[^])*n|o(?:(?!o)[^\\]|\\[^])*o|p(?:(?!p)[^\\]|\\[^])*p|q(?:(?!q)[^\\]|\\[^])*q|r(?:(?!r)[^\\]|\\[^])*r|s(?:(?!s)[^\\]|\\[^])*s|t(?:(?!t)[^\\]|\\[^])*t|u(?:(?!u)[^\\]|\\[^])*u|v(?:(?!v)[^\\]|\\[^])*v|w(?:(?!w)[^\\]|\\[^])*w|x(?:(?!x)[^\\]|\\[^])*x|y(?:(?!y)[^\\]|\\[^])*y|z(?:(?!z)[^\\]|\\[^])*z)/
+/\b(?:q|qq|qx|qw)\s*\((?:[^()\\]|\\[^])*\)/
+/\b(?:q|qq|qx|qw)\s*\{(?:[^\\{}]|\\[^])*\}/
+/\b(?:q|qq|qx|qw)\s*\[(?:[^[\\\]]|\\[^])*\]/
+/\b(?:q|qq|qx|qw)\s*<(?:[^<>\\]|\\[^])*>/
 /"(?:(?!")[^\\]|\\[^])*"|\`(?:(?!\`)[^\\]|\\[^])*\`/
 /'(?:[^\n\r'\\]|\\.)*'/
 /\b(?:m|qr)\s*[^\s\d(<\x41-\x5b\x61-\x7b](?:(?![]Unknown:\\1[])[^\\]|\\[^])*[]Unknown:\\1[][acdgil-psux]*/
@@ -1734,10 +1754,10 @@ TooManyNodesError
 /(?:^|[^-]\b)(?:s|tr|y)\s*\{(?:[^\\{}]|\\[^])*\}\s*\{(?:[^\\{}]|\\[^])*\}[acdegil-prsux]*/
 /(?:^|[^-]\b)(?:s|tr|y)\s*\[(?:[^[\\\]]|\\[^])*\]\s*\[(?:[^[\\\]]|\\[^])*\][acdegil-prsux]*/
 /(?:^|[^-]\b)(?:s|tr|y)\s*<(?:[^<>\\]|\\[^])*>\s*<(?:[^<>\\]|\\[^])*>[acdegil-prsux]*/
-/\/(?:[^\n\r/\\]|\\.)*\/[acdgil-psux]*(?=\s*(?:$|[\n\r!&)*+,\-.;<>?|}~^]|(?:lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|x)(?:(?<!\w)\w|(?<=\w)(?!\w))))/
+/\/(?:[^\n\r/\\]|\\.)*\/[acdgil-psux]*(?=\s*(?:$|[\n\r!&)*+,\-.;<>?|}~^]|(?:lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|x)\b))/
 /sub/
-/@(?:global|param|property(?:-(?:read|write))?|var)\s+(?:(?:\b[A-Za-z]\w*|[[\\\]|])+\s+)?\$\w+/
-/@(?:global|package|param|property(?:-(?:read|write))?|return|subpackage|throws|var)\s+(?:\b[A-Za-z]\w*|[[\\\]|])+/
+/@(?:global|param|property(?:-read|-write)?|var)\s+(?:(?:\b[A-Za-z]\w*|[[\\\]|])+\s+)?\$\w+/
+/@(?:global|package|param|property(?:-read|-write)?|return|subpackage|throws|var)\s+(?:\b[A-Za-z]\w*|[[\\\]|])+/
 /\b(?:callback|resource|boolean|integer|double|object|string|array|false|float|mixed|bool|null|self|true|void|int)\b/
 /[()[\\\]|]/
 /\$this\b/
@@ -1746,42 +1766,42 @@ TooManyNodesError
 /static|self|parent/
 /::|\\/
 /\b(?:AVG|COUNT|FIRST|FORMAT|LAST|LCASE|LEN|MAX|MID|MIN|MOD|NOW|ROUND|SUM|UCASE)(?=\s*\()/i
-/\b(?:ACTION|ADD|AFTER|ALGORITHM|ALL|ALTER|ANALYZE|ANY|APPLY|AS|ASC|AUTHORIZATION|AUTO_INCREMENT|BACKUP|BDB|BEGIN|BERKELEYDB|BIGINT|BINARY|BIT|BLOB|BOOL|BOOLEAN|BREAK|BROWSE|BTREE|BULK|BY|CALL|CASCADED?|CASE|CHAIN|CHAR(?:ACTER|SET)?|CHECK(?:POINT)?|CLOSE|CLUSTERED|COALESCE|COLLATE|COLUMNS?|COMMENT|COMMIT(?:TED)?|COMPUTE|CONNECT|CONSISTENT|CONSTRAINT|CONTAINS(?:TABLE)?|CONTINUE|CONVERT|CREATE|CROSS|CURRENT(?:_(?:DATE|TIME|TIMESTAMP|USER))?|CURSOR|CYCLE|DATA(?:BASES?)?|DATE(?:TIME)?|DAY|DBCC|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFINER|DELAYED|DELETE|DELIMITERS?|DENY|DESC|DESCRIBE|DETERMINISTIC|DISABLE|DISCARD|DISK|DISTINCT|DISTINCTROW|DISTRIBUTED|DO|DOUBLE|DROP|DUMMY|DUMP(?:FILE)?|DUPLICATE|ELSE(?:IF)?|ENABLE|ENCLOSED|END|ENGINE|ENUM|ERRLVL|ERRORS|ESCAPED?|EXCEPT|EXEC(?:UTE)?|EXISTS|EXIT|EXPLAIN|EXTENDED|FETCH|FIELDS|FILE|FILLFACTOR|FIRST|FIXED|FLOAT|FOLLOWING|FOR(?: EACH ROW)?|FORCE|FOREIGN|FREETEXT(?:TABLE)?|FROM|FULL|FUNCTION|GEOMETRY(?:COLLECTION)?|GLOBAL|GOTO|GRANT|GROUP|HANDLER|HASH|HAVING|HOLDLOCK|HOUR|IDENTITY(?:_INSERT|COL)?|IF|IGNORE|IMPORT|INDEX|INFILE|INNER|INNODB|INOUT|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|INVOKER|ISOLATION|ITERATE|JOIN|KEYS?|KILL|LANGUAGE|LAST|LEAVE|LEFT|LEVEL|LIMIT|LINENO|LINES|LINESTRING|LOAD|LOCAL|LOCK|LONG(?:BLOB|TEXT)|LOOP|MATCH(?:ED)?|MEDIUM(?:BLOB|INT|TEXT)|MERGE|MIDDLEINT|MINUTE|MODE|MODIFIES|MODIFY|MONTH|MULTI(?:LINESTRING|POINT|POLYGON)|NATIONAL|NATURAL|NCHAR|NEXT|NO|NONCLUSTERED|NULLIF|NUMERIC|OFF?|OFFSETS?|ON|OPEN(?:DATASOURCE|QUERY|ROWSET)?|OPTIMIZE|OPTION(?:ALLY)?|ORDER|OUT(?:ER|FILE)?|OVER|PARTIAL|PARTITION|PERCENT|PIVOT|PLAN|POINT|POLYGON|PRECEDING|PRECISION|PREPARE|PREV|PRIMARY|PRINT|PRIVILEGES|PROC(?:EDURE)?|PUBLIC|PURGE|QUICK|RAISERROR|READS?|REAL|RECONFIGURE|REFERENCES|RELEASE|RENAME|REPEAT(?:ABLE)?|REPLACE|REPLICATION|REQUIRE|RESIGNAL|RESTORE|RESTRICT|RETURN(?:S|ING)?|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW(?:COUNT|GUIDCOL|S)?|RTREE|RULE|SAVE(?:POINT)?|SCHEMA|SECOND|SELECT|SERIAL(?:IZABLE)?|SESSION(?:_USER)?|SET(?:USER)?|SHARE|SHOW|SHUTDOWN|SIMPLE|SMALLINT|SNAPSHOT|SOME|SONAME|SQL|START(?:ING)?|STATISTICS|STATUS|STRIPED|SYSTEM_USER|TABLES?|TABLESPACE|TEMP(?:ORARY|TABLE)?|TERMINATED|TEXT(?:SIZE)?|THEN|TIME(?:STAMP)?|TINY(?:BLOB|INT|TEXT)|TOP?|TRAN(?:SACTIONS?)?|TRIGGER|TRUNCATE|TSEQUAL|TYPES?|UNBOUNDED|UNCOMMITTED|UNDEFINED|UNION|UNIQUE|UNLOCK|UNPIVOT|UNSIGNED|UPDATE(?:TEXT)?|USAGE|USE|USER|USING|VALUES?|VAR(?:BINARY|CHAR|CHARACTER|YING)|VIEW|WAITFOR|WARNINGS|WHEN|WHERE|WHILE|WITH(?: ROLLUP|IN)?|WORK|WRITE(?:TEXT)?|YEAR)\b/i
+/\b(?:ACTION|ADD|AFTER|ALGORITHM|ALL|ALTER|ANALYZE|ANY|APPLY|AS|ASC|AUTHORIZATION|AUTO_INCREMENT|BACKUP|BDB|BEGIN|BERKELEYDB|BIGINT|BINARY|BIT|BLOB|BOOL|BOOLEAN|BREAK|BROWSE|BTREE|BULK|BY|CALL|CASCADED?|CASE|CHAIN|CHAR(?:ACTER|SET)?|CHECK(?:POINT)?|CLOSE|CLUSTERED|COALESCE|COLLATE|COLUMNS?|COMMENT|COMMIT(?:TED)?|COMPUTE|CONNECT|CONSISTENT|CONSTRAINT|CONTAINS(?:TABLE)?|CONTINUE|CONVERT|CREATE|CROSS|CURRENT(?:_DATE|_TIME|_TIMESTAMP|_USER)?|CURSOR|CYCLE|DATA(?:BASES?)?|DATE(?:TIME)?|DAY|DBCC|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFINER|DELAYED|DELETE|DELIMITERS?|DENY|DESC|DESCRIBE|DETERMINISTIC|DISABLE|DISCARD|DISK|DISTINCT|DISTINCTROW|DISTRIBUTED|DO|DOUBLE|DROP|DUMMY|DUMP(?:FILE)?|DUPLICATE|ELSE(?:IF)?|ENABLE|ENCLOSED|END|ENGINE|ENUM|ERRLVL|ERRORS|ESCAPED?|EXCEPT|EXEC(?:UTE)?|EXISTS|EXIT|EXPLAIN|EXTENDED|FETCH|FIELDS|FILE|FILLFACTOR|FIRST|FIXED|FLOAT|FOLLOWING|FOR(?: EACH ROW)?|FORCE|FOREIGN|FREETEXT(?:TABLE)?|FROM|FULL|FUNCTION|GEOMETRY(?:COLLECTION)?|GLOBAL|GOTO|GRANT|GROUP|HANDLER|HASH|HAVING|HOLDLOCK|HOUR|IDENTITY(?:_INSERT|COL)?|IF|IGNORE|IMPORT|INDEX|INFILE|INNER|INNODB|INOUT|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|INVOKER|ISOLATION|ITERATE|JOIN|KEYS?|KILL|LANGUAGE|LAST|LEAVE|LEFT|LEVEL|LIMIT|LINENO|LINES|LINESTRING|LOAD|LOCAL|LOCK|LONG(?:BLOB|TEXT)|LOOP|MATCH(?:ED)?|MEDIUM(?:BLOB|INT|TEXT)|MERGE|MIDDLEINT|MINUTE|MODE|MODIFIES|MODIFY|MONTH|MULTI(?:LINESTRING|POINT|POLYGON)|NATIONAL|NATURAL|NCHAR|NEXT|NO|NONCLUSTERED|NULLIF|NUMERIC|OFF?|OFFSETS?|ON|OPEN(?:DATASOURCE|QUERY|ROWSET)?|OPTIMIZE|OPTION(?:ALLY)?|ORDER|OUT(?:ER|FILE)?|OVER|PARTIAL|PARTITION|PERCENT|PIVOT|PLAN|POINT|POLYGON|PRECEDING|PRECISION|PREPARE|PREV|PRIMARY|PRINT|PRIVILEGES|PROC(?:EDURE)?|PUBLIC|PURGE|QUICK|RAISERROR|READS?|REAL|RECONFIGURE|REFERENCES|RELEASE|RENAME|REPEAT(?:ABLE)?|REPLACE|REPLICATION|REQUIRE|RESIGNAL|RESTORE|RESTRICT|RETURN(?:S|ING)?|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW(?:COUNT|GUIDCOL|S)?|RTREE|RULE|SAVE(?:POINT)?|SCHEMA|SECOND|SELECT|SERIAL(?:IZABLE)?|SESSION(?:_USER)?|SET(?:USER)?|SHARE|SHOW|SHUTDOWN|SIMPLE|SMALLINT|SNAPSHOT|SOME|SONAME|SQL|START(?:ING)?|STATISTICS|STATUS|STRIPED|SYSTEM_USER|TABLES?|TABLESPACE|TEMP(?:ORARY|TABLE)?|TERMINATED|TEXT(?:SIZE)?|THEN|TIME(?:STAMP)?|TINY(?:BLOB|INT|TEXT)|TOP?|TRAN(?:SACTIONS?)?|TRIGGER|TRUNCATE|TSEQUAL|TYPES?|UNBOUNDED|UNCOMMITTED|UNDEFINED|UNION|UNIQUE|UNLOCK|UNPIVOT|UNSIGNED|UPDATE(?:TEXT)?|USAGE|USE|USER|USING|VALUES?|VAR(?:BINARY|CHAR|CHARACTER|YING)|VIEW|WAITFOR|WARNINGS|WHEN|WHERE|WHILE|WITH(?: ROLLUP|IN)?|WORK|WRITE(?:TEXT)?|YEAR)\b/i
 /\b0X[\dA-F]+\b|\b\d+\.?\d*|\B\.\d+\b/i
 /[-%*+/=~^]|&&?|\|\|?|!=?|<(?:=>?|<|>)?|>[=>]?|\b(?:AND|BETWEEN|IN|LIKE|NOT|OR|IS|DIV|REGEXP|RLIKE|SOUNDS LIKE|XOR)\b/i
 /[(),.;[\]\`]/
 /(?:^|[^\\])(?:\/\*[^]*?\*\/|(?:--|\/\/|#).*)/
 /@[\w$.]+/
 /(?:^|[^@\\])(?:"(?:\\[^]|(?!")[^\\]|"")*"|'(?:\\[^]|(?!')[^\\]|'')*')/
-/\b(?:ACCESS|AGENT|AGGREGATE|ARRAY|ARROW|AT|ATTRIBUTE|AUDIT|AUTHID|BFILE_BASE|BLOB_BASE|BLOCK|BODY|BOTH|BOUND|BYTE|CALLING|CHAR_BASE|CHARSET(?:FORM|ID)|CLOB_BASE|COLAUTH|COLLECT|CLUSTERS?|COMPILED|COMPRESS|CONSTANT|CONSTRUCTOR|CONTEXT|CRASH|CUSTOMDATUM|DANGLING|DATE_BASE|DEFINE|DETERMINISTIC|DURATION|ELEMENT|EMPTY|EXCEPTIONS?|EXCLUSIVE|EXTERNAL|FINAL|FORALL|FORM|FOUND|GENERAL|HEAP|HIDDEN|IDENTIFIED|IMMEDIATE|INCLUDING|INCREMENT|INDICATOR|INDEXES|INDICES|INFINITE|INITIAL|ISOPEN|INSTANTIABLE|INTERFACE|INVALIDATE|JAVA|LARGE|LEADING|LENGTH|LIBRARY|LIKE[24C]|LIMITED|LONG|LOOP|MAP|MAXEXTENTS|MAXLEN|MEMBER|MINUS|MLSLABEL|MULTISET|NAME|NAN|NATIVE|NEW|NOAUDIT|NOCOMPRESS|NOCOPY|NOTFOUND|NOWAIT|NUMBER(?:_BASE)?|OBJECT|OCI(?:COLL|DATE|DATETIME|DURATION|INTERVAL|LOBLOCATOR|NUMBER|RAW|REF|REFCURSOR|ROWID|STRING|TYPE)|OFFLINE|ONLINE|ONLY|OPAQUE|OPERATOR|ORACLE|ORADATA|ORGANIZATION|ORL(?:AN|VAR)Y|OTHERS|OVERLAPS|OVERRIDING|PACKAGE|PARALLEL_ENABLE|PARAMETERS?|PASCAL|PCTFREE|PIPE(?:LINED)?|PRAGMA|PRIOR|PRIVATE|RAISE|RANGE|RAW|RECORD|REF|REFERENCE|REM|REMAINDER|RESULT|RESOURCE|RETURNING|REVERSE|ROW(?:ID|NUM|TYPE)|SAMPLE|SB[124]|SEGMENT|SELF|SEPARATE|SEQUENCE|SHORT|SIZE(?:_T)?|SPARSE|SQL(?:CODE|DATA|NAME|STATE)|STANDARD|STATIC|STDDEV|STORED|STRING|STRUCT|STYLE|SUBMULTISET|SUBPARTITION|SUBSTITUTABLE|SUBTYPE|SUCCESSFUL|SYNONYM|SYSDATE|TABAUTH|TDO|THE|TIMEZONE_(?:ABBR|HOUR|MINUTE|REGION)|TRAILING|TRANSAC(?:TIONAL)?|TRUSTED|UB[124]|UID|UNDER|UNTRUSTED|VALIDATE|VALIST|VARCHAR2|VARIABLE|VARIANCE|VARRAY|VIEWS|VOID|WHENEVER|WRAPPED|ZONE)\b/i
+/\b(?:ACCESS|AGENT|AGGREGATE|ARRAY|ARROW|AT|ATTRIBUTE|AUDIT|AUTHID|BFILE_BASE|BLOB_BASE|BLOCK|BODY|BOTH|BOUND|BYTE|CALLING|CHAR_BASE|CHARSET(?:FORM|ID)|CLOB_BASE|COLAUTH|COLLECT|CLUSTERS?|COMPILED|COMPRESS|CONSTANT|CONSTRUCTOR|CONTEXT|CRASH|CUSTOMDATUM|DANGLING|DATE_BASE|DEFINE|DETERMINISTIC|DURATION|ELEMENT|EMPTY|EXCEPTIONS?|EXCLUSIVE|EXTERNAL|FINAL|FORALL|FORM|FOUND|GENERAL|HEAP|HIDDEN|IDENTIFIED|IMMEDIATE|INCLUDING|INCREMENT|INDICATOR|INDEXES|INDICES|INFINITE|INITIAL|ISOPEN|INSTANTIABLE|INTERFACE|INVALIDATE|JAVA|LARGE|LEADING|LENGTH|LIBRARY|LIKE[24C]|LIMITED|LONG|LOOP|MAP|MAXEXTENTS|MAXLEN|MEMBER|MINUS|MLSLABEL|MULTISET|NAME|NAN|NATIVE|NEW|NOAUDIT|NOCOMPRESS|NOCOPY|NOTFOUND|NOWAIT|NUMBER(?:_BASE)?|OBJECT|OCI(?:COLL|DATE|DATETIME|DURATION|INTERVAL|LOBLOCATOR|NUMBER|RAW|REF|REFCURSOR|ROWID|STRING|TYPE)|OFFLINE|ONLINE|ONLY|OPAQUE|OPERATOR|ORACLE|ORADATA|ORGANIZATION|ORL(?:ANY|VARY)|OTHERS|OVERLAPS|OVERRIDING|PACKAGE|PARALLEL_ENABLE|PARAMETERS?|PASCAL|PCTFREE|PIPE(?:LINED)?|PRAGMA|PRIOR|PRIVATE|RAISE|RANGE|RAW|RECORD|REF|REFERENCE|REM|REMAINDER|RESULT|RESOURCE|RETURNING|REVERSE|ROW(?:ID|NUM|TYPE)|SAMPLE|SB[124]|SEGMENT|SELF|SEPARATE|SEQUENCE|SHORT|SIZE(?:_T)?|SPARSE|SQL(?:CODE|DATA|NAME|STATE)|STANDARD|STATIC|STDDEV|STORED|STRING|STRUCT|STYLE|SUBMULTISET|SUBPARTITION|SUBSTITUTABLE|SUBTYPE|SUCCESSFUL|SYNONYM|SYSDATE|TABAUTH|TDO|THE|TIMEZONE_(?:ABBR|HOUR|MINUTE|REGION)|TRAILING|TRANSAC(?:TIONAL)?|TRUSTED|UB[124]|UID|UNDER|UNTRUSTED|VALIDATE|VALIST|VARCHAR2|VARIABLE|VARIANCE|VARRAY|VIEWS|VOID|WHENEVER|WRAPPED|ZONE)\b/i
 /:=/
 /@(?:"(?:\\[^]|(?!")[^\\])+"|'(?:\\[^]|(?!')[^\\])+'|\`(?:\\[^]|(?!\`)[^\\])+\`)/
-/(?:\b(?:and|as|each|else|error|if|in|is|let|meta|not|nullable|optional|or|otherwise|section|shared|then|try|type)|#(?:binary|date|datetime|datetimezone|duration|infinity|nan|sections|shared|table|time))\b/
+/\b(?:and|as|each|else|error|if|in|is|let|meta|not|nullable|optional|or|otherwise|section|shared|then|try|type)\b|#(?:binary|date|datetime|datetimezone|duration|infinity|nan|sections|shared|table|time)\b/
 /[-&*+/?@^]|<(?:=>?|>)?|>=?|=>?|\.\.\.?/
 /[(),;[\]{}]/
-/(?:^|[^\\])\/(?:\*[^]*?\*\/|\/.*)/
+/(?:^|[^\\])(?:\/\*[^]*?\*\/|\/\/.*)/
 /#"(?:[^\n\r"]|"")*"(?!")/
-/\bDay\.(?:Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day\b/
+/\bDay\.(?:Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/
 /\bTraceLevel\.(?:Critical|Error|Information|Verbose|Warning)\b/
 /\bOccurrence\.(?:First|Last|All)\b/
-/\bOrder\.(?:A|De)scending\b/
+/\bOrder\.(?:Ascending|Descending)\b/
 /\bRoundingMode\.(?:AwayFromZero|Down|ToEven|TowardZero|Up)\b/
 /\bMissingField\.(?:Error|Ignore|UseNull)\b/
 /\bQuoteStyle\.(?:Csv|None)\b/
 /\bJoinKind\.(?:Inner|LeftOuter|RightOuter|FullOuter|LeftAnti|RightAnti)\b/
-/\bGroupKind\.(?:Glob|Loc)al\b/
+/\bGroupKind\.(?:Global|Local)\b/
 /\bExtraValues\.(?:List|Ignore|Error)\b/
 /\bJoinAlgorithm\.(?:Dynamic|PairwiseHash|SortMerge|LeftHash|RightHash|LeftIndex|RightIndex)\b/
-/\bJoinSide\.(?:Lef|Righ)t\b/
-/\bPrecision\.D(?:ouble|ecimal)\b/
+/\bJoinSide\.(?:Left|Right)\b/
+/\bPrecision\.(?:Double|Decimal)\b/
 /\bRelativePosition\.From(?:End|Start)\b/
 /\bTextEncoding\.(?:Ascii|BigEndianUnicode|Unicode|Utf8|Utf16|Windows)\b/
 /\b(?:Any|Binary|Date|DateTime|DateTimeZone|Duration|Int8|Int16|Int32|Int64|Function|List|Logical|None|Number|Record|Table|Text|Time)\.Type\b/
 /(?:^|[^\w#.])(?!\d)[\w.]+(?=\s*\()/
 /\b(?:any|anynonnull|binary|date|datetime|datetimezone|duration|function|list|logical|none|number|record|table|text|time|type)\b/
-/(?:\b0X[\dA-F]+|(?:[-+]?(?:\b\d+\.)?\b|[-+]\.|(?:^|[^.])\B\.)\d+(?:E[-+]?\d+)?)\b/i
+/\b0X[\dA-F]+\b|(?:[-+]?(?:\b\d+\.)?\b\d+|[-+]\.\d+|(?:^|[^.])\B\.\d+)(?:E[-+]?\d+)?\b/i
 /\[[A-Z](?:\[(?:\[[^\]]*\]|[^[\]])*\]|[^[\]])*\]/i
-/\$(?:TRU|FALS)E\b/i
+/\$(?:TRUE|FALSE)\b/i
 /\$\w+\b/
 /\b(?:BEGIN|BREAK|CATCH|CLASS|CONTINUE|DATA|DEFINE|DO|DYNAMICPARAM|ELSE|ELSEIF|END|EXIT|FILTER|FINALLY|FOR|FOREACH|FROM|FUNCTION|IF|INLINESCRIPT|PARALLEL|PARAM|PROCESS|RETURN|SEQUENCE|SWITCH|THROW|TRAP|TRY|UNTIL|USING|VAR|WHILE|WORKFLOW)\b/i
 /[(),.;[\]{|}]/
@@ -1794,7 +1814,7 @@ TooManyNodesError
 /'(?:[^']|'')*'/
 /(?:^|[^\`])\$\((?:\$\([^\n\r()]*\)|(?!\$\()[^\n\r)])*\)/
 /\b(?:break|catch|case|class|continue|default|else|extends|final|for|if|implements|import|new|null|private|public|return|static|super|switch|this|try|void|while)\b/
-/\b(?!XML(?:(?<!\w)\w|(?<=\w)(?!\w)))[A-Z][\dA-Z_]+\b/
+/\b(?!XML\b)[A-Z][\dA-Z_]+\b/
 /<[<=]?|>[=>]?|&&?|\|\|?|[%?]|[-!*+/=]=?/
 /\b(?:boolean|byte|char|color|double|float|int|XML|[A-Z]\w*)\b/
 /\b(?:fx|fy|xf[xy]?|yfx?)\b/
@@ -1805,16 +1825,16 @@ TooManyNodesError
 /[(),[\]{}]/
 /"(?:""|\\(?:\r\n|[^])|(?!")[^\n\r\\])*"|'(?:''|\\(?:\r\n|[^])|(?!')[^\n\r\\])*'/
 /^[\t ]*[!#].*$/m
-/^[\t ]*(?:\\(?:\r\n|[^])|[^\s:=\\])+?(?= *[:=] *| )/m
+/^[\t ]*(?:\\(?:\r\n|[^])|[^\s:=\\])+(?= *[:=] *| )/m
 /[:=]/
-/^[\t ]*(?:\\(?:\r\n|[^])|[^\s:=\\])+?(?: *[:=] *| )(?:\\(?:\r\n|[^])|[^\n\r\\])+/m
+/^[\t ]*(?:\\(?:\r\n|[^])|[^\s:=\\])+(?: *[:=] *| )(?:\\(?:\r\n|[^])|[^\n\r\\])+/m
 /\b(?:enum|extend|extensions|import|message|oneof|option|optional|package|public|repeated|required|reserved|returns|rpc(?=\s+\w)|service|stream|syntax|to)\b(?!\s*=\s*\d)/
 /\b(?:double|float|[su]?int(?:32|64)|s?fixed(?:32|64)|bool|string|bytes)\b/
 /\bMAP<\s*[\w.]+\s*,\s*[\w.]+\s*>(?=\s+[A-Z_]\w*\s*[;=])/i
 /(?:(?<!\w)(?=\w)|(?<=\w)(?!\w)|\B\.)[A-Z_]\w*(?:\.[A-Z_]\w*)*(?=\s+[A-Z_]\w*\s*[;=])/i
 /\[\s*[A-Z_]\w*(?=\s*=)/i
 /\b(?:enum|extend|message|service)\s+[A-Z_a-z]\w*(?=\s*\{)/
-/\br(?:pc\s+\w+|eturns)\s*\(\s*(?:stream\s+)?\.?[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*(?=\s*\))/
+/\b(?:rpc\s+\w+|returns)\s*\(\s*(?:stream\s+)?\.?[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*(?=\s*\))/
 /[,.<>]/
 /[!\-.=|]+/
 /^[\t ]*\/\/.*(?:(?:\r?\n|\r)[]Unknown:\\2[][\t ]+.+)*/m
@@ -1836,12 +1856,12 @@ TooManyNodesError
 /^each .+? in\b/
 /^(?:if|unless|else|case|when|default|while)\b/
 /^mixin/
-/\w+(?=\s*(?:\(|$))/
+/\w+(?=\s*\(|\s*$)/
 /[(),.]/
 /\b(?:each|in)\b/
 /^\+\w+/
 /&[^(]+\([^)]+\)/
-/[-\w]+(?=\s*(?:!?=|[),]))/
+/[-\w]+(?=\s*!?=|\s*[),])/
 /[!(),=]+/
 /=\s*(?:\{[^}]*\}|[^\n\r),]+)/
 /[().:;[\]{}]/
@@ -1849,11 +1869,11 @@ TooManyNodesError
 /^\s*@.+/m
 /^[\t ]*[-\w$]+\s*.?=[\t ]*(?:\{[^}]*\}|.+|$)/m
 /^[\t ]*(?:if|else|for|return|unless)[\t ]+.+/m
-/(?:^|\{)[\t ]*(?:[-\w]|\{[^\n\r}]+\})+(?:\s*:\s*|[\t ]+)[^\n\r{]*(?:;|[^\n\r,{]$(?!(?:\r?\n|\r)(?:\{|[]Unknown:\\2[][\t ]+)))/m
+/(?:^|\{)[\t ]*(?:[-\w]|\{[^\n\r}]+\})+(?:\s*:\s*|[\t ]+)[^\n\r{]*(?:;|[^\n\r,{](?=$)(?!(?:\r?\n|\r)(?:\{|[]Unknown:\\2[][\t ]+)))/m
 /^[\t ]*(?=\S)(?:[^\n\r():{}]|::?[-\w]+(?:\([^\n\r)]*\))?|\{[^\n\r}]+\})+(?:(?:\r?\n|\r)[]Unknown:\\1[](?=\S)(?:[^\n\r():{}]|::?[-\w]+(?:\([^\n\r)]*\))?|\{[^\n\r}]+\})+)*(?:,$|\{|(?=(?:\r?\n|\r)(?:\{|[]Unknown:\\1[][\t ]+)))/m
 /[-\w]+\([^)]*\).*/
 /\{[^\n\r:}]+\}/
-/\{(?:\{[^]*?\}|%[^]*?%)\}/
+/\{\{[^]*?\}\}|\{%[^]*?%\}/
 /^[\t ]*:atpl(?:(?:\r?\n|\r(?!\n))(?:[]Unknown:\\2[][\t ]+.+|\s*?(?=\r?\n|\r)))+/m
 /^[\t ]*:coffee(?:(?:\r?\n|\r(?!\n))(?:[]Unknown:\\2[][\t ]+.+|\s*?(?=\r?\n|\r)))+/m
 /^[\t ]*:ejs(?:(?:\r?\n|\r(?!\n))(?:[]Unknown:\\2[][\t ]+.+|\s*?(?=\r?\n|\r)))+/m
@@ -1867,7 +1887,7 @@ TooManyNodesError
 /^[^(]+/
 /\b(?:even|if|odd)\b/
 /\b(?:true|false|null)\b/
-/\b0x[\dA-Fa-f]+|(?:\b\d+\.?|\B\.\d)\d*(?:[Ee][-+]?\d+)?/
+/\b0x[\dA-Fa-f]+|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee][-+]?\d+)?/
 /\b[A-Z_]\w*\b/i
 /[(),.:[\]{}]/
 /\B!(?:IMPORTANT|OPTIONAL)\b/i
@@ -1875,14 +1895,14 @@ TooManyNodesError
 /[(),:;[\]{}]/
 /^[^\s:]+/
 /^\{|\}$/
-/^\{(?:\{-?|%-?\s*\w+)/
-/-?(?:%|\})\}$/
+/^(?:\{\{-?|\{%-?\s*\w+)/
+/-?(?:%\}|\}\})$/
 /[<=>]=?|!=|\*\*?|\/\/?|\?:?|[-%+|~]/
 /URL\((?:".*?"|'.*?'|.*?)\)/i
 /(?:^|\s+)(?:(?:if|else|for|return|unless)(?=\s+|$)|@[-\w]+)/
 /\b\d+(?:%|[a-z]+)/
 /~|[!%+/<=>?]=?|[-:]=|\*[*=]?|\.{2,3}|&&|\|\||\B-\B|\b(?:and|in|is(?: a| defined| not|nt)?|not|or)\b/
-/^\{(?:\{|%)-?/
+/^(?:\{\{|\{%)-?/
 /^["']|["']$/
 /\s(?:and|b-and|b-xor|b-or|ends with|in|is|matches|not|or|same as|starts with)(?=\s)/
 /(?:\w+|\*)(?=\s*=>)/
@@ -1890,10 +1910,10 @@ TooManyNodesError
 /\b(?:application|attr|case|class|consumes|default|define|else|elsif|function|if|import|inherits|node|private|produces|type|undef|unless)\b/
 /=[=>~]?|![=~]?|<(?:<\|?|[-=|~])?|>[=>]?|->?|~>|\|>?>?|[%*+/?]|\b(?:and|in|or)\b/
 /[(),.;[\]{}]|:+/
-/(?:\bnode\s|[(,=[{~]|[+=]>|^)\s*\/(?:[^/\\]|\\[^])+\/(?:[imx]+\b|(?<=\w)(?=\w)|(?<!\w)(?!\w))/
+/(?:\bnode\s+|[(,=[{~]\s*|[+=]>\s*|^\s*)\/(?:[^/\\]|\\[^])+\/(?:[imx]+\b|(?<=\w)(?=\w)|(?<!\w)(?!\w))/
 /"(?:\$\{(?:[^"'}]|"(?:(?!")[^\\]|\\[^])*"|'(?:(?!')[^\\]|\\[^])*')+\}|(?!")[^\\]|\\[^])*"|'(?:\$\{(?:[^"'}]|"(?:(?!")[^\\]|\\[^])*"|'(?:(?!')[^\\]|\\[^])*')+\}|(?!')[^\\]|\\[^])*'/
 /\$(?:::)?\w+(?:::\w+)*/
-/\b(?:(?:contain|debug|err|fail|include|info|notice|realize|require|tag|warning)\b|(?!\d)\w+(?=\())/
+/\b(?:contain|debug|err|fail|include|info|notice|realize|require|tag|warning)\b|\b(?!\d)\w+(?=\()/
 /\b(?:Any|Array|Boolean|Callable|Catalogentry|Class|Collection|Data|Default|Enum|Float|Hash|Integer|NotUndef|Numeric|Optional|Pattern|Regexp|Resource|Runtime|Scalar|String|Struct|Tuple|Type|Undef|Variant)\b/
 /@\("[^\n\r")/:]+"(?:\/[$Lnr-u]*)?\).*(?:\r?\n|\r)(?:.*(?:\r?\n|\r))*?[\t ]*\|?[\t ]*-?[\t ]*[]Unknown:\\2[]/
 /@\([^\n\r")/:]+(?:\/[$Lnr-u]*)?\).*(?:\r?\n|\r)(?:.*(?:\r?\n|\r))*?[\t ]*\|?[\t ]*-?[\t ]*[]Unknown:\\2[]/
@@ -1909,7 +1929,7 @@ TooManyNodesError
 /^\$\{(?!\w+\()(?:::)?\w+(?:::\w+)*/
 /^\$/
 /\b(?:ans|break|bt|case|catch|cd|clear|const|def|del|dump|else|end|exit|extern|false|force|help|if|infix[lr]?|interface|let|ls|mem|namespace|nonfix|NULL|of|otherwise|outfix|override|postfix|prefix|private|public|pwd|quit|run|save|show|stats|then|throw|trace|true|type|underride|using|when|with)\b/
-/\b(?:abs|add_(?:(?:fundef|interface|macdef|typedef)(?:_at)?|addr|constdef|vardef)|all|any|applp?|arity|bigintp?|blob(?:_crc|_size|p)?|boolp?|byte_(?:matrix|pointer)|byte_c?string(?:_pointer)?|calloc|cat|catmap|ceil|char[ps]?|check_ptrtag|chr|clear_sentry|clearsym|closurep?|cmatrixp?|cols?|colcat(?:map)?|colmap|colrev|colvector(?:p|seq)?|complex(?:_float_(?:matrix|pointer)|_matrix(?:_view)?|_pointer|p)?|conj|cookedp?|cst|cstring(?:_(?:dup|list|vector))?|curry3?|cyclen?|del_(?:constdef|fundef|interface|macdef|typedef|vardef)|delete|diag(?:mat)?|dim|dmatrixp?|do|double(?:_matrix(?:_view)?|_pointer|p)?|dowith3?|drop|dropwhile|eval(?:cmd)?|exactp|filter|fix|fixity|flip|float_(?:matrix|pointer)|floor|fold[lr]1?|frac|free|funp?|functionp?|gcd|get(?:_(?:byte|constdef|double|float|fundef|int(?:64)?|interface(?:_typedef)?|long|macdef|pointer|ptrtag|short|sentry|string|typedef|vardef))?|globsym|hash|head|id|im|imatrixp?|index|inexactp|infp|init|insert|int(?:_matrix(?:_view)?|_pointer|p)?|int64_(?:matrix|pointer)|integerp?|iteraten?|iterwhile|join|keys?|lambdap?|last(?:err(?:pos)?)?|lcd|list[2p]?|listmap|make_ptrtag|malloc|map|matcat|matrixp?|max|member|min|nanp|nargs|nmatrixp?|null|numberp?|ord|pack(?:ed)?|pointer(?:_cast|_tag|_type|p)?|pow|pred|ptrtag|put(?:_(?:byte|double|float|int(?:64)?|long|pointer|short|string))?|rationalp?|re|realp?|realloc|recordp?|redim|reduce(?:_with)?|refp?|repeatn?|reverse|rlistp?|round|rows?|rowcat(?:map)?|rowmap|rowrev|rowvector(?:p|seq)?|same|scan[lr]1?|sentry|sgn|short_(?:matrix|pointer)|slice|smatrixp?|sort|split|str|strcat|stream|stride|string(?:_(?:dup|list|vector)|p)?|subdiag(?:mat)?|submat|subseq2?|substr|succ|supdiag(?:mat)?|symbolp?|tail|take|takewhile|thunkp?|transpose|trunc|tuplep?|typep|ubyte|uint(?:64)?|ulong|uncurry3?|unref|unzip3?|update|ushort|vals?|varp?|vector(?:p|seq)?|void|zip3?|zipwith3?)\b/
+/\b(?:abs|add_(?:(?:fundef|interface|macdef|typedef)(?:_at)?|addr|constdef|vardef)|all|any|applp?|arity|bigintp?|blob(?:_crc|_size|p)?|boolp?|byte_(?:matrix|pointer)|byte_c?string(?:_pointer)?|calloc|cat|catmap|ceil|char[ps]?|check_ptrtag|chr|clear_sentry|clearsym|closurep?|cmatrixp?|cols?|colcat(?:map)?|colmap|colrev|colvector(?:p|seq)?|complex(?:_float_(?:matrix|pointer)|_matrix(?:_view)?|_pointer|p)?|conj|cookedp?|cst|cstring(?:_(?:dup|list|vector))?|curry3?|cyclen?|del_(?:constdef|fundef|interface|macdef|typedef|vardef)|delete|diag(?:mat)?|dim|dmatrixp?|do|double(?:_matrix(?:_view)?|_pointer|p)?|dowith3?|drop|dropwhile|eval(?:cmd)?|exactp|filter|fix|fixity|flip|float(?:_matrix|_pointer)|floor|fold[lr]1?|frac|free|funp?|functionp?|gcd|get(?:_(?:byte|constdef|double|float|fundef|int(?:64)?|interface(?:_typedef)?|long|macdef|pointer|ptrtag|short|sentry|string|typedef|vardef))?|globsym|hash|head|id|im|imatrixp?|index|inexactp|infp|init|insert|int(?:_matrix(?:_view)?|_pointer|p)?|int64_(?:matrix|pointer)|integerp?|iteraten?|iterwhile|join|keys?|lambdap?|last(?:err(?:pos)?)?|lcd|list[2p]?|listmap|make_ptrtag|malloc|map|matcat|matrixp?|max|member|min|nanp|nargs|nmatrixp?|null|numberp?|ord|pack(?:ed)?|pointer(?:_cast|_tag|_type|p)?|pow|pred|ptrtag|put(?:_(?:byte|double|float|int(?:64)?|long|pointer|short|string))?|rationalp?|re|realp?|realloc|recordp?|redim|reduce(?:_with)?|refp?|repeatn?|reverse|rlistp?|round|rows?|rowcat(?:map)?|rowmap|rowrev|rowvector(?:p|seq)?|same|scan[lr]1?|sentry|sgn|short_(?:matrix|pointer)|slice|smatrixp?|sort|split|str|strcat|stream|stride|string(?:_(?:dup|list|vector)|p)?|subdiag(?:mat)?|submat|subseq2?|substr|succ|supdiag(?:mat)?|symbolp?|tail|take|takewhile|thunkp?|transpose|trunc|tuplep?|typep|ubyte|uint(?:64)?|ulong|uncurry3?|unref|unzip3?|update|ushort|vals?|varp?|vector(?:p|seq)?|void|zip3?|zipwith3?)\b/
 /(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|\b_+\b)+|\b(?:and|div|mod|not|or)\b/
 /[(),;[\]{|}]/
 /%<[^]+?%>/
@@ -1937,8 +1957,8 @@ TooManyNodesError
 /(?:CPU|FLOAT|DEFAULT).*/
 /\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|print|raise|return|try|while|with|yield)\b/
 /\b(?:__import__|abs|all|any|apply|ascii|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|delattr|dict|dir|divmod|enumerate|eval|execfile|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\b/
-/\b(?:Tru|Fals|Non)e\b/
-/(?:\b(?=\d)|\B(?=\.))(?:0[BO])?(?:(?:\d|0X[\dA-F])[\dA-F]*\.?|\.\d)\d*(?:E[-+]?\d+)?J?\b/i
+/\b(?:True|False|None)\b/
+/(?:\b(?=\d)|\B(?=\.))(?:0[BO])?(?:(?:\d|0X[\dA-F])[\dA-F]*\.?\d*|\.\d+)(?:E[-+]?\d+)?J?\b/i
 /[-%+=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|~^]/
 /(?:F|RF|FR)(?:"""[^]*?"""|'''[^]*?'''|"(?:\\.|(?!")[^\n\r\\])*"|'(?:\\.|(?!')[^\n\r\\])*')/i
 /(?:[BRU]|RB|BR)?(?:"""[^]*?"""|'''[^]*?''')/i
@@ -1951,11 +1971,11 @@ TooManyNodesError
 /![ars](?=[:}]$)/
 /\`(?::\S+|[\w.]*)/
 /\b(?![01]:)(?:0[nw]|0W[hj]?|0N[ehj]?|0x[\dA-Fa-f]+|\d+\.?\d*(?:e[-+]?\d+)?[befhj]?)/
-/(?:\\\w+|\b(?:abs|acos|aj0?|all|and|any|asc|asin|asof|atan|attr|avgs?|binr?|by|ceiling|cols|cor|cos|count|cov|cross|csv|cut|delete|deltas|desc|dev|differ|distinct|div|do|dsave|ej|enlist|eval|except|exec|exit|exp|fby|fills|first|fkeys|flip|floor|from|get|getenv|group|gtime|hclose|hcount|hdel|hopen|hsym|iasc|identity|idesc|if|ij|in|insert|inter|inv|keys?|last|like|list|ljf?|load|log|lower|lsq|ltime|ltrim|mavg|maxs?|mcount|md5|mdev|med|meta|mins?|mmax|mmin|mmu|mod|msum|neg|next|not|null|or|over|parse|peach|pj|plist|prds?|prev|prior|rand|rank|ratios|raze|read0|read1|reciprocal|reval|reverse|rload|rotate|rsave|rtrim|save|scan|scov|sdev|select|set|setenv|show|signum|sin|sqrt|ssr?|string|sublist|sums?|sv|svar|system|tables|tan|til|trim|txf|type|uj|ungroup|union|update|upper|upsert|value|var|views?|vs|wavg|where|while|within|wj1?|wsum|ww|xasc|xbar|xcols?|xdesc|xexp|xgroup|xkey|xlog|xprev|xrank))\b/
+/\\\w+\b|\b(?:abs|acos|aj0?|all|and|any|asc|asin|asof|atan|attr|avgs?|binr?|by|ceiling|cols|cor|cos|count|cov|cross|csv|cut|delete|deltas|desc|dev|differ|distinct|div|do|dsave|ej|enlist|eval|except|exec|exit|exp|fby|fills|first|fkeys|flip|floor|from|get|getenv|group|gtime|hclose|hcount|hdel|hopen|hsym|iasc|identity|idesc|if|ij|in|insert|inter|inv|keys?|last|like|list|ljf?|load|log|lower|lsq|ltime|ltrim|mavg|maxs?|mcount|md5|mdev|med|meta|mins?|mmax|mmin|mmu|mod|msum|neg|next|not|null|or|over|parse|peach|pj|plist|prds?|prev|prior|rand|rank|ratios|raze|read0|read1|reciprocal|reval|reverse|rload|rotate|rsave|rtrim|save|scan|scov|sdev|select|set|setenv|show|signum|sin|sqrt|ssr?|string|sublist|sums?|sv|svar|system|tables|tan|til|trim|txf|type|uj|ungroup|union|update|upper|upsert|value|var|views?|vs|wavg|where|while|within|wj1?|wsum|ww|xasc|xbar|xcols?|xdesc|xexp|xgroup|xkey|xlog|xprev|xrank)\b/
 /[().;[\]{}]/
 /0N[dmtuvz]|0W[dtz]|\d{4}\.\d\d(?:m|\.\d\d(?:T(?:\d\d(?::\d\d(?::\d\d(?:[.:]\d\d\d)?)?)?)?)?[dz]?)|\d\d:\d\d(?::\d\d(?:[.:]\d\d\d)?)?[tuv]?/
 /['/\\]:?|\beach\b/
-/(?:\B\.\B|\b[01]:|<[=>]?|>=?|[-!#$%&*+,:=?@|~^]|\b_\b):?/
+/(?:\B\.\B|\b[01]:|<[=>]?|>=?|[-!#$%&*+,:=?@|~^]):?|\b_\b:?/
 /[\t )\]}]\/.*/
 /(?:^|\r?\n|\r)\/[\t ]*(?:(?:\r?\n|\r)(?:.*(?:\r?\n|\r))*?(?:\\(?=[\t ]*(?:\r?\n|\r))|$)|\S.*)/
 /^\\[\t ]*(?:\r?\n|\r)[^]+/m
@@ -1963,7 +1983,7 @@ TooManyNodesError
 /\b(?:as|import|on)\b/
 /[,:;[\]{}]/
 /(?:^|;)[\t ]*function\s+[$A-Z_a-z\xa0-\uffff][\w$\xa0-\uffff]*\s*\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\}|\\[^])*\)\s*\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\}|\\[^])*\}/m
-/(?:^|[:;])[\t ]*(?!\d)\w+(?=[\t ]*(?:\{|[\t ]on(?:(?<!\w)\w|(?<=\w)(?!\w))))/m
+/(?:^|[:;])[\t ]*(?!\d)\w+(?=[\t ]*\{|[\t ]+on\b)/m
 /:[\t ]*(?![\s;[}])(?:(?!$|[;}])(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\((?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\)|\[(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\]|\{(?:[^"'()/[\\\]{}]|"(?:\\.|[^\n\r"\\])*"|'(?:\\.|[^\n\r'\\])*'|\/(?![*/])|\/\/.*$|\/\*(?:[^*]|\*(?!\/))*\*\/|\(\)|\[\]|\{\}|\\[^])*\}|\\[^])*\}|\\[^])*\}|\\[^]))+/m
 /(?:^|[;{])[\t ]*(?!\d)\w+(?:\.\w+)*(?=[\t ]*:)/m
 /(?:^|[;{])[\t ]*property[\t ]+(?!\d)\w+(?:\.\w+)*[\t ]+(?!\d)\w+(?:\.\w+)*(?=[\t ]*:)/m
@@ -1976,7 +1996,7 @@ TooManyNodesError
 /(?:^|[^\\])(?:\/\*[^]*?\*\/|(?:\/\/|#).*)/
 /"(?:\\[^]|(?!")[^\\])*"|'(?:\\[^]|(?!')[^\\])*'/
 /(?:^|[^.])(?:\+[+=]?|-[-=]?|[!=](?:==?|~)?|>>?=?|<(?:=>?|<=?)?|&[&=]?|\|[=|]?|[%*/^]=?|[?~])/
-/\b(?:TRU|FALS)E\b/
+/\b(?:TRUE|FALSE)\b/
 /\.\.(?:\.|\d+)/
 /\b(?:if|else|repeat|while|function|for|in|next|break|NULL|NA|NA_integer_|NA_real_|NA_complex_|NA_character_)\b/
 /->?>?|<(?:=|<?-)?|[!=>]=?|::?|&&?|\|\|?|[$*+/@~^]/
@@ -1989,9 +2009,9 @@ TooManyNodesError
 /^#lang.+/m
 /'[^\s#'()[\]]+/
 /[([]lambda\s+[([][^\s'()[\]]+/
-/[([](?:define(?:-(?:library|macro|syntax|values))?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()[\]]|$)/
+/[([](?:define(?:-library|-macro|-syntax|-values)?|defmacro|(?:case-)?lambda|let(?:(?:\*|rec)?(?:-values)?|-syntax|rec-syntax)|else|if|cond|begin|delay(?:-force)?|parameterize|guard|set!|(?:quasi-)?quote|syntax-(?:case|rules))(?=[\s()[\]]|$)/
 /[([](?:(?:cons|car|cdr|list|call-with-current-continuation|call\/cc|append|abs|apply|eval)\b|null\?|pair\?|boolean\?|eof-object\?|char\?|procedure\?|number\?|port\?|string\?|vector\?|symbol\?|bytevector\?)(?=[\s()[\]]|$)/
-/(?:^|[\s()[\]])(?:(?:#(?:d(?:#[ei])?|[ei](?:#d)?))?[-+]?\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)(?:(?:[-+]\d*(?:\.?\d+(?:[Ee][-+]?\d+)?|\d\/\d+)i)?|i)|#(?:[box](?:#[ei])?|[ei](?:#[box])?)[-+]?[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|i))(?=[\s()[\]]|$)/
+/(?:^|[\s()[\]])(?:(?:#d(?:#[ei])?|#[ei](?:#d)?)?[-+]?(?:(?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)(?:[-+](?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)i)?|(?:\d*\.?\d+(?:[Ee][-+]?\d+)?|\d+\/\d+)i)|(?:#[box](?:#[ei])?|#[ei](?:#[box])?)[-+]?(?:[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?(?:[-+][\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i)?|[\dA-Fa-f]+(?:\/[\dA-Fa-f]+)?i))(?=[\s()[\]]|$)/
 /(?:^|[\s()[\]])#[ft](?=[\s()[\]]|$)/
 /[([](?:[-%*+/]|[<>]=?|=>?)(?=[\s()[\]]|$)/
 /[([][^\s'()[\]]+(?=[\s()[\]]|$)/
@@ -2020,10 +2040,10 @@ TooManyNodesError
 /\)/
 /^\[\^/
 /(?:[^-\\]|\\(?:x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|u\{[\dA-Fa-f]+\}|c[A-Za-z]|0[0-7]{0,2}|[123][0-7]{2}|.))-(?:[^-\\]|\\(?:x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|u\{[\dA-Fa-f]+\}|c[A-Za-z]|0[0-7]{0,2}|[123][0-7]{2}|.))/
-/\\(?:[DSW]|P\{[^{}]+\})/i
+/\\[DSW]|\\P\{[^{}]+\}/i
 /(?:<|')[^'<>]+(?=['>]$)/
 /\b(?:BOOL|CHAR|DOUBLE|FLOAT|NULL|SIZE_T|SSIZE_T|STRING|UNICHAR|VOID|INT|INT8|INT16|INT32|INT64|LONG|SHORT|UCHAR|UINT|UINT8|UINT16|UINT32|UINT64|ULONG|USHORT|CLASS|DELEGATE|ENUM|ERRORDOMAIN|INTERFACE|NAMESPACE|STRUCT|BREAK|CONTINUE|DO|FOR|FOREACH|RETURN|WHILE|ELSE|IF|SWITCH|ASSERT|CASE|DEFAULT|ABSTRACT|CONST|DYNAMIC|ENSURES|EXTERN|INLINE|INTERNAL|OVERRIDE|PRIVATE|PROTECTED|PUBLIC|REQUIRES|SIGNAL|STATIC|VIRTUAL|VOLATILE|WEAK|ASYNC|OWNED|UNOWNED|TRY|CATCH|FINALLY|THROW|AS|BASE|CONSTRUCT|DELETE|GET|IN|IS|LOCK|NEW|OUT|PARAMS|REF|SIZEOF|SET|THIS|THROWS|TYPEOF|USING|VALUE|VAR|YIELD)\b/i
-/(?:\b0X[\dA-F]+\b|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?)(?:F|U?L?)?/i
+/(?:\b0X[\dA-F]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?)(?:F|U?L?)?/i
 /\+\+|--|&&|\|\||<<=?|>>=?|=>|->|~|[-!%&*+/<=>|^]=?|\?\??|\.\.\./
 /\b[\dA-Z_]+\b/
 /@"[^]*?"/
@@ -2041,8 +2061,8 @@ TooManyNodesError
 /\b(?:insensitive|idle|hover|selected_idle|selected_hover|background|position|alt|xpos|ypos|pos|xanchor|yanchor|anchor|xalign|yalign|align|xcenter|ycenter|xofsset|yoffset|ymaximum|maximum|xmaximum|xminimum|yminimum|minimum|xsize|ysizexysize|xfill|yfill|area|antialias|black_color|bold|caret|color|first_indent|font|size|italic|justify|kerning|language|layout|line_leading|line_overlap_split|line_spacing|min_width|newline_indent|outlines|rest_indent|ruby_style|slow_cps|slow_cps_multiplier|strikethrough|text_align|underline|hyperlink_functions|vertical|hinting|foreground|left_margin|xmargin|top_margin|bottom_margin|ymargin|left_padding|right_padding|xpadding|top_padding|bottom_padding|ypadding|size_group|child|hover_sound|activate_sound|mouse|focus_mask|keyboard_focus|bar_vertical|bar_invert|bar_resizing|left_gutter|right_gutter|top_gutter|bottom_gutter|left_bar|right_bar|top_bar|bottom_bar|thumb|thumb_shadow|thumb_offset|unscrollable|spacing|first_spacing|box_reverse|box_wrap|order_reverse|fit_first|ysize|thumbnail_width|thumbnail_height|help|text_ypos|text_xpos|idle_color|hover_color|selected_idle_color|selected_hover_color|insensitive_color|alpha|insensitive_background|hover_background|zorder|value|width|xadjustment|xanchoraround|xaround|xinitial|xoffset|xzoom|yadjustment|yanchoraround|yaround|yinitial|yzoom|zoom|ground|height|text_style|text_y_fudge|selected_insensitive|has_sound|has_music|has_voice|focus|hovered|image_style|length|minwidth|mousewheel|offset|prefix|radius|range|right_margin|rotate|rotate_pad|developer|screen_width|screen_height|window_title|name|version|windows_icon|default_fullscreen|default_text_cps|default_afm_time|main_menu_music|sample_sound|enter_sound|exit_sound|save_directory|enter_transition|exit_transition|intra_transition|main_game_transition|game_main_transition|end_splash_transition|end_game_transition|after_load_transition|window_show_transition|window_hide_transition|adv_nvl_transition|nvl_adv_transition|enter_yesno_transition|exit_yesno_transition|enter_replay_transition|exit_replay_transition|say_attribute_transition|directory_name|executable_name|include_update|window_icon|modal|google_play_key|google_play_salt|drag_name|drag_handle|draggable|dragged|droppable|dropped|narrator_menu|action|default_afm_enable|version_name|version_tuple|inside|fadeout|fadein|layers|layer_clipping|linear|scrollbars|side_xpos|side_ypos|side_spacing|edgescroll|drag_joined|drag_raise|drop_shadow|drop_shadow_color|subpixel|easein|easeout|time|crop|auto|update|get_installed_packages|can_update|UpdateVersion|Update|overlay_functions|translations|window_left_padding|show_side_image|show_two_window)\b/
 /\b(?:label|image|menu|[hv]box|frame|text|imagemap|imagebutton|bar|vbar|screen|textbutton|buttoscreenn|fixed|grid|input|key|mousearea|side|timer|viewport|window|hotspot|hotbar|self|button|drag|draggroup|tag|mm_menu_frame|nvl|block|parallel)\b|\$/
 /\b(?:as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|pass|print|raise|return|try|while|yield|adjustment|alignaround|allow|angle|around|box_layout|cache|changed|child_size|clicked|clipping|corner1|corner2|default|delay|exclude|scope|slow|slow_abortable|slow_done|sound|style_group|substitute|suffix|transform_anchor|transpose|unhovered|config|theme|mm_root|gm_root|rounded_window|build|disabled_text|disabled|widget_selected|widget_text|widget_hover|widget|updater|behind|call|expression|hide|init|jump|onlayer|python|renpy|scene|set|show|transform|play|queue|stop|pause|define|window|repeat|contains|choice|on|function|event|animation|clockwise|counterclockwise|circles|knot|null|None|random|has|add|use|fade|dissolve|style|store|id|voice|center|left|right|less_rounded|music|movie|clear|persistent|ui)\b/
-/\b(?:[Tt]ru|[Ff]als)e\b/
-/(?:\b(?:0[BO])?(?:\d|0X[\dA-F])[\dA-F]*\.?|\B\.\d)\d*(?:E[-+]?\d+)?J?/i
+/\b(?:[Tt]rue|[Ff]alse)\b/
+/(?:\b(?:0[BO])?(?:\d|0X[\dA-F])[\dA-F]*\.?\d*|\B\.\d+)(?:E[-+]?\d+)?J?/i
 /[-%+=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|~^]|\b(?:or|and|not|with|at)\b/
 /(?:^|[^\\])#.+/
 /"""[^]+?"""|'''[^]+?'''|"(?:\\.|(?!")[^\n\r\\])*"|'(?:\\.|(?!')[^\n\r\\])*'|^#?(?:(?:[\dA-F]{2}){3}|[\dA-F]{3})$/im
@@ -2070,7 +2090,7 @@ TooManyNodesError
 /(?:\b[\dA-Z]+(?:[+.:_][\dA-Z]+)*_?_|\`[^\`]+\`_?_|_\`[^\`]+\`)(?=[\s!"'),\-./:;?\\\]}]|$)/i
 /\||(?:\+[-=]+)+\+/
 /[-=]+/
-/^\|[^\s|](?:|[^|]*[^\s|])\|/
+/^\|(?:[^\s|]|[^\s|][^|]*[^\s|])\|/
 / +[^:]+::/
 /^_|:$/
 /^[^\0-\x200-9A-Za-z\x7f-\uffff]+|[^\0-\x200-9A-Za-z\x7f-\uffff]+$/
@@ -2079,7 +2099,7 @@ TooManyNodesError
 /^(?:::|!!*|""*|##*|\$\$*|%%*|&&*|''*|\(\(*|\)\)*|\*\**|\+\+*|,,*|--*|\.\.*|\/\/*|::*|;;*|<<*|==*|>>*|\?\?*|@@*|\[\[*|\\\\*|\]\]*|\^\^*|__*|\`\`*|\{\{*|\|\|*|\}\}*|~~*)/m
 /\*\*?|\`\`?|\|/
 /^\[|\]_$/
-/^_?\`|(?:\`|\`?_?_)$/
+/^_?\`|\`$|\`?_?_$/
 /^\||\|$/
 /^\*\*.+(?=\*\*$)/
 /^\*.+(?=\*$)/
@@ -2095,7 +2115,7 @@ TooManyNodesError
 /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\b/
 /\B\`[^\s"#'(),./:;<>[\\\]\`{}]\b/
 /:[^\s\d"#'(),./:;<>[\\\]\`{}][^\s"#'(),./:;<>[\\\]\`{}]*/
-/[-+]?\b\d+(?:\.\d+|)\b/
+/[-+]?\b(?:\d+\.\d+|\d+)\b/
 /\.{2,3}|[(),./:;<=>[\\\]\`{}]/
 /[^\s\d"#'(),./:;<>[\\\]\`{}][^\s"#'(),./:;<>[\\\]\`{}]*/
 /(?:^|[^/])\/(?!\/)(?:\[[^\n\r\]]*\]|\\.|[^\n\r/[\\])+\/(?=\s*(?:$|[\n\r),.;}]))/
@@ -2126,10 +2146,10 @@ TooManyNodesError
 /\b(?:0x[\dA-Fa-f](?:_?[\dA-Fa-f])*|0o[0-7](?:_?[0-7])*|0b[01](?:_?[01])*|(?:\d(?:_?\d)*)?\.?\d(?:_?\d)*(?:[Ee][-+]?\d+)?)(?:_?(?:[iu](?:8|16|32|64|size)?|f32|f64))?\b/
 /->|\.\.=|\.{1,3}|::|[(),:;[\]{}]/
 /[-!%*+/^]=?|=[=>]?|&[&=]?|\|[=|]?|<<?=?|>>?=?|[?@]/
-/b?(?:"(?:\\[^]|[^"\\])*"|r#*"(?:[^"]|"(?![]Unknown:\\1[]))*"[]Unknown:\\1[])/
+/b?"(?:\\[^]|[^"\\])*"|b?r#*"(?:[^"]|"(?![]Unknown:\\1[]))*"[]Unknown:\\1[]/
 /b?'(?:\\(?:x[0-7][\dA-Fa-f]|u\{(?:[\dA-Fa-f]_*){1,6}|.)|[^\t\n\r'\\])'/
 /#!?\[(?:[^"[\]]|"(?:\\[^]|[^"\\])*")*\]/
-/(?:[(,:=]|\bmove)\s*\|[^|]*\||\|[^|]*\|(?=\s*(?:\{|->))/
+/(?:[(,:=]\s*|\bmove\s*)\|[^|]*\||\|[^|]*\|(?=\s*(?:\{|->))/
 /'\w+/
 /\$\w+:[a-z]+/
 /\bfn\s+\w+/
@@ -2141,10 +2161,10 @@ TooManyNodesError
 /(?:^|[^\\])\/\*(?:[^*/]|\*(?!\/)|\/(?!\*)|\/\*(?:[^*/]|\*(?!\/)|\/(?!\*)|\/\*(?:[^*/]|\*(?!\/)|\/(?!\*)|\/\*(?:[^*/]|\*(?!\/)|\/(?!\*))*\*\/)*\*\/)*\*\/)*\*\//
 /\b(?:crate|mod)\s+[a-z][\d_a-z]*/
 /\b(?:crate|self|super)\s*::\s*[a-z][\d_a-z]*\b(?:\s*::(?:\s*[a-z][\d_a-z]*\s*::)*)?/
-/\b\d(?:[\dA-F]*X|\d*(?:\.\d+)?(?:E[-+]?\d+)?)\b/i
+/\b(?:\d[\dA-F]*X|\d+(?:\.\d+)?(?:E[-+]?\d+)?)\b/i
 /\*\*?|\|\|?|!!?|\xa6\xa6?|<[=>]?|>[<=]?|[-&+/=]|[~\xac^]=?/
 /[$%(),.;@[\\\]{}]/
-/^\s*(?:(?:DATA)?LINE|CARD)S;[^]+?^\s*;/im
+/^\s*(?:(?:DATA)?LINES|CARDS);[^]+?^\s*;/im
 /^PROC\s+(?:FED)?SQL(?:\s+[\w=|]+)?;[^]+?(?=^(?:PROC\s+\w+|QUIT|RUN|DATA);|(?![^]))/im
 /^PROC\s+GROOVY(?:\s+[\w=|]+)?;[^]+?(?=^(?:PROC\s+\w+|QUIT|RUN|DATA);|(?![^]))/im
 /^PROC\s+LUA(?:\s+[\w=|]+)?;[^]+?(?=^(?:PROC\s+\w+|QUIT|RUN|DATA);|(?![^]))/im
@@ -2160,8 +2180,8 @@ TooManyNodesError
 /^OPTIONS[-\s\w"'()*+/:<=>\\|]*(?=;)/im
 /(?:^|\s)(?:ACTION\s+)?(?:ACCESSCONTROL|CDM|AGGREGATION|ASTORE|RULEMINING|AUDIO|AUTOTUNE|BAYESIANNETCLASSIFIER|BIOMEDIMAGE|BOOLRULE|BUILTINS|CARDINALITY|SCCASL|CLUSTERING|COPULA|COUNTREG|DATADISCOVERY|DATAPREPROCESS|DATASCIENCEPILOT|DATASTEP|DECISIONTREE|DEEPLEARN|DEEPNEURAL|VARREDUCE|SIMSYSTEM|DS2|DEDUPLICATION|ECM|ENTITYRES|ESPCLUSTER|EXPLAINMODEL|FACTMAC|FASTKNN|FCMPACT|FEDSQL|FREQTAB|GAM|GLEAM|GRAPHSEMISUPLEARN|GVARCLUSTER|HIDDENMARKOVMODEL|HYPERGROUP|IMAGE|IML|ICA|KERNALPCA|LANGMODEL|LDATOPIC|SPARSEML|MLTOOLS|MIXED|MODELPUBLISHING|MBC|NETWORK|OPTNETWORK|NEURALNET|NONLINEAR|NMF|NONPARAMETRICBAYES|OPTIMIZATION|PANEL|PLS|PERCENTILE|PCA|PHREG|QKB|QLIM|QUANTREG|RECOMMEND|TSRECONCILE|DEEPRNN|REGRESSION|REINFORCEMENTLEARN|ROBUSTPCA|SAMPLING|SPARKEMBEDDEDPROCESS|SEARCH(?:ANALYTICS)?|SENTIMENTANALYSIS|SEQUENCE|CONFIGURATION|SESSION(?:PROP)?|SEVERITY|SIMPLE|SMARTDATA|SANDWICH|SPATIALREG|STABILITYMONITORING|SPC|LOADSTREAMS|SVDATADESCRIPTION|SVM|TABLE|CONDITIONALRANDOMFIELDS|TEXT(?:RULE(?:DEVELOP|SCORE)|MINING|PARSE|TOPIC|UTIL|FILTERS|FREQUENCY)|TSINFO|TIMEDATA|TRANSPOSE|UNITIMESERIES)\.[A-Z]+\b[^;]+/i
 /%?\w+(?=\()/
-/\b(?:FORMA|PU)T\b=?[\w$'.]+/i
-/\b(?:FORMA|PU)T\s+[\w']+(?:\s+[\w$.]+)+(?=;)/i
+/\b(?:FORMAT|PUT)\b=?[\w$'.]+/i
+/\b(?:FORMAT|PUT)\s+[\w']+(?:\s+[\w$.]+)+(?=;)/i
 /(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!'))[bx]/
 /(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!'))(?:dt?|t)/
 /"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')/
@@ -2172,10 +2192,10 @@ TooManyNodesError
 /%MACRO/i
 /%MEND/i
 /(?:ACCESSCONTROL|CDM|AGGREGATION|ASTORE|RULEMINING|AUDIO|AUTOTUNE|BAYESIANNETCLASSIFIER|BIOMEDIMAGE|BOOLRULE|BUILTINS|CARDINALITY|SCCASL|CLUSTERING|COPULA|COUNTREG|DATADISCOVERY|DATAPREPROCESS|DATASCIENCEPILOT|DATASTEP|DECISIONTREE|DEEPLEARN|DEEPNEURAL|VARREDUCE|SIMSYSTEM|DS2|DEDUPLICATION|ECM|ENTITYRES|ESPCLUSTER|EXPLAINMODEL|FACTMAC|FASTKNN|FCMPACT|FEDSQL|FREQTAB|GAM|GLEAM|GRAPHSEMISUPLEARN|GVARCLUSTER|HIDDENMARKOVMODEL|HYPERGROUP|IMAGE|IML|ICA|KERNALPCA|LANGMODEL|LDATOPIC|SPARSEML|MLTOOLS|MIXED|MODELPUBLISHING|MBC|NETWORK|OPTNETWORK|NEURALNET|NONLINEAR|NMF|NONPARAMETRICBAYES|OPTIMIZATION|PANEL|PLS|PERCENTILE|PCA|PHREG|QKB|QLIM|QUANTREG|RECOMMEND|TSRECONCILE|DEEPRNN|REGRESSION|REINFORCEMENTLEARN|ROBUSTPCA|SAMPLING|SPARKEMBEDDEDPROCESS|SEARCH(?:ANALYTICS)?|SENTIMENTANALYSIS|SEQUENCE|CONFIGURATION|SESSION(?:PROP)?|SEVERITY|SIMPLE|SMARTDATA|SANDWICH|SPATIALREG|STABILITYMONITORING|SPC|LOADSTREAMS|SVDATADESCRIPTION|SVM|TABLE|CONDITIONALRANDOMFIELDS|TEXT(?:RULE(?:DEVELOP|SCORE)|MINING|PARSE|TOPIC|UTIL|FILTERS|FREQUENCY)|TSINFO|TIMEDATA|TRANSPOSE|UNITIMESERIES)\.[A-Z]+\b/i
-/(?:^|;)\s*\*[^;]*;/m
-/^(?:FORMA|PU)T(?==)/i
-/^(?:FORMA|PU)T/i
-/^(?:(?:DATA)?LINE|CARD)S/i
+/(?:^\s*|;\s*)\*[^;]*;/m
+/^(?:FORMAT|PUT)(?==)/i
+/^(?:FORMAT|PUT)/i
+/^(?:(?:DATA)?LINES|CARDS)/i
 /^[\t ]*(?:SELECT|ALTER\s+TABLE|(?:CREATE|DESCRIBE|DROP)\s+(?:INDEX|TABLE(?:\s+CONSTRAINTS)?|VIEW)|CREATE\s+UNIQUE\s+INDEX|INSERT\s+INTO|UPDATE)(?:"(?:""|[^"])*"(?!")|'(?:''|[^'])*'(?!')|[^"';])+;/im
 /(?:^|\s)=?(?:CATNAME|CHECKPOINT EXECUTE_ALWAYS|DM|ENDSAS|FILENAME|FOOTNOTE|%INCLUDE|LIBNAME|%LIST|LOCK|MISSING|OPTIONS|PAGE|RESETLINE|%RUN|SASFILE|SKIP|SYSECHO|TITLE\d?)\b/i
 /(?:^|\s)(?:DISCONNECT\s+FROM|EXEC(?:UTE)?|BEGIN|COMMIT|ROLLBACK|RESET|VALIDATE)\b/i
@@ -2196,7 +2216,7 @@ TooManyNodesError
 /^[\t ]*\/[*/].*(?:(?:\r?\n|\r)[]Unknown:\\1[][\t ]+.+)*/m
 /^[\t ]*[+=@].+/m
 /^[\t ]*\$.+/m
-/^[\t ]*(?:[^\s:]+ *:|:[^\s:]+).*/m
+/^[\t ]*(?:[^\s:]+ *:.*|:[^\s:]+.*)/m
 /[\t ]*\S(?:,?[^\n\r,]+)*(?:,(?:\r?\n|\r)[]Unknown:\\1[][\t ]+\S(?:,?[^\n\r,]+)*)*/
 /@[-\w]+|[+=]/
 /[%*+/]|[!=]=|<=?|>=?|\b(?:and|or|not)\b/
@@ -2205,7 +2225,7 @@ TooManyNodesError
 /:[^\s:]+/
 /.(?:.*(?:[\n\r]|.$))*/
 /^[^\n\r!#$*]+(?=[#$])/m
-/[#$](?:[^\n\r"'<\\]|\\.|"(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!")[^\\])*"|'(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!')[^\\])*'|<<-?\s*\w+?[\t ]*$[^]*?[\n\r][]Unknown:\\2[]|<<-?\s*(?:"\w+"|'\w+')[\t ]*$[^]*?[\n\r][]Unknown:\\4[])+/m
+/[#$](?:[^\n\r"'<\\]|\\.|"(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!")[^\\])*"|'(?:\\[^]|\$\([^)]+\)|\`[^\`]+\`|(?!')[^\\])*'|<<-?\s*\w+[\t ]*$[^]*?[\n\r][]Unknown:\\2[]|<<-?\s*(?:"\w+"[\t ]*$[^]*?[\n\r][]Unknown:\\4[]|'\w+'[\t ]*$[^]*?[\n\r][]Unknown:\\4[]))+/m
 /^[^\s!#$*/:@\\]+@[^\s!#$*/:@\\]+(?=:|$)/
 /:[^]+/
 /^[#$]\s*[^]+/
@@ -2217,7 +2237,7 @@ TooManyNodesError
 /(?:^|[^\w\-.])(?:\w+|<[-\w$]+>)(?=\()/
 /[\w$]+(?=:)/
 /(?:^|[^\w\-.])[pv]\d(?![\w\-.])/
-/(?:^|[^\w\-.])(?:tru|fals)e(?![\w\-.])/
+/(?:^|[^\w\-.])(?:true|false)(?![\w\-.])/
 /(?:^|[^\w\-./])-?(?:NAN|INFINITY|0X(?:[\dA-F]+(?:\.[\dA-F]*)?|\.[\dA-F]+)(?:P[-+]?[\dA-F]+)?|(?:\d+(?:\.\d*)?|\.\d+)(?:E[-+]?\d+)?)[DFLST]?(?![\w\-.])/i
 /:\w+/
 /^L/
@@ -2229,7 +2249,7 @@ TooManyNodesError
 /(?:^L|\/)(?:[\w$]+|\`[^\n\r\`]*\`)$/
 /^L(?:(?:\w+|\`[^\n\r\`]*\`)\/)+/
 /'(?:''|[^'])*'/
-/#(?:[\dA-Z]+|-|!!?|%%?|&&?|\*\*?|\+\+?|\/\/?|<<?|==?|>>?|\?\??|@@?|\\\\?|\|\|?|~~?|(?=\())/i
+/#[\dA-Z]+|#(?:-|!!?|%%?|&&?|\*\*?|\+\+?|\/\/?|<<?|==?|>>?|\?\??|@@?|\\\\?|\|\|?|~~?)|#(?=\()/i
 /\b(?:nil|true|false|self|super|new)\b/
 /[<=]=?|:=|~[=~]|\/\/?|\\\\|>[=>]?|[-!&*+,@|^]/
 /[().:;?[\]{}]/
@@ -2261,11 +2281,11 @@ TooManyNodesError
 /=>|->|:=|=:|\*\*|\+\+|--|\|\||&&|<<=?|>>=?|[-!%&*+/<=>|^]=?|[?~]/
 /\b(?:contract|enum|interface|library|new|struct|using)\s+(?!\d)[\w$]+/
 /(?:[<>]=?|\^)\d+\.\d+\.\d+\b/
-/\b(?:FALS|TRU)E\b/
-/^[\t ]*(?:[A-Z]\w*\b(?=.*(?:\r\n?|\n)(?:[]Unknown:\\1[][\t ].*(?:\r\n?|\n))*[]Unknown:\\1[]End[]Unknown:\\2[][\t ]*$)|End[A-Z]\w*(?=[\t ]*$))/m
+/\b(?:FALSE|TRUE)\b/
+/^[\t ]*(?:[A-Z]\w*\b(?=.*(?:\r\n?|\n)(?:[]Unknown:\\1[][\t ].*(?:\r\n?|\n))*[]Unknown:\\1[]End[]Unknown:\\2[](?=[\t ]*$))|End[A-Z]\w*(?=[\t ]*$))/m
 /^[\t ]*[^\n\r"#()=]*[^\s"#()=](?=\s*=)/m
 /\{[\dA-F]{8}-[\dA-F]{4}-[\dA-F]{4}-[\dA-F]{4}-[\dA-F]{12}\}/i
-/\b(?:\d+(?:\.\d+)?(?:[Ee][-+]?\d+)?|0x[\dA-F]+)\b/
+/\b\d+(?:\.\d+)?(?:[Ee][-+]?\d+)?\b|\b0x[\dA-F]+\b/
 /\?:?|<=?|>=?|==?|!=|[-%*+/]|\b(?:and|not|or)\b/
 /[(),.:[\]{|}]/
 /\{+\/?\s*(?:alias|call|delcall|delpackage|deltemplate|namespace|template)\s+\.?[\w.]+/
@@ -2281,7 +2301,7 @@ TooManyNodesError
 /[(),.;[\]{}]|\^\^/
 /"""(?:(?:""?)?(?:[^"\\]|\\.))*"""|'''(?:(?:''?)?(?:[^'\\]|\\.))*'''/
 /"(?:[^\n\r"\\]|\\.)*"|'(?:[^\n\r'\\]|\\.)*'/
-/<(?:[^\0-\x20"<>\\\\\`{|}^]|\\(?:u|U[\dA-Fa-f]{4})[\dA-Fa-f]{4})*>/
+/<(?:[^\0-\x20"<>\\\\\`{|}^]|\\(?:u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}))*>/
 /(?:(?![\d\-.\xb7])[\w\-.\xb5\xb7\xc0-\ufffd]+)?:(?:(?![\-.])(?:[\w\-.:\xb5\xc0-\ufffd]|%[\dA-F]{2}|\\.)+)?/i
 /(?:\ba|@prefix|@base)\b|=/
 /\b(?:GRAPH|BASE|PREFIX)\b/i
@@ -2303,7 +2323,7 @@ TooManyNodesError
 /\b\d{1,2}\/\d{1,2}\/\d{1,4}(?:(?::\d{1,2}){3})?\b/
 /\b(?:BREAKOUT|BREAKTO|CALL|CASE|CATCH|DEFAULT|DO|ECHO|ELSE|EXECVM|EXECFSM|EXITWITH|FOR|FOREACH|FOREACHMEMBER|FOREACHMEMBERAGENT|FOREACHMEMBERTEAM|FROM|GOTO|IF|NIL|PREPROCESSFILE|PREPROCESSFILELINENUMBERS|PRIVATE|SCOPENAME|SPAWN|STEP|SWITCH|THEN|THROW|TO|TRY|WHILE|WITH)\b/i
 TooManyNodesError
-/(?:(?:\$|\b0X)[\dA-F]+|(?:\B\.\d+|\b\d+(?:\.\d+)?)(?:E[-+]?\d+)?)\b/i
+/(?:\$|\b0X)[\dA-F]+\b|(?:\B\.\d+|\b\d+(?:\.\d+)?)(?:E[-+]?\d+)?\b/i
 /##|>>|&&|\|\||[!<=>]=?|[-#%*+/^]|\b(?:AND|MOD|NOT|OR)\b/i
 /\bDIK(?:_[\dA-Z]+)+\b/i
 /^\s*#[A-Z]+(?:[^\n\r\\]|\\(?:\r\n|[^]))*/im
@@ -2313,17 +2333,17 @@ TooManyNodesError
 /\b(?:END_)?(?:PROGRAM|CONFIGURATION|INTERFACE|FUNCTION_BLOCK|FUNCTION|ACTION|TRANSITION|TYPE|STRUCT|(?:INITIAL_)?STEP|NAMESPACE|LIBRARY|CHANNEL|FOLDER|RESOURCE|VAR_(?:GLOBAL|INPUT|PUTPUT|IN_OUT|ACCESS|TEMP|EXTERNAL|CONFIG)|VAR|METHOD|PROPERTY)\b/i
 /\b(?:(?:END_)?(?:IF|WHILE|REPEAT|CASE|FOR)|ELSE|FROM|THEN|ELSIF|DO|TO|BY|PRIVATE|PUBLIC|PROTECTED|CONSTANT|RETURN|EXIT|CONTINUE|GOTO|JMP|AT|RETAIN|NON_RETAIN|TASK|WITH|UNTIL|USING|EXTENDS|IMPLEMENTS|GET|SET|__TRY|__CATCH|__FINALLY|__ENDTRY)\b/
 /\b(?:AT|BOOL|BYTE|(?:D|L)?WORD|U?(?:S|D|L)?INT|L?REAL|TIME(?:_OF_DAY)?|TOD|DT|DATE(?:_AND_TIME)?|STRING|ARRAY|ANY|POINTER)\b/
-/%(?:[IMQ][BDLWX]|[IQ])[\d.]*/
-/\b(?:16#[\dA-F]+|2#[01_]+|0X[\dA-F]+)\b|\b(?:T|D|DT|TOD)#[\d:DHMS_]*|\b[A-Z]*#[\d,._]*|(?:\b\d+\.?|\B\.\d)\d*(?:E[-+]?\d+)?/i
+/%[IMQ][BDLWX][\d.]*|%[IQ][\d.]*/
+/\b(?:16#[\dA-F]+|2#[01_]+|0X[\dA-F]+)\b|\b(?:T|D|DT|TOD)#[\d:DHMS_]*|\b[A-Z]*#[\d,._]*|(?:\b\d+\.?\d*|\B\.\d+)(?:E[-+]?\d+)?/i
 /\b(?:TRUE|FALSE|NULL)\b/
 /S?R?:?=>?|&&?|\*\*?|<=?|>=?|[-+/:^]|\b(?:OR|AND|MOD|NOT|XOR|LE|GE|EQ|NE|GE|LT)\b/
 /[();]/
 /(?:^|[^\\])(?:\/\*[^]*?(?:\*\/|$)|\(\*[^]*?(?:\*\)|$)|\{[^]*?(?:\}|$))/
-/\b(?:as|associativity|break|case|catch|class|continue|convenience|default|defer|deinit|didSet|do|dynamic(?:Type)?|else|enum|extension|fallthrough|final|for|func|get|guard|if|import|in|infix|init|inout|internal|is|lazy|left|let|mutating|new|none|nonmutating|operator|optional|override|postfix|precedence|prefix|private|protocol|public|repeat|required|rethrows|return|right|safe|self|Self|set|static|struct|subscript|super|switch|throws?|try|Type|typealias|unowned|unsafe|var|weak|where|while|willSet|__(?:COLUMN|FILE|FUNCTION|LINE)__)\b/
+/\b(?:as|associativity|break|case|catch|class|continue|convenience|default|defer|deinit|didSet|do|dynamic(?:Type)?|else|enum|extension|fallthrough|final|for|func|get|guard|if|import|in|infix|init|inout|internal|is|lazy|left|let|mutating|new|none|nonmutating|operator|optional|override|postfix|precedence|prefix|private|protocol|public|repeat|required|rethrows|return|right|safe|self|Self|set|static|struct|subscript|super|switch|throws?|try|Type|typealias|unowned|unsafe|var|weak|where|while|willSet|__(?:COLUMN__|FILE__|FUNCTION__|LINE__))\b/
 /\b(?:[\d_]+(?:\.[\dE_]+)?|0X[\dA-F_]+(?:\.[\dA-FP_]+)?|0B[01_]+|0O[0-7_]+)\b/i
 /\b(?:nil|[A-Z_]{2,}|k[A-Z][A-Z_a-z]+)\b/
 /@\b(?:IB(?:Outlet|Designable|Action|Inspectable)|class_protocol|exported|noreturn|NS(?:Copying|Managed)|objc|UIApplicationMain|auto_closure)\b/
-/\b(?:[A-Z]\S+|abs|advance|alignof(?:Value)?|assert|contains|count(?:Elements)?|debugPrint(?:ln)?|distance|drop(?:Fir|La)st|dump|enumerate|equal|filter|find|first|getVaList|indices|isEmpty|join|last|lexicographicalCompare|map|max(?:Element)?|min(?:Element)?|numericCast|overlaps|partition|print(?:ln)?|reduce|reflect|reverse|sizeof(?:Value)?|sort(?:ed)?|split|startsWith|stride(?:of(?:Value)?)?|suffix|swap|toDebugString|toString|transcode|underestimateCount|unsafeBitCast|with(?:ExtendedLifetime|Unsafe(?:Mutable|)Pointers?|VaList))\b/
+/\b(?:[A-Z]\S+|abs|advance|alignof(?:Value)?|assert|contains|count(?:Elements)?|debugPrint(?:ln)?|distance|drop(?:First|Last)|dump|enumerate|equal|filter|find|first|getVaList|indices|isEmpty|join|last|lexicographicalCompare|map|max(?:Element)?|min(?:Element)?|numericCast|overlaps|partition|print(?:ln)?|reduce|reflect|reverse|sizeof(?:Value)?|sort(?:ed)?|split|startsWith|stride(?:of(?:Value)?)?|suffix|swap|toDebugString|toString|transcode|underestimateCount|unsafeBitCast|with(?:ExtendedLifetime|Unsafe(?:MutablePointers?|Pointers?)|VaList))\b/
 /"(?:\\(?:\((?:[^()]|\([^)]+\))+\)|\r\n|[^])|(?!")[^\n\r\\])*"|'(?:\\(?:\((?:[^()]|\([^)]+\))+\)|\r\n|[^])|(?!')[^\n\r\\])*'/
 /\\\((?:[^()]|\([^)]+\))+\)/
 /<#[^]+?#>/
@@ -2337,8 +2357,8 @@ TooManyNodesError
 /^<#|#>$/
 /\w+(?=\s)/
 /=(?:"(?:\\[^]|(?!")[^\\])*"|'(?:\\[^]|(?!')[^\\])*'|[^\s"'=>]+)/
-/^(?:=|["'])|["']$/
-/(?:\b(?:ADDHANDLER|ADDRESSOF|ALIAS|AND|ANDALSO|AS|BEEP|BLOAD|BOOLEAN|BSAVE|BYREF|BYTE|BYVAL|CALL(?: ABSOLUTE)?|CASE|CATCH|CBOOL|CBYTE|CCHAR|CDATE|CDEC|CDBL|CHAIN|CHAR|CHDIR|CINT|CLASS|CLEAR|CLNG|CLOSE|CLS|COBJ|COM|COMMON|CONST|CONTINUE|CSBYTE|CSHORT|CSNG|CSTR|CTYPE|CUINT|CULNG|CUSHORT|DATA|DATE|DECIMAL|DECLARE|DEFAULT|DEF(?: FN| SEG|DBL|INT|LNG|SNG|STR)|DELEGATE|DIM|DIRECTCAST|DO|DOUBLE|ELSE|ELSEIF|END|ENUM|ENVIRON|ERASE|ERROR|EVENT|EXIT|FALSE|FIELD|FILES|FINALLY|FOR(?: EACH)?|FRIEND|FUNCTION|GET|GETTYPE|GETXMLNAMESPACE|GLOBAL|GOSUB|GOTO|HANDLES|IF|IMPLEMENTS|IMPORTS|IN|INHERITS|INPUT|INTEGER|INTERFACE|IOCTL|IS|ISNOT|KEY|KILL|LINE INPUT|LET|LIB|LIKE|LOCATE|LOCK|LONG|LOOP|LSET|ME|MKDIR|MOD|MODULE|MUSTINHERIT|MUSTOVERRIDE|MYBASE|MYCLASS|NAME|NAMESPACE|NARROWING|NEW|NEXT|NOT|NOTHING|NOTINHERITABLE|NOTOVERRIDABLE|OBJECT|OF|OFF|ON(?: (?:COM|ERROR|KEY|TIMER))?|OPERATOR|OPEN|OPTION(?: BASE)?|OPTIONAL|OR|ORELSE|OUT|OVERLOADS|OVERRIDABLE|OVERRIDES|PARAMARRAY|PARTIAL|POKE|PRIVATE|PROPERTY|PROTECTED|PUBLIC|PUT|RAISEEVENT|READ|READONLY|REDIM|REM|REMOVEHANDLER|RESTORE|RESUME|RETURN|RMDIR|RSET|RUN|SBYTE|SELECT(?: CASE)?|SET|SHADOWS|SHARED|SHORT|SINGLE|SHELL|SLEEP|STATIC|STEP|STOP|STRING|STRUCTURE|SUB|SYNCLOCK|SWAP|SYSTEM|THEN|THROW|TIMER|TO|TROFF|TRON|TRUE|TRY|TRYCAST|TYPE|TYPEOF|UINTEGER|ULONG|UNLOCK|UNTIL|USHORT|USING|VIEW PRINT|WAIT|WEND|WHEN|WHILE|WIDENING|WITH|WITHEVENTS|WRITE|WRITEONLY|XOR)|\B#(?:CONST|ELSE|ELSEIF|END|IF))(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
+/^=|^["']|["']$/
+/(?:\b(?:ADDHANDLER|ADDRESSOF|ALIAS|AND|ANDALSO|AS|BEEP|BLOAD|BOOLEAN|BSAVE|BYREF|BYTE|BYVAL|CALL(?: ABSOLUTE)?|CASE|CATCH|CBOOL|CBYTE|CCHAR|CDATE|CDEC|CDBL|CHAIN|CHAR|CHDIR|CINT|CLASS|CLEAR|CLNG|CLOSE|CLS|COBJ|COM|COMMON|CONST|CONTINUE|CSBYTE|CSHORT|CSNG|CSTR|CTYPE|CUINT|CULNG|CUSHORT|DATA|DATE|DECIMAL|DECLARE|DEFAULT|DEF(?: FN| SEG|DBL|INT|LNG|SNG|STR)|DELEGATE|DIM|DIRECTCAST|DO|DOUBLE|ELSE|ELSEIF|END|ENUM|ENVIRON|ERASE|ERROR|EVENT|EXIT|FALSE|FIELD|FILES|FINALLY|FOR(?: EACH)?|FRIEND|FUNCTION|GET|GETTYPE|GETXMLNAMESPACE|GLOBAL|GOSUB|GOTO|HANDLES|IF|IMPLEMENTS|IMPORTS|IN|INHERITS|INPUT|INTEGER|INTERFACE|IOCTL|IS|ISNOT|KEY|KILL|LINE INPUT|LET|LIB|LIKE|LOCATE|LOCK|LONG|LOOP|LSET|ME|MKDIR|MOD|MODULE|MUSTINHERIT|MUSTOVERRIDE|MYBASE|MYCLASS|NAME|NAMESPACE|NARROWING|NEW|NEXT|NOT|NOTHING|NOTINHERITABLE|NOTOVERRIDABLE|OBJECT|OF|OFF|ON(?: COM| ERROR| KEY| TIMER)?|OPERATOR|OPEN|OPTION(?: BASE)?|OPTIONAL|OR|ORELSE|OUT|OVERLOADS|OVERRIDABLE|OVERRIDES|PARAMARRAY|PARTIAL|POKE|PRIVATE|PROPERTY|PROTECTED|PUBLIC|PUT|RAISEEVENT|READ|READONLY|REDIM|REM|REMOVEHANDLER|RESTORE|RESUME|RETURN|RMDIR|RSET|RUN|SBYTE|SELECT(?: CASE)?|SET|SHADOWS|SHARED|SHORT|SINGLE|SHELL|SLEEP|STATIC|STEP|STOP|STRING|STRUCTURE|SUB|SYNCLOCK|SWAP|SYSTEM|THEN|THROW|TIMER|TO|TROFF|TRON|TRUE|TRY|TRYCAST|TYPE|TYPEOF|UINTEGER|ULONG|UNLOCK|UNTIL|USHORT|USING|VIEW PRINT|WAIT|WEND|WHEN|WHILE|WIDENING|WITH|WITHEVENTS|WRITE|WRITEONLY|XOR)|\B(?:#CONST|#ELSE|#ELSEIF|#END|#IF))(?:\$|(?<!\w)(?=\w)|(?<=\w)(?!\w))/i
 /(?:^|[^:\\])'.*/
 /!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?/i
 /[&*][^\s,[\]{}]+/
@@ -2352,18 +2372,18 @@ TooManyNodesError
 /[-:]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?[>|][\t ]*(?:\r?\n|\r)[\t ]+[^\n\r]+(?:[]Unknown:\\2[][^\n\r]+)*/i
 /(?:^|[-\n\r,:?[{])[\t ]*(?:(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?[^\s#,[\]{}]+?(?=\s*:\s)/i
 /^[\t ]*%.+/m
-/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Za-z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Za-z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?\d(?:\d{3}-\d\d?-\d\d?(?:[Tt]|[\t ]+)\d\d?:\d{2}:\d{2}(?:\.\d*)?[\t ]*(?:Z|[-+]\d\d?(?::\d{2})?)?|\d{3}-\d{2}-\d{2}|\d?:\d{2}(?::\d{2}(?:\.\d*)?)?)(?=[\t ]*(?:$|,|\]|\}|\s*#))/m
-/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?(?:TRU|FALS)E(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
+/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Za-z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Za-z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?(?:\d{4}-\d\d?-\d\d?(?:[Tt]|[\t ]+)\d\d?:\d{2}:\d{2}(?:\.\d*)?[\t ]*(?:Z|[-+]\d\d?(?::\d{2})?)?|\d{4}-\d{2}-\d{2}|\d\d?:\d{2}(?::\d{2}(?:\.\d*)?)?)(?=[\t ]*(?:$|,|\]|\}|\s*#))/m
+/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?(?:TRUE|FALSE)(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
 /[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?(?:NULL|~)(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
 /[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?(?:"(?:(?!")[^\n\r\\]|\\.)*"|'(?:(?!')[^\n\r\\]|\\.)*')(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
-/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?[-+]?(?:0X[\dA-F]+|0O[0-7]+|(?:\d+\.?|\.?\d)\d*(?:E[-+]?\d+)?|\.INF|\.NAN)(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
+/[-,:[{]\s*(?:\s(?:!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?(?:[\t ]+[&*][^\s,[\]{}]+)?|[&*][^\s,[\]{}]+(?:[\t ]+!(?:<[\w!\x23-\x2f:;=?@[\]~]+>|(?:[-\dA-Z]*!)?[\w\x23-\x2b\-./:;=?@~]+)?)?)[\t ]+)?[-+]?(?:0X[\dA-F]+|0O[0-7]+|(?:\d+\.?\d*|\.?\d+)(?:E[-+]?\d+)?|\.INF|\.NAN)(?=[\t ]*(?:$|,|\]|\}|\s*#))/im
 /# Subtest(?:: .*)?/
 /^[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*---(?:\r\n?|\n)(?:.*(?:\r\n?|\n))*?[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*\.\.\.$/m
 /!=?|\*\*?|==|&&?|\|\|?|<[<=]?|>[=>]?|[-%+/?~^]|\b(?:eq|ne|in|ni)\b/
 /[()[\]{}]/
 /"(?:[^\n\r"\\]|\\(?:\r\n|[^]))*"/
 /^\s*proc[\t ]+\S+/m
-/\belse(?:if|)\b/
+/\b(?:elseif|else)\b/
 /^\s*(?:global|upvar|variable)\b/m
 /(?:^\s*|\[)(?:after|append|apply|array|auto_(?:execok|import|load|mkindex|qualify|reset)|automkindex_old|bgerror|binary|catch|cd|chan|clock|close|concat|dde|dict|encoding|eof|exec|expr|fblocked|fconfigure|fcopy|file(?:event|name)?|flush|gets|glob|history|http|incr|info|interp|join|lappend|lassign|lindex|linsert|list|llength|load|lrange|lrepeat|lreplace|lreverse|lsearch|lset|lsort|math(?:func|op)|memory|msgcat|namespace|open|package|parray|pid|pkg_mkIndex|platform|puts|pwd|re_syntax|read|refchan|regexp|registry|regsub|rename|Safe_Base|scan|seek|set|socket|source|split|string|subst|Tcl|tcl(?:_endOfWord|_findLibrary|startOf(?:Next|Previous)Word|wordBreak(?:After|Before)|test|vars)|tell|time|tm|trace|unknown|unload|unset|update|uplevel|vwait)\b/m
 /\$(?:::)?(?:[\dA-Z]+::)*\w+/i
@@ -2376,13 +2396,13 @@ TooManyNodesError
 /[(),[\]{}]/
 /'[^'\\]*(?:\\[^][^'\\]*)*'/
 /"[^"\\]*(?:\\[^][^"\\]*)*"/
-/^(?:\[|%)%-?|-?%\]$/
+/^(?:\[%|%%)-?|-?%\]$/
 /\b[A-Z]\w*(?:\s*\.\s*(?:\d+|\$?[A-Z]\w*))*\b/i
 /\$[A-Z]\w*(?:\.(?:\d+|\$?[A-Z]\w*))*/i
-/(?:\b0(?:x[\dA-Za-z]+(?:_[\dA-Za-z]+)*|o[0-7]+(?:_[0-7]+)*|b[01]+(?:_[01]+)*)|[-+]?\b\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?(?:[Ee][-+]?\d+(?:_\d+)*)?|[-+]?\b(?:inf|nan))\b/
+/\b0(?:x[\dA-Za-z]+(?:_[\dA-Za-z]+)*|o[0-7]+(?:_[0-7]+)*|b[01]+(?:_[01]+)*)\b|[-+]?\b\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?(?:[Ee][-+]?\d+(?:_\d+)*)?\b|[-+]?\b(?:inf|nan)\b/
 /[,.=[\]{}]/
 /^\s*\[\s*(?:\[\s*)?(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*")(?:\s*\.\s*(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*"))*(?=\s*\])/m
-/(?:^|[,{])\s*(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*")(?:\s*\.\s*(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*"))*(?=\s*=)/m
+/(?:^\s*|[,{]\s*)(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*")(?:\s*\.\s*(?:[-\w]+|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*"))*(?=\s*=)/m
 /"""(?:\\[^]|[^\\])*?"""|'''[^]*?'''|'[^\n\r']*'|"(?:\\.|[^\n\r"\\])*"/
 /\b\d{4}-\d{2}-\d{2}(?:[\sT]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[-+]\d{2}:\d{2})?)?\b/i
 /\b\d{2}:\d{2}:\d{2}(?:\.\d+)?\b/
@@ -2407,7 +2427,7 @@ TooManyNodesError
 /\B\$\w+\b/
 /\B\`\w+\b/
 /\b(?:alias|and|assert|assign|assume|automatic|before|begin|bind|bins|binsof|bit|break|buf|bufif0|bufif1|byte|class|case|casex|casez|cell|chandle|clocking|cmos|config|const|constraint|context|continue|cover|covergroup|coverpoint|cross|deassign|default|defparam|design|disable|dist|do|edge|else|end|endcase|endclass|endclocking|endconfig|endfunction|endgenerate|endgroup|endinterface|endmodule|endpackage|endprimitive|endprogram|endproperty|endspecify|endsequence|endtable|endtask|enum|event|expect|export|extends|extern|final|first_match|for|force|foreach|forever|fork|forkjoin|function|generate|genvar|highz0|highz1|if|iff|ifnone|ignore_bins|illegal_bins|import|incdir|include|initial|inout|input|inside|instance|int|integer|interface|intersect|join|join_any|join_none|large|liblist|library|local|localparam|logic|longint|macromodule|matches|medium|modport|module|nand|negedge|new|nmos|nor|noshowcancelled|not|notif0|notif1|null|or|output|package|packed|parameter|pmos|posedge|primitive|priority|program|property|protected|pull0|pull1|pulldown|pullup|pulsestyle_onevent|pulsestyle_ondetect|pure|rand|randc|randcase|randsequence|rcmos|real|realtime|ref|reg|release|repeat|return|rnmos|rpmos|rtran|rtranif0|rtranif1|scalared|sequence|shortint|shortreal|showcancelled|signed|small|solve|specify|specparam|static|string|strong0|strong1|struct|super|supply0|supply1|table|tagged|task|this|throughout|time|timeprecision|timeunit|tran|tranif0|tranif1|tri|tri0|tri1|triand|trior|trireg|type|typedef|union|unique|unsigned|use|uwire|var|vectored|virtual|void|wait|wait_order|wand|weak0|weak1|while|wildcard|wire|with|within|wor|xnor|xor)\b/
-/\balways(?:_latch|_comb|_ff|)\b ?@?/
+/\b(?:always_latch|always_comb|always_ff|always)\b ?@?/
 /\B##?\d+|(?:\b\d+)?'[BDHO] ?[\d?A-FXZ_]+|\b\d*[._]?\d+(?:E[-+]?\d+)?/i
 /[-!%&*+/<=>?{|}~^]+/
 /[(),.:;[\]]/
@@ -2415,9 +2435,9 @@ TooManyNodesError
 /"(?:[^\n\r"\\]|\\(?:\r\n|[^]))*"/
 /\b(?:USE|LIBRARY)\b/i
 /\b(?:'ACTIVE|'ASCENDING|'BASE|'DELAYED|'DRIVING|'DRIVING_VALUE|'EVENT|'HIGH|'IMAGE|'INSTANCE_NAME|'LAST_ACTIVE|'LAST_EVENT|'LAST_VALUE|'LEFT|'LEFTOF|'LENGTH|'LOW|'PATH_NAME|'POS|'PRED|'QUIET|'RANGE|'REVERSE_RANGE|'RIGHT|'RIGHTOF|'SIMPLE_NAME|'STABLE|'SUCC|'TRANSACTION|'VAL|'VALUE|ACCESS|AFTER|ALIAS|ALL|ARCHITECTURE|ARRAY|ASSERT|ATTRIBUTE|BEGIN|BLOCK|BODY|BUFFER|BUS|CASE|COMPONENT|CONFIGURATION|CONSTANT|DISCONNECT|DOWNTO|ELSE|ELSIF|END|ENTITY|EXIT|FILE|FOR|FUNCTION|GENERATE|GENERIC|GROUP|GUARDED|IF|IMPURE|IN|INERTIAL|INOUT|IS|LABEL|LIBRARY|LINKAGE|LITERAL|LOOP|MAP|NEW|NEXT|NULL|OF|ON|OPEN|OTHERS|OUT|PACKAGE|PORT|POSTPONED|PROCEDURE|PROCESS|PURE|RANGE|RECORD|REGISTER|REJECT|REPORT|RETURN|SELECT|SEVERITY|SHARED|SIGNAL|SUBTYPE|THEN|TO|TRANSPORT|TYPE|UNAFFECTED|UNITS|UNTIL|USE|VARIABLE|WAIT|WHEN|WHILE|WITH)\b/i
-/'[-01HLUWXZ]'|\b\d(?:\d*#[\d.A-F_]+#|[\d._]*)(?:E[-+]?\d+)?/i
+/'[-01HLUWXZ]'|\b(?:\d+#[\d.A-F_]+#|\d[\d._]*)(?:E[-+]?\d+)?/i
 /[<>]=?|:=|[-&*+/=]|\b(?:ABS|NOT|MOD|REM|SLL|SRL|SLA|SRA|ROL|ROR|AND|OR|NAND|XNOR|XOR|NOR)\b/i
-/(?:\b[BOX]"[\dA-F_]+|"[-01HLUWXZ]+)"/i
+/\b[BOX]"[\dA-F_]+"|"[-01HLUWXZ]+"/i
 /"\S+?"(?=\()/
 /"(?:[^\n\r"\\]|\\.)*"|'(?:[^\n\r']|'')*'/
 /".*/
@@ -2428,12 +2448,12 @@ TooManyNodesError
 /[(),:;[\]{}]/
 /(?:(?:\b\d+(?:\.\d+)?|\.\d+)(?:E[-+]?\d+)?|&[HO][\dA-F]+)(?:U?[ILS]|[DFR])?/i
 /\b(?:TRUE|FALSE|NOTHING)\b/i
-/\b(?:ADDHANDLER|ADDRESSOF|ALIAS|AND(?:ALSO)?|AS|BOOLEAN|BYREF|BYTE|BYVAL|CALL|CASE|CATCH|C(?:BOOL|BYTE|CHAR|DATE|DBL|DEC|INT|LNG|OBJ|SBYTE|SHORT|SNG|STR|TYPE|UINT|ULNG|USHORT)|CHAR|CLASS|CONST|CONTINUE|CURRENCY|DATE|DECIMAL|DECLARE|DEFAULT|DELEGATE|DIM|DIRECTCAST|DO|DOUBLE|EACH|ELSE(?:IF)?|END(?:IF)?|ENUM|ERASE|ERROR|EVENT|EXIT|FINALLY|FOR|FRIEND|FUNCTION|GET(?:(?:TYP|XMLNAMESPAC)E)?|GLOBAL|GOSUB|GOTO|HANDLES|IF|IMPLEMENTS|IMPORTS|IN|INHERITS|INTEGER|INTERFACE|IS|ISNOT|LET|LIB|LIKE|LONG|LOOP|ME|MOD|MODULE|MUST(?:INHERIT|OVERRIDE)|MY(?:BASE|CLASS)|NAMESPACE|NARROWING|NEW|NEXT|NOT(?:(?:INHERIT|OVERRID)ABLE)?|OBJECT|OF|ON|OPERATOR|OPTION(?:AL)?|OR(?:ELSE)?|OUT|OVERLOADS|OVERRIDABLE|OVERRIDES|PARAMARRAY|PARTIAL|PRIVATE|PROPERTY|PROTECTED|PUBLIC|RAISEEVENT|READONLY|REDIM|REMOVEHANDLER|RESUME|RETURN|SBYTE|SELECT|SET|SHADOWS|SHARED|SHORT|SINGLE|STATIC|STEP|STOP|STRING|STRUCTURE|SUB|SYNCLOCK|THEN|THROW|TO|TRY|TRYCAST|TYPE|TYPEOF|U(?:INTEGER|LONG|SHORT)|USING|VARIANT|WEND|WHEN|WHILE|WIDENING|WITH(?:EVENTS)?|WRITEONLY|UNTIL|XOR)\b/i
+/\b(?:ADDHANDLER|ADDRESSOF|ALIAS|AND(?:ALSO)?|AS|BOOLEAN|BYREF|BYTE|BYVAL|CALL|CASE|CATCH|C(?:BOOL|BYTE|CHAR|DATE|DBL|DEC|INT|LNG|OBJ|SBYTE|SHORT|SNG|STR|TYPE|UINT|ULNG|USHORT)|CHAR|CLASS|CONST|CONTINUE|CURRENCY|DATE|DECIMAL|DECLARE|DEFAULT|DELEGATE|DIM|DIRECTCAST|DO|DOUBLE|EACH|ELSE(?:IF)?|END(?:IF)?|ENUM|ERASE|ERROR|EVENT|EXIT|FINALLY|FOR|FRIEND|FUNCTION|GET(?:TYPE|XMLNAMESPACE)?|GLOBAL|GOSUB|GOTO|HANDLES|IF|IMPLEMENTS|IMPORTS|IN|INHERITS|INTEGER|INTERFACE|IS|ISNOT|LET|LIB|LIKE|LONG|LOOP|ME|MOD|MODULE|MUST(?:INHERIT|OVERRIDE)|MY(?:BASE|CLASS)|NAMESPACE|NARROWING|NEW|NEXT|NOT(?:INHERITABLE|OVERRIDABLE)?|OBJECT|OF|ON|OPERATOR|OPTION(?:AL)?|OR(?:ELSE)?|OUT|OVERLOADS|OVERRIDABLE|OVERRIDES|PARAMARRAY|PARTIAL|PRIVATE|PROPERTY|PROTECTED|PUBLIC|RAISEEVENT|READONLY|REDIM|REMOVEHANDLER|RESUME|RETURN|SBYTE|SELECT|SET|SHADOWS|SHARED|SHORT|SINGLE|STATIC|STEP|STOP|STRING|STRUCTURE|SUB|SYNCLOCK|THEN|THROW|TO|TRY|TRYCAST|TYPE|TYPEOF|U(?:INTEGER|LONG|SHORT)|USING|VARIANT|WEND|WHEN|WHILE|WIDENING|WITH(?:EVENTS)?|WRITEONLY|UNTIL|XOR)\b/i
 /[(),.:?{}]/
 /(?:['\u2018\u2019]|REM\b)(?:[^\n\r_]|_(?:\r\n?|\n)?)*/i
 /#(?:CONST|ELSE|ELSEIF|END|EXTERNALCHECKSUM|EXTERNALSOURCE|IF|REGION)(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]_[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:\r\n?|\n)|.)+/i
 /\$?["\u201c\u201d](?:["\u201c\u201d]{2}|[^"\u201c\u201d])*["\u201c\u201d]C?/i
-/#[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*\d+(?:(?:-\d+-|\/\d+\/)\d+(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+\d+(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:A|P)M|:\d+(?::\d+)?(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:A|P)M)?))?|[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:A|P)M|:\d+(?::\d+)?(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:A|P)M)?)[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*#/i
+/#[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:\d+(?:-\d+-|\/\d+\/)\d+(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?:\d+[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:AM|PM)|\d+:\d+(?::\d+)?(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:AM|PM))?))?|\d+[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:AM|PM)|\d+:\d+(?::\d+)?(?:[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*(?:AM|PM))?)[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*#/i
 /[-!#$%&*+/<=>@\\^]/
 /[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]_(?=[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*[\n\r])/
 /#.*|\/\/.*|\/\*[^]*?\*\//
@@ -2446,20 +2466,20 @@ TooManyNodesError
 /"(?:[^\n\r"\\]|\\.)*"|'(?:[^\n\r'\\]|\\.)*'|<'(?:[^'\\]|'(?!>)|\\.)*'>/
 /@\S+/
 /\$[\w!#$%&'*+\-./:<=>?@\\\\\`|~^]+/
-/(?:[-+]?\b(?:\d(?:_?\d)*(?:\.\d(?:_?\d)*)?(?:[Ee][-+]?\d(?:_?\d)*)?|0x[\dA-Fa-f](?:_?[\dA-Fa-f])*(?:\.[\dA-Fa-f](?:_?[\dA-Da-f])*)?(?:[Pp][-+]?\d(?:_?\d)*)?)|\binf|\bnan(?::0x[\dA-Fa-f](?:_?[\dA-Da-f])*)?)\b/
+/[-+]?\b(?:\d(?:_?\d)*(?:\.\d(?:_?\d)*)?(?:[Ee][-+]?\d(?:_?\d)*)?|0x[\dA-Fa-f](?:_?[\dA-Fa-f])*(?:\.[\dA-Fa-f](?:_?[\dA-Da-f])*)?(?:[Pp][-+]?\d(?:_?\d)*)?)\b|\binf\b|\bnan(?::0x[\dA-Fa-f](?:_?[\dA-Da-f])*)?\b/
 /\(;[^]*?;\)/
 /"(?:\\[^]|[^"\\])*"/
-/\b(?:anyfunc|block|br(?:_(?:if|table))?|call(?:_indirect)?|data|drop|elem|else|end|export|func|get_(?:glob|loc)al|global|if|import|local|loop|memory|module|mut|nop|offset|param|result|return|select|set_(?:glob|loc)al|start|table|tee_local|then|type|unreachable)\b/
+/\b(?:anyfunc|block|br(?:_if|_table)?|call(?:_indirect)?|data|drop|elem|else|end|export|func|get_(?:global|local)|global|if|import|local|loop|memory|module|mut|nop|offset|param|result|return|select|set_(?:global|local)|start|table|tee_local|then|type|unreachable)\b/
 /;;.*/
 /\b(?:align|offset)=/
 /\b(?:(?:f32|f64|i32|i64)(?:\.(?:abs|add|and|ceil|clz|const|convert_[su]\/i(?:32|64)|copysign|ctz|demote\/f64|div(?:_[su])?|eqz?|extend_[su]\/i32|floor|ge(?:_[su])?|gt(?:_[su])?|le(?:_[su])?|load(?:(?:8|16|32)_[su])?|lt(?:_[su])?|max|min|mul|nearest|neg?|or|popcnt|promote\/f32|reinterpret\/[fi](?:32|64)|rem_[su]|rot[lr]|shl|shr_[su]|store(?:8|16|32)?|sqrt|sub|trunc(?:_[su]\/f(?:32|64))?|wrap\/i64|xor))?|memory\.(?:grow|size))\b/
 /^(?:\{\||\|\}|\|-|[!#*:;|])|\|\||!!/m
 /<(?:NOWIKI\b[^]*?>[^]*?<\/NOWIKI|PRE\b[^]*?>[^]*?<\/PRE|SOURCE\b[^]*?>[^]*?<\/SOURCE)>/i
 /^=+.+?[]Unknown:\\1[]/m
-/''(?:'''.+?'''|''.+?''|'.+?'|.+?)''/
+/'''''.+?'''''|''''.+?''''|'''.+?'''|''.+?''/
 /^-{4,}/m
 /ISBN +(?:97[89][- ]?)?(?:\d[- ]?){9}[\dX]\b|(?:RFC|PMID) +\d+/i
-/\[(?:\[.+?\]|.+?)\]/
+/\[\[.+?\]\]|\[.+?\]/
 /__[A-Z]+__/
 /\{{3}.+?\}{3}/
 /^#REDIRECT/im
@@ -2467,7 +2487,7 @@ TooManyNodesError
 /(?:^|[!|])[!|][^\n\r|]+\|(?!\|)/m
 /^=+|=+$/
 /^''+|''+$/
-/<(?:(?:NOWIKI|PRE|SOURCE)\b[^]*?|\/(?:NOWIKI|PRE|SOURCE))>/i
+/<(?:NOWIKI|PRE|SOURCE)\b[^]*?>|<\/(?:NOWIKI|PRE|SOURCE)>/i
 /'''''.+?(?=''''')/
 /'''[^'](?:.*?[^'])?(?=''')/
 /''[^'](?:.*?[^'])?(?='')/
@@ -2476,7 +2496,7 @@ TooManyNodesError
 /\$F:[\w\-.]+\?[\w\-.]+(?:,(?:\|?(?:[#*+\-.~^]*[\w+][^$]*|=\S[^$]*|@[-#]*\w+.[\w+.]+)?)*)?\$/
 /\$XF:\{[\w\-.]+\?[\w\-.]+(?:,(?:\|?(?:[#*+\-.~^]*[\w+][^$]*|=\S[^$]*|@[-#]*\w+.[\w+.]+)?)*)?\}:XF\$/
 /\$\w(?:#\d+\+?)?(?:\[[\w\-.]+\])?:[\w\-./]+\$/
-/\$\w(?:\w*:\{|(?:#\d+\+?)?(?:\[[\w\-.]+\])?:[\w\-.]+:\{(?:![A-Z]+)?)/
+/\$\w+:\{|\$\w(?:#\d+\+?)?(?:\[[\w\-.]+\])?:[\w\-.]+:\{(?:![A-Z]+)?/
 /\}:[\w\-.]+:\{/
 /\}:[\w\-.]+\$/
 /\$/
@@ -2511,7 +2531,7 @@ TooManyNodesError
 /\(#.+?#\)/
 /(?:^|[^-])(?:ancestor(?:-or-self)?|attribute|child|descendant(?:-or-self)?|following(?:-sibling)?|parent|preceding(?:-sibling)?|self)(?=::)/
 /(?:^|[^-:])\b(?:and|castable as|div|eq|except|ge|gt|idiv|instance of|intersect|is|le|lt|mod|ne|or|union)\b(?=$|[^-:])/
-/(?:^|[^-:])\b(?:as|ascending|at|base-uri|boundary-space|case|cast as|collation|construction|copy-namespaces|declare|default|descending|else|empty (?:greate|lea)st|encoding|every|external|for|function|if|import|in|inherit|lax|let|map|module|namespace|no-inherit|no-preserve|option|order(?: by|ed|ing)?|preserve|return|satisfies|schema|some|stable|strict|strip|then|to|treat as|typeswitch|unordered|validate|variable|version|where|xquery)\b(?=$|[^-:])/
+/(?:^|[^-:])\b(?:as|ascending|at|base-uri|boundary-space|case|cast as|collation|construction|copy-namespaces|declare|default|descending|else|empty (?:greatest|least)|encoding|every|external|for|function|if|import|in|inherit|lax|let|map|module|namespace|no-inherit|no-preserve|option|order(?: by|ed|ing)?|preserve|return|satisfies|schema|some|stable|strict|strip|then|to|treat as|typeswitch|unordered|validate|variable|version|where|xquery)\b(?=$|[^-:])/
 /element\s+[-\w]+(?::[-\w]+)*/
 /attribute\s+[-\w]+(?::[-\w]+)*/
 /(?:^|[^-:])\b(?:attribute|comment|document|element|processing-instruction|text|xs:(?:anyAtomicType|anyType|anyURI|base64Binary|boolean|byte|date|dateTime|dayTimeDuration|decimal|double|duration|ENTITIES|ENTITY|float|gDay|gMonth|gMonthDay|gYear|gYearMonth|hexBinary|ID|IDREFS?|int|integer|language|long|Name|NCName|negativeInteger|NMTOKENS?|nonNegativeInteger|nonPositiveInteger|normalizedString|NOTATION|positiveInteger|QName|short|string|time|token|unsigned(?:Byte|Int|Long|Short)|untyped(?:Atomic)?|yearMonthDuration))\b(?=$|[^-:])/
@@ -2520,7 +2540,7 @@ TooManyNodesError
 /=(?:"(?:\\[^]|\{(?!\{)(?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])+\}|(?!")[^\\])*"|'(?:\\[^]|\{(?!\{)(?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])+\}|(?!')[^\\])*'|[^\s"'=>]+)/
 /^="|"$/
 /\{(?!\{)(?:\{(?:\{[^{}]*\}|[^{}])*\}|[^{}])+\}/
-/\/(?:\*[^]*?\*\/|\/.*)/
+/\/\*[^]*?\*\/|\/\/.*/
 /[:;{}]/
 /"(?:[^"\\]|\\.)*"|'[^']*'/
 /(?:^|[\n\r;{}][\t ]*)[A-Z_][\w\-.]*/i
@@ -2532,13 +2552,13 @@ TooManyNodesError
 /\.[*?]|\.{2,3}|[-=]>|\*\*|\+\+|\|\||(?:<<|>>|[-*+]%|[-!%&*+/<=>|^])=?|[?~]/
 /[(),.:;[\]{}]/
 /\/{2}.*/
-/\b(?:(?:break|continue)\s*:\s*\w+\b|(?!\d)\w+\b(?=\s*:\s*(?:\{|while(?:(?<!\w)\w|(?<=\w)(?!\w)))))/
+/\b(?:break|continue)\s*:\s*\w+\b|\b(?!\d)\w+\b(?=\s*:\s*(?:\{|while\b))/
 /\b(?!\d)\w+(?=\s*=\s*(?:(?:extern|packed)\s+)?(?:enum|struct|union)\s*[({])/
-/\b(?:anyerror|bool|c_u?(?:short|int|long|longlong)|c_longdouble|c_void|comptime_(?:floa|in)t|[iu](?:8|16|32|64|128|size)|f(?:16|32|64|128)|noreturn|type|void)\b/
+/\b(?:anyerror|bool|c_u?(?:short|int|long|longlong)|c_longdouble|c_void|comptime_(?:float|int)|[iu](?:8|16|32|64|128|size)|f(?:16|32|64|128)|noreturn|type|void)\b/
 /\/{3}.*/
 /(?:^|[^@\\])c?"(?:[^\n\r"\\]|\\.)*"/
 /[\n\r][\t ]+c?\\{2}.*(?:(?:\r\n?|\n)[]Unknown:\\2[].*)*/
 /(?:^|[^\\])'(?:[^\n\r'\\]|\\(?:.|x[\dA-Fa-f]{2}|u\{[\dA-Fa-f]{1,6}\}))'/
-/:\s*(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)|const\b|volatile\b|allowzero\b))*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+(?:(?<!\w)\w|(?<=\w)(?!\w)))))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?[),;=])|(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)|const\b|volatile\b|allowzero\b))*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+(?:(?<!\w)\w|(?<=\w)(?!\w)))))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?\{)/
-/\)\s*(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)|const\b|volatile\b|allowzero\b))*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)(?:(?<!\w)\w|(?<=\w)(?!\w)))(?!\d)\w+(?:(?<!\w)\w|(?<=\w)(?!\w)))))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?;)/
+/:\s*(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*align\s*\((?:[^()]|\([^()]*\))*\)|\s*const\b|\s*volatile\b|\s*allowzero\b)*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?[),;=])|(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*align\s*\((?:[^()]|\([^()]*\))*\)|\s*const\b|\s*volatile\b|\s*allowzero\b)*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?\{)/
+/\)\s*(?!\s)(?:!?\s*(?:(?:\?|\bpromise->|(?:\[[^[\]]*\]|\*(?!\*)|\*\*)(?:\s*align\s*\((?:[^()]|\([^()]*\))*\)|\s*const\b|\s*volatile\b|\s*allowzero\b)*)\s*)*(?:\bpromise\b|(?:\berror\.)?\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b(?:\.\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)*(?!\s+\b(?!\b(?:align|allowzero|and|asm|async|await|break|cancel|catch|comptime|const|continue|defer|else|enum|errdefer|error|export|extern|fn|for|if|inline|linksection|nakedcc|noalias|null|or|orelse|packed|promise|pub|resume|return|stdcallcc|struct|suspend|switch|test|threadlocal|try|undefined|union|unreachable|usingnamespace|var|volatile|while)\b)(?!\d)\w+\b)))+(?=\s*(?:align\s*\((?:[^()]|\([^()]*\))*\)\s*)?;)/
 `;

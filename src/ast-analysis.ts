@@ -91,8 +91,8 @@ export function isPotentiallyZeroLength(node: NoParent<Node> | NoParent<Concaten
 }
 
 /**
- * Returns whether all paths of the given element accept without consuming any characters and without asserting
- * anything.
+ * Returns whether all (but at least one) paths of the given element accept without consuming any characters and
+ * without asserting anything.
  *
  * This essentially means that the given node can be remove with the empty string (= empty concatenation) without
  * changing the meaning of the pattern.
@@ -101,7 +101,7 @@ export function isPotentiallyZeroLength(node: NoParent<Node> | NoParent<Concaten
  */
 export function isEmpty(node: NoParent<Node> | NoParent<Concatenation>[]): boolean {
 	if (Array.isArray(node)) {
-		return node.every(isEmpty);
+		return node.length >= 1 && node.every(isEmpty);
 	}
 
 	switch (node.type) {

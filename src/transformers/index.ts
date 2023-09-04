@@ -15,6 +15,7 @@ export * from "./creation-options";
 export * from "./apply-assertions";
 export * from "./factor-out";
 export * from "./inline";
+export * from "./make-greedy";
 export * from "./merge-with-quantifier";
 export * from "./move-up-empty";
 export * from "./nested-quantifiers";
