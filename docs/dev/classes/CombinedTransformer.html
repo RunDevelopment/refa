@@ -17,6 +17,7 @@
 <h1>Class CombinedTransformer</h1></div>
 <section class="tsd-panel tsd-comment">
 <div class="tsd-comment tsd-typography"><p>A transformer that runs all given transformers in sequentially order.</p>
+<p>The combined transformer is a special transformer in that the <a href="../functions/transform.html" class="tsd-kind-function">transform</a> function knows about it.</p>
 </div>
 <div class="tsd-comment tsd-typography"></div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -75,7 +76,13 @@
 <p>Implementation of <a href="../interfaces/Transformer.html">Transformer</a>.<a href="../interfaces/Transformer.html#name">name</a></p></aside></section>
 <section class="tsd-panel tsd-member"><a id="transformers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>transformers</span><a href="#transformers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">transformers</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">readonly </span><a href="../interfaces/Transformer.html" class="tsd-signature-type tsd-kind-interface">Transformer</a><span class="tsd-signature-symbol">[]</span></div></section></section>
+<div class="tsd-signature"><span class="tsd-kind-property">transformers</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">readonly </span><a href="../interfaces/Transformer.html" class="tsd-signature-type tsd-kind-interface">Transformer</a><span class="tsd-signature-symbol">[]</span></div>
+<div class="tsd-comment tsd-typography"><p>The transformers that will be applied in order.</p>
+<p>Note: These transformers are not necessarily the ones given to the constructor. If a transformer is a
+<code>CombinedTransformer</code>, then its transformers will be used instead (think of it as flattening combined
+transformers).</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="onAlternation" class="tsd-anchor"></a>

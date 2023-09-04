@@ -21,6 +21,10 @@
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Transforms the given expression according to the given transformer.</p>
 <p><strong>Do not</strong> use the given <code>ast</code> object again after calling this function, the object will be in an undefined state.</p>
+<p>Note: This function knows about <a href="../classes/CombinedTransformer.html" class="tsd-kind-class">CombinedTransformer</a> and will give it special treatment. Instead of applying
+the transformer as is, it will apply all of its transformers instead. While this does not change the behavior of the
+transformer, it does change which transformers the <a href="../interfaces/TransformEvents.html" class="tsd-kind-interface">TransformEvents</a> will see. Instead of seeing the combined
+transformer, they will see the individual transformers.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
