@@ -12,7 +12,7 @@ var n = (array: TemplateStringsArray): string => {
 	return unescapeBackslashes(array.raw[0].slice(0, -1));
 };
 
-module.exports[n`Transformers >> all transformers together >> Prism regex snapshot `] = lit`
+module.exports[n`Transformers >> simplify >> Prism regex snapshot `] = lit`
 /<!--[^]*?-->/
 /<\?[^]+?\?>/
 /<!\[CDATA\[[^]*?\]\]>/i
