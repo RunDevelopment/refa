@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.12.0 (2023-09-04)
+
+### Breaking changes
+
+- Added support for the `v` flag.
+	- This significantly changes the interfaces and types around the parser.
+	- There are now 2 never classes `JS.UnicodeSet` and `JS.StringSet` to represent a Unicode set with strings.
+	- Much more.
+- `combineTransformers` has been deprecated. Use `CombinedTransformer` instead.
+
+### Added
+
+- `JS.parseCharSet` and `JS.parseUnicodeSet` have been added to easily parse a character AST into a `CharSet` or `UnicodeSet`.
+- `JS.toLiteral` now supports the `v` flag.
+- Added `CharSet#fromCharacter` to easily create a character set from a single character.
+- Allow string argument for `JS.Parser.fromLiteral`.
+- Added `CombinedTransformer` class to combine multiple transformers into one.
+- Added transform events which allows the caller to observe the transformation.
+- Added `Transformers.makeGreedy` to make quantifiers greedy whenever possible.
+- Added `Transformers.simplify` as a stable way to get the best combination of transformers to simplify a regex.
+
+### Changed
+
+- Transformers can now have an optional name.
+- Major internal improvements to some transformers, especially `applyAssertions`.
+
+### Fixed
+
+- `isEmpty` has been fixed. `Transformers.moveUpEmpty` should now work correctly.
+- Transformers are now guaranteed to be called with the correct `this` argument.
+
 ## 0.11.0 (2023-03-29)
 
 ### Breaking changes
