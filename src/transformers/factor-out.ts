@@ -1,7 +1,16 @@
-import { Alternation, Concatenation, Element, NoParent, Parent, TransformContext, Transformer } from "../ast";
+import {
+	Alternation,
+	Concatenation,
+	Element,
+	NoParent,
+	Parent,
+	Quantifier,
+	TransformContext,
+	Transformer,
+} from "../ast";
 import { MatchingDirection, structurallyEqual } from "../ast-analysis";
 import { CharSet } from "../char-set";
-import { minOf } from "../util";
+import { debugAssert, filterMut, minOf } from "../util";
 import { CreationOptions } from "./creation-options";
 import { at, atInRange, copySource, firstIndexFor } from "./util";
 
@@ -240,6 +249,119 @@ function tryFactorOutAssertion(
 }
 
 /**
+ * We have already factored out something previously leaving us in a state like this: `(?:a(?:b|c)|b|c|d)`.
+ * This function to factor out the common suffix `b|c` leaving us with `a?(b|c)|d`.
+ *
+ * @param node
+ * @param context
+ * @param ignoreOrder
+ */
+function tryFactorOutGroup(node: NoParent<Parent>, context: TransformContext, ignoreOrder: boolean): void {
+	if (node.alternatives.length < 3) {
+		return;
+	}
+
+	impl("ltr");
+	impl("rtl");
+
+	function impl(direction: MatchingDirection): void {
+		const firstIndex = firstIndexFor(direction);
+		for (let i = 0; i < node.alternatives.length; i++) {
+			const alt = node.alternatives[i];
+			if (alt.elements.length < 2) {
+				continue;
+			}
+
+			// search for a candidate nested group
+			const candidate = atInRange(alt.elements, firstIndex);
+			if (
+				candidate.type !== "Alternation" ||
+				candidate.alternatives.length < 2 ||
+				node.alternatives.length < candidate.alternatives.length + 1
+			) {
+				continue;
+			}
+
+			const parentAlternatives = new Set<NoParent<Concatenation>>();
+			let beforeCandidateAlternative = false;
+
+			if (ignoreOrder) {
+				// check that all alternatives are in the parent as well
+				for (const a of candidate.alternatives) {
+					const match = node.alternatives.find(c => structurallyEqual(a, c));
+					if (!match) {
+						break;
+					}
+					parentAlternatives.add(match);
+				}
+			} else {
+				// the alternatives must all occur either directly before or after the candidate alternative
+
+				// before
+				if (candidate.alternatives.length <= i) {
+					beforeCandidateAlternative = true;
+					for (let j = 0; j < candidate.alternatives.length; j++) {
+						const match = node.alternatives[i - candidate.alternatives.length + j];
+						if (!structurallyEqual(candidate.alternatives[j], match)) {
+							break;
+						}
+						parentAlternatives.add(match);
+					}
+				}
+
+				// after
+				if (
+					i + candidate.alternatives.length < node.alternatives.length &&
+					parentAlternatives.size !== candidate.alternatives.length
+				) {
+					beforeCandidateAlternative = false;
+					parentAlternatives.clear();
+					for (let j = 0; j < candidate.alternatives.length; j++) {
+						const match = node.alternatives[i + 1 + j];
+						if (!structurallyEqual(candidate.alternatives[j], match)) {
+							break;
+						}
+						parentAlternatives.add(match);
+					}
+				}
+			}
+
+			if (parentAlternatives.size !== candidate.alternatives.length) {
+				// we couldn't find all corresponding alternatives in the parent
+				continue;
+			}
+			debugAssert(!parentAlternatives.has(alt));
+
+			// remove the parent alternatives
+			// e.g. `(?:a(?:b|c)|b|c|d)` => `(?:a(?:b|c)|d)`
+			context.signalMutation();
+			filterMut(node.alternatives, a => !parentAlternatives.has(a));
+
+			// make the prefix optional
+			// e.g. `(?:a(?:b|c)|d)` => `(?:a?(?:b|c)|d)`
+			const prefixElements = alt.elements.filter(e => e !== candidate);
+			const prefixQuant: NoParent<Quantifier> = {
+				type: "Quantifier",
+				lazy: beforeCandidateAlternative,
+				min: 0,
+				max: 1,
+				alternatives: [{ type: "Concatenation", elements: prefixElements, source: copySource(alt.source) }],
+				source: copySource(alt.source),
+			};
+
+			// keep only the candidate
+			filterMut(alt.elements, e => e === candidate);
+			// add new prefix
+			if (direction === "ltr") {
+				alt.elements.push(prefixQuant);
+			} else {
+				alt.elements.unshift(prefixQuant);
+			}
+		}
+	}
+}
+
+/**
  * This will factor out common prefixes and suffixes in parent nodes.
  *
  * Examples:
@@ -303,6 +425,8 @@ export function factorOut(options?: Readonly<CreationOptions>): Transformer {
 		if (tryFactorOutQuantifiedCharacter(node, "rtl", noLazyStar)) {
 			signalMutation();
 		}
+
+		tryFactorOutGroup(node, context, ignoreOrder);
 
 		tryFactorOutAssertion(node, "ltr", context);
 		tryFactorOutAssertion(node, "rtl", context);
