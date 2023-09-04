@@ -53,9 +53,18 @@ export interface TransformContext {
 
 /**
  * A transformer that runs all given transformers in sequentially order.
+ *
+ * The combined transformer is a special transformer in that the {@link transform} function knows about it.
  */
 export class CombinedTransformer implements Transformer {
 	readonly name = "CombinedTransformer";
+	/**
+	 * The transformers that will be applied in order.
+	 *
+	 * Note: These transformers are not necessarily the ones given to the constructor. If a transformer is a
+	 * `CombinedTransformer`, then its transformers will be used instead (think of it as flattening combined
+	 * transformers).
+	 */
 	readonly transformers: readonly Transformer[];
 
 	constructor(transformers: Iterable<Transformer>) {
@@ -179,6 +188,11 @@ export interface TransformOptions {
  * Transforms the given expression according to the given transformer.
  *
  * __Do not__ use the given `ast` object again after calling this function, the object will be in an undefined state.
+ *
+ * Note: This function knows about {@link CombinedTransformer} and will give it special treatment. Instead of applying
+ * the transformer as is, it will apply all of its transformers instead. While this does not change the behavior of the
+ * transformer, it does change which transformers the {@link TransformEvents} will see. Instead of seeing the combined
+ * transformer, they will see the individual transformers.
  *
  * @param transformer
  * @param ast
