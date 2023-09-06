@@ -63,7 +63,7 @@ export class StringSet {
 		this._caseFolding = caseFolding;
 	}
 
-	static empty = new StringSet([], noopCaseFolding);
+	static readonly empty = new StringSet([], noopCaseFolding);
 
 	static from(words: Iterable<ReadonlyWord>, caseFolding: CharCaseFolding): StringSet {
 		const items = [...words];
