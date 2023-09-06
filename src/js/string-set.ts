@@ -20,7 +20,8 @@ export class StringSet {
 	 *
 	 * Words are guaranteed to be sorted by ascending length followed by ascending character value.
 	 */
-	readonly words: readonly ReadonlyWord[];
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	private readonly words: readonly ReadonlyWord[];
 
 	private readonly _caseFolding: CharCaseFolding;
 

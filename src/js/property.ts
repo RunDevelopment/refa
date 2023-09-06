@@ -83,7 +83,7 @@ function getStringPropertyUncached(key: string, env: CharEnv & CharEnvUnicode & 
 	const data = getPropertyData(key, null);
 
 	const chars = env.withCaseVaryingCharacters(data.chars);
-	const words = StringSet.from(data.accept.words, env.charCaseFolding);
+	const words = StringSet.from(data.accept["words"], env.charCaseFolding);
 
 	return UnicodeSet.from(chars, words);
 }
