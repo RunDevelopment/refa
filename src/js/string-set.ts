@@ -1,6 +1,8 @@
-import { ReadonlyWord } from "../char-types";
+import { CharMap, ReadonlyCharMap } from "../char-map";
+import { CharSet } from "../char-set";
+import { Char, ReadonlyWord } from "../char-types";
 import { debugAssert, filterMut } from "../util";
-import { ReadonlyWordSet } from "../word-set";
+import { ReadonlyWordSet, WordSet } from "../word-set";
 import { CharCaseFolding } from "./char-case-folding";
 
 const noopCaseFolding: CharCaseFolding = {
@@ -40,13 +42,15 @@ export class StringSet {
 	}
 	/**
 	 * `true` if this set contains at least one single-character word.
+	 *
+	 * This is equivalent to `this.getSingleCharacter() !== undefined`.
 	 */
 	get hasSingleCharacter(): boolean {
 		const startIndex = this.hasEmptyWord ? 1 : 0;
 		return this.words.length > startIndex && this.words[startIndex].length === 1;
 	}
 
-	private _wordSet: readonly ReadonlyWordSet[] | undefined;
+	private _cachedWordSets: readonly ReadonlyWordSet[] | undefined;
 
 	/**
 	 * {@link words} with {@link CharCaseFolding#toCharSet} applied to each character.
@@ -56,7 +60,13 @@ export class StringSet {
 	 * Note: This is a lazy getter. Try to avoid calling it for best performance.
 	 */
 	get wordSets(): readonly ReadonlyWordSet[] {
-		return (this._wordSet ??= toWordSets(this.words, this._caseFolding));
+		return (this._cachedWordSets ??= toWordSets(this.words, this._caseFolding));
+	}
+
+	private _cachedTrie: Trie | undefined;
+
+	private get trie(): Trie {
+		return (this._cachedTrie ??= Trie.fromWordSets(this.wordSets));
 	}
 
 	private constructor(items: readonly ReadonlyWord[], caseFolding: CharCaseFolding) {
@@ -121,38 +131,28 @@ export class StringSet {
 			return true;
 		}
 
-		if (this._caseFolding === other._caseFolding) {
-			// we use the same case folding, so we don't need to use word sets
-			const a = this.words;
-			const b = other.words;
-			for (let i = 0; i < a.length; i++) {
-				if (compareWords(a[i], b[i]) !== 0) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			// before we use word sets, we check the length of all words to avoid unnecessary work
-			const a = this.words;
-			const b = other.words;
-			for (let i = 0; i < a.length; i++) {
-				if (a[i].length !== b[i].length) {
-					return false;
-				}
-			}
-
-			// compare word sets
-			const aSets = this.wordSets;
-			const bSets = other.wordSets;
-			for (let i = 0; i < aSets.length; i++) {
-				if (!equalWordSets(aSets[i], bSets[i])) {
-					return false;
-				}
-			}
-			return true;
+		if (this._caseFolding !== other._caseFolding) {
+			return this.trie.equals(other.trie);
 		}
+
+		// we use the same case folding, so we don't need to use word sets
+		const a = this.words;
+		const b = other.words;
+		for (let i = 0; i < a.length; i++) {
+			if (compareWords(a[i], b[i]) !== 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 
+	/**
+	 * Returns the union of all given sets.
+	 *
+	 * Note: This operation is only allowed if all sets are compatible.
+	 *
+	 * @param others
+	 */
 	union(...others: StringSet[]): StringSet {
 		if (others.length === 0) {
 			return this;
@@ -195,6 +195,13 @@ export class StringSet {
 		}
 	}
 
+	/**
+	 * Returns the intersection of this set and the given set.
+	 *
+	 * Note: This operation is only allowed if all sets are compatible.
+	 *
+	 * @param other
+	 */
 	intersect(other: StringSet): StringSet {
 		if (this.isEmpty || other.isEmpty) {
 			return StringSet.empty;
@@ -214,6 +221,13 @@ export class StringSet {
 		return new StringSet(items, this._caseFolding);
 	}
 
+	/**
+	 * Returns this set without the strings of the given set.
+	 *
+	 * Note: This operation is only allowed if all sets are compatible.
+	 *
+	 * @param other
+	 */
 	without(other: StringSet): StringSet {
 		if (this.isEmpty || other.isEmpty) {
 			return this;
@@ -231,22 +245,106 @@ export class StringSet {
 		return new StringSet(items, this._caseFolding);
 	}
 
-	filter(predicate: (word: ReadonlyWord) => boolean): StringSet {
-		const items = this.words.filter(predicate);
-		if (items.length === this.words.length) {
+	/**
+	 * Returns whether `this ⊇ other`.
+	 *
+	 * @param other
+	 */
+	isSupersetOf(other: StringSet): boolean {
+		if (other.isEmpty) {
+			return true;
+		}
+		if (this.isEmpty) {
+			return false;
+		}
+		if (this._caseFolding !== other._caseFolding) {
+			return this.trie.isSuperSetOf(other.trie);
+		}
+		return isSuperSetSorted(this.words, other.words, compareWords);
+	}
+	/**
+	 * Returns whether `this ⊆ other`.
+	 *
+	 * @param other
+	 */
+	isSubsetOf(other: StringSet): boolean {
+		return other.isSupersetOf(this);
+	}
+	/**
+	 * Returns whether `this ⊃ other`.
+	 *
+	 * @param other
+	 */
+	isProperSupersetOf(other: StringSet): boolean {
+		return this.isSupersetOf(other) && !this.equals(other);
+	}
+	/**
+	 * Returns whether `this ⊂ other`.
+	 *
+	 * @param other
+	 */
+	isProperSubsetOf(other: StringSet): boolean {
+		return this.isSubsetOf(other) && !this.equals(other);
+	}
+
+	isDisjointWith(other: StringSet): boolean {
+		if (this.isEmpty || other.isEmpty) {
+			return true;
+		}
+		if (this._caseFolding !== other._caseFolding) {
+			return this.trie.isDisjointWith(other.trie);
+		}
+		return isDisjointWithSorted(this.words, other.words, compareWords);
+	}
+
+	/**
+	 * Returns a set of all single-character words in this set or `undefined` if this set contains no single-character
+	 * words.
+	 */
+	getSingleCharacters(): CharSet | undefined {
+		const chars: Char[] = [];
+		for (const word of this.words) {
+			if (word.length === 1) {
+				chars.push(word[0]);
+			} else if (word.length > 1) {
+				break;
+			}
+		}
+
+		if (chars.length === 0) {
+			return undefined;
+		}
+
+		return chars.map(char => this._caseFolding.toCharSet(char)).reduce((a, b) => a.union(b));
+	}
+
+	/**
+	 * Removes all single-character words from this set.
+	 */
+	withoutSingleCharacters(): StringSet {
+		if (!this.hasSingleCharacter) {
 			return this;
-		} else if (items.length === 0) {
+		}
+
+		const items = this.words.filter(w => w.length !== 1);
+		if (items.length === 0) {
 			return StringSet.empty;
 		}
 		return new StringSet(items, this._caseFolding);
 	}
-	map(mapFn: (word: ReadonlyWord) => ReadonlyWord): StringSet {
-		if (this.isEmpty) {
+	/**
+	 * Removes the empty word from this set.
+	 */
+	withoutEmptyWord(): StringSet {
+		if (!this.hasEmptyWord) {
 			return this;
 		}
 
-		const items = this.words.map(mapFn);
-		return StringSet.from(items, this._caseFolding);
+		const items = this.words.slice(1);
+		if (items.length === 0) {
+			return StringSet.empty;
+		}
+		return new StringSet(items, this._caseFolding);
 	}
 }
 
@@ -274,18 +372,6 @@ function compareWords(a: ReadonlyWord, b: ReadonlyWord): number {
 		}
 	}
 	return 0;
-}
-function equalWordSets(a: ReadonlyWordSet, b: ReadonlyWordSet): boolean {
-	if (a.length !== b.length) {
-		return false;
-	}
-
-	for (let i = 0; i < a.length; i++) {
-		if (!a[i].equals(b[i])) {
-			return false;
-		}
-	}
-	return true;
 }
 
 function toWordSets(items: readonly ReadonlyWord[], caseFolding: CharCaseFolding): readonly ReadonlyWordSet[] {
@@ -342,4 +428,180 @@ function withoutSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T, b:
 	}
 
 	return result;
+}
+
+function isDisjointWithSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T, b: T) => number): boolean {
+	let i1 = 0;
+	let i2 = 0;
+
+	while (i1 < s1.length && i2 < s2.length) {
+		const diff = compare(s1[i1], s2[i2]);
+		if (diff === 0) {
+			return false;
+		} else if (diff < 0) {
+			i1++;
+		} else {
+			i2++;
+		}
+	}
+
+	return true;
+}
+
+function isSuperSetSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T, b: T) => number): boolean {
+	let i1 = 0;
+	let i2 = 0;
+
+	while (i1 < s1.length && i2 < s2.length) {
+		const diff = compare(s1[i1], s2[i2]);
+		if (diff === 0) {
+			i1++;
+			i2++;
+		} else if (diff < 0) {
+			i1++;
+		} else {
+			return false;
+		}
+	}
+
+	return i1 === s1.length;
+}
+
+class HashState {
+	hash: number = 0;
+
+	add(value: number): void {
+		this.hash = (this.hash * 31 + value) | 0;
+	}
+}
+
+class Trie {
+	readonly accept: boolean;
+	/**
+	 * A mapping to the next node.
+	 *
+	 * The key char sets are guaranteed to be sorted and disjoint.
+	 *
+	 * The mapping is also guaranteed to be minimal. This means that for 2 mapping `c1 => n1` and `c2 => n2`, `n1.equals(n2)` means that `c1.equals(c2)`.
+	 */
+	readonly next: ReadonlyCharMap<Trie>;
+	readonly hash: number;
+
+	constructor(accept: boolean, next: ReadonlyCharMap<Trie>) {
+		this.accept = accept;
+		this.next = next;
+
+		const hashState = new HashState();
+		hashState.add(accept ? 1 : 0);
+		for (const [range, n] of next) {
+			hashState.add(range.min);
+			hashState.add(range.max);
+			hashState.add(n.hash);
+		}
+
+		this.hash = hashState.hash;
+	}
+
+	static readonly empty = new Trie(false, new CharMap());
+	static readonly emptyString = new Trie(true, new CharMap());
+
+	static fromWordSets(iterable: Iterable<ReadonlyWordSet>): Trie {
+		// We will construct the whole tree back to front. This means that we will start with the last characters of
+		// the longest sequences and then work our way back. This naturally deduplicates nodes and ensures the
+		// guarantees of the `next` map.
+
+		const wordSets = deduplicateCharSets(iterable);
+	}
+
+	equals(other: Trie): boolean {
+		if (this === other) {
+			return true;
+		}
+		if (
+			this.hash !== other.hash ||
+			this.accept !== other.accept ||
+			this.next.entryCount !== other.next.entryCount ||
+			this.next.size !== other.next.size
+		) {
+			return false;
+		}
+
+		const aEntries = [...this.next.entries()];
+		const bEntries = [...other.next.entries()];
+		for (let i = 0; i < aEntries.length; i++) {
+			const a = aEntries[i];
+			const b = bEntries[i];
+			if (a[0].min !== b[0].min || a[0].max !== b[0].max || !a[1].equals(b[1])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	isSuperSetOf(other: Trie): boolean {
+		if (this === other) {
+			return true;
+		}
+		if (other.accept && !this.accept) {
+			return false;
+		}
+
+		if (other.next.size > this.next.size) {
+			return false;
+		}
+
+		for (const [range, subSet] of other.next.entries()) {
+			for (let c = range.min; c <= range.max; c++) {
+				const superSet = this.next.get(c);
+				if (!superSet || !superSet.isSuperSetOf(subSet)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	isDisjointWith(other: Trie): boolean {
+		if (this === other || (this.accept && other.accept)) {
+			return false;
+		}
+		if (this.next.isEmpty || other.next.isEmpty) {
+			return true;
+		}
+
+		for (const [range, a] of other.next.entries()) {
+			for (let c = range.min; c <= range.max; c++) {
+				const b = this.next.get(c);
+				if (b && !a.isDisjointWith(b)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+}
+
+/**
+ * This ensures `c1 === c2` <==> `c1.equals(c2)` for all `CharSet`s in the returned array.
+ *
+ * @param iterable
+ */
+function deduplicateCharSets(iterable: Iterable<ReadonlyWordSet>): WordSet[] {
+	const wordSets: WordSet[] = [];
+
+	const cache = new Map<string, CharSet>();
+	const mapFn = (set: CharSet): CharSet => {
+		const key = set.toRangesString();
+		let cached = cache.get(key);
+		if (cached === undefined) {
+			cached = set;
+			cache.set(key, cached);
+		}
+		return cached;
+	};
+
+	for (const wordSet of iterable) {
+		wordSets.push(wordSet.map(mapFn));
+	}
+	return wordSets;
 }

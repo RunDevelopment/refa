@@ -3,7 +3,27 @@ import { CharRange, CharSet } from "./char-set";
 import { filterMut } from "./util";
 
 export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
+	/**
+	 * Returns whether this map is empty.
+	 *
+	 * This is equivalent to `this.size === 0` and `this.entryCount === 0`.
+	 */
 	readonly isEmpty: boolean;
+	/**
+	 * The number of characters in this map. This is different from {@link entryCount}.
+	 *
+	 * This is equivalent to `[...this.keys()].reduce((count, range) => count + range.max - range.min + 1, 0)`.
+	 */
+	readonly size: number;
+	/**
+	 * The number of entires in this map.
+	 *
+	 * This is different from {@link size}. In general, you should use {@link size}, because it has the same semantics
+	 * as `Set#size` and `Map#size`.
+	 *
+	 * This is equivalent to `[...this.entries()].length`.
+	 */
+	readonly entryCount: number;
 
 	/**
 	 * Returns whether the given character is a key in the map.
@@ -44,9 +64,24 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	 * @param callback
 	 */
 	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void;
+	/**
+	 * Returns all ranges of characters that are keys in the map.
+	 *
+	 * Keys will be returned in the same order as `this.entries()`.
+	 */
 	keys(): Iterable<CharRange>;
+	/**
+	 * Returns all values in the map. Values might not be unique if more than one range maps to the same value.
+	 *
+	 * Values will be returned in the same order as `this.entries()`.
+	 */
 	values(): Iterable<T>;
-	entries(range?: CharRange): Iterable<[CharRange, T]>;
+	/**
+	 * Returns all key-value pairs in the map.
+	 *
+	 * Entries will be returned in the order of ascending ranges.
+	 */
+	entries(): Iterable<[CharRange, T]>;
 
 	/**
 	 * Returns a mapping from the values of this map to its keys.
@@ -75,6 +110,16 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 
 	get isEmpty(): boolean {
 		return this._array.length === 0;
+	}
+	get size(): number {
+		let count = 0;
+		for (const { range } of this._array) {
+			count += range.max - range.min + 1;
+		}
+		return count;
+	}
+	get entryCount(): number {
+		return this._array.length;
 	}
 
 	private _indexOf(char: Char): number | undefined {

@@ -1,4 +1,4 @@
-import { CharSet } from "../char-set";
+import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
 import { StringSet } from "./string-set";
 
@@ -20,10 +20,23 @@ export class UnicodeSet {
 	/**
 	 * A sorted set of words.
 	 *
-	 * In addition to the usual guarantees of `StringSet`, this set is also guaranteed to not contain any single-character words.
+	 * In addition to the usual guarantees of `StringSet`, this set is also guaranteed to not contain any
+	 * single-character words.
 	 */
 	readonly accept: StringSet;
 
+	/**
+	 * The maximum character in the set.
+	 *
+	 * This is equivalent to `this.chars.maximum`.
+	 */
+	get maximum(): Char {
+		return this.chars.maximum;
+	}
+
+	/**
+	 * `true` if the set is empty (=accepts no words).
+	 */
 	get isEmpty(): boolean {
 		return this.chars.isEmpty && this.accept.isEmpty;
 	}
@@ -55,10 +68,10 @@ export class UnicodeSet {
 		return new UnicodeSet(chars, StringSet.empty);
 	}
 	static from(chars: CharSet, accept: StringSet): UnicodeSet {
-		if (accept.hasSingleCharacter) {
-			const singleChars = accept.filter(w => w.length === 1);
-			chars = chars.union(...singleChars.wordSets.map(w => w[0]));
-			accept = accept.filter(w => w.length !== 1);
+		const singleChars = accept.getSingleCharacters();
+		if (singleChars) {
+			chars = chars.union(singleChars);
+			accept = accept.withoutSingleCharacters();
 		}
 
 		return new UnicodeSet(chars, accept);
@@ -69,33 +82,98 @@ export class UnicodeSet {
 	 *
 	 * @param other
 	 */
-	equals(other: UnicodeSet): boolean {
-		return this.chars.equals(other.chars) && this.accept.equals(other.accept);
+	equals(other: UnicodeSet | CharSet | CharRange): boolean {
+		if (other instanceof UnicodeSet) {
+			return this.chars.equals(other.chars) && this.accept.equals(other.accept);
+		} else {
+			return this.accept.isEmpty && this.chars.equals(other);
+		}
 	}
 
 	isCompatibleWith(other: UnicodeSet): boolean {
 		return this.chars.maximum === other.chars.maximum && this.accept.isCompatibleWith(other.accept);
 	}
 
-	union(...others: UnicodeSet[]): UnicodeSet {
+	union(...others: (UnicodeSet | CharSet)[]): UnicodeSet {
 		if (others.length === 0) {
 			return this;
 		} else if (others.length === 1) {
 			const o = others[0];
-			return new UnicodeSet(this.chars.union(o.chars), this.accept.union(o.accept));
+			if (o instanceof UnicodeSet) {
+				return new UnicodeSet(this.chars.union(o.chars), this.accept.union(o.accept));
+			} else {
+				return new UnicodeSet(this.chars.union(o), this.accept);
+			}
 		} else {
 			return new UnicodeSet(
-				this.chars.union(...others.map(o => o.chars)),
-				this.accept.union(...others.map(o => o.accept))
+				this.chars.union(...others.map(o => (o instanceof UnicodeSet ? o.chars : o))),
+				this.accept.union(...others.map(o => (o instanceof UnicodeSet ? o.accept : StringSet.empty)))
 			);
 		}
 	}
 
-	intersect(other: UnicodeSet): UnicodeSet {
-		return new UnicodeSet(this.chars.intersect(other.chars), this.accept.intersect(other.accept));
+	intersect(other: UnicodeSet | CharSet | CharRange): UnicodeSet {
+		if (other instanceof UnicodeSet) {
+			return new UnicodeSet(this.chars.intersect(other.chars), this.accept.intersect(other.accept));
+		} else {
+			return new UnicodeSet(this.chars.intersect(other), StringSet.empty);
+		}
 	}
 
-	without(other: UnicodeSet): UnicodeSet {
-		return new UnicodeSet(this.chars.without(other.chars), this.accept.without(other.accept));
+	without(other: UnicodeSet | CharSet | CharRange): UnicodeSet {
+		if (other instanceof UnicodeSet) {
+			return new UnicodeSet(this.chars.without(other.chars), this.accept.without(other.accept));
+		} else {
+			return new UnicodeSet(this.chars.without(other), this.accept);
+		}
+	}
+
+	/**
+	 * Returns whether `this ⊇ other`.
+	 *
+	 * @param other
+	 */
+	isSupersetOf(other: UnicodeSet | CharSet | CharRange): boolean {
+		if (other instanceof UnicodeSet) {
+			return this.chars.isSupersetOf(other.chars) && this.accept.isSupersetOf(other.accept);
+		} else {
+			return this.chars.isSupersetOf(other);
+		}
+	}
+	/**
+	 * Returns whether `this ⊆ other`.
+	 *
+	 * @param other
+	 */
+	isSubsetOf(other: UnicodeSet | CharSet | CharRange): boolean {
+		if (other instanceof UnicodeSet) {
+			return this.chars.isSubsetOf(other.chars) && this.accept.isSubsetOf(other.accept);
+		} else {
+			return this.accept.isEmpty && this.chars.isSubsetOf(other);
+		}
+	}
+	/**
+	 * Returns whether `this ⊃ other`.
+	 *
+	 * @param other
+	 */
+	isProperSupersetOf(other: UnicodeSet | CharSet | CharRange): boolean {
+		return this.isSupersetOf(other) && !this.equals(other);
+	}
+	/**
+	 * Returns whether `this ⊂ other`.
+	 *
+	 * @param other
+	 */
+	isProperSubsetOf(other: UnicodeSet | CharSet | CharRange): boolean {
+		return this.isSubsetOf(other) && !this.equals(other);
+	}
+
+	isDisjointWith(other: UnicodeSet | CharSet | CharRange): boolean {
+		if (other instanceof UnicodeSet) {
+			return this.chars.isDisjointWith(other.chars) && this.accept.isDisjointWith(other.accept);
+		} else {
+			return this.chars.isDisjointWith(other);
+		}
 	}
 }
