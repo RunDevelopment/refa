@@ -53,7 +53,7 @@ export class StringSet {
 	private _cachedWordSets: readonly ReadonlyWordSet[] | undefined;
 
 	/**
-	 * {@link words} with {@link CharCaseFolding#toCharSet} applied to each character.
+	 * The words of this set with {@link CharCaseFolding#toCharSet} applied to each character.
 	 *
 	 * Word sets are guaranteed to be sorted by ascending length.
 	 *

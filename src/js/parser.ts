@@ -730,27 +730,8 @@ export class Parser {
 			return context.nc.newCharClass(element, chars.chars);
 		}
 
-		// ECMAScript spec says that alternatives are sorted by descending length.
-		// This isn't enough for uniqueness though, so we also sort by code point.
-		const words = [...chars.accept.wordSets];
-		if (!chars.chars.isEmpty) {
-			words.push([chars.chars]);
-		}
-		words.sort((a, b) => {
-			if (a.length !== b.length) {
-				return b.length - a.length;
-			}
-			for (let i = 0; i < a.length; i++) {
-				const diff = a[i].compare(b[i]);
-				if (diff !== 0) {
-					return diff;
-				}
-			}
-			return 0;
-		});
-
 		const alternation = context.nc.newAlt(element);
-		for (const word of words) {
+		for (const word of chars.wordSets) {
 			const alternative = context.nc.newConcat(element);
 			alternation.alternatives.push(alternative);
 

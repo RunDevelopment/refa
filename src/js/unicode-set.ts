@@ -1,5 +1,6 @@
 import { CharRange, CharSet } from "../char-set";
 import { Char } from "../char-types";
+import { ReadonlyWordSet } from "../word-set";
 import { StringSet } from "./string-set";
 
 const emptyCache = new Map<Char, UnicodeSet>();
@@ -48,6 +49,20 @@ export class UnicodeSet {
 	 */
 	get hasEmptyWord(): boolean {
 		return this.accept.hasEmptyWord;
+	}
+
+	private _cachedWordSets: readonly ReadonlyWordSet[] | undefined;
+
+	/**
+	 * All word sets accepted by this set.
+	 *
+	 * Word sets are guaranteed to be sorted by **descending** length and code points. This means that word sets are in
+	 * the order in which the ECMAScript RegExp engine would try matching them.
+	 *
+	 * Note: This is a lazy getter. Try to avoid calling it for best performance.
+	 */
+	get wordSets(): readonly ReadonlyWordSet[] {
+		return (this._cachedWordSets ??= toWordSets(this));
 	}
 
 	private constructor(chars: CharSet, accept: StringSet) {
@@ -176,4 +191,29 @@ export class UnicodeSet {
 			return this.chars.isDisjointWith(other);
 		}
 	}
+}
+
+function toWordSets(set: UnicodeSet): readonly ReadonlyWordSet[] {
+	if (set.accept.isEmpty && !set.chars.isEmpty) {
+		return [[set.chars]];
+	}
+	if (set.isEmpty) {
+		return [];
+	}
+
+	const wordSets: ReadonlyWordSet[] = Array.from(set.accept.wordSets);
+	wordSets.push([set.chars]);
+	wordSets.sort((a, b) => {
+		if (a.length !== b.length) {
+			return b.length - a.length;
+		}
+		for (let i = 0; i < a.length; i++) {
+			const diff = a[i].compare(b[i]);
+			if (diff !== 0) {
+				return diff;
+			}
+		}
+		return 0;
+	});
+	return wordSets;
 }
