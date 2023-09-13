@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { basename, dirname, join } from "path";
-import { mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { CONFIG_UPDATE } from "./config";
 
 function getSnapshotFilePath(testFile: string): string {
@@ -115,7 +115,14 @@ export function assertEqualSnapshot(context: Mocha.Context, actual: string, mess
 	const file = getSnapshotFilePath(test.file!);
 	const title = getTitlePath(test);
 
-	if (CONFIG_UPDATE) {
+	let fileExists;
+	try {
+		fileExists = existsSync(require.resolve(file));
+	} catch {
+		fileExists = false;
+	}
+
+	if (CONFIG_UPDATE || !fileExists) {
 		updateSnapshot(test, file, title, actual);
 	} else {
 		assert.strictEqual(actual, getSnapshot(file, title), message);

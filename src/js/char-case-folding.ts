@@ -5,7 +5,23 @@ import { Maximum } from "./maximum";
 import { UnicodeCaseFolding } from "./unicode";
 import { UTF16CaseFolding } from "./utf16-case-folding";
 
+/**
+ * A set of functions that can be used to perform case-insensitive matching.
+ *
+ * It must fulfill the following conditions:
+ *
+ * 1. `canonicalize` must be idempotent, i.e. `canonicalize(canonicalize(char)) === canonicalize(char)`.
+ * 2. `toCharSet(canonicalize(a))` is the set of all characters `c` such that `canonicalize(a) === canonicalize(c)`.
+ */
 export interface CharCaseFolding {
+	/**
+	 * The canonicalization function. This typically maps characters to their lowercase form.
+	 *
+	 * If no function is given, then the identity function is used. This also implies that `toCharSet` must return a
+	 * set containing only the given character.
+	 *
+	 * @default char => char
+	 */
 	readonly canonicalize?: (char: Char) => Char;
 	readonly toCharSet: (char: Char) => CharSet;
 }

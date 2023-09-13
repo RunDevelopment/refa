@@ -194,15 +194,17 @@ export class UnicodeSet {
 }
 
 function toWordSets(set: UnicodeSet): readonly ReadonlyWordSet[] {
-	if (set.accept.isEmpty && !set.chars.isEmpty) {
-		return [[set.chars]];
-	}
 	if (set.isEmpty) {
 		return [];
 	}
+	if (set.accept.isEmpty && !set.chars.isEmpty) {
+		return [[set.chars]];
+	}
 
 	const wordSets: ReadonlyWordSet[] = Array.from(set.accept.wordSets);
-	wordSets.push([set.chars]);
+	if (!set.chars.isEmpty) {
+		wordSets.push([set.chars]);
+	}
 	wordSets.sort((a, b) => {
 		if (a.length !== b.length) {
 			return b.length - a.length;

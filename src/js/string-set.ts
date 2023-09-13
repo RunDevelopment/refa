@@ -1,8 +1,9 @@
 import { CharMap, ReadonlyCharMap } from "../char-map";
 import { CharSet } from "../char-set";
 import { Char, ReadonlyWord } from "../char-types";
+import { DFA, ReadonlyDFA } from "../dfa";
 import { debugAssert, filterMut } from "../util";
-import { ReadonlyWordSet, WordSet } from "../word-set";
+import { ReadonlyWordSet } from "../word-set";
 import { CharCaseFolding } from "./char-case-folding";
 
 const noopCaseFolding: CharCaseFolding = {
@@ -66,7 +67,7 @@ export class StringSet {
 	private _cachedTrie: Trie | undefined;
 
 	private get trie(): Trie {
-		return (this._cachedTrie ??= Trie.fromWordSets(this.wordSets));
+		return (this._cachedTrie ??= Trie.fromWords(this.words, this._caseFolding, () => this.wordSets));
 	}
 
 	private constructor(items: readonly ReadonlyWord[], caseFolding: CharCaseFolding) {
@@ -122,17 +123,16 @@ export class StringSet {
 			return true;
 		}
 
-		if (this.words.length !== other.words.length) {
-			return false;
-		}
-
-		// empty sets
-		if (this.words.length === 0) {
-			return true;
+		if (this.isEmpty || other.isEmpty) {
+			return this.isEmpty === other.isEmpty;
 		}
 
 		if (this._caseFolding !== other._caseFolding) {
 			return this.trie.equals(other.trie);
+		}
+
+		if (this.words.length !== other.words.length) {
+			return false;
 		}
 
 		// we use the same case folding, so we don't need to use word sets
@@ -158,8 +158,11 @@ export class StringSet {
 			return this;
 		} else if (others.length === 1) {
 			const other = others[0];
-			if (this.isEmpty || other.isEmpty) {
-				return StringSet.empty;
+			if (this.isEmpty) {
+				return other;
+			}
+			if (other.isEmpty) {
+				return this;
 			}
 			if (this._caseFolding !== other._caseFolding) {
 				throw new Error("Cannot intersect incompatible string sets.");
@@ -464,7 +467,7 @@ function isSuperSetSorted<T>(s1: readonly T[], s2: readonly T[], compare: (a: T,
 		}
 	}
 
-	return i1 === s1.length;
+	return i2 === s2.length;
 }
 
 class HashState {
@@ -505,12 +508,75 @@ class Trie {
 	static readonly empty = new Trie(false, new CharMap());
 	static readonly emptyString = new Trie(true, new CharMap());
 
-	static fromWordSets(iterable: Iterable<ReadonlyWordSet>): Trie {
-		// We will construct the whole tree back to front. This means that we will start with the last characters of
-		// the longest sequences and then work our way back. This naturally deduplicates nodes and ensures the
-		// guarantees of the `next` map.
+	static fromWords(
+		words: readonly ReadonlyWord[],
+		caseFolding: CharCaseFolding,
+		getWordSets: () => readonly ReadonlyWordSet[]
+	): Trie {
+		if (words.length === 0) {
+			return Trie.empty;
+		}
 
-		const wordSets = deduplicateCharSets(iterable);
+		let dfa;
+		if (!caseFolding.canonicalize) {
+			// Since we don't have a canonicalization function, we know that toCharSet is just `CharSet.fromCharacter`.
+			// So we can construct the DFA from words directly.
+
+			const maxCharacter = getMaxCharacter(words, char => caseFolding.toCharSet(char).maximum);
+			if (maxCharacter === undefined) {
+				// since already handled the empty set case, this must be the empty string
+				return Trie.emptyString;
+			}
+
+			dfa = DFA.fromWords(words, { maxCharacter });
+		} else {
+			const wordSets = getWordSets();
+
+			const maxCharacter = getMaxCharacter(wordSets, set => set.maximum);
+			if (maxCharacter === undefined) {
+				// since already handled the empty set case, this must be the empty string
+				return Trie.emptyString;
+			}
+
+			dfa = DFA.fromWordSets(wordSets, { maxCharacter });
+		}
+
+		dfa.minimize();
+		return Trie._fromDFA(dfa);
+	}
+
+	private static _fromDFA(dfa: ReadonlyDFA): Trie {
+		const cache = new Map<DFA.ReadonlyNode, Trie>();
+		const stack: DFA.ReadonlyNode[] = [];
+
+		const toTrie = (node: DFA.ReadonlyNode): Trie => {
+			{
+				// extra scope, so nobody can use this variable
+				const cached = cache.get(node);
+				if (cached) {
+					return cached;
+				}
+			}
+
+			if (stack.includes(node)) {
+				throw new Error("DFA contains cycles.");
+			}
+			stack.push(node);
+
+			let trie: Trie;
+			if (node.out.isEmpty && dfa.finals.has(node)) {
+				trie = Trie.emptyString;
+			} else {
+				const next = node.out.copy(toTrie);
+				trie = new Trie(dfa.finals.has(node), next);
+			}
+
+			stack.pop();
+			cache.set(node, trie);
+			return trie;
+		};
+
+		return toTrie(dfa.initial);
 	}
 
 	equals(other: Trie): boolean {
@@ -581,27 +647,11 @@ class Trie {
 	}
 }
 
-/**
- * This ensures `c1 === c2` <==> `c1.equals(c2)` for all `CharSet`s in the returned array.
- *
- * @param iterable
- */
-function deduplicateCharSets(iterable: Iterable<ReadonlyWordSet>): WordSet[] {
-	const wordSets: WordSet[] = [];
-
-	const cache = new Map<string, CharSet>();
-	const mapFn = (set: CharSet): CharSet => {
-		const key = set.toRangesString();
-		let cached = cache.get(key);
-		if (cached === undefined) {
-			cached = set;
-			cache.set(key, cached);
+function getMaxCharacter<T>(iter: Iterable<readonly T[]>, getMaximum: (item: T) => Char): Char | undefined {
+	for (const a of iter) {
+		for (const b of a) {
+			return getMaximum(b);
 		}
-		return cached;
-	};
-
-	for (const wordSet of iterable) {
-		wordSets.push(wordSet.map(mapFn));
 	}
-	return wordSets;
+	return undefined;
 }
