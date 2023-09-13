@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.1 (2023-09-13)
+
+### Added
+
+- Generally added some documentation.
+- Added `CharMap#{size,entryCount}` to get the size of a map.
+- Added `CharMap#copy` to create a (mapped) copy of a map.
+- Added `StringSet#{is{Proper,}{Subset,Superset}Of,isDisjointWith}` for set relations.
+- Added `UnicodeSet#{is{Proper,}{Subset,Superset}Of,isDisjointWith}` for set relations.
+- Added `UnicodeSet#{wordSets,maximum}` for a more ergonomic API.
+- `UnicodeSet#{equals,union,intersect,without}` allow `CharSet`s.
+
+### Fixed
+
+- Made `StringSet#words` private. This should have never been public in the first place.
+- Made `StringSet.empty` readonly.
+- Removed ignored `range` parameter from `CharMap#entries`.
+- Fixed some bugs in `StringSet#{equals,union}`.
+- Removed `StringSet#{filter,map}`. These methods should have never been public in the first place.
+
 ## 0.12.0 (2023-09-04)
 
 ### Breaking changes
