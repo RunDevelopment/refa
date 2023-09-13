@@ -44,12 +44,18 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Methods</h3>
 <div class="tsd-index-list"><a href="JS.StringSet.html#equals" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-2048"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)"></path></g></svg><span>equals</span></a>
-<a href="JS.StringSet.html#filter" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>filter</span></a>
+<a href="JS.StringSet.html#getSingleCharacters" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Single<wbr/>Characters</span></a>
 <a href="JS.StringSet.html#intersect" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>intersect</span></a>
 <a href="JS.StringSet.html#isCompatibleWith" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Compatible<wbr/>With</span></a>
-<a href="JS.StringSet.html#map" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>map</span></a>
+<a href="JS.StringSet.html#isDisjointWith" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Disjoint<wbr/>With</span></a>
+<a href="JS.StringSet.html#isProperSubsetOf" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Proper<wbr/>Subset<wbr/>Of</span></a>
+<a href="JS.StringSet.html#isProperSupersetOf" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Proper<wbr/>Superset<wbr/>Of</span></a>
+<a href="JS.StringSet.html#isSubsetOf" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Subset<wbr/>Of</span></a>
+<a href="JS.StringSet.html#isSupersetOf" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Superset<wbr/>Of</span></a>
 <a href="JS.StringSet.html#union" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>union</span></a>
 <a href="JS.StringSet.html#without" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without</span></a>
+<a href="JS.StringSet.html#withoutEmptyWord" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without<wbr/>Empty<wbr/>Word</span></a>
+<a href="JS.StringSet.html#withoutSingleCharacters" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without<wbr/>Single<wbr/>Characters</span></a>
 <a href="JS.StringSet.html#from" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>from</span></a>
 <a href="JS.StringSet.html#fromWord" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>from<wbr/>Word</span></a>
 </div></section></div></details></section></section>
@@ -75,6 +81,7 @@
 <li class="tsd-signature" id="hasSingleCharacter.hasSingleCharacter-1"><span class="tsd-signature-symbol">get</span> hasSingleCharacter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p><code>true</code> if this set contains at least one single-character word.</p>
+<p>This is equivalent to <code>this.getSingleCharacter() !== undefined</code>.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 <div class="tsd-comment tsd-typography"></div></li></ul></section>
@@ -92,7 +99,7 @@
 <ul class="tsd-signatures">
 <li class="tsd-signature" id="wordSets.wordSets-1"><span class="tsd-signature-symbol">get</span> wordSets<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">readonly </span><a href="../types/ReadonlyWordSet.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWordSet</a><span class="tsd-signature-symbol">[]</span></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>words with <a href="../interfaces/JS.CharCaseFolding.html#toCharSet" class="tsd-kind-property">toCharSet</a> applied to each character.</p>
+<div class="tsd-comment tsd-typography"><p>The words of this set with <a href="../interfaces/JS.CharCaseFolding.html#toCharSet" class="tsd-kind-property">toCharSet</a> applied to each character.</p>
 <p>Word sets are guaranteed to be sorted by ascending length.</p>
 <p>Note: This is a lazy getter. Try to avoid calling it for best performance.</p>
 </div>
@@ -116,39 +123,32 @@
 <div class="tsd-comment tsd-typography"></div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 <div class="tsd-comment tsd-typography"></div></li></ul></section>
-<section class="tsd-panel tsd-member"><a id="filter" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>filter</span><a href="#filter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<section class="tsd-panel tsd-member"><a id="getSingleCharacters" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Single<wbr/>Characters</span><a href="#getSingleCharacters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="filter.filter-1"><span class="tsd-kind-call-signature">filter</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">predicate</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#filter.filter-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="getSingleCharacters.getSingleCharacters-1"><span class="tsd-kind-call-signature">get<wbr/>Single<wbr/>Characters</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="CharSet.html" class="tsd-signature-type tsd-kind-class">CharSet</a><a href="#getSingleCharacters.getSingleCharacters-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">predicate</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span></h5>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
-<ul class="tsd-signatures">
-<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">word</span>: <a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></li></ul></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4></li></ul></section>
+<div class="tsd-comment tsd-typography"><p>Returns a set of all single-character words in this set or <code>undefined</code> if this set contains no single-character
+words.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="CharSet.html" class="tsd-signature-type tsd-kind-class">CharSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="intersect" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>intersect</span><a href="#intersect" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="intersect.intersect-1"><span class="tsd-kind-call-signature">intersect</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#intersect.intersect-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the intersection of this set and the given set.</p>
+<p>Note: This operation is only allowed if all sets are compatible.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4></li></ul></section>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="isCompatibleWith" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Compatible<wbr/>With</span><a href="#isCompatibleWith" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -168,50 +168,127 @@
 <div class="tsd-comment tsd-typography"></div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 <div class="tsd-comment tsd-typography"></div></li></ul></section>
-<section class="tsd-panel tsd-member"><a id="map" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>map</span><a href="#map" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<section class="tsd-panel tsd-member"><a id="isDisjointWith" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Disjoint<wbr/>With</span><a href="#isDisjointWith" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="map.map-1"><span class="tsd-kind-call-signature">map</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">mapFn</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#map.map-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">mapFn</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span></h5>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
-<ul class="tsd-signatures">
-<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">word</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">word</span>: <a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="../types/ReadonlyWord.html" class="tsd-signature-type tsd-kind-type-alias">ReadonlyWord</a></h4></li></ul></li></ul></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4></li></ul></section>
-<section class="tsd-panel tsd-member"><a id="union" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>union</span><a href="#union" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="union.union-1"><span class="tsd-kind-call-signature">union</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">others</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#union.union-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">others</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4></li></ul></section>
-<section class="tsd-panel tsd-member"><a id="without" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>without</span><a href="#without" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="without.without-1"><span class="tsd-kind-call-signature">without</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#without.without-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="isDisjointWith.isDisjointWith-1"><span class="tsd-kind-call-signature">is<wbr/>Disjoint<wbr/>With</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isDisjointWith.isDisjointWith-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
 <h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4></li></ul></section>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="isProperSubsetOf" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Proper<wbr/>Subset<wbr/>Of</span><a href="#isProperSubsetOf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="isProperSubsetOf.isProperSubsetOf-1"><span class="tsd-kind-call-signature">is<wbr/>Proper<wbr/>Subset<wbr/>Of</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isProperSubsetOf.isProperSubsetOf-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns whether <code>this ⊂ other</code>.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="isProperSupersetOf" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Proper<wbr/>Superset<wbr/>Of</span><a href="#isProperSupersetOf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="isProperSupersetOf.isProperSupersetOf-1"><span class="tsd-kind-call-signature">is<wbr/>Proper<wbr/>Superset<wbr/>Of</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isProperSupersetOf.isProperSupersetOf-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns whether <code>this ⊃ other</code>.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="isSubsetOf" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Subset<wbr/>Of</span><a href="#isSubsetOf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="isSubsetOf.isSubsetOf-1"><span class="tsd-kind-call-signature">is<wbr/>Subset<wbr/>Of</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isSubsetOf.isSubsetOf-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns whether <code>this ⊆ other</code>.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="isSupersetOf" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Superset<wbr/>Of</span><a href="#isSupersetOf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="isSupersetOf.isSupersetOf-1"><span class="tsd-kind-call-signature">is<wbr/>Superset<wbr/>Of</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isSupersetOf.isSupersetOf-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns whether <code>this ⊇ other</code>.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="union" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>union</span><a href="#union" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="union.union-1"><span class="tsd-kind-call-signature">union</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">others</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#union.union-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the union of all given sets.</p>
+<p>Note: This operation is only allowed if all sets are compatible.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">others</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="without" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>without</span><a href="#without" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="without.without-1"><span class="tsd-kind-call-signature">without</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">other</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#without.without-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns this set without the strings of the given set.</p>
+<p>Note: This operation is only allowed if all sets are compatible.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">other</span>: <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="withoutEmptyWord" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>without<wbr/>Empty<wbr/>Word</span><a href="#withoutEmptyWord" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="withoutEmptyWord.withoutEmptyWord-1"><span class="tsd-kind-call-signature">without<wbr/>Empty<wbr/>Word</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#withoutEmptyWord.withoutEmptyWord-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Removes the empty word from this set.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="withoutSingleCharacters" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>without<wbr/>Single<wbr/>Characters</span><a href="#withoutSingleCharacters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="withoutSingleCharacters.withoutSingleCharacters-1"><span class="tsd-kind-call-signature">without<wbr/>Single<wbr/>Characters</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a><a href="#withoutSingleCharacters.withoutSingleCharacters-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Removes all single-character words from this set.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <a href="JS.StringSet.html" class="tsd-signature-type tsd-kind-class">StringSet</a></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="from" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>from</span><a href="#from" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -260,12 +337,18 @@
 <li><a href="#isEmpty" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-262144"></use></svg><span>is<wbr/>Empty</span></a></li>
 <li><a href="#wordSets" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-262144"></use></svg><span>word<wbr/>Sets</span></a></li>
 <li><a href="#equals" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>equals</span></a></li>
-<li><a href="#filter" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>filter</span></a></li>
+<li><a href="#getSingleCharacters" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Single<wbr/>Characters</span></a></li>
 <li><a href="#intersect" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>intersect</span></a></li>
 <li><a href="#isCompatibleWith" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Compatible<wbr/>With</span></a></li>
-<li><a href="#map" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>map</span></a></li>
+<li><a href="#isDisjointWith" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Disjoint<wbr/>With</span></a></li>
+<li><a href="#isProperSubsetOf" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Proper<wbr/>Subset<wbr/>Of</span></a></li>
+<li><a href="#isProperSupersetOf" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Proper<wbr/>Superset<wbr/>Of</span></a></li>
+<li><a href="#isSubsetOf" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Subset<wbr/>Of</span></a></li>
+<li><a href="#isSupersetOf" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Superset<wbr/>Of</span></a></li>
 <li><a href="#union" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>union</span></a></li>
 <li><a href="#without" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without</span></a></li>
+<li><a href="#withoutEmptyWord" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without<wbr/>Empty<wbr/>Word</span></a></li>
+<li><a href="#withoutSingleCharacters" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>without<wbr/>Single<wbr/>Characters</span></a></li>
 <li><a href="#from" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>from</span></a></li>
 <li><a href="#fromWord" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>from<wbr/>Word</span></a></li></ul></div></details></div>
 <div class="site-menu">
