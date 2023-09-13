@@ -191,6 +191,27 @@ export class UnicodeSet {
 			return this.chars.isDisjointWith(other);
 		}
 	}
+
+	/**
+	 * Returns the minimum and maximum length of words in this set.
+	 *
+	 * If this set is empty, `undefined` will be returned returned.
+	 */
+	getLengthRange(): { min: number; max: number } | undefined {
+		if (this.chars.isEmpty) {
+			return this.accept.getLengthRange();
+		} else {
+			const wordRange = this.accept.getLengthRange();
+			if (wordRange === undefined) {
+				return { min: 1, max: 1 };
+			} else {
+				return {
+					min: Math.min(1, wordRange.min),
+					max: Math.max(1, wordRange.max),
+				};
+			}
+		}
+	}
 }
 
 function toWordSets(set: UnicodeSet): readonly ReadonlyWordSet[] {
