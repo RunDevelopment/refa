@@ -94,6 +94,12 @@ describe("JS.UnicodeSet", function () {
 		test1("A - A = ∅", a => a.without(a).isEmpty);
 
 		test2("A = B ↔ B = A", (a, b) => a.equals(b) === b.equals(a));
+		test2("A = B ↔ A = B (chars)", (a, b) => {
+			if (!a.accept.isEmpty) {
+				return true;
+			}
+			return a.equals(b) === b.equals(a.chars);
+		});
 		test2("isDisjoint(A, B) ↔ isDisjoint(B, A)", (a, b) => a.isDisjointWith(b) === b.isDisjointWith(a));
 		test2("A = B ↔ A ⊆ B ∧ B ⊆ A", (a, b) => {
 			const eq = a.equals(b);
