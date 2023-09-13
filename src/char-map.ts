@@ -3,7 +3,27 @@ import { CharRange, CharSet } from "./char-set";
 import { filterMut } from "./util";
 
 export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
+	/**
+	 * Returns whether this map is empty.
+	 *
+	 * This is equivalent to `this.size === 0` and `this.entryCount === 0`.
+	 */
 	readonly isEmpty: boolean;
+	/**
+	 * The number of characters in this map. This is different from {@link entryCount}.
+	 *
+	 * This is equivalent to `[...this.keys()].reduce((count, range) => count + range.max - range.min + 1, 0)`.
+	 */
+	readonly size: number;
+	/**
+	 * The number of entires in this map.
+	 *
+	 * This is different from {@link size}. In general, you should use {@link size}, because it has the same semantics
+	 * as `Set#size` and `Map#size`.
+	 *
+	 * This is equivalent to `[...this.entries()].length`.
+	 */
+	readonly entryCount: number;
 
 	/**
 	 * Returns whether the given character is a key in the map.
@@ -44,14 +64,37 @@ export interface ReadonlyCharMap<T> extends Iterable<[CharRange, T]> {
 	 * @param callback
 	 */
 	forEach(callback: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => void): void;
+	/**
+	 * Returns all ranges of characters that are keys in the map.
+	 *
+	 * Keys will be returned in the same order as `this.entries()`.
+	 */
 	keys(): Iterable<CharRange>;
+	/**
+	 * Returns all values in the map. Values might not be unique if more than one range maps to the same value.
+	 *
+	 * Values will be returned in the same order as `this.entries()`.
+	 */
 	values(): Iterable<T>;
-	entries(range?: CharRange): Iterable<[CharRange, T]>;
+	/**
+	 * Returns all key-value pairs in the map.
+	 *
+	 * Entries will be returned in the order of ascending ranges.
+	 */
+	entries(): Iterable<[CharRange, T]>;
 
 	/**
 	 * Returns a mapping from the values of this map to its keys.
 	 */
 	invert(maxCharacter: Char): Map<T, CharSet>;
+
+	/**
+	 * Returns a new map with all values mapped by the given function.
+	 *
+	 * If no function is given, the identity function is used.
+	 */
+	copy(): CharMap<T>;
+	copy<U>(mapFn: (value: T) => U): CharMap<U>;
 }
 
 interface Item<T> {
@@ -75,6 +118,16 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 
 	get isEmpty(): boolean {
 		return this._array.length === 0;
+	}
+	get size(): number {
+		let count = 0;
+		for (const { range } of this._array) {
+			count += range.max - range.min + 1;
+		}
+		return count;
+	}
+	get entryCount(): number {
+		return this._array.length;
 	}
 
 	private _indexOf(char: Char): number | undefined {
@@ -400,6 +453,34 @@ export class CharMap<T> implements ReadonlyCharMap<T> {
 	 */
 	clear(): void {
 		this._array = [];
+	}
+
+	copy(): CharMap<T>;
+	copy<U>(mapFn: (value: T) => U): CharMap<U>;
+	copy<U>(mapFn?: (value: T) => U): CharMap<U> {
+		if (!mapFn) {
+			const map = new CharMap<T>();
+			map._array = this._array.map(item => {
+				return { range: item.range, value: item.value };
+			});
+			return map as unknown as CharMap<U>;
+		}
+
+		const map = new CharMap<U>();
+		map._array = this._array.map(item => {
+			return { range: item.range, value: mapFn(item.value) };
+		});
+
+		// merge adjacent
+		filterMut(map._array, (item, prev) => {
+			if (prev && prev.range.max + 1 === item.range.min && prev.value === item.value) {
+				prev.range = { min: prev.range.min, max: item.range.max };
+				return false;
+			}
+			return true;
+		});
+
+		return map;
 	}
 
 	map(mapFn: (value: T, chars: CharRange, map: ReadonlyCharMap<T>) => T): void {
