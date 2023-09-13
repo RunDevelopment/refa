@@ -349,6 +349,21 @@ export class StringSet {
 		}
 		return new StringSet(items, this._caseFolding);
 	}
+
+	/**
+	 * Returns the minimum and maximum length of words in this set.
+	 *
+	 * If this set is empty, `undefined` will be returned returned.
+	 */
+	getLengthRange(): { min: number; max: number } | undefined {
+		if (this.isEmpty) {
+			return undefined;
+		}
+
+		const min = this.words[0].length;
+		const max = this.words[this.words.length - 1].length;
+		return { min, max };
+	}
 }
 
 function normalize(items: ReadonlyWord[]): void {
