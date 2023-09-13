@@ -27,36 +27,36 @@ export interface CharCaseFolding {
 }
 
 const CHAR_CASE_FOLDING_UTF16: CharCaseFolding = {
-	toCharSet(char) {
+	toCharSet: boundedCache(char => {
 		return CharSet.fromCharacter(Maximum.UTF16, char);
-	},
+	}),
 };
 const CHAR_CASE_FOLDING_UTF16_I: CharCaseFolding = {
 	canonicalize: char => UTF16CaseFolding[char]?.[0] ?? char,
-	toCharSet(char) {
+	toCharSet: boundedCache(char => {
 		const folding = UTF16CaseFolding[char];
 		if (folding === undefined) {
 			return CharSet.fromCharacter(Maximum.UTF16, char);
 		} else {
 			return CharSet.fromCharacters(Maximum.UTF16, folding);
 		}
-	},
+	}),
 };
 const CHAR_CASE_FOLDING_UNICODE: CharCaseFolding = {
-	toCharSet(char) {
+	toCharSet: boundedCache(char => {
 		return CharSet.fromCharacter(Maximum.UNICODE, char);
-	},
+	}),
 };
 const CHAR_CASE_FOLDING_UNICODE_I: CharCaseFolding = {
 	canonicalize: char => UnicodeCaseFolding[char]?.[0] ?? char,
-	toCharSet(char) {
+	toCharSet: boundedCache(char => {
 		const folding = UnicodeCaseFolding[char];
 		if (folding === undefined) {
 			return CharSet.fromCharacter(Maximum.UNICODE, char);
 		} else {
 			return CharSet.fromCharacters(Maximum.UNICODE, folding);
 		}
-	},
+	}),
 };
 
 export function getCharCaseFolding(unicode: boolean, ignoreCase: boolean): CharCaseFolding;
@@ -75,4 +75,19 @@ export function getCharCaseFolding(flagsOrUnicode: Readonly<Flags> | boolean, ig
 	} else {
 		return ignoreCase ? CHAR_CASE_FOLDING_UTF16_I : CHAR_CASE_FOLDING_UTF16;
 	}
+}
+
+function boundedCache<A, B>(compute: (value: A) => B, maxSize: number = 100): (value: A) => B {
+	const cache = new Map<A, B>();
+	return value => {
+		let cached = cache.get(value);
+		if (cached === undefined) {
+			cached = compute(value);
+			if (cache.size >= maxSize) {
+				cache.clear();
+			}
+			cache.set(value, cached);
+		}
+		return cached;
+	};
 }
