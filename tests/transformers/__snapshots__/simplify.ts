@@ -32,6 +32,39 @@ module.exports[n`Transformers >> simplify >> /<title>(?:(?!<\/title>).)*<\/title
 /<title>(?:[^\n\r<\u2028\u2029]|<+(?:[^\n\r/<\u2028\u2029]|\/(?!title>)))*<+\/title>/
 `;
 
+module.exports[n`Transformers >> simplify >> /^(?:(?:25[0-5]|(2[0-4]|1\d|[1-9]|)\d)(?:\.(?!$)|$)){4}$/ `] = lit`
+/^(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)){3}$/
+`;
+
+module.exports[n`Transformers >> simplify >> /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/ `] = lit`
+Start:                           /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/
+Pass 1
+Alt moveUpEmpty:                 /^(?:(?:25[0-5]|(?:(?:2[0-4]|1\d|[1-9])?)\d)\.?\b){4}$/
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b){4}$/
+Con applyAssertions:             /^(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b){2}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b$/
+Con removeUnnecessaryAssertions: /^(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b){2}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?<!\w)(?=\w)|(?<=\w))$/
+Con mergeWithQuantifier:         /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?\b){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?<!\w)(?=\w)|(?<=\w))$/
+Exp removeUnnecessaryAssertions: /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?<!\w)|(?:[]))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?:[])|(?<=\w))$/
+Pass 2
+Alt inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?<!\w))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?:[])|(?<=\w))$/
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?<!\w)){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?:[])|(?<=\w))$/
+Alt inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?<!\w)){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?:(?<=\w))$/
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?<!\w)){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?<=\w)$/
+Pass 3
+Con applyAssertions:             /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.{1}(?<!\w)|(?<!\w))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.?(?<=\w)$/
+Con applyAssertions:             /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.{1}(?<!\w)|(?<!\w))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.{1}(?<=\w)|(?<=\w))$/
+Exp removeUnnecessaryAssertions: /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.{1}|(?:[]))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:(?:[])|)$/
+Pass 4
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.|(?:[]))){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:(?:[])|)$/
+Alt inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:\.)){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:(?:[])|)$/
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:(?:[])|)$/
+Alt moveUpEmpty:                 /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:(?:[])?)$/
+Con inline:                      /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)(?:[])?$/
+Con removeDeadBranches:          /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)$/
+Pass 5
+Final:                           /^(?:(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1\d|[1-9])?\d)$/
+`;
+
 module.exports[n`Transformers >> simplify >> /\b(?:true|false)\b/ `] = lit`
 Start:                           /\b(?:true|false)\b/
 Pass 1
@@ -44,6 +77,20 @@ Alt inline:                      /(?:(?<!\w))(?:tru|fals)e(?:(?!\w))/
 Con inline:                      /(?<!\w)(?:tru|fals)e(?!\w)/
 Pass 3
 Final:                           /(?<!\w)(?:tru|fals)e(?!\w)/
+`;
+
+module.exports[n`Transformers >> simplify >> /\b[a-z_]\w*(?=\s*\()\b/i `] = lit`
+Start:                           /\b[A-Z_]\w*(?=\s*\()\b/i
+Pass 1
+Con applyAssertions:             /(?:(?<!\w))[A-Z_]\w*(?=\s*\()\b/i
+Con inline:                      /(?<!\w)[A-Z_]\w*(?=\s*\()\b/i
+Exp removeUnnecessaryAssertions: /(?<!\w)[A-Z_]\w*(?=\s*\()(?:(?:[])|(?!\w))/i
+Pass 2
+Alt inline:                      /(?<!\w)[A-Z_]\w*(?=\s*\()(?:(?!\w))/i
+Con inline:                      /(?<!\w)[A-Z_]\w*(?=\s*\()(?!\w)/i
+Exp removeUnnecessaryAssertions: /(?<!\w)[A-Z_]\w*(?=\s*\()/i
+Pass 3
+Final:                           /(?<!\w)[A-Z_]\w*(?=\s*\()/i
 `;
 
 module.exports[n`Transformers >> simplify >> Prism regex snapshot `] = lit`
@@ -811,7 +858,7 @@ module.exports[n`Transformers >> simplify >> Prism regex snapshot `] = lit`
 /&&&|<<<|>>>|\^\^\^|~~~|&&|\*\*|\.\.|::|<<|>>|<-|->|[!:=]=|<?\|{1,3}>?|\??(?:<=|>=|<>|[-%*+/<=>])\??|[!&?^]|~[-+~]|:>|:\?>?/
 /\[<.+?>\]/
 /(?:(?:"""[^]*?""|@"(?:""|[^"])*|"(?:\\[^]|[^"\\])*)"|'(?:[^'\\]|\\(?:.|\d{3}|x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}))')B?/
-/(?:(?<!\w)(?:exception|inherit|interface|new|of|type)\s|\w\s*:|\s:\??>)\s*[\w.]*(?:\.(?=\w)|\w(?!\w))(?:\s*(?:->|\*)\s*[\w.]*(?:\.(?=\w)|\w(?!\w)))*(?!\s*[.:])/
+/(?:(?<!\w)(?:exception|inherit|interface|new|of|type)\s|\w\s*:|\s:\??>)\s*[\w.]*(?:\.(?=\w)|\w(?!\w))(?:\s*(?:->|\*)\s*[\w.]*(?:\w\s*(?:->|\*)\s*[\w.]*)*(?:\.(?=\w)|\w(?!\w)))?(?!\s*[.:])/
 /^[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*#.*/m
 /(?<!\w)0x[\dA-Fa-f]+(?:un|lf|LF)?(?!\w)/
 /(?<!\w)0b[01]+(?:u?y)?(?!\w)/
@@ -1932,7 +1979,7 @@ TooManyNodesError
 /^\$/
 /(?<!\w)(?:ans|break|bt|case|catch|cd|clear|const|def|del|dump|else|end|exit|extern|false|force|help|if|infix[lr]?|interface|let|ls|mem|namespace|nonfix|NULL|of|otherwise|outfix|override|postfix|prefix|private|public|pwd|quit|run|save|show|stats|then|throw|trace|true|type|underride|using|when|with)(?!\w)/
 /(?<!\w)(?:abs|add_(?:(?:fundef|interface|macdef|typedef)(?:_at)?|addr|constdef|vardef)|all|any|applp?|arity|bigintp?|blob(?:_crc|_size|p)?|boolp?|byte_(?:matrix|pointer)|byte_c?string(?:_pointer)?|calloc|cat|catmap|ceil|char[ps]?|check_ptrtag|chr|clear_sentry|clearsym|closurep?|cmatrixp?|cols?|colcat(?:map)?|colmap|colrev|colvector(?:p|seq)?|complex(?:_float_(?:matrix|pointer)|_matrix(?:_view)?|_pointer|p)?|conj|cookedp?|cst|cstring(?:_(?:dup|list|vector))?|curry3?|cyclen?|del_(?:constdef|fundef|interface|macdef|typedef|vardef)|delete|diag(?:mat)?|dim|dmatrixp?|do|double(?:_matrix(?:_view)?|_pointer|p)?|dowith3?|drop|dropwhile|eval(?:cmd)?|exactp|filter|fix|fixity|flip|float_(?:matrix|pointer)|floor|fold[lr]1?|frac|free|funp?|functionp?|gcd|get(?:_(?:byte|constdef|double|float|fundef|int(?:64)?|interface(?:_typedef)?|long|macdef|pointer|ptrtag|short|sentry|string|typedef|vardef))?|globsym|hash|head|id|im|imatrixp?|index|inexactp|infp|init|insert|int(?:_matrix(?:_view)?|_pointer|p)?|int64_(?:matrix|pointer)|integerp?|iteraten?|iterwhile|join|keys?|lambdap?|last(?:err(?:pos)?)?|lcd|list[2p]?|listmap|make_ptrtag|malloc|map|matcat|matrixp?|max|member|min|nanp|nargs|nmatrixp?|null|numberp?|ord|pack(?:ed)?|pointer(?:_cast|_tag|_type|p)?|pow|pred|ptrtag|put(?:_(?:byte|double|float|int(?:64)?|long|pointer|short|string))?|rationalp?|re|realp?|realloc|recordp?|redim|reduce(?:_with)?|refp?|repeatn?|reverse|rlistp?|round|rows?|rowcat(?:map)?|rowmap|rowrev|rowvector(?:p|seq)?|same|scan[lr]1?|sentry|sgn|short_(?:matrix|pointer)|slice|smatrixp?|sort|split|str|strcat|stream|stride|string(?:_(?:dup|list|vector)|p)?|subdiag(?:mat)?|submat|subseq2?|substr|succ|supdiag(?:mat)?|symbolp?|tail|take|takewhile|thunkp?|transpose|trunc|tuplep?|typep|ubyte|uint(?:64)?|ulong|uncurry3?|unref|unzip3?|update|ushort|vals?|varp?|vector(?:p|seq)?|void|zip3?|zipwith3?)(?!\w)/
-/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))(?:(?:(?<!\w)_+)?[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])*(?:(?<!\w)_+(?!\w))?|(?<!\w)(?:and|div|mod|not|or)(?!\w)/
+/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))(?:(?:(?<!\w)_+)?(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]_*)*[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])?(?:(?<!\w)_+(?!\w))?|(?<!\w)(?:and|div|mod|not|or)(?!\w)/
 /[(),;[\]{|}]/
 /%<[^]+?%>/
 /(?:\.\.|(?<!\w))(?:(?:INF|NAN)(?!\w)|0X[\dA-F]+|(?:(?:0B)?\d+(?:\.\d)?|\.\d)\d*(?:E[-+]?\d+)?L?)/i
@@ -3330,7 +3377,7 @@ module.exports[n`Transformers >> simplify >> Prism regex snapshot ignoring order
 /&&&|<<<|>>>|\^\^\^|~~~|&&|\*\*|\.\.|::|<<|>>|<-|->|[!:=]=|<?\|{1,3}>?|\??(?:<=|>=|<>|[-%*+/<=>])\??|[!&?^]|~[-+~]|:>|:\?>?/
 /\[<.+>\]/
 /(?:(?:"""[^]*""|@"(?:""|[^"])*|"(?:\\[^]|[^"\\])*)"|'(?:[^'\\]|\\(?:.|\d{3}|x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}))')B?/
-/(?:(?<!\w)(?:exception|inherit|interface|new|of|type)\s|\w\s*:|\s:\??>)\s*[\w.]*(?:\.(?=\w)|\w(?!\w))(?:\s*(?:->|\*)\s*[\w.]*(?:\.(?=\w)|\w(?!\w)))*(?!\s*[.:])/
+/(?:(?<!\w)(?:exception|inherit|interface|new|of|type)\s|\w\s*:|\s:\??>)\s*[\w.]*(?:\.(?=\w)|\w(?!\w))(?:\s*(?:->|\*)\s*[\w.]*(?:\w\s*(?:->|\*)\s*[\w.]*)*(?:\.(?=\w)|\w(?!\w)))?(?!\s*[.:])/
 /^[\t\x0b\f \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*#.*/m
 /(?<!\w)0x[\dA-Fa-f]+(?:un|lf|LF)?(?!\w)/
 /(?<!\w)0b[01]+(?:u?y)?(?!\w)/
@@ -4451,7 +4498,7 @@ TooManyNodesError
 /^\$/
 /(?<!\w)(?:ans|break|bt|case|catch|cd|clear|const|def|del|dump|else|end|exit|extern|false|force|help|if|infix[lr]?|interface|let|ls|mem|namespace|nonfix|NULL|of|otherwise|outfix|override|postfix|prefix|private|public|pwd|quit|run|save|show|stats|then|throw|trace|true|type|underride|using|when|with)(?!\w)/
 /(?<!\w)(?:abs|add_(?:(?:fundef|interface|macdef|typedef)(?:_at)?|addr|constdef|vardef)|all|any|applp?|arity|bigintp?|blob(?:_crc|_size|p)?|boolp?|byte_(?:matrix|pointer)|byte_c?string(?:_pointer)?|calloc|cat|catmap|ceil|char[ps]?|check_ptrtag|chr|clear_sentry|clearsym|closurep?|cmatrixp?|cols?|colcat(?:map)?|colmap|colrev|colvector(?:p|seq)?|complex(?:_float_(?:matrix|pointer)|_matrix(?:_view)?|_pointer|p)?|conj|cookedp?|cst|cstring(?:_(?:dup|list|vector))?|curry3?|cyclen?|del_(?:constdef|fundef|interface|macdef|typedef|vardef)|delete|diag(?:mat)?|dim|dmatrixp?|do|double(?:_matrix(?:_view)?|_pointer|p)?|dowith3?|drop|dropwhile|eval(?:cmd)?|exactp|filter|fix|fixity|flip|float_(?:matrix|pointer)|floor|fold[lr]1?|frac|free|funp?|functionp?|gcd|get(?:_(?:byte|constdef|double|float|fundef|int(?:64)?|interface(?:_typedef)?|long|macdef|pointer|ptrtag|short|sentry|string|typedef|vardef))?|globsym|hash|head|id|im|imatrixp?|index|inexactp|infp|init|insert|int(?:_matrix(?:_view)?|_pointer|p)?|int64_(?:matrix|pointer)|integerp?|iteraten?|iterwhile|join|keys?|lambdap?|last(?:err(?:pos)?)?|lcd|list[2p]?|listmap|make_ptrtag|malloc|map|matcat|matrixp?|max|member|min|nanp|nargs|nmatrixp?|null|numberp?|ord|pack(?:ed)?|pointer(?:_cast|_tag|_type|p)?|pow|pred|ptrtag|put(?:_(?:byte|double|float|int(?:64)?|long|pointer|short|string))?|rationalp?|re|realp?|realloc|recordp?|redim|reduce(?:_with)?|refp?|repeatn?|reverse|rlistp?|round|rows?|rowcat(?:map)?|rowmap|rowrev|rowvector(?:p|seq)?|same|scan[lr]1?|sentry|sgn|short_(?:matrix|pointer)|slice|smatrixp?|sort|split|str|strcat|stream|stride|string(?:_(?:dup|list|vector)|p)?|subdiag(?:mat)?|submat|subseq2?|substr|succ|supdiag(?:mat)?|symbolp?|tail|take|takewhile|thunkp?|transpose|trunc|tuplep?|typep|ubyte|uint(?:64)?|ulong|uncurry3?|unref|unzip3?|update|ushort|vals?|varp?|vector(?:p|seq)?|void|zip3?|zipwith3?)(?!\w)/
-/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))(?:(?:(?<!\w)_+)?[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])*(?:(?<!\w)_+(?!\w))?|(?<!\w)(?:and|div|mod|not|or)(?!\w)/
+/(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]|(?<!\w)_+(?!\w))(?:(?:(?<!\w)_+)?(?:[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^]_*)*[\x21-\x27*+,\-./:<=>?@\\\\\`|~\xa1-\xbf\xd7-\xf7\u20d0-\u2bff^])?(?:(?<!\w)_+(?!\w))?|(?<!\w)(?:and|div|mod|not|or)(?!\w)/
 /[(),;[\]{|}]/
 /%<[^]+%>/
 /(?:\.\.|(?<!\w))(?:(?:INF|NAN)(?!\w)|0X[\dA-F]+|(?:(?:0B)?\d+(?:\.\d)?|\.\d)\d*(?:E[-+]?\d+)?L?)/i

@@ -13,7 +13,11 @@ describe("Transformers", function () {
 			/"""((?!""")(?:[^\\]|\\"))*"""/,
 			/<title>(?:(?!<\/title>).)*<\/title>/,
 
+			/^(?:(?:25[0-5]|(2[0-4]|1\d|[1-9]|)\d)(?:\.(?!$)|$)){4}$/,
+			{ literal: /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/, stepByStep: true },
+
 			{ literal: /\b(?:true|false)\b/, transformer: transformerIgnore, stepByStep: true },
+			{ literal: /\b[a-z_]\w*(?=\s*\()\b/i, stepByStep: true },
 		]);
 
 		it("Prism regex snapshot", function () {

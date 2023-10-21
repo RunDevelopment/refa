@@ -32,6 +32,7 @@ export function simplify(options?: Readonly<CreationOptions>): CombinedTransform
 		sortAssertions(options),
 		factorOut(options),
 		makeGreedy(options),
+		removeUnnecessaryAssertions(options),
 		mergeWithQuantifier(options),
 		moveUpEmpty(options),
 		nestedQuantifiers(options),

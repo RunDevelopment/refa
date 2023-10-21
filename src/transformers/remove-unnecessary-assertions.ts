@@ -179,7 +179,7 @@ function analyzeAssertion(
 	}
 	const trivialNeighbor = getTrivialResultBecauseOfNeighbor(concatStack, assertion, context);
 	if (trivialNeighbor !== Result.DEPENDS) {
-		return trivial;
+		return trivialNeighbor;
 	}
 
 	// Now that the easy trivial cases are over, we have to be a little more clever. The basic idea here is that we
