@@ -26,7 +26,7 @@ import {
 	toMatchingDirection,
 } from "../ast-analysis";
 import { CharSet } from "../char-set";
-import { cachedFunc, debugAssert, filterMut } from "../util";
+import { assertNever, cachedFunc, debugAssert, filterMut } from "../util";
 import { CreationOptions } from "./creation-options";
 import {
 	SingleCharacterParent,
@@ -804,6 +804,42 @@ function moveAssertionOutsideLoop(
 		return undefined;
 	};
 
+	const endsWithSingleCharAssertion = (e: NoParent<Element | Concatenation>): boolean => {
+		switch (e.type) {
+			case "Assertion":
+				return e.kind === kind && isSingleCharacterParent(e);
+			case "CharacterClass":
+			case "Unknown":
+				return false;
+			case "Alternation":
+				return e.alternatives.every(endsWithSingleCharAssertion);
+			case "Quantifier":
+				return e.max === 1 && e.alternatives.every(endsWithSingleCharAssertion);
+			case "Concatenation": {
+				if (e.elements.length === 0) {
+					return false;
+				}
+				const B = atInRange(e.elements, lastIndexFor(direction));
+				return endsWithSingleCharAssertion(B);
+			}
+			default:
+				return assertNever(e);
+		}
+	};
+
+	/**
+	 * Returns whether the given concatenation can be split into two parts A
+	 * and B, such that B ends with a single-character assertion.
+	 *
+	 * @param alt
+	 */
+	const canSplit = (alt: NoParent<Concatenation>): boolean => {
+		if (alt.elements.length < 2) {
+			return false;
+		}
+		return endsWithSingleCharAssertion(alt);
+	};
+
 	for (let i = 0; i < elements.length; i++) {
 		const quant = elements[i];
 		if (
@@ -818,67 +854,125 @@ function moveAssertionOutsideLoop(
 		// find a fitting assertion
 		const alt = quant.alternatives[0];
 		const assertion = getAssertion(alt);
-		if (!assertion) {
-			// we couldn't find a fitting assertion
+		if (assertion) {
+			// trivially accepting?
+			let assertionChar = assertion.alternatives[0].elements[0].characters;
+			assertionChar = assertion.negate ? assertionChar.negate() : assertionChar;
+			const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
+			const triviallyAccepting = !firstChar.empty && firstChar.char.isSubsetOf(assertionChar);
+
+			// store the original quantifier min for later
+			const originalMin = quant.min;
+			if (quant.min === 0) {
+				quant.min = 1;
+			}
+
+			// remove the assertion
+			context.signalMutation();
+			alt.elements.splice(alt.elements.indexOf(assertion), 1);
+
+			let replacement: NoParent<Element>[];
+			if (triviallyAccepting) {
+				// `(a(?!b))+` => `a+(?!b)`
+				// the assertion has already been removed
+				replacement = withDirection(direction, [quant, assertion]);
+			} else {
+				// `(a(?!b))+` => `a((?!b)a)*(?!b)`
+				const prefix = copyNode(alt).elements;
+				const innerAssertion = copyNode(assertion);
+				pushFront(direction, alt.elements, innerAssertion);
+				quant.min--;
+				quant.max--;
+				if (direction === "ltr") {
+					replacement = [...prefix, quant, assertion];
+				} else {
+					replacement = [assertion, quant, ...prefix];
+				}
+			}
+
+			if (originalMin === 0) {
+				// we need to wrap it in an optional group
+				replacement = [
+					{
+						type: "Quantifier",
+						min: 0,
+						max: 1,
+						lazy: quant.lazy,
+						alternatives: [
+							{
+								type: "Concatenation",
+								elements: replacement,
+								source: copySource(quant.source),
+							},
+						],
+						source: copySource(quant.source),
+					},
+				];
+			}
+
+			elements.splice(i, 1, ...replacement);
+
 			continue;
 		}
 
-		// trivially accepting?
-		let assertionChar = assertion.alternatives[0].elements[0].characters;
-		assertionChar = assertion.negate ? assertionChar.negate() : assertionChar;
-		const firstChar = getFirstCharConsumedBy(alt, direction, context.maxCharacter);
-		const triviallyAccepting = !firstChar.empty && firstChar.char.isSubsetOf(assertionChar);
-
-		// store the original quantifier min for later
-		const originalMin = quant.min;
-		if (quant.min === 0) {
-			quant.min = 1;
-		}
-
-		// remove the assertion
-		context.signalMutation();
-		alt.elements.splice(alt.elements.indexOf(assertion), 1);
-
-		let replacement: NoParent<Element>[];
-		if (triviallyAccepting) {
-			// `(a(?!b))+` => `a+(?!b)`
-			// the assertion has already been removed
-			replacement = withDirection(direction, [quant, assertion]);
-		} else {
-			// `(a(?!b))+` => `a((?!b)a)*(?!b)`
-			const prefix = copyNode(alt).elements;
-			const innerAssertion = copyNode(assertion);
-			pushFront(direction, alt.elements, innerAssertion);
-			quant.min--;
-			quant.max--;
-			if (direction === "ltr") {
-				replacement = [...prefix, quant, assertion];
-			} else {
-				replacement = [assertion, quant, ...prefix];
+		if (canSplit(alt)) {
+			if (getMaxDepth(quant) > 20 || countNodes(quant) > 100) {
+				continue;
 			}
-		}
 
-		if (originalMin === 0) {
-			// we need to wrap it in an optional group
-			replacement = [
+			// we can split the concatenation into two parts A and B, such
+			// that B ends with a single-character assertion
+			let b = [atInRange(alt.elements, lastIndexFor(direction))];
+			let a = alt.elements.filter(e => e !== b[0]);
+			if (direction === "rtl") {
+				[a, b] = [b, a];
+			}
+
+			// The goal is to transform `(AB)+` => `A(BA)*B`. This should give
+			// us a better chance at removing assertions
+			let replacement: NoParent<Element>[] = [
+				...a.map(copyNode),
 				{
 					type: "Quantifier",
-					min: 0,
-					max: 1,
+					min: Math.max(0, quant.min - 1),
+					max: quant.max - 1,
 					lazy: quant.lazy,
 					alternatives: [
 						{
 							type: "Concatenation",
-							elements: replacement,
-							source: copySource(quant.source),
+							elements: [...b, ...a],
+							source: copySource(alt.source),
 						},
 					],
 					source: copySource(quant.source),
 				},
+				...b.map(copyNode),
 			];
-		}
 
-		elements.splice(i, 1, ...replacement);
+			if (quant.min === 0) {
+				// we need to wrap it in an optional group
+				replacement = [
+					{
+						type: "Quantifier",
+						min: 0,
+						max: 1,
+						lazy: quant.lazy,
+						alternatives: [
+							{
+								type: "Concatenation",
+								elements: replacement,
+								source: copySource(quant.source),
+							},
+						],
+						source: copySource(quant.source),
+					},
+				];
+			}
+
+			context.signalMutation();
+			elements.splice(i, 1, ...replacement);
+			continue;
+		}
 	}
 }
 
